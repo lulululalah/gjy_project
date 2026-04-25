@@ -32,6 +32,7 @@ set(SRC_FILES
     "src/FeatureExtractor.cpp"
     "src/FeatureClassifier.cpp" 
     "src/GeometryModifier.cpp"
+    "src/ModelGenerator.cpp"
 )
 
 # 创建可执行文件 

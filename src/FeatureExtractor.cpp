@@ -1,5 +1,6 @@
 #include "FeatureExtractor.h"
 #include <TopExp_Explorer.hxx>
+#include <BRepTools.hxx>
 #include <TopExp.hxx>
 #include <TopoDS.hxx>
 #include <TopoDS_Face.hxx>
@@ -41,19 +42,30 @@ void FeatureExtractor::ComputeGeometricAttributes(const TopTools_IndexedMapOfSha
 {
     myResults.clear();
 
-    // 遍历所有面
+    // 1. 第一遍遍历：计算总面积
+    double totalArea = 0.0;
+    for (int i = 1; i <= faceMap.Extent(); ++i)
+    {
+        TopoDS_Face face = TopoDS::Face(faceMap.FindKey(i));
+        GProp_GProps areaProps;
+        BRepGProp::SurfaceProperties(face, areaProps);
+        totalArea += areaProps.Mass();
+    }
+
+    // 2. 第二遍遍历：提取详细特征
     for (int i = 1; i <= faceMap.Extent(); ++i)
     {
         TopoDS_Face face = TopoDS::Face(faceMap.FindKey(i));
         FaceFeature feat;
-        feat.id = i; // 直接使用 Map 中的索引作为 ID
+        feat.id = i;
 
         // --- 几何特征提取 ---
         GProp_GProps areaProps, lineProps;
-        BRepGProp::SurfaceProperties(face, areaProps); // 二重积分算面积
-        BRepGProp::LinearProperties(face, lineProps);  // 一重积分算周长
+        BRepGProp::SurfaceProperties(face, areaProps);
+        BRepGProp::LinearProperties(face, lineProps);
 
         feat.area = areaProps.Mass();
+        feat.relativeArea = (totalArea > 1e-6) ? (feat.area / totalArea) : 0.0;
         feat.perimeter = lineProps.Mass();
 
         // 计算紧致度
@@ -66,9 +78,35 @@ void FeatureExtractor::ComputeGeometricAttributes(const TopTools_IndexedMapOfSha
             feat.compactness = 999.0;
         }
 
+        // 提取表面类型和法向以及中心 Z
+        GProp_GProps gprops;
+        BRepGProp::SurfaceProperties(face, gprops);
+        gp_Pnt center = gprops.CentreOfMass();
+        feat.centerZ = center.Z();
+
         // 获取面类型
         BRepAdaptor_Surface surf(face);
         feat.surfaceType = surf.GetType();
+
+        // 提取面中心法向
+        double u_min, u_max, v_min, v_max;
+        BRepTools::UVBounds(face, u_min, u_max, v_min, v_max);
+        gp_Pnt pMid;
+        gp_Vec nVec;
+        BRepAdaptor_Surface sAtor(face);
+        sAtor.D1((u_min + u_max) / 2.0, (v_min + v_max) / 2.0, pMid, nVec, nVec); // 这里简化取中点法向
+        
+        // 重新计算精确法向
+        BRepLProp_SLProps props(sAtor, (u_min + u_max) / 2.0, (v_min + v_max) / 2.0, 1, Precision::Confusion());
+        if (props.IsNormalDefined()) {
+            gp_Dir normal = props.Normal();
+            if (face.Orientation() == TopAbs_REVERSED) normal.Reverse();
+            feat.normalX = normal.X();
+            feat.normalY = normal.Y();
+            feat.normalZ = normal.Z();
+        } else {
+            feat.normalX = 0; feat.normalY = 0; feat.normalZ = 1.0;
+        }
 
         // 拓扑特征提取：寻找邻居 ID
         TopExp_Explorer edgeExp(face, TopAbs_EDGE);
@@ -83,21 +121,25 @@ void FeatureExtractor::ComputeGeometricAttributes(const TopTools_IndexedMapOfSha
                 {
                     const TopoDS_Shape &neighborShape = it.Value();
 
-                    // 如果邻居面不是当前处理的面本身
                     if (!neighborShape.IsSame(face))
                     {
                         int neighborId = faceMap.FindIndex(neighborShape);
                         TopoDS_Face neighborFace = TopoDS::Face(neighborShape);
                         TopoDS_Edge sharedEdge = TopoDS::Edge(edge);
 
-                        int edgeType = IdentifyEdgeType(face, neighborFace, sharedEdge);
+                        int rawEdgeType = IdentifyEdgeType(face, neighborFace, sharedEdge);
+                        
+                        // 映射为 ML 友好数值：Convex=1.0, Concave=-1.0, Smooth=0.0
+                        int mlEdgeType = 0;
+                        if (rawEdgeType == CONVEX) mlEdgeType = 1;
+                        else if (rawEdgeType == CONCAVE) mlEdgeType = -1;
+                        else mlEdgeType = 0;
 
-                        // 查找是否已经记录过该邻居（处理多条共享边的情况，取最显著特征）
                         auto it_nb = std::find(feat.neighborIds.begin(), feat.neighborIds.end(), neighborId);
                         if (it_nb == feat.neighborIds.end())
                         {
                             feat.neighborIds.push_back(neighborId);
-                            feat.neighborEdgeTypes.push_back(edgeType);
+                            feat.neighborEdgeTypes.push_back(mlEdgeType);
                         }
                     }
                 }
@@ -122,42 +164,75 @@ int FeatureExtractor::IdentifyEdgeType(const TopoDS_Face& f1, const TopoDS_Face&
     cAtor.D1(mid, pMid, vTangent);
 
     // 获取两个面的法向量
-    auto getNormal = [&](const TopoDS_Face& f, const gp_Pnt& p, gp_Dir& normal) -> bool {
+    auto getNormalAndRefVec = [&](const TopoDS_Face& f, const TopoDS_Edge& edge, double param, gp_Dir& normal, gp_Vec& binormal) -> bool {
         BRepAdaptor_Surface sAtor(f);
-        double u, v;
-        TopoDS_Vertex v1 = TopExp::FirstVertex(e);
-        gp_Pnt2d uv = BRep_Tool::Parameters(v1, f);
-        u = uv.X();
-        v = uv.Y();
-        BRepLProp_SLProps props(sAtor, u, v, 1, Precision::Confusion());
-        if (props.IsNormalDefined()) {
-            normal = props.Normal();
-            if (f.Orientation() == TopAbs_REVERSED) normal.Reverse();
-            return true;
+        BRepAdaptor_Curve cAtor(edge);
+        
+        // 投影点到面获取 UV (或者通过采样点获取)
+        gp_Pnt p; gp_Vec tangent;
+        cAtor.D1(param, p, tangent);
+        
+        // 这里的逻辑需要处理 edge 在 face 中的参数
+        Standard_Real u, v;
+        Handle(Geom2d_Curve) c2d = BRep_Tool::CurveOnSurface(edge, f, u, v);
+        if (c2d.IsNull()) return false;
+        gp_Pnt2d uv = c2d->Value(param);
+        
+        BRepLProp_SLProps props(sAtor, uv.X(), uv.Y(), 1, Precision::Confusion());
+        if (!props.IsNormalDefined()) return false;
+        
+        normal = props.Normal();
+        if (f.Orientation() == TopAbs_REVERSED) normal.Reverse();
+        
+        // 计算面内向量 (Binormal pointing INTO the face)
+        // 计算规则：R = Normal x Tangent
+        // 如果边在面中的 Orientation 是 REVERSED，则 Tangent 需要反向
+        gp_Vec tVec = tangent;
+        TopAbs_Orientation edgeOri = TopAbs_FORWARD;
+        
+        // 寻找边在面中的实际 Orientation
+        TopExp_Explorer exp(f, TopAbs_EDGE);
+        for (; exp.More(); exp.Next()) {
+            if (exp.Current().IsSame(edge)) {
+                edgeOri = exp.Current().Orientation();
+                break;
+            }
         }
-        return false;
+        
+        if (edgeOri == TopAbs_REVERSED) tVec.Reverse();
+        
+        binormal = normal.XYZ() ^ tVec.XYZ();
+        binormal.Normalize();
+        return true;
     };
 
     gp_Dir n1, n2;
-    if (!getNormal(f1, pMid, n1) || !getNormal(f2, pMid, n2)) return OTHER;
+    gp_Vec r1;
+    if (!getNormalAndRefVec(f1, e, mid, n1, r1)) return OTHER;
+    
+    // 获取 f2 的法向 n2
+    BRepAdaptor_Surface sAtor2(f2);
+    Standard_Real u2, v2;
+    Handle(Geom2d_Curve) c2d2 = BRep_Tool::CurveOnSurface(e, f2, u2, v2);
+    if (c2d2.IsNull()) return OTHER;
+    gp_Pnt2d uv2 = c2d2->Value(mid);
+    BRepLProp_SLProps props2(sAtor2, uv2.X(), uv2.Y(), 1, Precision::Confusion());
+    if (!props2.IsNormalDefined()) return OTHER;
+    n2 = props2.Normal();
+    if (f2.Orientation() == TopAbs_REVERSED) n2.Reverse();
 
-    // 计算二面角
+    // 计算二面角点积
     double dot = n1.Dot(n2);
-    if (dot > 0.999) return SMOOTH; // 近似共面或切连
+    if (dot > 0.999) return SMOOTH;
 
-    // 向量叉积判断凹凸性 (Cross Product logic)
-    // 这里的逻辑简化为：如果 (n1 x n2) 的方向与边切向 vTangent 一致，则为凸，反之为凹
-    // 注意：这取决于面法向定义和边的 Orientation
-    gp_Vec cross = n1.XYZ() ^ n2.XYZ();
-    if (cross.Magnitude() < 1e-6) return SMOOTH;
-
-    // 基于 BRep 规则的凹凸性判断
-    // 简化方案：如果法向量“向外分叉”则是凸，向内则是凹
-    // 实际上更健壮的方法是利用两面法向量之和与物体实体的关系
-    // 这里我们返回一个占位符，建议后续使用更复杂的 BRepOrientedEdge 分析
+    // 凹凸性核心判断：
+    // 如果面 f2 的法向 n2 与面 f1 的向内向量 r1 的点积为正
+    // 说明 f2 向 f1 的“内部”偏转 -> 凹 (Concave)
+    // 反之 -> 凸 (Convex)
+    double check = n2.Dot(r1);
     
-    // 启发式：如果点积小于0通常是锐角
-    if (dot < -1e-6) return CONVEX; // 简单启发
+    if (check > 1e-6) return CONCAVE;
+    if (check < -1e-6) return CONVEX;
     
-    return CONCAVE; 
+    return SMOOTH;
 }
