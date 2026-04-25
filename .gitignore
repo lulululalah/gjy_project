@@ -1,0 +1,30 @@
+# Prerequisites
+3rdParty/
+build/
+bin/
+lib/
+obj/
+
+# IDEs and Editors
+.vscode/
+.idea/
+*.swp
+*.swo
+*.user
+
+# Build Systems
+CMakeCache.txt
+CMakeFiles/
+CMakeSettings.json
+Makefile
+cmake_install.cmake
+install/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Project Specific
+*.log
+*.tmp
+# data/ # Keep data if small, uncomment if large
