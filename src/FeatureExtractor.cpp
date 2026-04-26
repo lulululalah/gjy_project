@@ -108,6 +108,24 @@ void FeatureExtractor::ComputeGeometricAttributes(const TopTools_IndexedMapOfSha
             feat.normalX = 0; feat.normalY = 0; feat.normalZ = 1.0;
         }
 
+        // 提取曲率特征
+        if (props.IsCurvatureDefined()) {
+            feat.meanCurvature = props.MeanCurvature();
+        } else {
+            feat.meanCurvature = 0.0;
+        }
+
+        // 提取拓扑复杂度特征
+        int wireCount = 0;
+        TopExp_Explorer wireExp(face, TopAbs_WIRE);
+        for (; wireExp.More(); wireExp.Next()) wireCount++;
+        feat.numWires = wireCount;
+
+        int edgeCount = 0;
+        TopExp_Explorer edgeCountExp(face, TopAbs_EDGE);
+        for (; edgeCountExp.More(); edgeCountExp.Next()) edgeCount++;
+        feat.numEdges = edgeCount;
+
         // 拓扑特征提取：寻找邻居 ID
         TopExp_Explorer edgeExp(face, TopAbs_EDGE);
         for (; edgeExp.More(); edgeExp.Next())

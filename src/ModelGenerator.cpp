@@ -7,6 +7,7 @@
 #include <gp_Pnt.hxx>
 #include <gp_Ax2.hxx>
 #include <gp_Dir.hxx>
+#include <cstdlib>
 
 TopoDS_Shape ModelGenerator::GenerateRivetPlate(int rows, int cols)
 {
@@ -33,6 +34,26 @@ TopoDS_Shape ModelGenerator::GenerateRivetPlate(int rows, int cols)
                 result = fuse.Shape();
             }
         }
+    }
+    
+    // 3. 制造“脏数据”：随机生成一些碎面 (Sliver Faces) 和微小噪点
+    for (int k = 0; k < 5; ++k)
+    {
+        // 碎面：极窄的长条 (例如 10 x 0.1 x 0.1)
+        double x = 10.0 + (rand() % 80);
+        double y = 10.0 + (rand() % 80);
+        TopoDS_Shape sliver = BRepPrimAPI_MakeBox(gp_Pnt(x, y, 2.0), gp_Pnt(x + 8.0, y + 0.2, 2.1)).Shape();
+        
+        // 噪点：极小的凸起 (0.3 x 0.3 x 0.3)
+        double nx = 10.0 + (rand() % 80);
+        double ny = 10.0 + (rand() % 80);
+        TopoDS_Shape spike = BRepPrimAPI_MakeBox(gp_Pnt(nx, ny, 2.0), gp_Pnt(nx + 0.3, ny + 0.3, 2.3)).Shape();
+
+        BRepAlgoAPI_Fuse f1(result, sliver);
+        if (f1.IsDone()) result = f1.Shape();
+        
+        BRepAlgoAPI_Fuse f2(result, spike);
+        if (f2.IsDone()) result = f2.Shape();
     }
     
     return result;

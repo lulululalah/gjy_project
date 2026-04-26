@@ -10,9 +10,10 @@ def load_cad_data(csv_path):
     df = pd.read_csv(csv_path)
     
     # --- 节点特征 (Node Features) ---
-    # 我们选择：相对面积, 紧致度, 表面类型, 法向X, Y, Z
-    # 注意：表面类型是类别，理想情况应做 One-hot，这里先作为数值处理
-    node_features = df[['relativeArea', 'compactness', 'surfaceType', 'nx', 'ny', 'nz']].values
+    # 我们选择：相对面积, 紧致度, 表面类型, 法向, Z中心, 曲率, 边界数, 边数
+    feature_cols = ['relativeArea', 'compactness', 'surfaceType', 'nx', 'ny', 'nz', 
+                    'centerZ', 'meanCurvature', 'numWires', 'numEdges']
+    node_features = df[feature_cols].values
     x = torch.tensor(node_features, dtype=torch.float)
     
     # --- 标签 (Labels) ---
@@ -63,7 +64,7 @@ class RivetGNN(torch.nn.Module):
         )
         self.conv2 = NNConv(hidden_dim, hidden_dim, nn2)
         
-        self.classifier = torch.nn.Linear(hidden_dim, 2) # 二分类：背景 vs 铆钉
+        self.classifier = torch.nn.Linear(hidden_dim, 3) # 三分类：背景 vs 零件 vs 垃圾
 
     def forward(self, data):
         x, edge_index, edge_attr = data.x, data.edge_index, data.edge_attr
@@ -85,8 +86,9 @@ def train():
     # 加载数据
     data = load_cad_data('data/train_data.csv')
     
-    # 初始化模型 (节点特征数=6, 边特征数=1, 隐藏层=32)
-    model = RivetGNN(node_features=6, edge_features=1, hidden_dim=32)
+    # 初始化模型 (自动获取节点特征数, 边特征数=1, 隐藏层=32)
+    in_channels = data.num_node_features
+    model = RivetGNN(node_features=in_channels, edge_features=1, hidden_dim=32)
     optimizer = torch.optim.Adam(model.parameters(), lr=0.01)
     
     print("开始训练 RivetGNN 模型...")
