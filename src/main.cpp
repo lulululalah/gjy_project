@@ -14,11 +14,11 @@ int main()
         fs::create_directory("data");
     }
 
-    // 1. 生成混合特征测试模型 (既有铆钉又有孔)
-    std::cout << "正在生成包含 [铆钉] 和 [盲孔] 的混合测试模型..." << std::endl;
-    TopoDS_Shape model = ModelGenerator::GenerateMixedPlate();
+    // 1. 生成铆钉阵列测试模型
+    std::cout << "正在生成包含铆钉阵列的测试模型..." << std::endl;
+    TopoDS_Shape model = ModelGenerator::GenerateRivetPlate(3, 3);
     
-    std::string modelPath = "data/mixed_test.stp";
+    std::string modelPath = "data/rivet_plate.stp";
     if (ModelGenerator::SaveToStep(model, modelPath)) {
         std::cout << "测试模型已保存至: " << modelPath << std::endl;
     }
@@ -34,7 +34,7 @@ int main()
     int holeCount = 0;
     for (auto &f : results) {
         if (f.area < 50.0) {
-            if (f.centerZ > 4.05) {
+            if (f.centerZ > 2.05) {
                 f.semanticTag = 1; // 铆钉
                 rivetCount++;
             } else {

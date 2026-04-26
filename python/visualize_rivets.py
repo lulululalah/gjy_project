@@ -47,6 +47,6 @@ if __name__ == "__main__":
     # 比如之前的结果是 [7, 9]
     target_ids = [7, 9]
     
-    model_path = "data/mixed_test.stp"
+    model_path = "data/rivet_plate.stp"
     
     visualize_cad_results(model_path, target_ids)
