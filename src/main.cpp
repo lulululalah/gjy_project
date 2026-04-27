@@ -18,12 +18,12 @@ int main(int argc, char* argv[]) {
 
     if (mode == "--train") {
         // 调用批量处理流程
-        Workflow::RunBatchTrainingExport("data/dirty_training_set", "data/full_training_set.csv");
+        RunBatchTrainingExport("data/dirty_training_set", "data/full_training_set.csv");
     } 
     else if (mode == "--predict" && argc >= 3) {
         // 调用单文件识别流程
         std::string filePath = argv[2];
-        Workflow::RunSingleInferenceExport(filePath, "data/current_inference.csv");
+        RunSingleInferenceExport(filePath, "data/current_inference.csv");
     } 
     else {
         std::cout << "未知命令或缺少参数。" << std::endl;

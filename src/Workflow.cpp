@@ -7,7 +7,6 @@
 
 namespace fs = std::filesystem;
 
-
 void RunBatchTrainingExport(const std::string& inputDir, const std::string& outputCsv) {
     std::cout << ">>> 启动批量训练集导出..." << std::endl;
     std::ofstream dataFile(outputCsv);
@@ -24,7 +23,6 @@ void RunBatchTrainingExport(const std::string& inputDir, const std::string& outp
             auto results = extractor.GetResults();
 
             for (auto &f : results) {
-                // 标注逻辑
                 if (f.area > 50.0) f.semanticTag = 0;
                 else if (std::abs(f.meanCurvature) > 0.05 || f.radius > 0.1) f.semanticTag = 1;
                 else if (f.compactness > 60.0 && f.area < 2.0) f.semanticTag = 2;
@@ -68,4 +66,3 @@ void RunSingleInferenceExport(const std::string& inputFile, const std::string& o
     }
     std::cout << ">>> 识别数据已准备。" << std::endl;
 }
-
