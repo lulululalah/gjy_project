@@ -25,8 +25,9 @@ struct FaceFeature
     double normalX, normalY, normalZ; // 面中心法向
     double centerZ; // 几何中心 Z 坐标
     double meanCurvature; // 平均曲率
-    int numWires; // 边界回路数量
-    int numEdges; // 边的数量
+    double radius;        // 新增：几何半径（圆角特征）
+    int numWires;         // 边界回路数量
+    int numEdges;         // 边的数量
     std::vector<int> neighborIds;
     std::vector<int> neighborEdgeTypes; // 与 neighborIds 一一对应 (Convex:1, Concave:-1, Smooth:0)
     int semanticTag;

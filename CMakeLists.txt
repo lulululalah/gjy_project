@@ -26,20 +26,19 @@ set(OCC_LIBS
     TKSTEP TKSTEPBase TKSTEPAttr TKXSBase TKLCAF
 )
 
-# 6. 手动列出所有源文件
-set(SRC_FILES
-    "src/main.cpp"
-    "src/FeatureExtractor.cpp"
-    "src/FeatureClassifier.cpp" 
-    "src/GeometryModifier.cpp"
-    "src/ModelGenerator.cpp"
+# 唯一的可执行程序: Detector
+add_executable(Detector 
+    src/main.cpp
+    src/Workflow.cpp
+    src/FeatureExtractor.cpp
+    src/FeatureClassifier.cpp
+    src/GeometryModifier.cpp
+    src/ModelGenerator.cpp
 )
+target_link_libraries(Detector PRIVATE ${OCC_LIBS})
 
-# 创建可执行文件 
-add_executable(Detector ${SRC_FILES})
-
-# 7. 链接库文件到目标
-target_link_libraries(Detector ${OCC_LIBS})
+# 6. 设置输出路径
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/Release)
 
 # 8. 自动化：将所有必要的 DLL 复制到生成目录 (Debug)
 
@@ -50,14 +49,8 @@ file(GLOB OCC_DLLS "${OCC_ROOT}/bin/*.dll")
 file(GLOB TBB_DLLS "${TBB_BIN_DIR}/*.dll")
 
 # 执行复制动作 (确保程序双击就能跑)
+# DLLs (OCC & TBB) auto-copy configured.
 if(OCC_DLLS OR TBB_DLLS)
-    file(COPY ${OCC_DLLS} ${TBB_DLLS} DESTINATION "${CMAKE_BINARY_DIR}/Debug")
+    file(COPY ${OCC_DLLS} ${TBB_DLLS} DESTINATION "${CMAKE_BINARY_DIR}/Release")
     message(STATUS "DLLs (OCC & TBB) auto-copy configured.")
-else()
-    message(WARNING "No DLLs found! Please check your 3rdParty paths.")
 endif()
-
-# 将项目根目录下的 data 文件夹绝对路径传递给 C++ 代码
-target_compile_definitions(Detector PRIVATE 
-    TEST_DATA_DIR="${CMAKE_CURRENT_SOURCE_DIR}/data"
-)

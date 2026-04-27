@@ -17,6 +17,10 @@
 #include <gp_Pnt2d.hxx>
 #include <gp_Dir.hxx>
 #include <gp_Pnt.hxx>
+#include <gp_Cylinder.hxx>
+#include <gp_Torus.hxx>
+#include <gp_Sphere.hxx>
+#include <gp_Cone.hxx>
 #include <Standard_Real.hxx>
 #include <Precision.hxx>
 #include <cmath>
@@ -87,6 +91,18 @@ void FeatureExtractor::ComputeGeometricAttributes(const TopTools_IndexedMapOfSha
         // 获取面类型
         BRepAdaptor_Surface surf(face);
         feat.surfaceType = surf.GetType();
+
+        // 提取半径特征 (关键：用于识别圆角/倒角)
+        feat.radius = 0.0;
+        if (feat.surfaceType == GeomAbs_Cylinder) {
+            feat.radius = surf.Cylinder().Radius();
+        } else if (feat.surfaceType == GeomAbs_Torus) {
+            feat.radius = surf.Torus().MinorRadius(); // 圆环面的小半径通常对应圆角半径
+        } else if (feat.surfaceType == GeomAbs_Sphere) {
+            feat.radius = surf.Sphere().Radius();
+        } else if (feat.surfaceType == GeomAbs_Cone) {
+            feat.radius = surf.Cone().RefRadius();
+        }
 
         // 提取面中心法向
         double u_min, u_max, v_min, v_max;
