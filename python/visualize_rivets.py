@@ -33,12 +33,13 @@ def visualize_cad_results(step_path, pred_labels):
         face = topods.Face(face_map.FindKey(i))
         if (i-1) < len(pred_labels):
             label = pred_labels[i-1]
-            if label == 1: # 零件
-                display.DisplayShape(face, color=Quantity_NOC_GREEN, update=False)
-            elif label == 2: # 垃圾
+            if label == 2: # 只有垃圾(脏数据)才标红
                 display.DisplayShape(face, color=Quantity_NOC_RED, update=False)
-            else: # 背景
-                display.DisplayShape(face, color=Quantity_NOC_GRAY, transparency=0.7, update=False)
+            else:
+                # 其他部分按默认显示
+                display.DisplayShape(face, update=False)
+        else:
+            display.DisplayShape(face, update=False)
 
     display.FitAll()
     # display.View_Isometric() # 移除此行以兼容不同版本的 pythonocc
