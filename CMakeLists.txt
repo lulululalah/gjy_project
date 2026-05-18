@@ -33,7 +33,6 @@ add_executable(Detector
     src/FeatureExtractor.cpp
     src/FeatureClassifier.cpp
     src/GeometryModifier.cpp
-    src/ModelGenerator.cpp
 )
 target_link_libraries(Detector PRIVATE ${OCC_LIBS})
 

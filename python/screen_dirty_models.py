@@ -102,8 +102,7 @@ def screen_dataset(input_dir, output_dir, threshold=0.05):
         print("\n未发现符合条件的脏几何模型。")
 
 if __name__ == "__main__":
-    # --- 已经根据你的路径修改 ---
-    ABC_DIR = r"D:/Projects/NLib/data/ABCDataset/random_100" 
+    ABC_DIR = r"C:/Users/1/Desktop/ABC" 
     DIRTY_OUT = r"data\dirty_training_set" # 筛选出的模型存到这里
     
     screen_dataset(ABC_DIR, DIRTY_OUT)

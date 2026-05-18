@@ -1,81 +1,133 @@
+import argparse
+import subprocess
+from pathlib import Path
+
+import torch
+from OCC.Core.Quantity import Quantity_NOC_GRAY, Quantity_NOC_GREEN, Quantity_NOC_RED
 from OCC.Core.STEPControl import STEPControl_Reader
-from OCC.Core.TopExp import TopExp_Explorer
 from OCC.Core.TopAbs import TopAbs_FACE
 from OCC.Core.TopoDS import topods
 from OCC.Display.SimpleGui import init_display
-from OCC.Core.Quantity import Quantity_NOC_RED, Quantity_NOC_GRAY, Quantity_NOC_GREEN
+
+from train_rivet_gcn import DEFAULT_MODEL_PATH, DEFAULT_STATS_PATH, RivetGNN, load_cad_data
+
+
+PROJECT_ROOT = Path(__file__).resolve().parent.parent
+DEFAULT_INFERENCE_CSV = PROJECT_ROOT / "data" / "current_inference.csv"
+DEFAULT_DETECTOR = PROJECT_ROOT / "build" / "Release" / "Detector.exe"
+
+LABEL_COLORS = {
+    0: None,
+    1: Quantity_NOC_GREEN,
+    2: Quantity_NOC_RED,
+}
+
+
+def export_inference_csv(step_path, detector_path, csv_path):
+    if not detector_path.exists():
+        raise FileNotFoundError(f"Detector executable not found: {detector_path}")
+
+    result = subprocess.run(
+        [str(detector_path), "--predict", str(step_path)],
+        cwd=PROJECT_ROOT,
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+
+    if result.returncode != 0:
+        raise RuntimeError(
+            "Detector failed to export inference CSV.\n"
+            f"stdout:\n{result.stdout}\n"
+            f"stderr:\n{result.stderr}"
+        )
+
+    if not csv_path.exists():
+        raise FileNotFoundError(f"Inference CSV was not generated: {csv_path}")
+
+
+def run_inference(csv_path, model_path, stats_path, hidden_dim):
+    data = load_cad_data(csv_path, stats_path=stats_path)
+
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    model = RivetGNN(
+        node_features=data.num_node_features,
+        edge_features=1,
+        hidden_dim=hidden_dim,
+    ).to(device)
+
+    state_dict = torch.load(model_path, map_location=device)
+    model.load_state_dict(state_dict)
+    model.eval()
+
+    with torch.no_grad():
+        out = model(data.to(device))
+        pred = out.argmax(dim=1).cpu().tolist()
+
+    return pred
+
 
 def visualize_cad_results(step_path, pred_labels):
-    # 1. 加载模型 (简化版读取，确保与 C++ 对齐)
     reader = STEPControl_Reader()
-    if reader.ReadFile(step_path) != 1:
-        print(f"错误: 无法读取文件 {step_path}")
-        return
+    if reader.ReadFile(str(step_path)) != 1:
+        raise RuntimeError(f"Unable to read STEP file: {step_path}")
 
     reader.TransferRoots()
-    shape = reader.OneShape() # 恢复为 OneShape，但在 C++ 端也保持一致
-    
-    # 2. 初始化 3D 窗口
-    display, start_display, add_menu, add_function_to_menu = init_display()
-    print(f"正在显示模型: {step_path}")
+    shape = reader.OneShape()
 
-    # 3. 遍历面并按预测标签染色渲染 (使用 IndexedMap 确保顺序与 C++ 一致)
-    from OCC.Core.TopTools import TopTools_IndexedMapOfShape
+    display, start_display, _, _ = init_display()
+    print(f"Displaying model: {step_path}")
+
     from OCC.Core.TopExp import topexp
-    
+    from OCC.Core.TopTools import TopTools_IndexedMapOfShape
+
     face_map = TopTools_IndexedMapOfShape()
     topexp.MapShapes(shape, TopAbs_FACE, face_map)
-    
+
     num_faces = face_map.Size()
-    print(f"模型总面数: {num_faces}, 推理标签数: {len(pred_labels)}")
+    print(f"Model faces: {num_faces}, Predicted labels: {len(pred_labels)}")
+
+    label_counts = {}
+    for label in pred_labels:
+        label_counts[label] = label_counts.get(label, 0) + 1
+    print(f"Label distribution: {label_counts}")
 
     for i in range(1, num_faces + 1):
         face = topods.Face(face_map.FindKey(i))
-        if (i-1) < len(pred_labels):
-            label = pred_labels[i-1]
-            if label == 2: # 只有垃圾(脏数据)才标红
-                display.DisplayShape(face, color=Quantity_NOC_RED, update=False)
-            else:
-                # 其他部分按默认显示
-                display.DisplayShape(face, update=False)
+        label = pred_labels[i - 1] if (i - 1) < len(pred_labels) else 0
+        color = LABEL_COLORS.get(label)
+
+        if color is None:
+            display.DisplayShape(face, color=Quantity_NOC_GRAY, update=False)
         else:
-            display.DisplayShape(face, update=False)
+            display.DisplayShape(face, color=color, update=False)
 
     display.FitAll()
-    # display.View_Isometric() # 移除此行以兼容不同版本的 pythonocc
     start_display()
 
-import torch
-from train_rivet_gcn import load_cad_data, RivetGNN
 
-def run_inference(csv_path, model_path):
-    # 1. 加载数据
-    data = load_cad_data(csv_path)
-    
-    # 2. 初始化模型 (需与训练脚本参数 64 一致)
-    in_channels = data.num_node_features
-    model = RivetGNN(node_features=in_channels, edge_features=1, hidden_dim=64)
-    
-    # 3. 加载权重
-    model.load_state_dict(torch.load(model_path))
-    model.eval()
-    
-    # 4. 推理
-    with torch.no_grad():
-        out = model(data)
-        pred = out.argmax(dim=1)
-    
-    # 返回所有预测标签列表
-    return pred.tolist()
+def parse_args():
+    parser = argparse.ArgumentParser(description="Run RivetGNN inference and visualize face labels on a STEP model.")
+    parser.add_argument("step_model", type=Path, help="STEP model to analyze.")
+    parser.add_argument("--detector", type=Path, default=DEFAULT_DETECTOR, help=f"Detector executable path. Default: {DEFAULT_DETECTOR}")
+    parser.add_argument("--csv", type=Path, default=DEFAULT_INFERENCE_CSV, help=f"Inference CSV path. Default: {DEFAULT_INFERENCE_CSV}")
+    parser.add_argument("--model", type=Path, default=DEFAULT_MODEL_PATH, help=f"Trained model path. Default: {DEFAULT_MODEL_PATH}")
+    parser.add_argument("--stats", type=Path, default=DEFAULT_STATS_PATH, help=f"Normalization stats path. Default: {DEFAULT_STATS_PATH}")
+    parser.add_argument("--hidden-dim", type=int, default=64, help="Hidden dimension used during training. Default: 64")
+    parser.add_argument("--skip-export", action="store_true", help="Reuse an existing inference CSV instead of calling Detector.")
+    return parser.parse_args()
+
+
+def main():
+    args = parse_args()
+
+    if not args.skip_export:
+        export_inference_csv(args.step_model, args.detector, args.csv)
+
+    predicted_labels = run_inference(args.csv, args.model, args.stats, args.hidden_dim)
+    print("Inference finished.")
+    visualize_cad_results(args.step_model, predicted_labels)
+
 
 if __name__ == "__main__":
-    csv_path = "data/current_inference.csv"
-    model_weight = "rivet_gnn.pth"
-    # 这里我们还是先写死 model_69.stp，之后你可以从命令行传入
-    step_model = R"D:\Projects\NLib\data\ABCDataset\random_100\model_69.stp"
-    
-    print(f"正在分析模型: {step_model}")
-    predicted_labels = run_inference(csv_path, model_weight)
-    
-    print(f"AI 识别完成。")
-    visualize_cad_results(step_model, predicted_labels)
+    main()
