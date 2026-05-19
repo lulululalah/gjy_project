@@ -5,6 +5,7 @@
 #include <TopoDS.hxx>
 #include <TopoDS_Face.hxx>
 #include <TopoDS_Edge.hxx>
+#include <TopoDS_Wire.hxx>
 #include <TopoDS_Vertex.hxx>
 #include <BRepGProp.hxx>
 #include <GProp_GProps.hxx>
@@ -25,6 +26,8 @@
 #include <Precision.hxx>
 #include <cmath>
 #include <algorithm>
+#include <functional>
+#include <limits>
 
 FeatureExtractor::FeatureExtractor(const TopoDS_Shape &shape) : myShape(shape) {}
 
@@ -133,9 +136,73 @@ void FeatureExtractor::ComputeGeometricAttributes(const TopTools_IndexedMapOfSha
 
         // 提取拓扑复杂度特征
         int wireCount = 0;
+        std::vector<double> wireLengths;
         TopExp_Explorer wireExp(face, TopAbs_WIRE);
-        for (; wireExp.More(); wireExp.Next()) wireCount++;
+        for (; wireExp.More(); wireExp.Next()) {
+            wireCount++;
+
+            const TopoDS_Wire wire = TopoDS::Wire(wireExp.Current());
+            GProp_GProps wireProps;
+            BRepGProp::LinearProperties(wire, wireProps);
+            wireLengths.push_back(wireProps.Mass());
+        }
         feat.numWires = wireCount;
+        feat.innerWireCount = 0;
+        feat.minInnerWireLength = 0.0;
+        feat.maxInnerWireLength = 0.0;
+        feat.innerWireLengths.clear();
+        feat.innerWireCenterXs.clear();
+        feat.innerWireCenterYs.clear();
+        feat.innerWireCenterZs.clear();
+
+        if (wireLengths.size() > 1) {
+            struct InnerWireRecord {
+                double length;
+                double centerX;
+                double centerY;
+                double centerZ;
+            };
+
+            std::vector<InnerWireRecord> innerWireRecords;
+            innerWireRecords.reserve(wireLengths.size());
+
+            TopExp_Explorer innerWireExp(face, TopAbs_WIRE);
+            for (; innerWireExp.More(); innerWireExp.Next()) {
+                const TopoDS_Wire wire = TopoDS::Wire(innerWireExp.Current());
+                GProp_GProps wireProps;
+                BRepGProp::LinearProperties(wire, wireProps);
+                const gp_Pnt wireCenter = wireProps.CentreOfMass();
+                innerWireRecords.push_back({
+                    wireProps.Mass(),
+                    wireCenter.X(),
+                    wireCenter.Y(),
+                    wireCenter.Z(),
+                });
+            }
+
+            std::sort(
+                innerWireRecords.begin(),
+                innerWireRecords.end(),
+                [](const InnerWireRecord& lhs, const InnerWireRecord& rhs) {
+                    return lhs.length > rhs.length;
+                }
+            );
+            feat.innerWireCount = static_cast<int>(wireLengths.size()) - 1;
+
+            double minInnerWireLength = std::numeric_limits<double>::max();
+            double maxInnerWireLength = 0.0;
+            for (size_t wireIdx = 1; wireIdx < innerWireRecords.size(); ++wireIdx) {
+                minInnerWireLength = std::min(minInnerWireLength, innerWireRecords[wireIdx].length);
+                maxInnerWireLength = std::max(maxInnerWireLength, innerWireRecords[wireIdx].length);
+                feat.innerWireLengths.push_back(innerWireRecords[wireIdx].length);
+                feat.innerWireCenterXs.push_back(innerWireRecords[wireIdx].centerX);
+                feat.innerWireCenterYs.push_back(innerWireRecords[wireIdx].centerY);
+                feat.innerWireCenterZs.push_back(innerWireRecords[wireIdx].centerZ);
+            }
+
+            feat.minInnerWireLength = minInnerWireLength;
+            feat.maxInnerWireLength = maxInnerWireLength;
+        }
 
         int edgeCount = 0;
         TopExp_Explorer edgeCountExp(face, TopAbs_EDGE);

@@ -1,68 +1,189 @@
 #include "Workflow.h"
+
 #include "FeatureExtractor.h"
+#include "HoleCandidateBuilder.h"
 
 #include <STEPControl_Reader.hxx>
 
-#include <cmath>
 #include <filesystem>
 #include <fstream>
 #include <iostream>
+#include <string>
+#include <vector>
 
 namespace fs = std::filesystem;
+
+namespace {
+constexpr const char* kFaceCsvHeader =
+    "graph_id,model_name,id,area,relativeArea,perimeter,compactness,surfaceType,nx,ny,nz,"
+    "centerZ,meanCurvature,radius,numWires,innerWireCount,minInnerWireLength,maxInnerWireLength,"
+    "numEdges,neighbors,edge_types,label\n";
+
+constexpr const char* kHoleCandidateCsvHeader =
+    "graph_id,model_name,candidate_id,host_face_id,local_wire_index,hostFaceArea,"
+    "hostFaceRelativeArea,hostFacePerimeter,hostInnerWireCount,hostNeighborFaceCount,"
+    "wireLength,wireLengthRatio,estimatedHoleRadius,estimatedHoleArea,wireCenterX,wireCenterY,"
+    "wireCenterZ,adjacentFaceCount,adjacentCylinderCount,adjacentSmallCylinderCount,"
+    "minAdjacentCylinderRadius,maxAdjacentCylinderRadius,concaveEdgeRatio,label\n";
+
+bool IsStepFile(const fs::path& filePath) {
+    const std::string extension = filePath.extension().string();
+    return extension == ".stp" || extension == ".step";
+}
+
+bool LoadShapeFromStep(const std::string& inputFile, TopoDS_Shape& shape) {
+    STEPControl_Reader reader;
+    if (reader.ReadFile(inputFile.c_str()) != IFSelect_RetDone) {
+        return false;
+    }
+
+    reader.TransferRoots();
+    shape = reader.OneShape();
+    return true;
+}
+
+std::vector<FaceFeature> ExtractFaceFeaturesFromStep(const std::string& inputFile) {
+    TopoDS_Shape shape;
+    if (!LoadShapeFromStep(inputFile, shape)) {
+        return {};
+    }
+
+    FeatureExtractor extractor(shape);
+    extractor.Extract();
+    return extractor.GetResults();
+}
+
+void WriteFaceCsvHeader(std::ofstream& dataFile) {
+    dataFile << kFaceCsvHeader;
+}
+
+void WriteHoleCandidateCsvHeader(std::ofstream& dataFile) {
+    dataFile << kHoleCandidateCsvHeader;
+}
+
+void WriteFaceRow(
+    std::ofstream& dataFile,
+    int graphId,
+    const std::string& modelName,
+    const FaceFeature& feature
+) {
+    dataFile << graphId << ",\"" << modelName << "\"," << feature.id << "," << feature.area << ","
+             << feature.relativeArea << "," << feature.perimeter << "," << feature.compactness << ","
+             << feature.surfaceType << "," << feature.normalX << "," << feature.normalY << ","
+             << feature.normalZ << "," << feature.centerZ << "," << feature.meanCurvature << ","
+             << feature.radius << "," << feature.numWires << "," << feature.innerWireCount << ","
+             << feature.minInnerWireLength << "," << feature.maxInnerWireLength << "," << feature.numEdges << ",\"";
+
+    for (size_t j = 0; j < feature.neighborIds.size(); ++j) {
+        dataFile << feature.neighborIds[j] << (j + 1 == feature.neighborIds.size() ? "" : " ");
+    }
+
+    dataFile << "\",\"";
+    for (size_t j = 0; j < feature.neighborEdgeTypes.size(); ++j) {
+        dataFile << feature.neighborEdgeTypes[j]
+                 << (j + 1 == feature.neighborEdgeTypes.size() ? "" : " ");
+    }
+
+    dataFile << "\"," << feature.semanticTag << "\n";
+}
+
+void WriteHoleCandidateRow(std::ofstream& dataFile, const HoleCandidateFeature& candidate) {
+    dataFile << candidate.graphId << ",\"" << candidate.modelName << "\","
+             << candidate.candidateId << "," << candidate.hostFaceId << ","
+             << candidate.localWireIndex << "," << candidate.hostFaceArea << ","
+             << candidate.hostFaceRelativeArea << "," << candidate.hostFacePerimeter << ","
+             << candidate.hostInnerWireCount << "," << candidate.hostNeighborFaceCount << ","
+             << candidate.wireLength << "," << candidate.wireLengthRatio << ","
+             << candidate.estimatedHoleRadius << "," << candidate.estimatedHoleArea << ","
+             << candidate.wireCenterX << "," << candidate.wireCenterY << "," << candidate.wireCenterZ << ","
+             << candidate.adjacentFaceCount << "," << candidate.adjacentCylinderCount << ","
+             << candidate.adjacentSmallCylinderCount << "," << candidate.minAdjacentCylinderRadius << ","
+             << candidate.maxAdjacentCylinderRadius << "," << candidate.concaveEdgeRatio << ","
+             << candidate.label << "\n";
+}
+
+int ClassifyFaceForTraining(FaceFeature& feature) {
+    const bool isSmallPrimaryFace = feature.area > 0.0 && feature.area <= 5.0;
+    const bool isSmallHoleSideFace =
+        isSmallPrimaryFace &&
+        (feature.surfaceType == GeomAbs_Cylinder ||
+         feature.surfaceType == GeomAbs_Cone ||
+         feature.surfaceType == GeomAbs_Torus) &&
+        feature.radius > 0.0 &&
+        feature.radius <= 0.5;
+    const bool isSmallHoleCapFace =
+        isSmallPrimaryFace &&
+        feature.surfaceType == GeomAbs_Plane &&
+        feature.numWires >= 2;
+    const bool isPlanarFaceWithSmallInnerHole =
+        feature.surfaceType == GeomAbs_Plane &&
+        feature.innerWireCount > 0 &&
+        feature.minInnerWireLength > 0.0 &&
+        feature.minInnerWireLength <= 8.0 &&
+        feature.area <= 100.0 &&
+        feature.relativeArea <= 0.02;
+
+    if (feature.area > 50.0) {
+        feature.semanticTag = isPlanarFaceWithSmallInnerHole ? 2 : 0;
+    } else if (isSmallHoleSideFace || isSmallHoleCapFace || isPlanarFaceWithSmallInnerHole) {
+        feature.semanticTag = 2;
+    } else {
+        feature.semanticTag = 1;
+    }
+
+    return feature.semanticTag;
+}
+
+void ExportFaceFeaturesForShape(
+    std::ofstream& dataFile,
+    const std::vector<FaceFeature>& features,
+    int graphId,
+    const std::string& modelName,
+    bool assignTrainingLabels
+) {
+    auto rows = features;
+    for (auto& feature : rows) {
+        if (assignTrainingLabels) {
+            ClassifyFaceForTraining(feature);
+        } else {
+            feature.semanticTag = 0;
+        }
+        WriteFaceRow(dataFile, graphId, modelName, feature);
+    }
+}
+
+void ExportHoleCandidatesForShape(
+    std::ofstream& dataFile,
+    const std::vector<FaceFeature>& features,
+    int graphId,
+    const std::string& modelName
+) {
+    const auto candidates = BuildPlanarHoleCandidates(features, graphId, modelName);
+    for (const auto& candidate : candidates) {
+        WriteHoleCandidateRow(dataFile, candidate);
+    }
+}
+}
 
 void RunBatchTrainingExport(const std::string& inputDir, const std::string& outputCsv) {
     std::cout << ">>> Exporting batch training data..." << std::endl;
 
     std::ofstream dataFile(outputCsv);
-    dataFile << "graph_id,model_name,id,area,relativeArea,perimeter,compactness,surfaceType,nx,ny,nz,centerZ,meanCurvature,radius,numWires,numEdges,neighbors,edge_types,label\n";
+    WriteFaceCsvHeader(dataFile);
 
     int graphId = 0;
     for (const auto& entry : fs::directory_iterator(inputDir)) {
-        const auto extension = entry.path().extension().string();
-        if (extension != ".stp" && extension != ".step") {
+        if (!IsStepFile(entry.path())) {
             continue;
         }
 
-        STEPControl_Reader reader;
-        if (reader.ReadFile(entry.path().string().c_str()) != IFSelect_RetDone) {
+        const auto features = ExtractFaceFeaturesFromStep(entry.path().string());
+        if (features.empty()) {
             continue;
         }
 
-        reader.TransferRoots();
-        FeatureExtractor extractor(reader.OneShape());
-        extractor.Extract();
-        auto results = extractor.GetResults();
         const std::string modelName = entry.path().filename().string();
-
-        for (auto& feature : results) {
-            if (feature.area > 50.0) {
-                feature.semanticTag = 0;
-            } else if (std::abs(feature.meanCurvature) > 0.05 || feature.radius > 0.1) {
-                feature.semanticTag = 1;
-            } else if (feature.compactness > 60.0 && feature.area < 2.0) {
-                feature.semanticTag = 2;
-            } else {
-                feature.semanticTag = 1;
-            }
-
-            dataFile << graphId << ",\"" << modelName << "\"," << feature.id << "," << feature.area << ","
-                     << feature.relativeArea << "," << feature.perimeter << "," << feature.compactness << ","
-                     << feature.surfaceType << "," << feature.normalX << "," << feature.normalY << ","
-                     << feature.normalZ << "," << feature.centerZ << "," << feature.meanCurvature << ","
-                     << feature.radius << "," << feature.numWires << "," << feature.numEdges << ",\"";
-
-            for (size_t j = 0; j < feature.neighborIds.size(); ++j) {
-                dataFile << feature.neighborIds[j] << (j + 1 == feature.neighborIds.size() ? "" : " ");
-            }
-
-            dataFile << "\",\"";
-            for (size_t j = 0; j < feature.neighborEdgeTypes.size(); ++j) {
-                dataFile << feature.neighborEdgeTypes[j]
-                         << (j + 1 == feature.neighborEdgeTypes.size() ? "" : " ");
-            }
-
-            dataFile << "\"," << feature.semanticTag << "\n";
-        }
+        ExportFaceFeaturesForShape(dataFile, features, graphId, modelName, true);
 
         graphId++;
         std::cout << "  - Processed: " << entry.path().filename() << std::endl;
@@ -74,39 +195,69 @@ void RunBatchTrainingExport(const std::string& inputDir, const std::string& outp
 void RunSingleInferenceExport(const std::string& inputFile, const std::string& outputCsv) {
     std::cout << ">>> Exporting inference data for: " << inputFile << std::endl;
 
-    STEPControl_Reader reader;
-    if (reader.ReadFile(inputFile.c_str()) != IFSelect_RetDone) {
+    const auto features = ExtractFaceFeaturesFromStep(inputFile);
+    if (features.empty()) {
         return;
     }
 
-    reader.TransferRoots();
-    FeatureExtractor extractor(reader.OneShape());
-    extractor.Extract();
-    auto results = extractor.GetResults();
     const std::string modelName = fs::path(inputFile).filename().string();
-
     std::ofstream dataFile(outputCsv);
-    dataFile << "graph_id,model_name,id,area,relativeArea,perimeter,compactness,surfaceType,nx,ny,nz,centerZ,meanCurvature,radius,numWires,numEdges,neighbors,edge_types,label\n";
-
-    for (const auto& feature : results) {
-        dataFile << 0 << ",\"" << modelName << "\"," << feature.id << "," << feature.area << ","
-                 << feature.relativeArea << "," << feature.perimeter << "," << feature.compactness << ","
-                 << feature.surfaceType << "," << feature.normalX << "," << feature.normalY << ","
-                 << feature.normalZ << "," << feature.centerZ << "," << feature.meanCurvature << ","
-                 << feature.radius << "," << feature.numWires << "," << feature.numEdges << ",\"";
-
-        for (size_t j = 0; j < feature.neighborIds.size(); ++j) {
-            dataFile << feature.neighborIds[j] << (j + 1 == feature.neighborIds.size() ? "" : " ");
-        }
-
-        dataFile << "\",\"";
-        for (size_t j = 0; j < feature.neighborEdgeTypes.size(); ++j) {
-            dataFile << feature.neighborEdgeTypes[j]
-                     << (j + 1 == feature.neighborEdgeTypes.size() ? "" : " ");
-        }
-
-        dataFile << "\",0\n";
-    }
+    WriteFaceCsvHeader(dataFile);
+    ExportFaceFeaturesForShape(dataFile, features, 0, modelName, false);
 
     std::cout << ">>> Inference CSV ready." << std::endl;
+}
+
+void RunHoleCandidateTrainingExport(const std::string& inputDir, const std::string& outputCsv) {
+    std::cout << ">>> Exporting hole candidate training data..." << std::endl;
+
+    std::ofstream dataFile(outputCsv);
+    WriteHoleCandidateCsvHeader(dataFile);
+
+    int graphId = 0;
+    int totalCandidates = 0;
+    for (const auto& entry : fs::directory_iterator(inputDir)) {
+        if (!IsStepFile(entry.path())) {
+            continue;
+        }
+
+        const auto features = ExtractFaceFeaturesFromStep(entry.path().string());
+        if (features.empty()) {
+            continue;
+        }
+
+        const std::string modelName = entry.path().filename().string();
+        const auto candidates = BuildPlanarHoleCandidates(features, graphId, modelName);
+        for (const auto& candidate : candidates) {
+            WriteHoleCandidateRow(dataFile, candidate);
+        }
+
+        totalCandidates += static_cast<int>(candidates.size());
+        graphId++;
+        std::cout << "  - Processed: " << entry.path().filename()
+                  << " | candidates=" << candidates.size() << std::endl;
+    }
+
+    std::cout << ">>> Hole candidate export complete. Models processed: " << graphId
+              << ", candidates: " << totalCandidates << std::endl;
+}
+
+void RunSingleHoleCandidateInferenceExport(const std::string& inputFile, const std::string& outputCsv) {
+    std::cout << ">>> Exporting hole candidates for: " << inputFile << std::endl;
+
+    const auto features = ExtractFaceFeaturesFromStep(inputFile);
+    if (features.empty()) {
+        return;
+    }
+
+    const std::string modelName = fs::path(inputFile).filename().string();
+    const auto candidates = BuildPlanarHoleCandidates(features, 0, modelName);
+
+    std::ofstream dataFile(outputCsv);
+    WriteHoleCandidateCsvHeader(dataFile);
+    for (const auto& candidate : candidates) {
+        WriteHoleCandidateRow(dataFile, candidate);
+    }
+
+    std::cout << ">>> Hole candidate inference CSV ready. Candidates: " << candidates.size() << std::endl;
 }

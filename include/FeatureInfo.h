@@ -1,10 +1,11 @@
 #ifndef FEATURE_INFO_H
+#define FEATURE_INFO_H
 
 #pragma once
+
 #include <vector>
-#include <string>
+
 #include <GeomAbs_SurfaceType.hxx>
-#include <TopTools_ListOfShape.hxx>
 
 enum EdgeType
 {
@@ -16,21 +17,30 @@ enum EdgeType
 
 struct FaceFeature
 {
-    int id;
-    double area;
-    double relativeArea; // 面积占比 (0.0 ~ 1.0)
-    double perimeter;
-    double compactness;
-    int surfaceType;
-    double normalX, normalY, normalZ; // 面中心法向
-    double centerZ; // 几何中心 Z 坐标
-    double meanCurvature; // 平均曲率
-    double radius;        // 新增：几何半径（圆角特征）
-    int numWires;         // 边界回路数量
-    int numEdges;         // 边的数量
+    int id = 0;
+    double area = 0.0;
+    double relativeArea = 0.0;
+    double perimeter = 0.0;
+    double compactness = 0.0;
+    int surfaceType = 0;
+    double normalX = 0.0;
+    double normalY = 0.0;
+    double normalZ = 0.0;
+    double centerZ = 0.0;
+    double meanCurvature = 0.0;
+    double radius = 0.0;
+    int numWires = 0;
+    int innerWireCount = 0;
+    double minInnerWireLength = 0.0;
+    double maxInnerWireLength = 0.0;
+    std::vector<double> innerWireLengths;
+    std::vector<double> innerWireCenterXs;
+    std::vector<double> innerWireCenterYs;
+    std::vector<double> innerWireCenterZs;
+    int numEdges = 0;
     std::vector<int> neighborIds;
-    std::vector<int> neighborEdgeTypes; // 与 neighborIds 一一对应 (Convex:1, Concave:-1, Smooth:0)
-    int semanticTag;
+    std::vector<int> neighborEdgeTypes;
+    int semanticTag = 0;
 };
 
 #endif

@@ -1,8 +1,11 @@
 #pragma once
+
 #include <string>
 
-// 批量提取训练数据流程
+// Face-level exports kept for the original graph pipeline.
 void RunBatchTrainingExport(const std::string& inputDir, const std::string& outputCsv);
-    
-// 单文件识别准备流程
 void RunSingleInferenceExport(const std::string& inputFile, const std::string& outputCsv);
+
+// Hole-candidate exports are the current path for micro-hole dirty-geometry experiments.
+void RunHoleCandidateTrainingExport(const std::string& inputDir, const std::string& outputCsv);
+void RunSingleHoleCandidateInferenceExport(const std::string& inputFile, const std::string& outputCsv);

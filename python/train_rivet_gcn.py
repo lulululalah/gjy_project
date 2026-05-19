@@ -21,6 +21,9 @@ FEATURE_COLS = [
     "meanCurvature",
     "radius",
     "numWires",
+    "innerWireCount",
+    "minInnerWireLength",
+    "maxInnerWireLength",
     "numEdges",
 ]
 
@@ -169,7 +172,22 @@ class RivetGNN(torch.nn.Module):
         return F.log_softmax(x, dim=1)
 
 
-def evaluate(model, loader, device):
+def compute_class_weights(graphs, num_classes=3):
+    labels = []
+    for graph in graphs:
+        labels.append(graph.y.cpu())
+
+    if not labels:
+        return torch.ones(num_classes, dtype=torch.float)
+
+    all_labels = torch.cat(labels)
+    counts = torch.bincount(all_labels, minlength=num_classes).float()
+    counts = torch.clamp(counts, min=1.0)
+    weights = counts.sum() / (len(counts) * counts)
+    return weights
+
+
+def evaluate(model, loader, device, class_weights=None):
     model.eval()
     total_loss = 0.0
     total_correct = 0
@@ -179,7 +197,7 @@ def evaluate(model, loader, device):
         for batch in loader:
             batch = batch.to(device)
             out = model(batch)
-            loss = F.nll_loss(out, batch.y)
+            loss = F.nll_loss(out, batch.y, weight=class_weights)
 
             total_loss += loss.item() * batch.num_nodes
             total_correct += int((out.argmax(dim=1) == batch.y).sum().item())
@@ -206,10 +224,12 @@ def train(args):
     ).to(device)
 
     optimizer = torch.optim.Adam(model.parameters(), lr=args.lr)
+    class_weights = compute_class_weights(train_graphs).to(device)
 
     print(f"Loaded {len(graphs)} graphs from {args.csv}")
     print(f"Train graphs: {len(train_graphs)}, Val graphs: {len(val_graphs)}")
     print(f"Training on: {device}")
+    print(f"Class weights: {class_weights.cpu().tolist()}")
 
     best_val_loss = float("inf")
 
@@ -222,7 +242,7 @@ def train(args):
             batch = batch.to(device)
             optimizer.zero_grad()
             out = model(batch)
-            loss = F.nll_loss(out, batch.y)
+            loss = F.nll_loss(out, batch.y, weight=class_weights)
             loss.backward()
             optimizer.step()
 
@@ -230,7 +250,7 @@ def train(args):
             total_nodes += batch.num_nodes
 
         train_loss = total_loss / max(total_nodes, 1)
-        val_loss, val_acc = evaluate(model, val_loader, device)
+        val_loss, val_acc = evaluate(model, val_loader, device, class_weights=class_weights)
 
         if val_loss < best_val_loss:
             best_val_loss = val_loss
