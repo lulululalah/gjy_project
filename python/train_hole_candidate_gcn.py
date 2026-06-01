@@ -46,7 +46,7 @@ class HoleCandidateMLP(torch.nn.Module):
 
 
 def split_by_graph(df, train_ratio=0.8, seed=42):
-    graph_ids = df["graph_id"].drop_duplicates().to_numpy()
+    graph_ids = df["graph_id"].drop_duplicates().to_numpy().copy()
     if len(graph_ids) < 2:
         return df, df
 
