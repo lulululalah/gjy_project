@@ -224,7 +224,11 @@ def _sub_brep(brep, face_indices):
 
 
 # --------------------------------------------------------------------------- #
+SCRIPT_VERSION = "v7-volume-guard"
+
+
 def main():
+    print("=== rhino_place_rivets %s ===" % SCRIPT_VERSION)
     refs = select_edges()
     if not refs:
         print("未选择任何边。")
