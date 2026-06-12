@@ -80,77 +80,86 @@ def _triangle_samples(face):
     return out
 
 
-def _face_row(samples, per_row, vert_axis, edge_frac=0.78):
-    """在一块面板上沿长轴铺一排：靠近一侧边缘、沿长轴等距取点。
+def _rep_normal(samples):
+    """面板的面积加权代表法向 [nx,ny,nz]。"""
+    acc = np.zeros(3)
+    A = 0.0
+    for cen, n, a in samples:
+        acc += a * np.array([n.X(), n.Y(), n.Z()])
+        A += a
+    norm = np.linalg.norm(acc)
+    return acc / norm if norm > 1e-12 else np.array([0.0, 0.0, 1.0])
+
+
+def _trailing_row(samples, span_axis, length_axis, aft_sign, per_row, band_frac=0.16):
+    """在面板的**后缘**（length 轴靠 aft 一侧）沿 span 轴铺一排。
 
     samples: [(cen[3], normal, area)]。返回 [(gp_Pnt, gp_Dir)]。
     """
-    if len(samples) < per_row:
-        per_row = max(1, len(samples))
     cens = np.array([s[0] for s in samples])
-    horiz = [i for i in range(3) if i != vert_axis]
-    pts2d = cens[:, horiz]                       # 投到水平面
-    mean = pts2d.mean(axis=0)
-    cov = np.cov((pts2d - mean).T)
-    w, V = np.linalg.eigh(cov)
-    long_dir = V[:, int(np.argmax(w))]           # 长轴（沿展向）
-    chord_dir = V[:, int(np.argmin(w))]          # 短轴（弦向）
-    proj_long = (pts2d - mean) @ long_dir
-    proj_chord = (pts2d - mean) @ chord_dir
-
-    # 取靠近某一侧边缘的带状区域（≈后缘/侧边）
-    thresh = np.quantile(proj_chord, edge_frac)
-    band = np.where(proj_chord >= thresh)[0]
+    proj_span = cens[:, span_axis]
+    proj_len = cens[:, length_axis]
+    lo, hi = proj_len.min(), proj_len.max()
+    rng = hi - lo + 1e-12
+    if aft_sign >= 0:                                  # 后缘在 length 轴正向
+        band = np.where(proj_len >= hi - band_frac * rng)[0]
+    else:
+        band = np.where(proj_len <= lo + band_frac * rng)[0]
     if len(band) < per_row:
-        band = np.argsort(proj_chord)[-max(per_row, len(band)):]
+        order = np.argsort(proj_len)
+        band = order[-per_row:] if aft_sign >= 0 else order[:per_row]
 
-    # 沿长轴等距挑 per_row 个
-    band = band[np.argsort(proj_long[band])]
-    lo, hi = proj_long[band].min(), proj_long[band].max()
-    targets = np.linspace(lo, hi, per_row)
+    band = band[np.argsort(proj_span[band])]
+    s_lo, s_hi = proj_span[band].min(), proj_span[band].max()
+    targets = np.linspace(s_lo, s_hi, per_row)
     chosen, used = [], set()
     for t in targets:
-        order = band[np.argsort(np.abs(proj_long[band] - t))]
-        for idx in order:
+        for idx in band[np.argsort(np.abs(proj_span[band] - t))]:
             if idx not in used:
                 used.add(idx)
                 chosen.append(idx)
                 break
-    out = []
-    for idx in chosen:
-        c = cens[idx]
-        out.append((gp_Pnt(c[0], c[1], c[2]), samples[idx][1]))
-    return out
+    return [(gp_Pnt(*cens[i]), samples[i][1]) for i in chosen]
 
 
-def row_sites(shape, max_panels=6, per_row=9, min_area_pct=80):
-    """在若干最大面板上各铺一排铆钉。返回 (gp_Pnt, gp_Dir) 列表。"""
+def row_sites(shape, max_panels=4, per_row=10):
+    """在若干最大的近水平面板（机翼/平尾）后缘各铺一排。返回 (gp_Pnt, gp_Dir)。"""
     box = Bnd_Box()
     brepbndlib.Add(shape, box)
     g = box.Get()
     ext = [g[3] - g[0], g[4] - g[1], g[5] - g[2]]
+    center = [(g[0] + g[3]) / 2, (g[1] + g[4]) / 2, (g[2] + g[5]) / 2]
     diag = math.sqrt(sum(e * e for e in ext))
     vert_axis = int(np.argmin(ext))
+    horiz = [i for i in range(3) if i != vert_axis]
+    span_axis = horiz[int(np.argmax([ext[i] for i in horiz]))]   # 翼展（较长水平轴）
+    length_axis = horiz[1 - horiz.index(span_axis)]              # 机身纵轴（较短水平轴）
 
     BRepMesh_IncrementalMesh(shape, diag * 0.001, False, 0.5, True)
 
     panels = []
+    top_pt = None  # (vert坐标, length坐标) 用于判定 aft 方向（竖尾最高点在尾部）
     for f in _faces(shape):
         s = _triangle_samples(f)
         if len(s) < per_row:
             continue
-        area = sum(t[2] for t in s)
-        panels.append((area, s))
+        for cen, _, _ in s:
+            if top_pt is None or cen[vert_axis] > top_pt[0]:
+                top_pt = (cen[vert_axis], cen[length_axis])
+        panels.append((sum(t[2] for t in s), s, _rep_normal(s)))
     if not panels:
         return []
-    thr = np.percentile([p[0] for p in panels], min_area_pct)
-    panels = [p for p in panels if p[0] >= thr]
-    panels.sort(key=lambda p: -p[0])
-    panels = panels[:max_panels]
+
+    aft_sign = 1.0 if (top_pt is not None and top_pt[1] >= center[length_axis]) else -1.0
+
+    # 只取近水平的大面板（机翼/平尾蒙皮），按面积取前 max_panels
+    near_h = [p for p in panels if abs(p[2][vert_axis]) > 0.6]
+    near_h.sort(key=lambda p: -p[0])
+    near_h = near_h[:max_panels]
 
     sites = []
-    for _, s in panels:
-        sites.extend(_face_row(s, per_row, vert_axis))
+    for _, s, _ in near_h:
+        sites.extend(_trailing_row(s, span_axis, length_axis, aft_sign, per_row))
     return sites
 
 
@@ -158,10 +167,10 @@ def main():
     ap = argparse.ArgumentParser(description="【临时】生成半球铆钉特征 STP（成排对称，待 DL 替换）")
     ap.add_argument("--step", required=True)
     ap.add_argument("--out", required=True, help="输出半球铆钉特征 STP")
-    ap.add_argument("--panels", type=int, default=6, help="布置铆钉排的最大面板数")
-    ap.add_argument("--per-row", type=int, default=9, help="每排铆钉数")
-    ap.add_argument("--size-frac", type=float, default=0.0024,
-                    help="半球半径 / 包围盒对角线（约为之前的 1/5）")
+    ap.add_argument("--panels", type=int, default=4, help="布置铆钉排的最大面板数（机翼/平尾）")
+    ap.add_argument("--per-row", type=int, default=10, help="每排铆钉数")
+    ap.add_argument("--size-frac", type=float, default=0.0012,
+                    help="半球半径 / 包围盒对角线（再缩小为之前的 1/2）")
     args = ap.parse_args()
 
     shape = read_step(args.step)

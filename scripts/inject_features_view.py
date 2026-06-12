@@ -1,10 +1,12 @@
-"""把「凸起特征 STP」整体 Fuse 进飞机 BRep -> 导出融合后 STP + Polyscope 截图。
+"""把「半球铆钉 STP」融入飞机 BRep -> 导出融合后 STP + Polyscope 截图。
 
-输入 --features 是一组已定位的凸起实体（钉子/半球/梯台）的 STP（compound）。
-本脚本只做：读飞机 + 读凸起 -> 布尔并(Fuse) -> 凸起融入原拓扑 -> 导出/渲染。
-不含任何选位/启发式逻辑（那部分在 make_features.py，后期由 DL 替换）。
+飞机是**多实体 compound**（机身/机翼/发动机/尾翼等各为独立 solid）。若把整机当
+一个布尔参数去 Fuse，会把原本相交的相邻 solid 合并、甚至丢面 -> 机身/机头丢失。
 
-渲染按凸起面的曲面类型着色，直观区分形状：圆柱(钉身)/球(半球·钉头)/圆锥(梯台)。
+正确做法：把每个铆钉只 Fuse 进它所在的那个 host solid，其余 solid 原样保留，
+最后重组 compound。这样所有零件都不丢，只有收到铆钉的 solid 被修改。
+
+着色：飞机蒙皮无球面，故“球面 = 铆钉”，据此着色，无需依赖 BOP 历史。
 
 用法（需 OCC 环境）：
     /opt/anaconda3/envs/occ/bin/python scripts/inject_features_view.py \
@@ -24,30 +26,28 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 import numpy as np
 
-from OCC.Core.BRep import BRep_Tool
+from OCC.Core.BRep import BRep_Builder, BRep_Tool
 from OCC.Core.BRepAdaptor import BRepAdaptor_Surface
 from OCC.Core.BRepAlgoAPI import BRepAlgoAPI_Fuse
+from OCC.Core.BRepBuilderAPI import BRepBuilderAPI_MakeVertex
+from OCC.Core.BRepBndLib import brepbndlib
 from OCC.Core.BRepCheck import BRepCheck_Analyzer
+from OCC.Core.BRepExtrema import BRepExtrema_DistShapeShape
 from OCC.Core.BRepMesh import BRepMesh_IncrementalMesh
 from OCC.Core.Bnd import Bnd_Box
-from OCC.Core.BRepBndLib import brepbndlib
-from OCC.Core.GeomAbs import GeomAbs_Cone, GeomAbs_Cylinder, GeomAbs_Sphere
+from OCC.Core.GeomAbs import GeomAbs_Sphere
 from OCC.Core.STEPControl import STEPControl_AsIs, STEPControl_Writer
-from OCC.Core.TopAbs import TopAbs_FACE
+from OCC.Core.TopAbs import TopAbs_FACE, TopAbs_SOLID
 from OCC.Core.TopExp import TopExp_Explorer, topexp
 from OCC.Core.TopLoc import TopLoc_Location
-from OCC.Core.TopoDS import topods
-from OCC.Core.TopTools import TopTools_IndexedMapOfShape, TopTools_ListIteratorOfListOfShape
+from OCC.Core.TopoDS import TopoDS_Compound, topods
+from OCC.Core.TopTools import TopTools_IndexedMapOfShape
+from OCC.Core.gp import gp_Pnt
 
 from brep_defeature.occ.extract import read_step
 
-# 类别 -> 颜色（0=机身，1=圆柱/钉身，2=球/半球·钉头，3=圆锥/梯台）
-CAT_COLOR = {
-    0: (0.72, 0.74, 0.78),
-    1: (0.90, 0.15, 0.12),
-    2: (0.12, 0.45, 0.95),
-    3: (0.96, 0.62, 0.10),
-}
+BODY_COLOR = (0.72, 0.74, 0.78)
+RIVET_COLOR = (0.12, 0.45, 0.95)
 
 
 def log(*a):
@@ -60,61 +60,41 @@ def face_map(shape):
     return fmap
 
 
-def faces(shape):
+def solids(shape):
     out = []
-    exp = TopExp_Explorer(shape, TopAbs_FACE)
+    exp = TopExp_Explorer(shape, TopAbs_SOLID)
     while exp.More():
-        out.append(topods.Face(exp.Current()))
+        out.append(topods.Solid(exp.Current()))
         exp.Next()
     return out
 
 
+def feature_solids(shape):
+    return solids(shape)
+
+
 def bbox(shape):
-    box = Bnd_Box()
-    brepbndlib.Add(shape, box)
-    return box.Get()
+    b = Bnd_Box()
+    brepbndlib.Add(shape, b)
+    return b
 
 
-def feature_face_ids(fuse, feats_shape, result_fmap):
-    ids = set()
-    for tf in faces(feats_shape):
-        for getter in (fuse.Modified, fuse.Generated):
-            try:
-                lst = getter(tf)
-            except RuntimeError:
-                continue
-            it = TopTools_ListIteratorOfListOfShape(lst)
-            while it.More():
-                sub = it.Value()
-                if sub.ShapeType() == TopAbs_FACE:
-                    fid = result_fmap.FindIndex(topods.Face(sub))
-                    if fid > 0:
-                        ids.add(fid)
-                it.Next()
-        fid = result_fmap.FindIndex(tf)
-        if fid > 0:
-            ids.add(fid)
-    return ids
+def bbox_center(shape):
+    g = bbox(shape).Get()
+    return gp_Pnt((g[0] + g[3]) / 2, (g[1] + g[4]) / 2, (g[2] + g[5]) / 2)
 
 
-def face_category(face):
-    """凸起面按曲面类型分类着色。"""
-    t = BRepAdaptor_Surface(face).GetType()
-    if t == GeomAbs_Cylinder:
-        return 1
-    if t == GeomAbs_Sphere:
-        return 2
-    if t == GeomAbs_Cone:
-        return 3
-    return 1
+def is_sphere(face):
+    return BRepAdaptor_Surface(face).GetType() == GeomAbs_Sphere
 
 
 def tessellate(shape, lin_defl):
     BRepMesh_IncrementalMesh(shape, lin_defl, False, 0.5, True)
     fmap = face_map(shape)
-    verts, tris, tri_face = [], [], []
+    verts, tris, tri_rivet = [], [], []
     for fid in range(1, fmap.Size() + 1):
         face = topods.Face(fmap.FindKey(fid))
+        rivet = is_sphere(face)
         loc = TopLoc_Location()
         tri = BRep_Tool.Triangulation(face, loc)
         if tri is None:
@@ -130,8 +110,8 @@ def tessellate(shape, lin_defl):
             if rev:
                 n1, n3 = n3, n1
             tris.append((base + n1 - 1, base + n2 - 1, base + n3 - 1))
-            tri_face.append(fid)
-    return np.asarray(verts, float), np.asarray(tris, int), np.asarray(tri_face, int)
+            tri_rivet.append(rivet)
+    return np.asarray(verts, float), np.asarray(tris, int), np.asarray(tri_rivet, bool)
 
 
 def export_step(shape, path):
@@ -141,8 +121,52 @@ def export_step(shape, path):
         raise IOError(f"导出 STP 失败: {path}")
 
 
-def render(verts, tris, tri_cat, out_png, center, diag, vert_axis):
-    colors = np.array([CAT_COLOR[int(c)] for c in tri_cat], dtype=float)
+def fuse_per_solid(air_solids, feats):
+    """每个铆钉只 Fuse 进它的 host solid，其余 solid 原样保留，重组 compound。"""
+    boxes = []
+    for s in air_solids:
+        b = bbox(s)
+        b.Enlarge(1e-6)
+        boxes.append(b)
+
+    # 铆钉 -> host solid 下标
+    groups = {}
+    for fs in feature_solids(feats):
+        c = bbox_center(fs)
+        cands = [i for i, b in enumerate(boxes) if not b.IsOut(c)] or list(range(len(air_solids)))
+        best, bestd = None, 1e18
+        v = BRepBuilderAPI_MakeVertex(c).Vertex()
+        for i in cands:
+            d = BRepExtrema_DistShapeShape(v, air_solids[i])
+            if d.IsDone() and d.Value() < bestd:
+                bestd, best = d.Value(), i
+        if best is not None:
+            groups.setdefault(best, []).append(fs)
+
+    comp = TopoDS_Compound()
+    bld = BRep_Builder()
+    bld.MakeCompound(comp)
+    n_applied = 0
+    for i, s in enumerate(air_solids):
+        if i in groups:
+            tools = TopoDS_Compound()
+            bld.MakeCompound(tools)
+            for fs in groups[i]:
+                bld.Add(tools, fs)
+            fuse = BRepAlgoAPI_Fuse(s, tools)
+            fuse.Build()
+            if fuse.IsDone() and BRepCheck_Analyzer(fuse.Shape()).IsValid():
+                bld.Add(comp, fuse.Shape())
+                n_applied += len(groups[i])
+                continue
+            log(f"  solid#{i} Fuse 失败/无效，保留原件（{len(groups[i])} 个铆钉未施加）")
+        bld.Add(comp, s)
+    return comp, n_applied
+
+
+def render(verts, tris, tri_rivet, out_png, center, diag, vert_axis):
+    colors = np.tile(np.array(BODY_COLOR), (len(tris), 1))
+    colors[tri_rivet] = np.array(RIVET_COLOR)
     up_name = ["x_up", "y_up", "z_up"][vert_axis]
     offset = np.full(3, 0.85)
     offset[vert_axis] = 1.0
@@ -182,51 +206,38 @@ def render(verts, tris, tri_cat, out_png, center, diag, vert_axis):
 
 
 def main():
-    ap = argparse.ArgumentParser(description="把凸起特征 STP 融入飞机 BRep 并导出 + 截图")
+    ap = argparse.ArgumentParser(description="逐 solid 融入半球铆钉并导出 STP + 截图")
     ap.add_argument("--step", required=True)
-    ap.add_argument("--features", required=True, help="凸起特征 STP（实体 compound）")
+    ap.add_argument("--features", required=True, help="半球铆钉 STP（实体 compound）")
     ap.add_argument("--out", default="features.png")
-    ap.add_argument("--out-step", default=None, help="融合后模型 STP")
+    ap.add_argument("--out-step", default=None)
     args = ap.parse_args()
 
     log(f"读取飞机 {args.step}")
     shape = read_step(args.step)
-    n0 = face_map(shape).Size()
-    xmin, ymin, zmin, xmax, ymax, zmax = bbox(shape)
-    ext = [xmax - xmin, ymax - ymin, zmax - zmin]
-    center = [(xmin + xmax) / 2, (ymin + ymax) / 2, (zmin + zmax) / 2]
+    air = solids(shape)
+    g = bbox(shape).Get()
+    ext = [g[3] - g[0], g[4] - g[1], g[5] - g[2]]
+    center = [(g[0] + g[3]) / 2, (g[1] + g[4]) / 2, (g[2] + g[5]) / 2]
     vert_axis = int(np.argmin(ext))
     diag = math.sqrt(sum(e * e for e in ext))
+    log(f"  飞机 solid 数 {len(air)}，面数 {face_map(shape).Size()}")
 
     feats = read_step(args.features)
-    n_feat_solids = len(faces(feats))
-    log(f"  飞机面数 {n0}；凸起特征 STP 面数 {n_feat_solids}")
+    log(f"  铆钉数 {len(feature_solids(feats))}")
 
-    fuse = BRepAlgoAPI_Fuse(shape, feats)
-    fuse.Build()
-    if not fuse.IsDone():
-        log("Fuse 失败")
-        sys.exit(1)
-    result = fuse.Shape()
-    result_fmap = face_map(result)
-    feat_ids = feature_face_ids(fuse, feats, result_fmap)
+    result, n_applied = fuse_per_solid(air, feats)
+    n_solid_out = len(solids(result))
     valid = BRepCheck_Analyzer(result).IsValid()
-    log(f"  Fuse 完成：面数 {n0} -> {result_fmap.Size()}（凸起面 {len(feat_ids)}），有效实体={valid}")
-
-    # 凸起面按曲面类型分类
-    face_cat = {}
-    for fid in feat_ids:
-        face_cat[fid] = face_category(topods.Face(result_fmap.FindKey(fid)))
+    log(f"  融合：solid {len(air)} -> {n_solid_out}（应相等），施加铆钉 {n_applied}，有效={valid}")
 
     if args.out_step:
         export_step(result, args.out_step)
         log(f"  融合后模型已导出 -> {args.out_step}")
 
-    verts, tris, tri_face = tessellate(result, diag * 0.0008)
-    tri_cat = np.array([face_cat.get(int(f), 0) for f in tri_face], dtype=int)
-    n_by_cat = {c: int(np.sum(tri_cat == c)) for c in (1, 2, 3)}
-    log(f"  三角化：顶点 {len(verts)}，三角面 {len(tris)}，凸起三角按类别 {n_by_cat}")
-    backend = render(verts, tris, tri_cat, args.out, center, diag, vert_axis)
+    verts, tris, tri_rivet = tessellate(result, diag * 0.0008)
+    log(f"  三角化：顶点 {len(verts)}，三角面 {len(tris)}，铆钉三角 {int(tri_rivet.sum())}")
+    backend = render(verts, tris, tri_rivet, args.out, center, diag, vert_axis)
     log(f"完成（render={backend}）-> {args.out}")
 
 
