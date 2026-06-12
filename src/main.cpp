@@ -11,8 +11,6 @@ namespace
         std::filesystem::path trainingInputDir;
         std::filesystem::path faceTrainingCsv;
         std::filesystem::path faceInferenceCsv;
-        std::filesystem::path holeTrainingCsv;
-        std::filesystem::path holeInferenceCsv;
     };
 
     DetectorPaths ResolvePaths(const std::filesystem::path &exePath)
@@ -22,8 +20,6 @@ namespace
             projectRoot / "data" / "dirty_training_set",
             projectRoot / "data" / "full_training_set.csv",
             projectRoot / "data" / "current_inference.csv",
-            projectRoot / "data" / "hole_candidate_training_set.csv",
-            projectRoot / "data" / "current_hole_candidates.csv",
         };
     }
 
@@ -32,9 +28,7 @@ namespace
         std::cout
             << "Usage:\n"
             << "  Detector.exe --train\n"
-            << "  Detector.exe --predict <file>\n"
-            << "  Detector.exe --train-hole\n"
-            << "  Detector.exe --predict-hole <file>\n";
+            << "  Detector.exe --predict <file>\n";
     }
 }
 
@@ -53,19 +47,10 @@ int main(int argc, char *argv[])
     {
         RunBatchTrainingExport(paths.trainingInputDir.string(), paths.faceTrainingCsv.string());
     }
-    else if (mode == "--train-hole")
-    {
-        RunHoleCandidateTrainingExport(paths.trainingInputDir.string(), paths.holeTrainingCsv.string());
-    }
     else if (mode == "--predict" && argc >= 3)
     {
         const std::string filePath = argv[2];
         RunSingleInferenceExport(filePath, paths.faceInferenceCsv.string());
-    }
-    else if (mode == "--predict-hole" && argc >= 3)
-    {
-        const std::string filePath = argv[2];
-        RunSingleHoleCandidateInferenceExport(filePath, paths.holeInferenceCsv.string());
     }
     else
     {

@@ -12,6 +12,12 @@ obj/
 *.swo
 *.user
 
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
 # Build Systems
 CMakeCache.txt
 CMakeFiles/
@@ -27,4 +33,11 @@ Thumbs.db
 # Project Specific
 *.log
 *.tmp
-# data/ # Keep data if small, uncomment if large
+
+# GNN artifacts
+*.pth
+*.npz
+
+# Generated inference/export files
+data/current_inference.csv
+dirty_models_report.csv

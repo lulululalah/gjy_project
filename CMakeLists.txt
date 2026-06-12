@@ -31,7 +31,6 @@ add_executable(Detector
     src/main.cpp
     src/Workflow.cpp
     src/FeatureExtractor.cpp
-    src/HoleCandidateBuilder.cpp
     src/FeatureClassifier.cpp
     src/GeometryModifier.cpp
 )

@@ -1,7 +1,6 @@
 #include "Workflow.h"
 
 #include "FeatureExtractor.h"
-#include "HoleCandidateBuilder.h"
 
 #include <STEPControl_Reader.hxx>
 
@@ -18,13 +17,6 @@ constexpr const char* kFaceCsvHeader =
     "graph_id,model_name,id,area,relativeArea,perimeter,compactness,surfaceType,nx,ny,nz,"
     "centerZ,meanCurvature,radius,numWires,innerWireCount,minInnerWireLength,maxInnerWireLength,"
     "numEdges,neighbors,edge_types,label\n";
-
-constexpr const char* kHoleCandidateCsvHeader =
-    "graph_id,model_name,candidate_id,host_face_id,local_wire_index,hostFaceArea,"
-    "hostFaceRelativeArea,hostFacePerimeter,hostInnerWireCount,hostNeighborFaceCount,"
-    "wireLength,wireLengthRatio,estimatedHoleRadius,estimatedHoleArea,wireCenterX,wireCenterY,"
-    "wireCenterZ,adjacentFaceCount,adjacentCylinderCount,adjacentSmallCylinderCount,"
-    "minAdjacentCylinderRadius,maxAdjacentCylinderRadius,concaveEdgeRatio,label\n";
 
 bool IsStepFile(const fs::path& filePath) {
     const std::string extension = filePath.extension().string();
@@ -57,10 +49,6 @@ void WriteFaceCsvHeader(std::ofstream& dataFile) {
     dataFile << kFaceCsvHeader;
 }
 
-void WriteHoleCandidateCsvHeader(std::ofstream& dataFile) {
-    dataFile << kHoleCandidateCsvHeader;
-}
-
 void WriteFaceRow(
     std::ofstream& dataFile,
     int graphId,
@@ -85,21 +73,6 @@ void WriteFaceRow(
     }
 
     dataFile << "\"," << feature.semanticTag << "\n";
-}
-
-void WriteHoleCandidateRow(std::ofstream& dataFile, const HoleCandidateFeature& candidate) {
-    dataFile << candidate.graphId << ",\"" << candidate.modelName << "\","
-             << candidate.candidateId << "," << candidate.hostFaceId << ","
-             << candidate.localWireIndex << "," << candidate.hostFaceArea << ","
-             << candidate.hostFaceRelativeArea << "," << candidate.hostFacePerimeter << ","
-             << candidate.hostInnerWireCount << "," << candidate.hostNeighborFaceCount << ","
-             << candidate.wireLength << "," << candidate.wireLengthRatio << ","
-             << candidate.estimatedHoleRadius << "," << candidate.estimatedHoleArea << ","
-             << candidate.wireCenterX << "," << candidate.wireCenterY << "," << candidate.wireCenterZ << ","
-             << candidate.adjacentFaceCount << "," << candidate.adjacentCylinderCount << ","
-             << candidate.adjacentSmallCylinderCount << "," << candidate.minAdjacentCylinderRadius << ","
-             << candidate.maxAdjacentCylinderRadius << "," << candidate.concaveEdgeRatio << ","
-             << candidate.label << "\n";
 }
 
 int ClassifyFaceForTraining(FaceFeature& feature) {
@@ -151,18 +124,6 @@ void ExportFaceFeaturesForShape(
         WriteFaceRow(dataFile, graphId, modelName, feature);
     }
 }
-
-void ExportHoleCandidatesForShape(
-    std::ofstream& dataFile,
-    const std::vector<FaceFeature>& features,
-    int graphId,
-    const std::string& modelName
-) {
-    const auto candidates = BuildPlanarHoleCandidates(features, graphId, modelName);
-    for (const auto& candidate : candidates) {
-        WriteHoleCandidateRow(dataFile, candidate);
-    }
-}
 }
 
 void RunBatchTrainingExport(const std::string& inputDir, const std::string& outputCsv) {
@@ -206,58 +167,4 @@ void RunSingleInferenceExport(const std::string& inputFile, const std::string& o
     ExportFaceFeaturesForShape(dataFile, features, 0, modelName, false);
 
     std::cout << ">>> Inference CSV ready." << std::endl;
-}
-
-void RunHoleCandidateTrainingExport(const std::string& inputDir, const std::string& outputCsv) {
-    std::cout << ">>> Exporting hole candidate training data..." << std::endl;
-
-    std::ofstream dataFile(outputCsv);
-    WriteHoleCandidateCsvHeader(dataFile);
-
-    int graphId = 0;
-    int totalCandidates = 0;
-    for (const auto& entry : fs::directory_iterator(inputDir)) {
-        if (!IsStepFile(entry.path())) {
-            continue;
-        }
-
-        const auto features = ExtractFaceFeaturesFromStep(entry.path().string());
-        if (features.empty()) {
-            continue;
-        }
-
-        const std::string modelName = entry.path().filename().string();
-        const auto candidates = BuildPlanarHoleCandidates(features, graphId, modelName);
-        for (const auto& candidate : candidates) {
-            WriteHoleCandidateRow(dataFile, candidate);
-        }
-
-        totalCandidates += static_cast<int>(candidates.size());
-        graphId++;
-        std::cout << "  - Processed: " << entry.path().filename()
-                  << " | candidates=" << candidates.size() << std::endl;
-    }
-
-    std::cout << ">>> Hole candidate export complete. Models processed: " << graphId
-              << ", candidates: " << totalCandidates << std::endl;
-}
-
-void RunSingleHoleCandidateInferenceExport(const std::string& inputFile, const std::string& outputCsv) {
-    std::cout << ">>> Exporting hole candidates for: " << inputFile << std::endl;
-
-    const auto features = ExtractFaceFeaturesFromStep(inputFile);
-    if (features.empty()) {
-        return;
-    }
-
-    const std::string modelName = fs::path(inputFile).filename().string();
-    const auto candidates = BuildPlanarHoleCandidates(features, 0, modelName);
-
-    std::ofstream dataFile(outputCsv);
-    WriteHoleCandidateCsvHeader(dataFile);
-    for (const auto& candidate : candidates) {
-        WriteHoleCandidateRow(dataFile, candidate);
-    }
-
-    std::cout << ">>> Hole candidate inference CSV ready. Candidates: " << candidates.size() << std::endl;
 }
