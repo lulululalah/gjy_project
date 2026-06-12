@@ -165,6 +165,27 @@ def connected_faces(brep, seed_faces):
     return seen
 
 
+def all_components(brep):
+    """把 brep 的所有 face 按连通性分成若干实体(lump)，返回 [set(face index)]。"""
+    seen = set()
+    comps = []
+    for i in range(brep.Faces.Count):
+        if i in seen:
+            continue
+        comp = connected_faces(brep, [i])
+        seen |= comp
+        comps.append(comp)
+    return comps
+
+
+def bbox_dist_to_point(bb, pt):
+    """点到包围盒的距离（盒内为 0）。"""
+    dx = max(bb.Min.X - pt.X, 0.0, pt.X - bb.Max.X)
+    dy = max(bb.Min.Y - pt.Y, 0.0, pt.Y - bb.Max.Y)
+    dz = max(bb.Min.Z - pt.Z, 0.0, pt.Z - bb.Max.Z)
+    return (dx * dx + dy * dy + dz * dz) ** 0.5
+
+
 def _sub_brep(brep, face_indices):
     """从 brep 抽取给定 face 子集为新 brep（保留其它实体用）。"""
     if not face_indices:
@@ -264,34 +285,58 @@ def main():
                 sc.doc.Objects.AddBrep(riv)
             continue
 
-        # 只取被选边所在的连通实体(lump)，其余实体原样保留，避免布尔丢件
-        seeds = seeds_by_parent.get(pid, set())
-        comp = connected_faces(brep, seeds) if seeds else set()
-        whole = (not comp) or (len(comp) >= brep.Faces.Count)
+        comps = all_components(brep)             # 母 brep 的所有独立实体(lump)
 
-        target = brep if whole else _sub_brep(brep, comp)
-        if target is None:
-            target, whole = brep, True
-
-        union = Brep.CreateBooleanUnion([target] + rivets, TOL)
-        if union is None or len(union) == 0:
-            print("对象 %s 布尔失败，改为直接添加铆钉（原件保留）。" % pid)
-            for riv in rivets:
-                sc.doc.Objects.AddBrep(riv)
+        # 单实体：直接整体布尔
+        if len(comps) <= 1:
+            union = Brep.CreateBooleanUnion([brep] + rivets, TOL)
+            if union is not None and len(union) > 0:
+                sc.doc.Objects.Replace(pid, union[0])
+                for i in range(1, len(union)):
+                    sc.doc.Objects.AddBrep(union[i])
+                n_union += len(rivets)
+            else:
+                print("对象 %s 布尔失败，直接添加铆钉（原件保留）。" % pid)
+                for riv in rivets:
+                    sc.doc.Objects.AddBrep(riv)
             continue
 
-        if whole:
-            sc.doc.Objects.Replace(pid, union[0])
-            for i in range(1, len(union)):
-                sc.doc.Objects.AddBrep(union[i])
-        else:
-            others = set(range(brep.Faces.Count)) - comp
-            rest = _sub_brep(brep, others)
-            if rest is not None:
-                sc.doc.Objects.Replace(pid, rest)   # 母对象=其余实体（机身等保留）
-            for i in range(0, len(union)):
-                sc.doc.Objects.AddBrep(union[i])     # 融合后的该 lump 作为新对象
-        n_union += len(rivets)
+        # 多实体：拆成 lump，铆钉只并入最近的 lump，其余 lump 原样保留
+        lumps = [_sub_brep(brep, c) for c in comps]
+        bbs = [(lp.GetBoundingBox(True) if lp else None) for lp in lumps]
+        assign = {i: [] for i in range(len(lumps))}
+        for riv in rivets:
+            ctr = riv.GetBoundingBox(True).Center
+            best, bd = None, 1e18
+            for i, b in enumerate(bbs):
+                if b is None:
+                    continue
+                d = bbox_dist_to_point(b, ctr)
+                if d < bd:
+                    bd, best = d, i
+            if best is not None:
+                assign[best].append(riv)
+
+        out = []
+        for i, lp in enumerate(lumps):
+            if lp is None:
+                continue
+            if assign[i]:
+                u = Brep.CreateBooleanUnion([lp] + assign[i], TOL)
+                if u is not None and len(u) > 0:
+                    for k in range(len(u)):
+                        out.append(u[k])
+                    n_union += len(assign[i])
+                else:                            # 该 lump 布尔失败：保留 lump + 钉，不丢件
+                    out.append(lp)
+                    out.extend(assign[i])
+            else:
+                out.append(lp)                   # 无钉的 lump 原样保留（机身/机头等）
+
+        if out:
+            sc.doc.Objects.Replace(pid, out[0])
+            for k in range(1, len(out)):
+                sc.doc.Objects.AddBrep(out[k])
 
     sc.doc.Views.Redraw()
     print("完成：生成 %d 个铆钉（形状=%s，半径=%.4f），融合 %d 个。" %
