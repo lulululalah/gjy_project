@@ -1,14 +1,17 @@
-"""【临时脚手架】生成「微小凸起特征」STP（混合 钉子/半球/梯台）。
+"""【临时脚手架】生成「半球铆钉」特征 STP，沿大面板按规律成排、左右对称。
 
 ⚠️ 启发式占位实现，仅用于在 DL 模型就绪前产出示例特征文件。
-   后期由「深度学习预测的凸起位置/类型/尺寸」替换，注入管线读取的特征 STP 接口不变。
+   后期由「深度学习预测的铆钉位置」替换，注入管线读取的特征 STP 接口不变。
 
-输出 STP = 一组**已定位在飞机表面上的凸起实体**（compound）。注入脚本把它整体
-Fuse 进飞机 BRep，凸起即融入原拓扑。
+只生成**半球**铆钉。排布规律：取若干最大的面板（机翼/机身侧板/尾翼皮），
+在每块面板上沿其**长轴**方向、靠近**一侧边缘**铺一排铆钉。点取自该面的三角网格
+（保证落在已裁剪蒙皮上）。因左右机翼/尾翼是对称面，自然得到左右对称的铆钉行。
+
+输出 STP = 一组已定位在飞机表面上的半球实体（compound），注入脚本整体 Fuse 进飞机。
 
 用法：
     /opt/anaconda3/envs/occ/bin/python scripts/make_features.py \
-        --step "data/Xian Y-20 v3.step" --out "data/Xian Y-20 v3_features.stp" --n 45
+        --step "data/Xian Y-20 v3.step" --out "data/Xian Y-20 v3_features.stp"
 """
 
 from __future__ import annotations
@@ -22,7 +25,7 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 import numpy as np
 
-from OCC.Core.BRep import BRep_Builder, BRep_Tool
+from OCC.Core.BRep import BRep_Tool
 from OCC.Core.BRepMesh import BRepMesh_IncrementalMesh
 from OCC.Core.Bnd import Bnd_Box
 from OCC.Core.BRepBndLib import brepbndlib
@@ -34,7 +37,7 @@ from OCC.Core.TopoDS import TopoDS_Compound, topods
 from OCC.Core.gp import gp_Dir, gp_Pnt, gp_Vec
 
 from brep_defeature.occ.extract import read_step
-from brep_defeature.occ.features import FEATURE_KINDS, make_protrusion
+from brep_defeature.occ.features import make_hemisphere
 
 
 def log(*a):
@@ -51,11 +54,7 @@ def _faces(shape):
 
 
 def _triangle_samples(face):
-    """对单个面取其三角网格 -> [(area, 质心 gp_Pnt, 外法向 gp_Dir)]。
-
-    用三角形质心保证点**落在实际（已裁剪）蒙皮上**，不会跑到参数域裁剪区外
-    （那正是之前凸起“悬空”的原因）。需事先对 shape 做过 BRepMesh。
-    """
+    """单个面 -> [(质心 ndarray[3], 外法向 gp_Dir, 面积)]，质心保证落在已裁剪蒙皮上。"""
     loc = TopLoc_Location()
     tri = BRep_Tool.Triangulation(face, loc)
     if tri is None:
@@ -71,115 +70,125 @@ def _triangle_samples(face):
         m = cr.Magnitude()
         if m < 1e-12:
             continue
-        cen = gp_Pnt((p1.X() + p2.X() + p3.X()) / 3,
-                     (p1.Y() + p2.Y() + p3.Y()) / 3,
-                     (p1.Z() + p2.Z() + p3.Z()) / 3)
+        cen = np.array([(p1.X() + p2.X() + p3.X()) / 3,
+                        (p1.Y() + p2.Y() + p3.Y()) / 3,
+                        (p1.Z() + p2.Z() + p3.Z()) / 3])
         nrm = gp_Dir(cr)
         if rev:
             nrm.Reverse()
-        out.append((0.5 * m, cen, nrm))
+        out.append((cen, nrm, 0.5 * m))
     return out
 
 
-def heuristic_sites(shape, n=45, max_hosts=16):
-    """启发式选位：近水平大面 + 偏外侧；点取自三角网格质心（保证在蒙皮上）。
+def _face_row(samples, per_row, vert_axis, edge_frac=0.78):
+    """在一块面板上沿长轴铺一排：靠近一侧边缘、沿长轴等距取点。
 
-    返回 (质心 gp_Pnt, 外法向 gp_Dir) 列表。
+    samples: [(cen[3], normal, area)]。返回 [(gp_Pnt, gp_Dir)]。
     """
+    if len(samples) < per_row:
+        per_row = max(1, len(samples))
+    cens = np.array([s[0] for s in samples])
+    horiz = [i for i in range(3) if i != vert_axis]
+    pts2d = cens[:, horiz]                       # 投到水平面
+    mean = pts2d.mean(axis=0)
+    cov = np.cov((pts2d - mean).T)
+    w, V = np.linalg.eigh(cov)
+    long_dir = V[:, int(np.argmax(w))]           # 长轴（沿展向）
+    chord_dir = V[:, int(np.argmin(w))]          # 短轴（弦向）
+    proj_long = (pts2d - mean) @ long_dir
+    proj_chord = (pts2d - mean) @ chord_dir
+
+    # 取靠近某一侧边缘的带状区域（≈后缘/侧边）
+    thresh = np.quantile(proj_chord, edge_frac)
+    band = np.where(proj_chord >= thresh)[0]
+    if len(band) < per_row:
+        band = np.argsort(proj_chord)[-max(per_row, len(band)):]
+
+    # 沿长轴等距挑 per_row 个
+    band = band[np.argsort(proj_long[band])]
+    lo, hi = proj_long[band].min(), proj_long[band].max()
+    targets = np.linspace(lo, hi, per_row)
+    chosen, used = [], set()
+    for t in targets:
+        order = band[np.argsort(np.abs(proj_long[band] - t))]
+        for idx in order:
+            if idx not in used:
+                used.add(idx)
+                chosen.append(idx)
+                break
+    out = []
+    for idx in chosen:
+        c = cens[idx]
+        out.append((gp_Pnt(c[0], c[1], c[2]), samples[idx][1]))
+    return out
+
+
+def row_sites(shape, max_panels=6, per_row=9, min_area_pct=80):
+    """在若干最大面板上各铺一排铆钉。返回 (gp_Pnt, gp_Dir) 列表。"""
     box = Bnd_Box()
     brepbndlib.Add(shape, box)
-    xmin, ymin, zmin, xmax, ymax, zmax = box.Get()
-    ext = [xmax - xmin, ymax - ymin, zmax - zmin]
-    center = [(xmin + xmax) / 2, (ymin + ymax) / 2, (zmin + zmax) / 2]
+    g = box.Get()
+    ext = [g[3] - g[0], g[4] - g[1], g[5] - g[2]]
     diag = math.sqrt(sum(e * e for e in ext))
     vert_axis = int(np.argmin(ext))
-    horiz = [i for i in range(3) if i != vert_axis]
-    span_axis = horiz[int(np.argmax([ext[i] for i in horiz]))]
-    half_span = ext[span_axis] / 2
 
     BRepMesh_IncrementalMesh(shape, diag * 0.001, False, 0.5, True)
 
-    # 每个面：累计面积 + 代表三角（最大）+ 全部三角样本
-    reps = []
+    panels = []
     for f in _faces(shape):
-        samples = _triangle_samples(f)
-        if not samples:
+        s = _triangle_samples(f)
+        if len(s) < per_row:
             continue
-        samples.sort(key=lambda t: -t[0])
-        total = sum(s[0] for s in samples)
-        reps.append((total, f, samples[0], samples))
-    if not reps:
+        area = sum(t[2] for t in s)
+        panels.append((area, s))
+    if not panels:
         return []
-    thr = np.percentile([r[0] for r in reps], 75)
+    thr = np.percentile([p[0] for p in panels], min_area_pct)
+    panels = [p for p in panels if p[0] >= thr]
+    panels.sort(key=lambda p: -p[0])
+    panels = panels[:max_panels]
 
-    cand = []
-    for total, f, rep, samples in reps:
-        if total < thr:
-            continue
-        _, cen, nrm = rep
-        if abs([nrm.X(), nrm.Y(), nrm.Z()][vert_axis]) < 0.6:   # 近水平
-            continue
-        coords = [cen.X(), cen.Y(), cen.Z()]
-        span_off = abs(coords[span_axis] - center[span_axis]) / (half_span + 1e-9)
-        if span_off < 0.2:                                      # 偏外侧
-            continue
-        cand.append((span_off * total, samples))
-    cand.sort(key=lambda t: -t[0])
-    hosts = cand[:max_hosts]
-
-    per_face = max(1, n // max(len(hosts), 1))
     sites = []
-    for _, samples in hosts:
-        stride = max(1, len(samples) // per_face)               # 在面上铺开取点
-        for _, cen, nrm in samples[::stride][:per_face]:
-            sites.append((cen, nrm))
-            if len(sites) >= n:
-                break
-        if len(sites) >= n:
-            break
+    for _, s in panels:
+        sites.extend(_face_row(s, per_row, vert_axis))
     return sites
 
 
 def main():
-    ap = argparse.ArgumentParser(description="【临时】生成微小凸起特征 STP（待 DL 替换）")
+    ap = argparse.ArgumentParser(description="【临时】生成半球铆钉特征 STP（成排对称，待 DL 替换）")
     ap.add_argument("--step", required=True)
-    ap.add_argument("--out", required=True, help="输出凸起特征 STP")
-    ap.add_argument("--n", type=int, default=45)
-    ap.add_argument("--hosts", type=int, default=16)
-    ap.add_argument("--size-frac", type=float, default=0.004, help="凸起基准尺寸 / 包围盒对角线")
+    ap.add_argument("--out", required=True, help="输出半球铆钉特征 STP")
+    ap.add_argument("--panels", type=int, default=6, help="布置铆钉排的最大面板数")
+    ap.add_argument("--per-row", type=int, default=9, help="每排铆钉数")
+    ap.add_argument("--size-frac", type=float, default=0.0024,
+                    help="半球半径 / 包围盒对角线（约为之前的 1/5）")
     args = ap.parse_args()
 
     shape = read_step(args.step)
     box = Bnd_Box()
     brepbndlib.Add(shape, box)
-    xmin, ymin, zmin, xmax, ymax, zmax = box.Get()
-    diag = math.sqrt((xmax - xmin) ** 2 + (ymax - ymin) ** 2 + (zmax - zmin) ** 2)
-    size = diag * args.size_frac
+    g = box.Get()
+    diag = math.sqrt((g[3] - g[0]) ** 2 + (g[4] - g[1]) ** 2 + (g[5] - g[2]) ** 2)
+    radius = diag * args.size_frac
 
-    sites = heuristic_sites(shape, n=args.n, max_hosts=args.hosts)
+    sites = row_sites(shape, max_panels=args.panels, per_row=args.per_row)
     if not sites:
-        log("未生成任何凸起位置")
+        log("未生成任何铆钉位置")
         sys.exit(1)
 
     comp = TopoDS_Compound()
+    from OCC.Core.BRep import BRep_Builder
+
     bld = BRep_Builder()
     bld.MakeCompound(comp)
-    counts = {k: 0 for k in FEATURE_KINDS}
-    for i, (pnt, normal) in enumerate(sites):
-        kind = FEATURE_KINDS[i % len(FEATURE_KINDS)]  # 三类轮流（占位策略）
-        try:
-            solid = make_protrusion(kind, pnt, normal, size)
-        except Exception as e:  # noqa: BLE001
-            log(f"  跳过 1 个 {kind}: {type(e).__name__}")
-            continue
-        bld.Add(comp, solid)
-        counts[kind] += 1
+    for pnt, normal in sites:
+        bld.Add(comp, make_hemisphere(pnt, normal, radius))
 
     writer = STEPControl_Writer()
     writer.Transfer(comp, STEPControl_AsIs)
     if writer.Write(args.out) != 1:
         raise IOError(f"写入失败: {args.out}")
-    log(f"已写出凸起特征 -> {args.out}  (基准尺寸 {size:.3f}; 计数 {counts})")
+    log(f"已写出 {len(sites)} 个半球铆钉（半径 {radius:.4f}，{args.panels} 排）-> {args.out}")
 
 
 if __name__ == "__main__":

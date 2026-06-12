@@ -146,7 +146,7 @@ def render(verts, tris, tri_cat, out_png, center, diag, vert_axis):
     up_name = ["x_up", "y_up", "z_up"][vert_axis]
     offset = np.full(3, 0.85)
     offset[vert_axis] = 1.0
-    cam = np.asarray(center) + offset * diag * 0.62
+    cam = np.asarray(center) + offset * diag * 0.72
     try:
         import polyscope as ps
 
