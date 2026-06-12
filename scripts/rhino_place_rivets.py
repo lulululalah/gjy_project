@@ -22,6 +22,7 @@ import scriptcontext as sc
 import Rhino
 import rhinoscriptsyntax as rs
 from Rhino.Geometry import (
+    BoundingBox,
     Brep,
     Circle,
     LoftType,
@@ -299,18 +300,29 @@ def main():
         print("诊断：对象 %s 面数=%d，独立实体(lump)=%d，铆钉=%d"
               % (pid, brep.Faces.Count, len(comps), len(rivets)))
 
-        # 单实体：直接整体布尔
+        # 单实体：整体布尔，但带“丢件保护”
         if len(comps) <= 1:
             union = Brep.CreateBooleanUnion([brep] + rivets, TOL)
-            if union is not None and len(union) > 0:
-                sc.doc.Objects.Replace(pid, union[0])
-                for i in range(1, len(union)):
-                    sc.doc.Objects.AddBrep(union[i])
-                n_union += len(rivets)
-            else:
-                print("  布尔失败，直接添加铆钉（原件保留）。")
+            if union is None or len(union) == 0:
+                print("  布尔失败，直接叠加铆钉（原件保留）。")
                 for riv in rivets:
                     sc.doc.Objects.AddBrep(riv)
+                continue
+            ob = brep.GetBoundingBox(True)
+            ub = union[0].GetBoundingBox(True)
+            for i in range(1, len(union)):
+                ub = BoundingBox.Union(ub, union[i].GetBoundingBox(True))
+            print("  union块数=%d  原bbox对角=%.3f  结果bbox对角=%.3f"
+                  % (len(union), ob.Diagonal.Length, ub.Diagonal.Length))
+            if ub.Diagonal.Length < 0.7 * ob.Diagonal.Length:
+                print("  ⚠ 布尔结果明显变小，疑似丢件 -> 不替换，仅叠加铆钉（原件完整保留）。")
+                for riv in rivets:
+                    sc.doc.Objects.AddBrep(riv)
+                continue
+            sc.doc.Objects.Replace(pid, union[0])
+            for i in range(1, len(union)):
+                sc.doc.Objects.AddBrep(union[i])
+            n_union += len(rivets)
             continue
 
         # 多实体：先把所有 lump 都成功拆出来，否则绝不替换母对象（防丢件）
