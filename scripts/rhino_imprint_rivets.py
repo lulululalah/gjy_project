@@ -24,8 +24,14 @@ import Rhino
 import rhinoscriptsyntax as rs
 from Rhino.Geometry import Brep, Circle, Curve, Plane, Point3d, Vector3d
 
-SCRIPT_VERSION = "imprint-v2-facesplit"
+SCRIPT_VERSION = "imprint-v3-safe-record"
 TOL = sc.doc.ModelAbsoluteTolerance
+
+
+def ensure_layer(name="Rivets"):
+    if not rs.IsLayer(name):
+        rs.AddLayer(name, (230, 40, 30))
+    return name
 
 
 def select_edges():
@@ -135,32 +141,22 @@ def main():
                    "count": len(records), "rivets": records}, f, ensure_ascii=False, indent=2)
     print("铆钉记录(真值) -> %s（%d 个）" % (json_path, len(records)))
 
-    # 逐对象：对“带压印圆的面”做 BrepFace.Split，其余面原样 DuplicateFace，再 JoinBreps
-    n_imprinted = 0
+    # 安全方案：只把“贴到面上的压印圆”作为曲线加到 'Rivets' 图层，绝不改原模型 -> 不丢件。
+    # 真正的拓扑压印（把圆变成面的内环/子面）改由 OCC 离线脚本据记录 JSON 用
+    # BRepFeat_SplitShape 完成（可在 OCC 环境实测，稳健、不丢件）。
+    layer = ensure_layer("Rivets")
+    added = 0
     for pid, face_map in cutters.items():
-        brep = brep_by_pid[pid]
-        pieces = []
-        n_circ = 0
-        for j in range(brep.Faces.Count):
-            f = brep.Faces[j]
-            if j in face_map:
-                arr = System.Array[Curve](face_map[j])
-                sb = f.Split(arr, TOL)             # 用圆切分该面 -> 含子面的 brep
-                pieces.append(sb if sb else f.DuplicateFace(False))
-                n_circ += len(face_map[j])
-            else:
-                pieces.append(f.DuplicateFace(False))
-        joined = Brep.JoinBreps(System.Array[Brep](pieces), TOL)
-        if joined is None or len(joined) == 0:
-            print("  对象 %s JoinBreps 失败 -> 跳过，原件保留。" % pid)
-            continue
-        before = brep.Faces.Count
-        sc.doc.Objects.Replace(pid, joined[0])
-        n_imprinted += n_circ
-        print("  对象 %s：面数 %d -> %d，压印圆 %d" % (pid, before, joined[0].Faces.Count, n_circ))
-
+        for fidx, curves in face_map.items():
+            for c in curves:
+                oid = sc.doc.Objects.AddCurve(c)
+                if oid:
+                    rs.ObjectLayer(oid, layer)
+                    added += 1
     sc.doc.Views.Redraw()
-    print("完成：压印 %d 个铆钉锚点（拓扑子面/内环，无布尔）。" % n_imprinted)
+    print("已添加 %d 个压印圆到图层 '%s'（贴合在面上，未改原模型，绝不丢件）。" % (added, layer))
+    print("下一步（OCC 离线）：python scripts/imprint_from_records.py --step <原模型.stp> "
+          "--records %s --out-step imprinted.stp" % json_path)
 
 
 if __name__ == "__main__":
