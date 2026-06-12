@@ -38,17 +38,30 @@ def log(*a):
     print(*a, file=sys.stderr, flush=True)
 
 
+def _safe_combine(shape, rivets_comp, built):
+    """整机原样 + 铆钉实体并入同一 compound（绝不丢任何原部件）。"""
+    out = TopoDS_Compound()
+    bld = BRep_Builder()
+    bld.MakeCompound(out)
+    bld.Add(out, shape)         # 整机所有部件（solid + 开壳 + 自由面）原样保留
+    bld.Add(out, rivets_comp)   # 全部铆钉实体
+    return out, built
+
+
 def main():
     ap = argparse.ArgumentParser(description="按 Rhino 记录 JSON 在 OCC 里稳健融合铆钉")
     ap.add_argument("--step", required=True, help="原始模型 STP（与记录同坐标系）")
     ap.add_argument("--records", required=True, help="Rhino 放钉记录 JSON")
     ap.add_argument("--out-step", default=None)
     ap.add_argument("--out", default="fused.png")
+    ap.add_argument("--merge", action="store_true",
+                    help="逐 solid 布尔融合（仅适用于全是封闭 solid 的模型；含开壳会丢件，慎用）")
     args = ap.parse_args()
 
     shape = read_step(args.step)
     air = solids(shape)
-    log(f"原模型 solid 数 {len(air)}，面数 {face_map(shape).Size()}")
+    n_faces0 = face_map(shape).Size()
+    log(f"原模型 solid 数 {len(air)}，面数 {n_faces0}")
 
     with open(args.records, "r", encoding="utf-8") as f:
         recs = json.load(f)["rivets"]
@@ -71,19 +84,21 @@ def main():
             log(f"  跳过 1 个 {kind}: {type(e).__name__}: {e}")
     log(f"构造铆钉实体 {built} 个")
 
-    if air:
+    if args.merge and air:
+        # 逐 solid 布尔融合：只对封闭 solid 有效，会丢掉开壳部件 -> 加面数校验保护
         result, n_applied = fuse_per_solid(air, comp)
-        n_out = len(solids(result))
-        log(f"逐 solid 融合：solid {len(air)} -> {n_out}（应相等），施加铆钉 {n_applied}")
+        n_faces1 = face_map(result).Size()
+        log(f"逐 solid 融合：solid {len(air)} -> {len(solids(result))}，面数 {n_faces0} -> {n_faces1}")
+        if n_faces1 < n_faces0:
+            log("  ⚠ 融合后面数变少（开壳部件被丢）-> 放弃融合，改用安全叠加（保全整机）。")
+            result, n_applied = _safe_combine(shape, comp, built)
     else:
-        # 模型是开壳（无 solid）：整体 Fuse 兜底
-        from OCC.Core.BRepAlgoAPI import BRepAlgoAPI_Fuse
+        # 默认安全方案：保留整机原样 + 把铆钉作为独立实体并入同一 compound（绝不丢件）
+        result, n_applied = _safe_combine(shape, comp, built)
+        log("安全叠加：保留整机 + 铆钉独立实体（未布尔融合）")
 
-        log("模型无 solid（开壳），改为整体 Fuse")
-        fuse = BRepAlgoAPI_Fuse(shape, comp)
-        fuse.Build()
-        result = fuse.Shape() if fuse.IsDone() else shape
-        n_applied = built if fuse.IsDone() else 0
+    n_faces1 = face_map(result).Size()
+    log(f"结果：面数 {n_faces0} -> {n_faces1}（应 ≥ 原值），施加铆钉 {n_applied}")
 
     if args.out_step:
         export_step(result, args.out_step)
