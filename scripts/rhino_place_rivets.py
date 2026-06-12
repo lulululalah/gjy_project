@@ -37,7 +37,7 @@ def select_edges():
     go = Rhino.Input.Custom.GetObject()
     go.SetCommandPrompt("选择放置铆钉的边（可多选，回车结束）")
     go.GeometryFilter = Rhino.DocObjects.ObjectType.Curve
-    go.EnableSubObjectSelect(True)
+    go.SubObjectSelect = True
     go.EnablePreSelect(True, True)
     res = go.GetMultiple(1, 0)
     if res != Rhino.Input.GetResult.Object:
@@ -126,8 +126,8 @@ def main():
     count = rs.GetInteger("每条边上的铆钉数", 10, 1)
     if count is None:
         return
-    do_union = rs.GetBoolean("是否布尔融合到实体", ("融合", "否", "是"), (True,))
-    do_union = True if do_union is None else do_union[0]
+    res = rs.GetBoolean("是否布尔融合到实体", [("融合", "否", "是")], [True])
+    do_union = True if not res else res[0]
 
     # 按所属实体分组收集铆钉
     rivets_by_parent = {}      # parent ObjectId -> [rivet Brep]
