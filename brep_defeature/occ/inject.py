@@ -57,7 +57,7 @@ def _sample_point_on_face(face, rng: random.Random):
     n = props.Normal()
     if face.Orientation() == 1:  # REVERSED
         n.Reverse()
-    return pnt, gp_Dir(n)
+    return pnt, n
 
 
 def _result_faces_for_tool(bop, tool_shape, result_fmap) -> set[int]:
@@ -73,9 +73,11 @@ def _result_faces_for_tool(bop, tool_shape, result_fmap) -> set[int]:
 
             it = TopTools_ListIteratorOfListOfShape(lst)
             while it.More():
-                fid = result_fmap.FindIndex(topods.Face(it.Value()))
-                if fid > 0:
-                    ids.add(fid)
+                sub = it.Value()
+                if sub.ShapeType() == TopAbs_FACE:  # 历史里可能含边/顶点，只要面
+                    fid = result_fmap.FindIndex(topods.Face(sub))
+                    if fid > 0:
+                        ids.add(fid)
                 it.Next()
         # 工具面本身若原样保留在结果中
         fid = result_fmap.FindIndex(tf)
@@ -216,7 +218,7 @@ def _remap_labels(old_labels, old_shape, new_shape, new_fmap) -> dict:
     old_fmap = build_face_map(old_shape)
     remapped = {}
     for old_fid, lab in old_labels.items():
-        if old_fid < 1 or old_fid > old_fmap.Extent():
+        if old_fid < 1 or old_fid > old_fmap.Size():
             continue
         old_face = topods.Face(old_fmap.FindKey(old_fid))
         new_fid = new_fmap.FindIndex(old_face)

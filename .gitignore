@@ -48,3 +48,8 @@ defeature_stats.npz
 *.pyc
 __pycache__/
 .pytest_cache/
+
+# 渲染输出
+*.png
+.polyscope.ini
+imgui.ini

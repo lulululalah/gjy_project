@@ -263,7 +263,7 @@ def shape_to_graph(
     from OCC.Core.gp import gp_Pnt  # noqa: F401
 
     fmap = build_face_map(shape)
-    n_faces = fmap.Extent()
+    n_faces = fmap.Size()
 
     if model_scale is None:
         from OCC.Core.Bnd import Bnd_Box
@@ -328,10 +328,10 @@ def shape_to_graph(
 
     edges = []
     seen = set()
-    for i in range(1, edge_face_map.Extent() + 1):
+    for i in range(1, edge_face_map.Size() + 1):
         edge = edge_face_map.FindKey(i)
         face_list = edge_face_map.FindFromIndex(i)
-        faces = [face_list.First()] if face_list.Extent() == 1 else list(_iter_faces(face_list))
+        faces = [face_list.First()] if face_list.Size() == 1 else list(_iter_faces(face_list))
         if len(faces) < 2:
             continue
         # 同一对面可能有多条边；这里逐边建图（保留多重连接信息也可，简单起见去重面对）

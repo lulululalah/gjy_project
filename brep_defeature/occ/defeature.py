@@ -73,7 +73,7 @@ def remove_instances(
         fmap = build_face_map(current)
         faces = []
         for fid in inst["face_ids"]:
-            if 1 <= fid <= fmap.Extent():
+            if 1 <= fid <= fmap.Size():
                 faces.append(topods.Face(fmap.FindKey(fid)))
         if not faces:
             report.failed.append(inst["instance_id"])
