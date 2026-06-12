@@ -133,6 +133,30 @@ def edge_points(objref, count):
     return [(crv.PointAt(t), crv.TangentAt(t)) for t in params]
 
 
+def connected_faces(brep, seed_faces):
+    """从若干 face 出发，沿共享边做 BFS，返回同一连通实体（lump）的全部 face 下标集合。"""
+    seen = set()
+    stack = list(seed_faces)
+    while stack:
+        fi = stack.pop()
+        if fi in seen or fi < 0 or fi >= brep.Faces.Count:
+            continue
+        seen.add(fi)
+        for af in brep.Faces[fi].AdjacentFaces():
+            if af not in seen:
+                stack.append(af)
+    return seen
+
+
+def _sub_brep(brep, face_indices):
+    """从 brep 抽取给定 face 子集为新 brep（保留其它实体用）。"""
+    if not face_indices:
+        return None
+    import System
+    arr = System.Array[int](sorted(face_indices))
+    return brep.DuplicateSubBrep(arr)
+
+
 # --------------------------------------------------------------------------- #
 def main():
     refs = select_edges()
@@ -158,13 +182,19 @@ def main():
     res = rs.GetBoolean("是否布尔融合到实体", [("融合", "否", "是")], [True])
     do_union = True if not res else res[0]
 
-    # 按所属实体分组收集铆钉
-    rivets_by_parent = {}      # parent ObjectId -> [rivet Brep]
-    parent_ref = {}            # parent ObjectId -> ObjRef（取其 Brep）
+    # 按所属对象分组：铆钉、母 brep、被选边所贴的 face 下标（用于定位 lump）
+    rivets_by_parent = {}      # pid -> [rivet Brep]
+    parent_brep = {}           # pid -> Brep
+    seeds_by_parent = {}       # pid -> set(face index)
     n_made = 0
     for ref in refs:
         pid = ref.ObjectId
-        parent_ref[pid] = ref
+        if pid not in parent_brep:
+            parent_brep[pid] = ref.Brep()
+        edge = ref.Edge()
+        if edge is not None:
+            for fi in edge.AdjacentFaces():
+                seeds_by_parent.setdefault(pid, set()).add(fi)
         face = adjacent_face(ref)
         for pt, tan in edge_points(ref, count):
             center, n = place_on_face(face, pt, tan, inset)
@@ -191,21 +221,40 @@ def main():
 
     n_union = 0
     for pid, rivets in rivets_by_parent.items():
-        parent_brep = parent_ref[pid].Brep()
-        if parent_brep is None:
+        brep = parent_brep[pid]
+        if brep is None:
             for riv in rivets:
                 sc.doc.Objects.AddBrep(riv)
             continue
-        union = Brep.CreateBooleanUnion([parent_brep] + rivets, TOL)
-        if union is not None and len(union) > 0:
-            sc.doc.Objects.Replace(pid, union[0])
-            for i in range(1, len(union)):       # .NET 数组不支持切片
-                sc.doc.Objects.AddBrep(union[i])
-            n_union += len(rivets)
-        else:
-            print("实体 %s 布尔失败，改为直接添加铆钉。" % pid)
+
+        # 只取被选边所在的连通实体(lump)，其余实体原样保留，避免布尔丢件
+        seeds = seeds_by_parent.get(pid, set())
+        comp = connected_faces(brep, seeds) if seeds else set()
+        whole = (not comp) or (len(comp) >= brep.Faces.Count)
+
+        target = brep if whole else _sub_brep(brep, comp)
+        if target is None:
+            target, whole = brep, True
+
+        union = Brep.CreateBooleanUnion([target] + rivets, TOL)
+        if union is None or len(union) == 0:
+            print("对象 %s 布尔失败，改为直接添加铆钉（原件保留）。" % pid)
             for riv in rivets:
                 sc.doc.Objects.AddBrep(riv)
+            continue
+
+        if whole:
+            sc.doc.Objects.Replace(pid, union[0])
+            for i in range(1, len(union)):
+                sc.doc.Objects.AddBrep(union[i])
+        else:
+            others = set(range(brep.Faces.Count)) - comp
+            rest = _sub_brep(brep, others)
+            if rest is not None:
+                sc.doc.Objects.Replace(pid, rest)   # 母对象=其余实体（机身等保留）
+            for i in range(0, len(union)):
+                sc.doc.Objects.AddBrep(union[i])     # 融合后的该 lump 作为新对象
+        n_union += len(rivets)
 
     sc.doc.Views.Redraw()
     print("完成：生成 %d 个铆钉（形状=%s，半径=%.4f），融合 %d 个。" %
