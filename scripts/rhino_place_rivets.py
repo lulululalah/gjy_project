@@ -179,6 +179,23 @@ def all_components(brep):
     return comps
 
 
+def solid_size(brep):
+    """实体“大小”：优先体积，退而求面积。用于稳健地检测布尔是否丢件。"""
+    try:
+        vmp = Rhino.Geometry.VolumeMassProperties.Compute(brep)
+        if vmp and vmp.Volume > 1e-12:
+            return vmp.Volume
+    except Exception:  # noqa: BLE001
+        pass
+    try:
+        amp = Rhino.Geometry.AreaMassProperties.Compute(brep)
+        if amp and amp.Area > 1e-12:
+            return amp.Area
+    except Exception:  # noqa: BLE001
+        pass
+    return None
+
+
 def bbox_dist_to_point(bb, pt):
     """点到包围盒的距离（盒内为 0）。"""
     dx = max(bb.Min.X - pt.X, 0.0, pt.X - bb.Max.X)
@@ -300,29 +317,31 @@ def main():
         print("诊断：对象 %s 面数=%d，独立实体(lump)=%d，铆钉=%d"
               % (pid, brep.Faces.Count, len(comps), len(rivets)))
 
-        # 单实体：逐个铆钉顺序融合，坏钉只跳过自己，绝不破坏已累积实体
+        # 单实体：逐个铆钉顺序融合，用“体积”判定丢件（bbox 会被翼展误导）
         if len(comps) <= 1:
-            base_diag = brep.GetBoundingBox(True).Diagonal.Length
+            print("  原实体 IsSolid=%s IsValid=%s" % (brep.IsSolid, brep.IsValid))
+            base = solid_size(brep)
+            print("  原实体大小(体积/面积)=%s" % (round(base, 4) if base else None))
             cur = brep
             applied = 0
             for riv in rivets:
                 u = Brep.CreateBooleanUnion([cur, riv], TOL)
                 if u is None or len(u) == 0:
                     continue
-                nb = u[0].GetBoundingBox(True)
-                for i in range(1, len(u)):
-                    nb = BoundingBox.Union(nb, u[i].GetBoundingBox(True))
-                if nb.Diagonal.Length < 0.7 * base_diag:
-                    continue                         # 这颗钉导致丢件 -> 跳过，保留 cur
                 if len(u) == 1:
-                    cur = u[0]
+                    cand = u[0]
                 else:
                     j = Brep.JoinBreps(u, TOL)
-                    cur = j[0] if j and len(j) > 0 else u[0]
+                    cand = j[0] if j and len(j) > 0 else u[0]
+                cs = solid_size(cand)
+                if cs is None or (base and cs < 0.7 * base):
+                    continue                         # 丢件或无法判定 -> 跳过，保留 cur
+                cur, base = cand, cs
                 applied += 1
-            sc.doc.Objects.Replace(pid, cur)         # cur 至少是原件，绝不丢
+            sc.doc.Objects.Replace(pid, cur)         # cur 起始即原件，绝不丢
             n_union += applied
-            print("  顺序融合成功 %d/%d（其余跳过，实体完整保留）" % (applied, len(rivets)))
+            print("  顺序融合成功 %d/%d（结果大小=%s）"
+                  % (applied, len(rivets), round(solid_size(cur) or 0, 4)))
             continue
 
         # 多实体：先把所有 lump 都成功拆出来，否则绝不替换母对象（防丢件）
