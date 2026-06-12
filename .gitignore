@@ -55,3 +55,5 @@ __pycache__/
 imgui.ini
 /y20_rivets.stp
 /y20_features.stp
+*_labeled.json
+*_labels.csv
