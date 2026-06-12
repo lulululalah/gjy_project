@@ -41,3 +41,10 @@ Thumbs.db
 # Generated inference/export files
 data/current_inference.csv
 dirty_models_report.csv
+
+# brep_defeature 训练产物
+defeature_gnn.pth
+defeature_stats.npz
+*.pyc
+__pycache__/
+.pytest_cache/
