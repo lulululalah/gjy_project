@@ -224,7 +224,7 @@ def _sub_brep(brep, face_indices):
 
 
 # --------------------------------------------------------------------------- #
-SCRIPT_VERSION = "v8-doc-dump"
+SCRIPT_VERSION = "v9-safe-default"
 
 
 def dump_objects(tag):
@@ -246,6 +246,7 @@ def main():
     if not refs:
         print("未选择任何边。")
         return
+    print("选中边数 = %d" % len(refs))
 
     shape = rs.GetString("铆钉形状", "dome", ["dome", "frustum"])
     if not shape:
@@ -262,8 +263,10 @@ def main():
     inset = rs.GetReal("铆钉离边界的内缩距离（0=正好在边上）", round(radius * 2.0, 4), 0.0)
     if inset is None:
         return
-    res = rs.GetBoolean("是否布尔融合到实体", [("融合", "否", "是")], [True])
-    do_union = True if not res else res[0]
+    # 默认“不融合”：仅把铆钉作为独立实体放好（绝不破坏原模型）。
+    # Rhino 的整体布尔在这些导入实体上不稳定（会丢件），融合改由稳健的 OCC 管线做。
+    res = rs.GetBoolean("是否在 Rhino 内布尔融合(不稳,默认否)", [("融合", "否", "是")], [False])
+    do_union = False if not res else res[0]
 
     # 按所属对象分组：铆钉、母 brep、被选边所贴的 face 下标（用于定位 lump）
     rivets_by_parent = {}      # pid -> [rivet Brep]
