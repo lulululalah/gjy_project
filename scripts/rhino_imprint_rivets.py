@@ -111,7 +111,7 @@ def main():
         for pt, tan in edge_points(ref, count):
             center, n = place_on_face(face, pt, tan, inset)
             circle = Circle(Plane(center, n), radius).ToNurbsCurve()
-            pulled = Curve.PullToBrepFace(face, circle, TOL)   # 把圆贴到曲面上
+            pulled = Curve.PullToBrepFace(circle, face, TOL)   # (curve, face, tol)：把圆贴到曲面上
             if pulled:
                 for c in pulled:
                     cutters_by_pid.setdefault(pid, []).append(c)
