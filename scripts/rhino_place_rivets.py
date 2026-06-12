@@ -59,21 +59,46 @@ def suggest_radius(refs):
     return max(bbox.Diagonal.Length * 0.0012, 1e-4)
 
 
-def normal_at(objref, pt):
-    """边上一点处、所贴面的外法向。"""
+def adjacent_face(objref):
+    """边所贴的面（取第一个相邻面）。"""
     edge = objref.Edge()
     brep = objref.Brep()
     if edge and brep:
         adj = edge.AdjacentFaces()
         if adj and len(adj) > 0:
-            face = brep.Faces[adj[0]]
-            ok, u, v = face.ClosestPoint(pt)
-            if ok:
-                n = face.NormalAt(u, v)
-                if face.OrientationIsReversed:
-                    n.Reverse()
-                return n
-    return Vector3d.ZAxis
+            return brep.Faces[adj[0]]
+    return None
+
+
+def _normal(face, u, v):
+    n = face.NormalAt(u, v)
+    if face.OrientationIsReversed:
+        n.Reverse()
+    return n
+
+
+def place_on_face(face, pt, tangent, inset):
+    """把边上的点沿“面内、垂直于边”的方向内缩 inset，落回面上。
+
+    返回 (中心点 Point3d, 外法向 Vector3d)。inset<=0 时就用边上的点。
+    """
+    if face is None:
+        return pt, Vector3d.ZAxis
+    ok, u, v = face.ClosestPoint(pt)
+    if not ok:
+        return pt, Vector3d.ZAxis
+    n = _normal(face, u, v)
+    if inset and inset > 0 and tangent is not None:
+        t = Vector3d(tangent)
+        if t.Unitize():
+            b = Vector3d.CrossProduct(n, t)        # 面内、垂直于边的方向
+            if b.Unitize():
+                for s in (1.0, -1.0):              # 朝面内的一侧
+                    cand = Point3d(pt) + b * (s * inset)
+                    ok2, u2, v2 = face.ClosestPoint(cand)
+                    if ok2 and face.IsPointOnFace(u2, v2) == Rhino.Geometry.PointFaceRelation.Interior:
+                        return face.PointAt(u2, v2), _normal(face, u2, v2)
+    return face.PointAt(u, v), n
 
 
 def make_dome(center, radius):
@@ -97,14 +122,15 @@ def make_frustum(center, normal, r_base, r_top, height, sink):
 
 
 def edge_points(objref, count):
-    """沿边等距取 count 个点（含两端）。"""
+    """沿边等距取 count 个点，返回 [(点, 切向)]（含两端）。"""
     crv = objref.Curve()
     if crv is None:
         return []
     params = crv.DivideByCount(max(count - 1, 1), True)
-    if not params:
-        return [crv.PointAtStart, crv.PointAtEnd]
-    return [crv.PointAt(t) for t in params]
+    if params is None or len(params) == 0:
+        return [(crv.PointAtStart, crv.TangentAtStart),
+                (crv.PointAtEnd, crv.TangentAtEnd)]
+    return [(crv.PointAt(t), crv.TangentAt(t)) for t in params]
 
 
 # --------------------------------------------------------------------------- #
@@ -126,6 +152,9 @@ def main():
     count = rs.GetInteger("每条边上的铆钉数", 10, 1)
     if count is None:
         return
+    inset = rs.GetReal("铆钉离边界的内缩距离（0=正好在边上）", round(radius * 2.0, 4), 0.0)
+    if inset is None:
+        return
     res = rs.GetBoolean("是否布尔融合到实体", [("融合", "否", "是")], [True])
     do_union = True if not res else res[0]
 
@@ -136,13 +165,14 @@ def main():
     for ref in refs:
         pid = ref.ObjectId
         parent_ref[pid] = ref
-        for pt in edge_points(ref, count):
-            n = normal_at(ref, pt)
+        face = adjacent_face(ref)
+        for pt, tan in edge_points(ref, count):
+            center, n = place_on_face(face, pt, tan, inset)
             if shape == "frustum":
-                riv = make_frustum(pt, n, r_base=radius, r_top=radius * 0.5,
+                riv = make_frustum(center, n, r_base=radius, r_top=radius * 0.5,
                                    height=radius * 1.2, sink=radius * 0.3)
             else:
-                riv = make_dome(pt, radius)
+                riv = make_dome(center, radius)
             if riv:
                 rivets_by_parent.setdefault(pid, []).append(riv)
                 n_made += 1
@@ -167,10 +197,10 @@ def main():
                 sc.doc.Objects.AddBrep(riv)
             continue
         union = Brep.CreateBooleanUnion([parent_brep] + rivets, TOL)
-        if union and len(union) > 0:
+        if union is not None and len(union) > 0:
             sc.doc.Objects.Replace(pid, union[0])
-            for extra in union[1:]:
-                sc.doc.Objects.AddBrep(extra)
+            for i in range(1, len(union)):       # .NET 数组不支持切片
+                sc.doc.Objects.AddBrep(union[i])
             n_union += len(rivets)
         else:
             print("实体 %s 布尔失败，改为直接添加铆钉。" % pid)
