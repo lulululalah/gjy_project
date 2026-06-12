@@ -15,6 +15,9 @@
 （occ/extract.py 用“球面=铆钉”即可标出 dome 铆钉）。
 """
 
+import json
+import os
+
 import scriptcontext as sc
 import Rhino
 import rhinoscriptsyntax as rs
@@ -29,6 +32,20 @@ from Rhino.Geometry import (
 )
 
 TOL = sc.doc.ModelAbsoluteTolerance
+RIVET_LAYER = "Rivets"
+
+
+def ensure_rivet_layer():
+    if not rs.IsLayer(RIVET_LAYER):
+        rs.AddLayer(RIVET_LAYER, (230, 40, 30))
+    return RIVET_LAYER
+
+
+def default_json_path():
+    p = sc.doc.Path
+    if p:
+        return os.path.splitext(p)[0] + "_rivets.json"
+    return os.path.join(os.path.expanduser("~"), "Desktop", "rhino_rivets.json")
 
 
 # --------------------------------------------------------------------------- #
@@ -186,6 +203,7 @@ def main():
     rivets_by_parent = {}      # pid -> [rivet Brep]
     parent_brep = {}           # pid -> Brep
     seeds_by_parent = {}       # pid -> set(face index)
+    records = []               # 放钉记录（中心/法向/形状/半径），即时写出真值
     n_made = 0
     for ref in refs:
         pid = ref.ObjectId
@@ -205,18 +223,37 @@ def main():
                 riv = make_dome(center, radius)
             if riv:
                 rivets_by_parent.setdefault(pid, []).append(riv)
+                records.append({
+                    "id": len(records),
+                    "shape": shape,
+                    "radius": radius,
+                    "center": [center.X, center.Y, center.Z],
+                    "normal": [n.X, n.Y, n.Z],
+                    "parent_object": str(pid),
+                })
                 n_made += 1
 
     if n_made == 0:
         print("未生成铆钉。")
         return
 
+    # 即时写出铆钉记录（真值），不依赖事后导出/检测
+    json_path = default_json_path()
+    with open(json_path, "w", encoding="utf-8") as f:
+        json.dump({"source": "rhino", "shape": shape, "radius": radius,
+                   "count": len(records), "rivets": records}, f,
+                  ensure_ascii=False, indent=2)
+    print("铆钉记录(真值) -> %s（%d 个）" % (json_path, len(records)))
+
     if not do_union:
+        layer = ensure_rivet_layer()
         for rl in rivets_by_parent.values():
             for riv in rl:
-                sc.doc.Objects.AddBrep(riv)
+                oid = sc.doc.Objects.AddBrep(riv)
+                if oid:
+                    rs.ObjectLayer(oid, layer)
         sc.doc.Views.Redraw()
-        print("已添加 %d 个铆钉（未融合）。可手动 _BooleanUnion。" % n_made)
+        print("已添加 %d 个铆钉到图层 '%s'（未融合）。可手动 _BooleanUnion。" % (n_made, layer))
         return
 
     n_union = 0
