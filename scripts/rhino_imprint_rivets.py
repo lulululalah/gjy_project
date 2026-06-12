@@ -18,12 +18,13 @@
 import json
 import os
 
+import System
 import scriptcontext as sc
 import Rhino
 import rhinoscriptsyntax as rs
-from Rhino.Geometry import Circle, Curve, Plane, Point3d, Vector3d
+from Rhino.Geometry import Brep, Circle, Curve, Plane, Point3d, Vector3d
 
-SCRIPT_VERSION = "imprint-v1"
+SCRIPT_VERSION = "imprint-v2-facesplit"
 TOL = sc.doc.ModelAbsoluteTolerance
 
 
@@ -97,8 +98,8 @@ def main():
     if inset is None:
         return
 
-    # 按所属对象收集压印圆（已贴到面上）+ 记录
-    cutters_by_pid = {}
+    # 按 (对象, 面下标) 收集压印圆（已贴到面上）+ 记录
+    cutters = {}               # pid -> {faceIndex: [curve]}
     brep_by_pid = {}
     records = []
     for ref in refs:
@@ -108,13 +109,13 @@ def main():
         face = adjacent_face(ref)
         if face is None:
             continue
+        fidx = face.FaceIndex
         for pt, tan in edge_points(ref, count):
             center, n = place_on_face(face, pt, tan, inset)
             circle = Circle(Plane(center, n), radius).ToNurbsCurve()
             pulled = Curve.PullToBrepFace(circle, face, TOL)   # (curve, face, tol)：把圆贴到曲面上
-            if pulled:
-                for c in pulled:
-                    cutters_by_pid.setdefault(pid, []).append(c)
+            if pulled and len(pulled) > 0:
+                cutters.setdefault(pid, {}).setdefault(fidx, []).extend(pulled)
                 records.append({
                     "id": len(records), "shape": "disk", "radius": radius,
                     "center": [center.X, center.Y, center.Z],
@@ -134,20 +135,29 @@ def main():
                    "count": len(records), "rivets": records}, f, ensure_ascii=False, indent=2)
     print("铆钉记录(真值) -> %s（%d 个）" % (json_path, len(records)))
 
-    # 逐对象：Split 压印 + JoinBreps 合回一个 brep（拓扑里多出子面/内环，无布尔）
+    # 逐对象：对“带压印圆的面”做 BrepFace.Split，其余面原样 DuplicateFace，再 JoinBreps
     n_imprinted = 0
-    for pid, cutters in cutters_by_pid.items():
+    for pid, face_map in cutters.items():
         brep = brep_by_pid[pid]
-        pieces = brep.Split(cutters, TOL)
-        if pieces is None or len(pieces) == 0:
-            print("  对象 %s Split 无结果（圆可能未落在面内）-> 跳过，原件保留。" % pid)
+        pieces = []
+        n_circ = 0
+        for j in range(brep.Faces.Count):
+            f = brep.Faces[j]
+            if j in face_map:
+                arr = System.Array[Curve](face_map[j])
+                sb = f.Split(arr, TOL)             # 用圆切分该面 -> 含子面的 brep
+                pieces.append(sb if sb else f.DuplicateFace(False))
+                n_circ += len(face_map[j])
+            else:
+                pieces.append(f.DuplicateFace(False))
+        joined = Brep.JoinBreps(System.Array[Brep](pieces), TOL)
+        if joined is None or len(joined) == 0:
+            print("  对象 %s JoinBreps 失败 -> 跳过，原件保留。" % pid)
             continue
-        joined = Rhino.Geometry.Brep.JoinBreps(pieces, TOL)
-        result = joined[0] if (joined and len(joined) > 0) else pieces[0]
-        nfaces_before = brep.Faces.Count
-        sc.doc.Objects.Replace(pid, result)
-        n_imprinted += len(cutters)
-        print("  对象 %s：面数 %d -> %d，压印圆 %d" % (pid, nfaces_before, result.Faces.Count, len(cutters)))
+        before = brep.Faces.Count
+        sc.doc.Objects.Replace(pid, joined[0])
+        n_imprinted += n_circ
+        print("  对象 %s：面数 %d -> %d，压印圆 %d" % (pid, before, joined[0].Faces.Count, n_circ))
 
     sc.doc.Views.Redraw()
     print("完成：压印 %d 个铆钉锚点（拓扑子面/内环，无布尔）。" % n_imprinted)
