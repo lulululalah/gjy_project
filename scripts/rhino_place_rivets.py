@@ -224,11 +224,24 @@ def _sub_brep(brep, face_indices):
 
 
 # --------------------------------------------------------------------------- #
-SCRIPT_VERSION = "v7-volume-guard"
+SCRIPT_VERSION = "v8-doc-dump"
+
+
+def dump_objects(tag):
+    objs = [o for o in sc.doc.Objects]
+    print("[%s] 文档可见对象数 = %d" % (tag, len(objs)))
+    for o in objs:
+        try:
+            bb = o.Geometry.GetBoundingBox(True)
+            diag = bb.Diagonal.Length
+        except Exception:  # noqa: BLE001
+            diag = -1
+        print("    obj %s  bbox对角=%.3f" % (str(o.Id)[:8], diag))
 
 
 def main():
     print("=== rhino_place_rivets %s ===" % SCRIPT_VERSION)
+    dump_objects("运行前")
     refs = select_edges()
     if not refs:
         print("未选择任何边。")
@@ -393,6 +406,7 @@ def main():
     sc.doc.Views.Redraw()
     print("完成：生成 %d 个铆钉（形状=%s，半径=%.4f），融合 %d 个。" %
           (n_made, shape, radius, n_union))
+    dump_objects("运行后")
 
 
 if __name__ == "__main__":
