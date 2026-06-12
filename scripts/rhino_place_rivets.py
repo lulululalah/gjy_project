@@ -300,29 +300,29 @@ def main():
         print("诊断：对象 %s 面数=%d，独立实体(lump)=%d，铆钉=%d"
               % (pid, brep.Faces.Count, len(comps), len(rivets)))
 
-        # 单实体：整体布尔，但带“丢件保护”
+        # 单实体：逐个铆钉顺序融合，坏钉只跳过自己，绝不破坏已累积实体
         if len(comps) <= 1:
-            union = Brep.CreateBooleanUnion([brep] + rivets, TOL)
-            if union is None or len(union) == 0:
-                print("  布尔失败，直接叠加铆钉（原件保留）。")
-                for riv in rivets:
-                    sc.doc.Objects.AddBrep(riv)
-                continue
-            ob = brep.GetBoundingBox(True)
-            ub = union[0].GetBoundingBox(True)
-            for i in range(1, len(union)):
-                ub = BoundingBox.Union(ub, union[i].GetBoundingBox(True))
-            print("  union块数=%d  原bbox对角=%.3f  结果bbox对角=%.3f"
-                  % (len(union), ob.Diagonal.Length, ub.Diagonal.Length))
-            if ub.Diagonal.Length < 0.7 * ob.Diagonal.Length:
-                print("  ⚠ 布尔结果明显变小，疑似丢件 -> 不替换，仅叠加铆钉（原件完整保留）。")
-                for riv in rivets:
-                    sc.doc.Objects.AddBrep(riv)
-                continue
-            sc.doc.Objects.Replace(pid, union[0])
-            for i in range(1, len(union)):
-                sc.doc.Objects.AddBrep(union[i])
-            n_union += len(rivets)
+            base_diag = brep.GetBoundingBox(True).Diagonal.Length
+            cur = brep
+            applied = 0
+            for riv in rivets:
+                u = Brep.CreateBooleanUnion([cur, riv], TOL)
+                if u is None or len(u) == 0:
+                    continue
+                nb = u[0].GetBoundingBox(True)
+                for i in range(1, len(u)):
+                    nb = BoundingBox.Union(nb, u[i].GetBoundingBox(True))
+                if nb.Diagonal.Length < 0.7 * base_diag:
+                    continue                         # 这颗钉导致丢件 -> 跳过，保留 cur
+                if len(u) == 1:
+                    cur = u[0]
+                else:
+                    j = Brep.JoinBreps(u, TOL)
+                    cur = j[0] if j and len(j) > 0 else u[0]
+                applied += 1
+            sc.doc.Objects.Replace(pid, cur)         # cur 至少是原件，绝不丢
+            n_union += applied
+            print("  顺序融合成功 %d/%d（其余跳过，实体完整保留）" % (applied, len(rivets)))
             continue
 
         # 多实体：先把所有 lump 都成功拆出来，否则绝不替换母对象（防丢件）
