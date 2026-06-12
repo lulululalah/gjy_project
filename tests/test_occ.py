@@ -115,6 +115,31 @@ def test_anchor_stp_roundtrip_and_normal(tmp_path):
     assert n.Z() > 0.9
 
 
+def test_protrusions_fuse_into_topology():
+    """三类凸起都应能 Fuse 进立方体、增大体积、且结果为有效实体（拓扑融合）。"""
+    from OCC.Core.BRepAlgoAPI import BRepAlgoAPI_Fuse
+    from OCC.Core.BRepCheck import BRepCheck_Analyzer
+    from OCC.Core.gp import gp_Dir, gp_Pnt
+
+    from brep_defeature.occ.defeature import _volume
+    from brep_defeature.occ.extract import build_face_map
+    from brep_defeature.occ.features import FEATURE_KINDS, make_protrusion
+
+    base = _box(20.0, 20.0, 10.0)
+    top_pnt = gp_Pnt(10.0, 10.0, 10.0)
+    up = gp_Dir(0, 0, 1)
+    for kind in FEATURE_KINDS:
+        solid = make_protrusion(kind, top_pnt, up, size=1.0)
+        fuse = BRepAlgoAPI_Fuse(base, solid)
+        fuse.Build()
+        assert fuse.IsDone(), f"{kind} Fuse 未完成"
+        result = fuse.Shape()
+        assert BRepCheck_Analyzer(result).IsValid(), f"{kind} 结果非有效实体"
+        assert _volume(result) > _volume(base), f"{kind} 未增大体积"
+        # 顶面被压印分割 -> 面数增加（拓扑确实改变）
+        assert build_face_map(result).Size() > build_face_map(base).Size()
+
+
 def test_defeature_rivet_restores_shape():
     base = _box()
     from brep_defeature.occ.defeature import _volume
