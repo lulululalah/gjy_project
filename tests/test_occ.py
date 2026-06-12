@@ -97,6 +97,24 @@ def test_make_training_sample_graph_labeled():
 # --------------------------------------------------------------------------- #
 # 去除 + 恢复误差
 # --------------------------------------------------------------------------- #
+def test_anchor_stp_roundtrip_and_normal(tmp_path):
+    from brep_defeature.occ.anchors import read_anchors_stp, resolve_anchor, write_anchors_stp
+
+    pts = [(1.0, 2.0, 3.0), (4.5, 5.5, 6.5), (10.0, 0.0, 0.0)]
+    p = tmp_path / "anchors.stp"
+    write_anchors_stp(pts, str(p))
+    back = read_anchors_stp(str(p))
+    assert len(back) == len(pts)
+    for w, r in zip(sorted(pts), sorted(back)):
+        assert all(abs(a - b) < 1e-3 for a, b in zip(w, r))
+
+    # 锚点投影到立方体顶面，法向应为 +Z
+    pnt, n = resolve_anchor(_box(20.0, 20.0, 10.0), (10.0, 10.0, 10.2))
+    assert pnt is not None
+    assert abs(pnt.Z() - 10.0) < 1e-3
+    assert n.Z() > 0.9
+
+
 def test_defeature_rivet_restores_shape():
     base = _box()
     from brep_defeature.occ.defeature import _volume

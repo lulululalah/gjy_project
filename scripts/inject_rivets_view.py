@@ -1,56 +1,46 @@
-"""在飞机模型机翼/接缝处注入铆钉，并用 Polyscope 自动截图。
+"""按锚点 STP 注入铆钉 -> 导出注入后 STP + Polyscope 截图。
+
+注入位置完全来自 --anchors 指定的锚点 STP（不含任何启发式选面）。锚点当前由
+临时脚本 scripts/make_anchors.py 生成，后期改为 DL 模型预测，本脚本无需改动。
 
 用法（需 OCC 环境）：
     /opt/anaconda3/envs/occ/bin/python scripts/inject_rivets_view.py \
-        --step "data/Xian Y-20 v3.step" --out rivets.png --n 30
-
-流程：
-  1. 读取 STEP，分析包围盒，自动挑选「机翼/尾翼」区域的近水平大面作为宿主。
-  2. 在这些面靠近边界（接缝）处采样点，建圆柱+球冠铆钉刀具。
-  3. 一次性 Fuse（失败则退化为「叠加铆钉几何」渲染，仍能出图）。
-  4. 三角化结果，按面着色（铆钉=红，机身=灰），Polyscope 截图（无 GL 则 matplotlib）。
+        --step "data/Xian Y-20 v3.step" \
+        --anchors "data/Xian Y-20 v3_anchors.stp" \
+        --out-step y20_rivets.stp --out y20_rivets.png
 """
 
 from __future__ import annotations
 
 import argparse
 import math
+import os
 import sys
+
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 import numpy as np
 
-from OCC.Core.BRep import BRep_Tool
-from OCC.Core.BRepAdaptor import BRepAdaptor_Surface
-from OCC.Core.BRep import BRep_Builder
+from OCC.Core.BRep import BRep_Builder, BRep_Tool
 from OCC.Core.BRepAlgoAPI import BRepAlgoAPI_Fuse
-from OCC.Core.BRepLProp import BRepLProp_SLProps
 from OCC.Core.BRepMesh import BRepMesh_IncrementalMesh
 from OCC.Core.BRepPrimAPI import BRepPrimAPI_MakeCylinder, BRepPrimAPI_MakeSphere
 from OCC.Core.Bnd import Bnd_Box
 from OCC.Core.BRepBndLib import brepbndlib
-from OCC.Core.BRepGProp import brepgprop
-from OCC.Core.GProp import GProp_GProps
-from OCC.Core.STEPControl import STEPControl_Reader
+from OCC.Core.STEPControl import STEPControl_AsIs, STEPControl_Writer
 from OCC.Core.TopAbs import TopAbs_FACE
-from OCC.Core.TopExp import TopExp_Explorer
+from OCC.Core.TopExp import TopExp_Explorer, topexp
 from OCC.Core.TopLoc import TopLoc_Location
 from OCC.Core.TopoDS import TopoDS_Compound, topods
 from OCC.Core.TopTools import TopTools_IndexedMapOfShape, TopTools_ListIteratorOfListOfShape
-from OCC.Core.TopExp import topexp
-from OCC.Core.gp import gp_Ax2, gp_Dir, gp_Pnt
+from OCC.Core.gp import gp_Ax2, gp_Pnt
+
+from brep_defeature.occ.anchors import read_anchors_stp, resolve_anchor
+from brep_defeature.occ.extract import read_step
 
 
-# --------------------------------------------------------------------------- #
 def log(*a):
     print(*a, file=sys.stderr, flush=True)
-
-
-def read_step(path: str):
-    reader = STEPControl_Reader()
-    if reader.ReadFile(path) != 1:
-        raise IOError(f"读取失败: {path}")
-    reader.TransferRoots()
-    return reader.OneShape()
 
 
 def face_map(shape):
@@ -68,98 +58,10 @@ def faces(shape):
     return out
 
 
-def face_area(face):
-    props = GProp_GProps()
-    brepgprop.SurfaceProperties(face, props)
-    return props.Mass()
-
-
-def face_centroid_normal(face):
-    """面参数中点的 (点, 外法向)。"""
-    ad = BRepAdaptor_Surface(face)
-    u = 0.5 * (ad.FirstUParameter() + ad.LastUParameter())
-    v = 0.5 * (ad.FirstVParameter() + ad.LastVParameter())
-    props = BRepLProp_SLProps(ad, u, v, 1, 1e-6)
-    if not props.IsNormalDefined():
-        return None, None
-    p = props.Value()
-    n = props.Normal()
-    if face.Orientation() == 1:
-        n.Reverse()
-    return p, n
-
-
 def bbox(shape):
     box = Bnd_Box()
     brepbndlib.Add(shape, box)
-    return box.Get()  # xmin,ymin,zmin,xmax,ymax,zmax
-
-
-# --------------------------------------------------------------------------- #
-# 宿主面选择：机翼/尾翼区域的近水平大面
-# --------------------------------------------------------------------------- #
-def select_hosts(shape, max_hosts=12):
-    xmin, ymin, zmin, xmax, ymax, zmax = bbox(shape)
-    ext = [xmax - xmin, ymax - ymin, zmax - zmin]
-    vert_axis = int(np.argmin(ext))          # 高度方向（最小跨度）
-    horiz_axes = [i for i in range(3) if i != vert_axis]
-    # 在两个水平轴里，跨度较大的更可能是翼展方向
-    span_axis = horiz_axes[int(np.argmax([ext[i] for i in horiz_axes]))]
-    center = [(xmin + xmax) / 2, (ymin + ymax) / 2, (zmin + zmax) / 2]
-    half_span = ext[span_axis] / 2
-    log(f"  bbox ext={[round(e,1) for e in ext]} vert_axis={vert_axis} span_axis={span_axis}")
-
-    areas = [face_area(f) for f in faces(shape)]
-    if not areas:
-        return []
-    area_thr = np.percentile(areas, 75)      # 取较大的面
-
-    cand = []
-    for f, a in zip(faces(shape), areas):
-        if a < area_thr:
-            continue
-        p, n = face_centroid_normal(f)
-        if p is None:
-            continue
-        coords = [p.X(), p.Y(), p.Z()]
-        nrm = [n.X(), n.Y(), n.Z()]
-        # 近水平：法向主要沿竖直轴
-        if abs(nrm[vert_axis]) < 0.6:
-            continue
-        # 外翼区域：沿翼展方向偏离中心
-        span_off = abs(coords[span_axis] - center[span_axis]) / (half_span + 1e-9)
-        if span_off < 0.2:                   # 排除机身中线附近
-            continue
-        cand.append((span_off * a, f, a, span_off))
-    cand.sort(key=lambda t: -t[0])
-    chosen = cand[:max_hosts]
-    log(f"  候选宿主面 {len(cand)} 个，选用 {len(chosen)} 个 (area_thr={area_thr:.1f})")
-    return [c[1] for c in chosen]
-
-
-def sample_points_near_seams(face, n_per_face=4):
-    """在面参数域靠近边界（接缝）与内部采样若干 (点, 法向)。"""
-    ad = BRepAdaptor_Surface(face)
-    u0, u1 = ad.FirstUParameter(), ad.LastUParameter()
-    v0, v1 = ad.FirstVParameter(), ad.LastVParameter()
-    # 靠近 4 条参数边界的点 + 中心
-    fracs = [(0.12, 0.5), (0.88, 0.5), (0.5, 0.12), (0.5, 0.88), (0.5, 0.5)]
-    pts = []
-    for fu, fv in fracs[: n_per_face + 1]:
-        u = u0 + fu * (u1 - u0)
-        v = v0 + fv * (v1 - v0)
-        try:
-            props = BRepLProp_SLProps(ad, u, v, 1, 1e-6)
-            if not props.IsNormalDefined():
-                continue
-            p = props.Value()
-            n = props.Normal()
-            if face.Orientation() == 1:
-                n.Reverse()
-            pts.append((p, n))
-        except RuntimeError:
-            continue
-    return pts
+    return box.Get()
 
 
 def make_rivet(pnt, normal, radius, height):
@@ -172,9 +74,6 @@ def make_rivet(pnt, normal, radius, height):
     return BRepAlgoAPI_Fuse(cyl, sph).Shape()
 
 
-# --------------------------------------------------------------------------- #
-# 三角化
-# --------------------------------------------------------------------------- #
 def tessellate(shape, lin_defl):
     BRepMesh_IncrementalMesh(shape, lin_defl, False, 0.5, True)
     fmap = face_map(shape)
@@ -190,10 +89,10 @@ def tessellate(shape, lin_defl):
         for i in range(1, tri.NbNodes() + 1):
             p = tri.Node(i).Transformed(trsf)
             verts.append((p.X(), p.Y(), p.Z()))
-        reversed_face = face.Orientation() == 1
+        rev = face.Orientation() == 1
         for i in range(1, tri.NbTriangles() + 1):
             n1, n2, n3 = tri.Triangle(i).Get()
-            if reversed_face:
+            if rev:
                 n1, n3 = n3, n1
             tris.append((base + n1 - 1, base + n2 - 1, base + n3 - 1))
             tri_face.append(fid)
@@ -222,14 +121,18 @@ def rivet_face_ids(fuse, tools_compound, result_fmap):
     return ids
 
 
-# --------------------------------------------------------------------------- #
-# 渲染
+def export_step(shape, path):
+    writer = STEPControl_Writer()
+    writer.Transfer(shape, STEPControl_AsIs)
+    if writer.Write(path) != 1:
+        raise IOError(f"导出 STP 失败: {path}")
+
+
 # --------------------------------------------------------------------------- #
 def render(verts, tris, tri_is_rivet, out_png, center, diag, vert_axis):
-    colors = np.tile(np.array([0.72, 0.74, 0.78]), (len(tris), 1))  # 机身灰
-    colors[tri_is_rivet] = np.array([0.90, 0.15, 0.12])            # 铆钉红
+    colors = np.tile(np.array([0.72, 0.74, 0.78]), (len(tris), 1))
+    colors[tri_is_rivet] = np.array([0.90, 0.15, 0.12])
     up_name = ["x_up", "y_up", "z_up"][vert_axis]
-    # 斜俯视：竖直分量朝上，两个水平分量给出 3/4 视角，能看到平面投影
     offset = np.full(3, 0.85)
     offset[vert_axis] = 1.0
     cam = np.asarray(center) + offset * diag * 1.0
@@ -246,7 +149,7 @@ def render(verts, tris, tri_is_rivet, out_png, center, diag, vert_axis):
         ps.screenshot(out_png, transparent_bg=False)
         log(f"  [polyscope] 已保存 {out_png}")
         return "polyscope"
-    except Exception as e:  # 无 GL 上下文等
+    except Exception as e:
         log(f"  [polyscope 失败 -> matplotlib] {type(e).__name__}: {e}")
         return _render_matplotlib(verts, tris, tri_is_rivet, out_png)
 
@@ -259,11 +162,9 @@ def _render_matplotlib(verts, tris, tri_is_rivet, out_png):
 
     fig = plt.figure(figsize=(16, 10))
     ax = fig.add_subplot(111, projection="3d")
-    poly = verts[tris]
     fc = np.tile(np.array([0.72, 0.74, 0.78, 1.0]), (len(tris), 1))
     fc[tri_is_rivet] = np.array([0.90, 0.15, 0.12, 1.0])
-    coll = Poly3DCollection(poly, facecolors=fc, edgecolors="none", linewidths=0)
-    coll.set_sort_zpos(0)
+    coll = Poly3DCollection(verts[tris], facecolors=fc, edgecolors="none")
     ax.add_collection3d(coll)
     mn, mx = verts.min(0), verts.max(0)
     ax.set_xlim(mn[0], mx[0]); ax.set_ylim(mn[1], mx[1]); ax.set_zlim(mn[2], mx[2])
@@ -277,69 +178,60 @@ def _render_matplotlib(verts, tris, tri_is_rivet, out_png):
 
 # --------------------------------------------------------------------------- #
 def main():
-    ap = argparse.ArgumentParser()
+    ap = argparse.ArgumentParser(description="按锚点 STP 注入铆钉并导出 STP + 截图")
     ap.add_argument("--step", required=True)
-    ap.add_argument("--out", default="rivets.png")
-    ap.add_argument("--n", type=int, default=30, help="目标铆钉数")
-    ap.add_argument("--hosts", type=int, default=12)
+    ap.add_argument("--anchors", required=True, help="锚点 STP（注入位置，唯一来源）")
+    ap.add_argument("--out", default="rivets.png", help="截图 PNG")
+    ap.add_argument("--out-step", default=None, help="注入后模型 STP")
     ap.add_argument("--radius-frac", type=float, default=0.004, help="铆钉半径 / 包围盒对角线")
     args = ap.parse_args()
 
-    log(f"读取 {args.step}")
+    log(f"读取模型 {args.step}")
     shape = read_step(args.step)
-    nfaces = face_map(shape).Size()
-    log(f"  面数 {nfaces}")
+    log(f"  面数 {face_map(shape).Size()}")
     xmin, ymin, zmin, xmax, ymax, zmax = bbox(shape)
     ext = [xmax - xmin, ymax - ymin, zmax - zmin]
     center = [(xmin + xmax) / 2, (ymin + ymax) / 2, (zmin + zmax) / 2]
     vert_axis = int(np.argmin(ext))
     diag = math.sqrt(sum(e * e for e in ext))
     radius = diag * args.radius_frac
-    log(f"  对角线 {diag:.1f}，铆钉半径 {radius:.3f}")
 
-    hosts = select_hosts(shape, max_hosts=args.hosts)
-    if not hosts:
-        log("未找到合适宿主面，退出")
-        sys.exit(1)
+    anchors = read_anchors_stp(args.anchors)
+    log(f"读取锚点 {len(anchors)} 个 <- {args.anchors}")
 
-    # 采样点 -> 铆钉刀具（汇入一个 compound，单次 Fuse）
     comp = TopoDS_Compound()
     bld = BRep_Builder()
     bld.MakeCompound(comp)
     placed = 0
-    per_face = max(1, args.n // len(hosts))
-    for f in hosts:
-        for p, n in sample_points_near_seams(f, n_per_face=per_face):
-            bld.Add(comp, make_rivet(p, n, radius, radius * 0.5))
-            placed += 1
-            if placed >= args.n:
-                break
-        if placed >= args.n:
-            break
-    log(f"  放置铆钉刀具 {placed} 个")
+    for xyz in anchors:
+        pnt, normal = resolve_anchor(shape, xyz)
+        if pnt is None:
+            continue
+        bld.Add(comp, make_rivet(pnt, normal, radius, radius * 0.5))
+        placed += 1
+    log(f"  在锚点处放置铆钉刀具 {placed} 个（半径 {radius:.3f}）")
 
-    # 尝试真实 Fuse
-    mode = "fused"
-    rivet_ids = set()
+    mode, rivet_ids = "fused", set()
     try:
         fuse = BRepAlgoAPI_Fuse(shape, comp)
         fuse.Build()
-        if fuse.IsDone():
-            result = fuse.Shape()
-            result_fmap = face_map(result)
-            rivet_ids = rivet_face_ids(fuse, comp, result_fmap)
-            log(f"  Fuse 成功，结果面数 {result_fmap.Size()}，铆钉面 {len(rivet_ids)}")
-        else:
+        if not fuse.IsDone():
             raise RuntimeError("Fuse 未完成")
+        result = fuse.Shape()
+        result_fmap = face_map(result)
+        rivet_ids = rivet_face_ids(fuse, comp, result_fmap)
+        log(f"  Fuse 成功：结果面数 {result_fmap.Size()}，铆钉面 {len(rivet_ids)}")
     except Exception as e:
         log(f"  Fuse 失败 -> 叠加渲染: {type(e).__name__}: {e}")
         mode = "overlay"
 
     if mode == "fused":
+        if args.out_step:
+            export_step(result, args.out_step)
+            log(f"  注入后模型已导出 -> {args.out_step}")
         verts, tris, tri_face = tessellate(result, diag * 0.0008)
         tri_is_rivet = np.isin(tri_face, list(rivet_ids)) if rivet_ids else np.zeros(len(tris), bool)
     else:
-        # 叠加：机身 + 铆钉刀具分别三角化
         v1, t1, _ = tessellate(shape, diag * 0.0008)
         v2, t2, _ = tessellate(comp, diag * 0.0008)
         verts = np.vstack([v1, v2])

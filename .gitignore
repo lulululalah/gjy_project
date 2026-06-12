@@ -53,3 +53,4 @@ __pycache__/
 *.png
 .polyscope.ini
 imgui.ini
+/y20_rivets.stp
