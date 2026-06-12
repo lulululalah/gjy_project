@@ -190,9 +190,19 @@ def _sub_brep(brep, face_indices):
     """从 brep 抽取给定 face 子集为新 brep（保留其它实体用）。"""
     if not face_indices:
         return None
-    import System
-    arr = System.Array[int](sorted(face_indices))
-    return brep.DuplicateSubBrep(arr)
+    lst = sorted(face_indices)
+    try:
+        import System
+        sub = brep.DuplicateSubBrep(System.Array[int](lst))
+        if sub:
+            return sub
+    except Exception as ex:                     # noqa: BLE001
+        print("  DuplicateSubBrep(Array) 失败:", ex)
+    try:
+        return brep.DuplicateSubBrep(lst)
+    except Exception as ex:                      # noqa: BLE001
+        print("  DuplicateSubBrep(list) 失败:", ex)
+    return None
 
 
 # --------------------------------------------------------------------------- #
@@ -286,6 +296,8 @@ def main():
             continue
 
         comps = all_components(brep)             # 母 brep 的所有独立实体(lump)
+        print("诊断：对象 %s 面数=%d，独立实体(lump)=%d，铆钉=%d"
+              % (pid, brep.Faces.Count, len(comps), len(rivets)))
 
         # 单实体：直接整体布尔
         if len(comps) <= 1:
@@ -296,21 +308,28 @@ def main():
                     sc.doc.Objects.AddBrep(union[i])
                 n_union += len(rivets)
             else:
-                print("对象 %s 布尔失败，直接添加铆钉（原件保留）。" % pid)
+                print("  布尔失败，直接添加铆钉（原件保留）。")
                 for riv in rivets:
                     sc.doc.Objects.AddBrep(riv)
             continue
 
-        # 多实体：拆成 lump，铆钉只并入最近的 lump，其余 lump 原样保留
+        # 多实体：先把所有 lump 都成功拆出来，否则绝不替换母对象（防丢件）
         lumps = [_sub_brep(brep, c) for c in comps]
-        bbs = [(lp.GetBoundingBox(True) if lp else None) for lp in lumps]
+        n_ok = sum(1 for lp in lumps if lp is not None)
+        print("  lump 拆分成功 %d/%d" % (n_ok, len(lumps)))
+        if n_ok < len(lumps):
+            print("  有 lump 拆分失败 -> 不替换母对象，仅叠加铆钉（不丢件，但未融合）。")
+            for riv in rivets:
+                sc.doc.Objects.AddBrep(riv)
+            continue
+
+        # 铆钉只并入最近的 lump，其余 lump 原样保留
+        bbs = [lp.GetBoundingBox(True) for lp in lumps]
         assign = {i: [] for i in range(len(lumps))}
         for riv in rivets:
             ctr = riv.GetBoundingBox(True).Center
             best, bd = None, 1e18
             for i, b in enumerate(bbs):
-                if b is None:
-                    continue
                 d = bbox_dist_to_point(b, ctr)
                 if d < bd:
                     bd, best = d, i
@@ -319,24 +338,22 @@ def main():
 
         out = []
         for i, lp in enumerate(lumps):
-            if lp is None:
-                continue
             if assign[i]:
                 u = Brep.CreateBooleanUnion([lp] + assign[i], TOL)
                 if u is not None and len(u) > 0:
-                    for k in range(len(u)):
-                        out.append(u[k])
+                    out.extend(u[k] for k in range(len(u)))
                     n_union += len(assign[i])
-                else:                            # 该 lump 布尔失败：保留 lump + 钉，不丢件
+                else:
                     out.append(lp)
                     out.extend(assign[i])
             else:
                 out.append(lp)                   # 无钉的 lump 原样保留（机身/机头等）
 
-        if out:
-            sc.doc.Objects.Replace(pid, out[0])
-            for k in range(1, len(out)):
-                sc.doc.Objects.AddBrep(out[k])
+        # 全部 lump 都已收进 out，才替换母对象，保证不丢件
+        sc.doc.Objects.Replace(pid, out[0])
+        for k in range(1, len(out)):
+            sc.doc.Objects.AddBrep(out[k])
+        print("  完成：母对象拆分重组为 %d 个对象。" % len(out))
 
     sc.doc.Views.Redraw()
     print("完成：生成 %d 个铆钉（形状=%s，半径=%.4f），融合 %d 个。" %
