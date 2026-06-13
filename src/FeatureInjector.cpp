@@ -126,25 +126,44 @@ std::vector<FaceFeature> ExtractFeatures(const TopoDS_Shape& shape) {
     return extractor.GetResults();
 }
 
-bool IsWingCandidate(const FaceFeature& feature) {
+bool IsPrimaryWingSkinCandidate(const FaceFeature& feature) {
+    const bool isLargeEnough = feature.area >= 4.0;
+    const bool isAwayFromCenterline = std::abs(feature.centerZ) >= 1.5;
+    const bool isPlanarSkin = feature.surfaceType == GeomAbs_Plane;
+    const bool isWingLikeOrientation =
+        std::abs(feature.normalY) >= 0.95 &&
+        std::abs(feature.normalZ) <= 0.15;
+    return isLargeEnough && isAwayFromCenterline && isPlanarSkin && isWingLikeOrientation;
+}
+
+bool IsFallbackWingCandidate(const FaceFeature& feature) {
     const bool isLargeEnough = feature.area >= 2.0;
     const bool isAwayFromCenterline = std::abs(feature.centerZ) >= 1.5;
-    const bool hasWingLikeNormal = std::abs(feature.normalZ) >= 0.65;
     const bool isOuterSurface =
         feature.surfaceType == GeomAbs_BSplineSurface ||
         feature.surfaceType == GeomAbs_Plane;
-    return isLargeEnough && isAwayFromCenterline && hasWingLikeNormal && isOuterSurface;
+    const bool isWingLikeOrientation =
+        std::abs(feature.normalY) >= 0.55 &&
+        std::abs(feature.normalZ) <= 0.75;
+    return isLargeEnough && isAwayFromCenterline && isOuterSurface && isWingLikeOrientation;
 }
 
 double ComputeWingScore(const FaceFeature& feature) {
-    return feature.area * std::abs(feature.centerZ) * std::abs(feature.centerZ);
+    const double verticalPreference = 20.0 + feature.centerY;
+    return feature.area * (1.0 + std::abs(feature.centerZ)) * std::max(verticalPreference, 0.1);
 }
 
-std::vector<WingHostFace> SelectWingHostFaces(const std::vector<FaceFeature>& features) {
+std::vector<WingHostFace> SelectWingHostFaces(
+    const std::vector<FaceFeature>& features,
+    bool usePrimaryCandidates
+) {
     WingHostFace positiveWing;
     WingHostFace negativeWing;
     for (const auto& feature : features) {
-        if (!IsWingCandidate(feature)) {
+        const bool isCandidate = usePrimaryCandidates
+            ? IsPrimaryWingSkinCandidate(feature)
+            : IsFallbackWingCandidate(feature);
+        if (!isCandidate) {
             continue;
         }
 
@@ -365,7 +384,10 @@ int RunWingRivetInjection(const std::string& inputFile) {
         return 1;
     }
 
-    const auto hostFaces = SelectWingHostFaces(originalFeatures);
+    auto hostFaces = SelectWingHostFaces(originalFeatures, true);
+    if (hostFaces.empty()) {
+        hostFaces = SelectWingHostFaces(originalFeatures, false);
+    }
     if (hostFaces.empty()) {
         std::cout << ">>> Could not find suitable wing faces for rivet injection." << std::endl;
         return 1;
