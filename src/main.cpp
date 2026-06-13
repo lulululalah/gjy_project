@@ -1,3 +1,4 @@
+#include "FeatureInjector.h"
 #include "Workflow.h"
 
 #include <filesystem>
@@ -32,7 +33,8 @@ namespace
             << "  Detector.exe --train\n"
             << "  Detector.exe --predict <file>\n"
             << "  Detector.exe --dump-faces <file>\n"
-            << "  Detector.exe --check-face-id <file>\n";
+            << "  Detector.exe --check-face-id <file>\n"
+            << "  Detector.exe --inject-wing-rivets <file>\n";
     }
 }
 
@@ -65,6 +67,11 @@ int main(int argc, char *argv[])
     {
         const std::string filePath = argv[2];
         return RunFaceIdConsistencyCheck(filePath);
+    }
+    else if (mode == "--inject-wing-rivets" && argc >= 3)
+    {
+        const std::string filePath = argv[2];
+        return RunWingRivetInjection(filePath);
     }
     else
     {

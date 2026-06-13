@@ -30,6 +30,7 @@ set(OCC_LIBS
 add_executable(Detector 
     src/main.cpp
     src/Workflow.cpp
+    src/FeatureInjector.cpp
     src/FeatureExtractor.cpp
     src/FeatureClassifier.cpp
     src/GeometryModifier.cpp
