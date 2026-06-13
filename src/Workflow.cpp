@@ -6,7 +6,11 @@
 
 #include <filesystem>
 #include <fstream>
+#include <iomanip>
 #include <iostream>
+#include <map>
+#include <set>
+#include <sstream>
 #include <string>
 #include <vector>
 
@@ -47,6 +51,72 @@ std::vector<FaceFeature> ExtractFaceFeaturesFromStep(const std::string& inputFil
 
 void WriteFaceCsvHeader(std::ofstream& dataFile) {
     dataFile << kFaceCsvHeader;
+}
+
+std::string EscapeJson(const std::string& value) {
+    std::ostringstream escaped;
+    for (const char ch : value) {
+        switch (ch) {
+        case '\\':
+            escaped << "\\\\";
+            break;
+        case '"':
+            escaped << "\\\"";
+            break;
+        case '\n':
+            escaped << "\\n";
+            break;
+        case '\r':
+            escaped << "\\r";
+            break;
+        case '\t':
+            escaped << "\\t";
+            break;
+        default:
+            escaped << ch;
+            break;
+        }
+    }
+    return escaped.str();
+}
+
+std::map<std::string, int> BuildFaceKeyHistogram(const std::vector<FaceFeature>& features) {
+    std::map<std::string, int> histogram;
+    for (const auto& feature : features) {
+        histogram[feature.faceKey]++;
+    }
+    return histogram;
+}
+
+std::vector<std::string> CollectDuplicateFaceKeys(const std::map<std::string, int>& histogram) {
+    std::vector<std::string> duplicates;
+    for (const auto& [faceKey, count] : histogram) {
+        if (count > 1) {
+            duplicates.push_back(faceKey);
+        }
+    }
+    return duplicates;
+}
+
+std::set<std::string> BuildFaceKeySet(const std::vector<FaceFeature>& features) {
+    std::set<std::string> keys;
+    for (const auto& feature : features) {
+        keys.insert(feature.faceKey);
+    }
+    return keys;
+}
+
+std::vector<std::string> ComputeMissingKeys(
+    const std::set<std::string>& lhs,
+    const std::set<std::string>& rhs
+) {
+    std::vector<std::string> missing;
+    for (const auto& key : lhs) {
+        if (rhs.find(key) == rhs.end()) {
+            missing.push_back(key);
+        }
+    }
+    return missing;
 }
 
 void WriteFaceRow(
@@ -124,6 +194,65 @@ void ExportFaceFeaturesForShape(
         WriteFaceRow(dataFile, graphId, modelName, feature);
     }
 }
+
+void WriteFaceDumpJson(
+    const std::string& inputFile,
+    const std::vector<FaceFeature>& features,
+    const std::string& outputJson
+) {
+    std::ofstream jsonFile(outputJson);
+    jsonFile << std::fixed << std::setprecision(6);
+    jsonFile << "{\n";
+    jsonFile << "  \"model_name\": \"" << EscapeJson(fs::path(inputFile).filename().string()) << "\",\n";
+    jsonFile << "  \"source_step\": \"" << EscapeJson(inputFile) << "\",\n";
+    jsonFile << "  \"face_count\": " << features.size() << ",\n";
+    jsonFile << "  \"faces\": [\n";
+
+    for (size_t index = 0; index < features.size(); ++index) {
+        const auto& feature = features[index];
+        jsonFile << "    {\n";
+        jsonFile << "      \"traversal_id\": " << feature.id << ",\n";
+        jsonFile << "      \"face_key\": \"" << EscapeJson(feature.faceKey) << "\",\n";
+        jsonFile << "      \"surface_type\": " << feature.surfaceType << ",\n";
+        jsonFile << "      \"area\": " << feature.area << ",\n";
+        jsonFile << "      \"perimeter\": " << feature.perimeter << ",\n";
+        jsonFile << "      \"center\": [" << feature.centerX << ", " << feature.centerY << ", " << feature.centerZ << "],\n";
+        jsonFile << "      \"normal\": [" << feature.normalX << ", " << feature.normalY << ", " << feature.normalZ << "],\n";
+        jsonFile << "      \"mean_curvature\": " << feature.meanCurvature << ",\n";
+        jsonFile << "      \"radius\": " << feature.radius << ",\n";
+        jsonFile << "      \"num_wires\": " << feature.numWires << ",\n";
+        jsonFile << "      \"inner_wire_count\": " << feature.innerWireCount << ",\n";
+        jsonFile << "      \"num_edges\": " << feature.numEdges << ",\n";
+        jsonFile << "      \"neighbors\": [";
+
+        for (size_t neighborIndex = 0; neighborIndex < feature.neighborIds.size(); ++neighborIndex) {
+            jsonFile << feature.neighborIds[neighborIndex];
+            if (neighborIndex + 1 != feature.neighborIds.size()) {
+                jsonFile << ", ";
+            }
+        }
+
+        jsonFile << "],\n";
+        jsonFile << "      \"edge_types\": [";
+
+        for (size_t edgeIndex = 0; edgeIndex < feature.neighborEdgeTypes.size(); ++edgeIndex) {
+            jsonFile << feature.neighborEdgeTypes[edgeIndex];
+            if (edgeIndex + 1 != feature.neighborEdgeTypes.size()) {
+                jsonFile << ", ";
+            }
+        }
+
+        jsonFile << "]\n";
+        jsonFile << "    }";
+        if (index + 1 != features.size()) {
+            jsonFile << ",";
+        }
+        jsonFile << "\n";
+    }
+
+    jsonFile << "  ]\n";
+    jsonFile << "}\n";
+}
 }
 
 void RunBatchTrainingExport(const std::string& inputDir, const std::string& outputCsv) {
@@ -167,4 +296,83 @@ void RunSingleInferenceExport(const std::string& inputFile, const std::string& o
     ExportFaceFeaturesForShape(dataFile, features, 0, modelName, false);
 
     std::cout << ">>> Inference CSV ready." << std::endl;
+}
+
+void RunSingleFaceDump(const std::string& inputFile, const std::string& outputJson) {
+    std::cout << ">>> Exporting face dump for: " << inputFile << std::endl;
+
+    const auto features = ExtractFaceFeaturesFromStep(inputFile);
+    if (features.empty()) {
+        return;
+    }
+
+    WriteFaceDumpJson(inputFile, features, outputJson);
+    std::cout << ">>> Face dump ready: " << outputJson << std::endl;
+}
+
+int RunFaceIdConsistencyCheck(const std::string& inputFile) {
+    std::cout << ">>> Checking face-id consistency for: " << inputFile << std::endl;
+
+    const auto firstPass = ExtractFaceFeaturesFromStep(inputFile);
+    const auto secondPass = ExtractFaceFeaturesFromStep(inputFile);
+    if (firstPass.empty() || secondPass.empty()) {
+        std::cout << ">>> Failed to extract faces from input STEP." << std::endl;
+        return 1;
+    }
+
+    const auto firstHistogram = BuildFaceKeyHistogram(firstPass);
+    const auto secondHistogram = BuildFaceKeyHistogram(secondPass);
+    const auto firstDuplicates = CollectDuplicateFaceKeys(firstHistogram);
+    const auto secondDuplicates = CollectDuplicateFaceKeys(secondHistogram);
+    const auto firstKeys = BuildFaceKeySet(firstPass);
+    const auto secondKeys = BuildFaceKeySet(secondPass);
+    const auto missingFromSecond = ComputeMissingKeys(firstKeys, secondKeys);
+    const auto missingFromFirst = ComputeMissingKeys(secondKeys, firstKeys);
+
+    std::cout << "First pass face_count: " << firstPass.size() << std::endl;
+    std::cout << "Second pass face_count: " << secondPass.size() << std::endl;
+    std::cout << "First pass unique face_key count: " << firstKeys.size() << std::endl;
+    std::cout << "Second pass unique face_key count: " << secondKeys.size() << std::endl;
+    std::cout << "First pass duplicate face_key count: " << firstDuplicates.size() << std::endl;
+    std::cout << "Second pass duplicate face_key count: " << secondDuplicates.size() << std::endl;
+    std::cout << "Missing keys from second pass: " << missingFromSecond.size() << std::endl;
+    std::cout << "Missing keys from first pass: " << missingFromFirst.size() << std::endl;
+
+    if (!firstDuplicates.empty()) {
+        std::cout << "Sample duplicate keys from first pass:" << std::endl;
+        for (size_t index = 0; index < firstDuplicates.size() && index < 5; ++index) {
+            std::cout << "  - " << firstDuplicates[index] << std::endl;
+        }
+    }
+
+    if (!secondDuplicates.empty()) {
+        std::cout << "Sample duplicate keys from second pass:" << std::endl;
+        for (size_t index = 0; index < secondDuplicates.size() && index < 5; ++index) {
+            std::cout << "  - " << secondDuplicates[index] << std::endl;
+        }
+    }
+
+    if (!missingFromSecond.empty()) {
+        std::cout << "Sample keys missing from second pass:" << std::endl;
+        for (size_t index = 0; index < missingFromSecond.size() && index < 5; ++index) {
+            std::cout << "  - " << missingFromSecond[index] << std::endl;
+        }
+    }
+
+    if (!missingFromFirst.empty()) {
+        std::cout << "Sample keys missing from first pass:" << std::endl;
+        for (size_t index = 0; index < missingFromFirst.size() && index < 5; ++index) {
+            std::cout << "  - " << missingFromFirst[index] << std::endl;
+        }
+    }
+
+    const bool isConsistent =
+        firstPass.size() == secondPass.size() &&
+        firstDuplicates.empty() &&
+        secondDuplicates.empty() &&
+        missingFromSecond.empty() &&
+        missingFromFirst.empty();
+
+    std::cout << ">>> Face-id consistency check: " << (isConsistent ? "PASS" : "FAIL") << std::endl;
+    return isConsistent ? 0 : 2;
 }

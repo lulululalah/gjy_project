@@ -11,6 +11,7 @@ namespace
         std::filesystem::path trainingInputDir;
         std::filesystem::path faceTrainingCsv;
         std::filesystem::path faceInferenceCsv;
+        std::filesystem::path faceDumpJson;
     };
 
     DetectorPaths ResolvePaths(const std::filesystem::path &exePath)
@@ -20,6 +21,7 @@ namespace
             projectRoot / "data" / "dirty_training_set",
             projectRoot / "data" / "full_training_set.csv",
             projectRoot / "data" / "current_inference.csv",
+            projectRoot / "data" / "current_faces.json",
         };
     }
 
@@ -28,7 +30,9 @@ namespace
         std::cout
             << "Usage:\n"
             << "  Detector.exe --train\n"
-            << "  Detector.exe --predict <file>\n";
+            << "  Detector.exe --predict <file>\n"
+            << "  Detector.exe --dump-faces <file>\n"
+            << "  Detector.exe --check-face-id <file>\n";
     }
 }
 
@@ -51,6 +55,16 @@ int main(int argc, char *argv[])
     {
         const std::string filePath = argv[2];
         RunSingleInferenceExport(filePath, paths.faceInferenceCsv.string());
+    }
+    else if (mode == "--dump-faces" && argc >= 3)
+    {
+        const std::string filePath = argv[2];
+        RunSingleFaceDump(filePath, paths.faceDumpJson.string());
+    }
+    else if (mode == "--check-face-id" && argc >= 3)
+    {
+        const std::string filePath = argv[2];
+        return RunFaceIdConsistencyCheck(filePath);
     }
     else
     {

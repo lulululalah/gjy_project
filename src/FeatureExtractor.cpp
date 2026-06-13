@@ -27,9 +27,73 @@
 #include <cmath>
 #include <algorithm>
 #include <functional>
+#include <iomanip>
 #include <limits>
+#include <map>
+#include <sstream>
 
 FeatureExtractor::FeatureExtractor(const TopoDS_Shape &shape) : myShape(shape) {}
+
+std::string FeatureExtractor::BuildFaceKey(
+    const FaceFeature& feature,
+    const std::vector<FaceFeature>& allFeatures
+) const
+{
+    std::ostringstream stream;
+    stream << std::fixed << std::setprecision(6)
+           << "surface=" << feature.surfaceType
+           << "|area=" << feature.area
+           << "|perimeter=" << feature.perimeter
+           << "|center=(" << feature.centerX << "," << feature.centerY << "," << feature.centerZ << ")"
+           << "|normal=(" << feature.normalX << "," << feature.normalY << "," << feature.normalZ << ")"
+           << "|curvature=" << feature.meanCurvature
+           << "|radius=" << feature.radius
+           << "|wires=" << feature.numWires
+           << "|inner_wires=" << feature.innerWireCount
+           << "|edges=" << feature.numEdges;
+
+    stream << "|inner_lengths=";
+    for (size_t index = 0; index < feature.innerWireLengths.size(); ++index) {
+        if (index != 0) {
+            stream << ",";
+        }
+        stream << feature.innerWireLengths[index];
+    }
+
+    std::vector<std::string> neighborDescriptors;
+    neighborDescriptors.reserve(feature.neighborIds.size());
+    for (size_t index = 0; index < feature.neighborIds.size(); ++index) {
+        const int neighborId = feature.neighborIds[index];
+        const int edgeType = index < feature.neighborEdgeTypes.size() ? feature.neighborEdgeTypes[index] : 0;
+        if (neighborId <= 0 || neighborId > static_cast<int>(allFeatures.size())) {
+            neighborDescriptors.push_back("missing");
+            continue;
+        }
+
+        const auto& neighbor = allFeatures[neighborId - 1];
+        std::ostringstream neighborStream;
+        neighborStream << std::fixed << std::setprecision(6)
+                       << "s=" << neighbor.surfaceType
+                       << ";a=" << neighbor.area
+                       << ";p=" << neighbor.perimeter
+                       << ";e=" << edgeType
+                       << ";n=" << neighbor.numEdges
+                       << ";w=" << neighbor.numWires
+                       << ";iw=" << neighbor.innerWireCount;
+        neighborDescriptors.push_back(neighborStream.str());
+    }
+
+    std::sort(neighborDescriptors.begin(), neighborDescriptors.end());
+    stream << "|neighbors=";
+    for (size_t index = 0; index < neighborDescriptors.size(); ++index) {
+        if (index != 0) {
+            stream << "|";
+        }
+        stream << neighborDescriptors[index];
+    }
+
+    return stream.str();
+}
 
 void FeatureExtractor::Extract()
 {
@@ -89,6 +153,8 @@ void FeatureExtractor::ComputeGeometricAttributes(const TopTools_IndexedMapOfSha
         GProp_GProps gprops;
         BRepGProp::SurfaceProperties(face, gprops);
         gp_Pnt center = gprops.CentreOfMass();
+        feat.centerX = center.X();
+        feat.centerY = center.Y();
         feat.centerZ = center.Z();
 
         // 获取面类型
@@ -247,6 +313,35 @@ void FeatureExtractor::ComputeGeometricAttributes(const TopTools_IndexedMapOfSha
             }
         }
         myResults.push_back(feat);
+    }
+
+    for (auto& feature : myResults) {
+        feature.faceKey = BuildFaceKey(feature, myResults);
+    }
+
+    std::map<std::string, std::vector<size_t>> duplicateGroups;
+    for (size_t index = 0; index < myResults.size(); ++index) {
+        duplicateGroups[myResults[index].faceKey].push_back(index);
+    }
+
+    for (const auto& [baseKey, indices] : duplicateGroups) {
+        if (indices.size() <= 1) {
+            continue;
+        }
+
+        std::vector<size_t> sortedIndices = indices;
+        std::sort(
+            sortedIndices.begin(),
+            sortedIndices.end(),
+            [&](size_t lhs, size_t rhs) {
+                return myResults[lhs].id < myResults[rhs].id;
+            }
+        );
+
+        for (size_t rank = 0; rank < sortedIndices.size(); ++rank) {
+            auto& feature = myResults[sortedIndices[rank]];
+            feature.faceKey += "|dup_rank=" + std::to_string(rank);
+        }
     }
 }
 

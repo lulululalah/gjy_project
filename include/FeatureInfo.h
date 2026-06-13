@@ -3,6 +3,7 @@
 
 #pragma once
 
+#include <string>
 #include <vector>
 
 #include <GeomAbs_SurfaceType.hxx>
@@ -18,6 +19,7 @@ enum EdgeType
 struct FaceFeature
 {
     int id = 0;
+    std::string faceKey;
     double area = 0.0;
     double relativeArea = 0.0;
     double perimeter = 0.0;
@@ -26,6 +28,8 @@ struct FaceFeature
     double normalX = 0.0;
     double normalY = 0.0;
     double normalZ = 0.0;
+    double centerX = 0.0;
+    double centerY = 0.0;
     double centerZ = 0.0;
     double meanCurvature = 0.0;
     double radius = 0.0;
