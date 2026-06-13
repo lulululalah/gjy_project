@@ -57,3 +57,7 @@ imgui.ini
 /y20_features.stp
 *_labeled.json
 *_labels.csv
+/y747_fused.stp
+/y747_imprinted.stp
+data/*_anchors.stp
+data/*_features.stp
