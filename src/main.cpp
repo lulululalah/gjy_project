@@ -34,7 +34,8 @@ namespace
             << "  Detector.exe --predict <file>\n"
             << "  Detector.exe --dump-faces <file>\n"
             << "  Detector.exe --check-face-id <file>\n"
-            << "  Detector.exe --inject-wing-rivets <file>\n";
+            << "  Detector.exe --inject-wing-rivets <file>\n"
+            << "  Detector.exe --inject-wing-rivets-batch <dir>\n";
     }
 }
 
@@ -72,6 +73,11 @@ int main(int argc, char *argv[])
     {
         const std::string filePath = argv[2];
         return RunWingRivetInjection(filePath);
+    }
+    else if (mode == "--inject-wing-rivets-batch" && argc >= 3)
+    {
+        const std::string dirPath = argv[2];
+        return RunBatchWingRivetInjection(dirPath);
     }
     else
     {

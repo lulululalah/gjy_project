@@ -1,7 +1,7 @@
 {
   "model_id": "Xian Y-20 v3_wing_rivets",
   "base_model": "Xian Y-20 v3.step",
-  "output_step": ".\\data\\Xian Y-20 v3_wing_rivets.step",
+  "output_step": "scratch\\wing_rivet_batch_smoke\\Xian Y-20 v3_wing_rivets.step",
   "faces": [
     {"face_id": 1, "semantic": "rivet", "instance_id": 6, "operation": "remove_protrusion"},
     {"face_id": 2, "semantic": "background", "instance_id": -1, "operation": "keep"},
