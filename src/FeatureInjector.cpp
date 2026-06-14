@@ -4,17 +4,14 @@
 
 #include <BRepAlgoAPI_Fuse.hxx>
 #include <BRep_Builder.hxx>
-#include <BRepBuilderAPI_Sewing.hxx>
 #include <BRepCheck_Analyzer.hxx>
 #include <BRepClass_FaceClassifier.hxx>
-#include <BRepGProp.hxx>
 #include <BRepLProp_SLProps.hxx>
 #include <BRepPrimAPI_MakeCylinder.hxx>
 #include <BRepTools_ReShape.hxx>
 #include <BRepTools.hxx>
 #include <BRepAdaptor_Surface.hxx>
 #include <GeomAbs_SurfaceType.hxx>
-#include <GProp_GProps.hxx>
 #include <Precision.hxx>
 #include <STEPControl_Reader.hxx>
 #include <STEPControl_Writer.hxx>
@@ -84,7 +81,6 @@ struct InjectionTarget {
 };
 
 bool IsShapeValid(const TopoDS_Shape& shape);
-int CountFaces(const TopoDS_Shape& shape);
 
 bool LoadShapeFromStep(const std::string& inputFile, TopoDS_Shape& shape) {
     STEPControl_Reader reader;
@@ -442,105 +438,6 @@ TopoDS_Shape MakeRivetSolid(const RivetPlacement& placement) {
     return BRepPrimAPI_MakeCylinder(axis, placement.radius, placement.height + embedDepth).Shape();
 }
 
-bool EvaluateFaceNormalAtMidpoint(const TopoDS_Face& face, gp_Dir& normal) {
-    double uMin = 0.0;
-    double uMax = 0.0;
-    double vMin = 0.0;
-    double vMax = 0.0;
-    BRepTools::UVBounds(face, uMin, uMax, vMin, vMax);
-
-    BRepAdaptor_Surface surface(face);
-    BRepLProp_SLProps props(
-        surface,
-        (uMin + uMax) * 0.5,
-        (vMin + vMax) * 0.5,
-        1,
-        Precision::Confusion()
-    );
-    if (!props.IsNormalDefined()) {
-        return false;
-    }
-
-    normal = props.Normal();
-    if (face.Orientation() == TopAbs_REVERSED) {
-        normal.Reverse();
-    }
-    return true;
-}
-
-bool IsRivetBottomFace(const TopoDS_Face& face, const RivetPlacement& placement) {
-    BRepAdaptor_Surface surface(face);
-    if (surface.GetType() != GeomAbs_Plane) {
-        return false;
-    }
-
-    gp_Dir faceNormal;
-    if (!EvaluateFaceNormalAtMidpoint(face, faceNormal)) {
-        return false;
-    }
-
-    const double alignment = faceNormal.Dot(placement.normal);
-    if (alignment > -0.9) {
-        return false;
-    }
-
-    GProp_GProps props;
-    BRepGProp::SurfaceProperties(face, props);
-    const gp_Pnt center = props.CentreOfMass();
-    const gp_Vec delta(placement.basePoint, center);
-    return delta.Magnitude() <= placement.radius * 0.6;
-}
-
-std::vector<TopoDS_Face> CollectRivetShellFaces(
-    const TopoDS_Shape& rivetSolid,
-    const RivetPlacement& placement
-) {
-    std::vector<TopoDS_Face> shellFaces;
-    TopExp_Explorer faceExplorer(rivetSolid, TopAbs_FACE);
-    for (; faceExplorer.More(); faceExplorer.Next()) {
-        const TopoDS_Face face = TopoDS::Face(faceExplorer.Current());
-        if (IsRivetBottomFace(face, placement)) {
-            continue;
-        }
-        shellFaces.push_back(face);
-    }
-    return shellFaces;
-}
-
-bool TrySewRivetOntoShape(
-    const TopoDS_Shape& baseShape,
-    const RivetPlacement& placement,
-    TopoDS_Shape& sewedShape,
-    std::vector<TopoDS_Shape>& rivetFaces
-) {
-    const TopoDS_Shape rivetSolid = MakeRivetSolid(placement);
-    const auto shellFaces = CollectRivetShellFaces(rivetSolid, placement);
-    if (shellFaces.empty()) {
-        return false;
-    }
-
-    BRepBuilderAPI_Sewing sewing(1.0e-4);
-    sewing.Add(baseShape);
-    for (const auto& face : shellFaces) {
-        sewing.Add(face);
-    }
-    sewing.Perform();
-
-    sewedShape = sewing.SewedShape();
-    if (sewedShape.IsNull()) {
-        return false;
-    }
-
-    const int baseFaceCount = CountFaces(baseShape);
-    const int sewedFaceCount = CountFaces(sewedShape);
-    if (sewedFaceCount <= baseFaceCount) {
-        return false;
-    }
-
-    rivetFaces.assign(shellFaces.begin(), shellFaces.end());
-    return true;
-}
-
 std::vector<TopoDS_Shape> CollectGeneratedRivetFaces(
     BRepAlgoAPI_Fuse& fuse,
     const TopoDS_Shape& rivetSolid
@@ -573,16 +470,6 @@ bool IsShapeValid(const TopoDS_Shape& shape) {
 
     BRepCheck_Analyzer analyzer(shape);
     return analyzer.IsValid();
-}
-
-int CountFaces(const TopoDS_Shape& shape) {
-    if (shape.IsNull()) {
-        return 0;
-    }
-
-    TopTools_IndexedMapOfShape faceMap;
-    TopExp::MapShapes(shape, TopAbs_FACE, faceMap);
-    return faceMap.Extent();
 }
 
 std::string BuildOutputStepPath(const std::string& inputFile, const fs::path& outputDir) {
@@ -717,7 +604,6 @@ int RunWingRivetInjectionImpl(
     std::vector<std::pair<int, std::vector<TopoDS_Shape>>> rivetFacesByInstance;
     std::vector<LabelsInstanceEntry> labelInstances;
     std::vector<TopoDS_Shape> acceptedRivetShapes;
-    bool usedSewingFallback = false;
 
     for (const auto& placement : placements) {
         const TopoDS_Shape rivetSolid = MakeRivetSolid(placement);
@@ -725,25 +611,8 @@ int RunWingRivetInjectionImpl(
         fuse.SetFuzzyValue(1.0e-6);
         fuse.Build();
         if (!fuse.IsDone()) {
-            TopoDS_Shape sewedShape;
-            std::vector<TopoDS_Shape> sewedRivetFaces;
-            if (!TrySewRivetOntoShape(currentShape, placement, sewedShape, sewedRivetFaces)) {
-                std::cout << ">>> Skipping rivet " << placement.instanceId
-                          << " because fuse and sewing both failed." << std::endl;
-                continue;
-            }
-
-            currentShape = sewedShape;
-            usedSewingFallback = true;
-            acceptedRivetShapes.push_back(rivetSolid);
-            rivetFacesByInstance.push_back({placement.instanceId, sewedRivetFaces});
-            labelInstances.push_back({
-                placement.instanceId,
-                "rivet",
-                placement.hostFaceId,
-                placement.radius,
-                placement.height,
-            });
+            std::cout << ">>> Skipping rivet " << placement.instanceId
+                      << " because fuse operation failed." << std::endl;
             continue;
         }
 
@@ -778,7 +647,7 @@ int RunWingRivetInjectionImpl(
             injectionTarget.originalSubshape,
             currentShape
         );
-        if (!usedSewingFallback && !IsShapeValid(finalOutputShape)) {
+        if (!IsShapeValid(finalOutputShape)) {
             std::cout << ">>> Failed to rebuild final assembly after rivet fusion." << std::endl;
             return 1;
         }
