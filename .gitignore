@@ -41,3 +41,13 @@ Thumbs.db
 # Generated inference/export files
 data/current_inference.csv
 dirty_models_report.csv
+
+# Large local aircraft datasets and generated rivet outputs
+data/plane_model/**/*.step
+data/plane_model/**/*.STEP
+data/plane_model/**/*.stp
+data/plane_model/**/*.STP
+data/plane_model/wing_rivet_steps/
+data/plane_model/wing_rivet_labels/
+data/plane_model/wing_rivet_screening_report.md
+data/plane_model/wing_rivet_screenshots/

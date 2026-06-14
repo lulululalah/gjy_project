@@ -31,6 +31,7 @@
 
 #include <filesystem>
 #include <fstream>
+#include <cctype>
 #include <iomanip>
 #include <iostream>
 #include <algorithm>
@@ -82,6 +83,41 @@ struct InjectionTarget {
 
 bool IsShapeValid(const TopoDS_Shape& shape);
 
+std::string ShapeTypeName(TopAbs_ShapeEnum shapeType) {
+    switch (shapeType) {
+    case TopAbs_COMPOUND:
+        return "COMPOUND";
+    case TopAbs_COMPSOLID:
+        return "COMPSOLID";
+    case TopAbs_SOLID:
+        return "SOLID";
+    case TopAbs_SHELL:
+        return "SHELL";
+    case TopAbs_FACE:
+        return "FACE";
+    case TopAbs_WIRE:
+        return "WIRE";
+    case TopAbs_EDGE:
+        return "EDGE";
+    case TopAbs_VERTEX:
+        return "VERTEX";
+    case TopAbs_SHAPE:
+        return "SHAPE";
+    default:
+        return "UNKNOWN";
+    }
+}
+
+int CountSubShapes(const TopoDS_Shape& shape, TopAbs_ShapeEnum shapeType) {
+    if (shape.IsNull()) {
+        return 0;
+    }
+
+    TopTools_IndexedMapOfShape shapeMap;
+    TopExp::MapShapes(shape, shapeType, shapeMap);
+    return shapeMap.Extent();
+}
+
 bool LoadShapeFromStep(const std::string& inputFile, TopoDS_Shape& shape) {
     STEPControl_Reader reader;
     if (reader.ReadFile(inputFile.c_str()) != IFSelect_RetDone) {
@@ -131,7 +167,9 @@ std::string EscapeJson(const std::string& value) {
 }
 
 bool IsStepFile(const fs::path& filePath) {
-    const std::string extension = filePath.extension().string();
+    std::string extension = filePath.extension().string();
+    std::transform(extension.begin(), extension.end(), extension.begin(),
+                   [](unsigned char ch) { return static_cast<char>(std::tolower(ch)); });
     return extension == ".stp" || extension == ".step";
 }
 
@@ -605,6 +643,14 @@ int RunWingRivetInjectionImpl(
     std::vector<LabelsInstanceEntry> labelInstances;
     std::vector<TopoDS_Shape> acceptedRivetShapes;
 
+    std::cout << ">>> Injection target type=" << ShapeTypeName(currentShape.ShapeType())
+              << " subshape_mode=" << (injectionTarget.isSubshapeMode ? "true" : "false")
+              << " valid=" << (IsShapeValid(currentShape) ? "true" : "false")
+              << " solids=" << CountSubShapes(currentShape, TopAbs_SOLID)
+              << " shells=" << CountSubShapes(currentShape, TopAbs_SHELL)
+              << " faces=" << CountSubShapes(currentShape, TopAbs_FACE)
+              << std::endl;
+
     for (const auto& placement : placements) {
         const TopoDS_Shape rivetSolid = MakeRivetSolid(placement);
         BRepAlgoAPI_Fuse fuse(currentShape, rivetSolid);
@@ -613,6 +659,38 @@ int RunWingRivetInjectionImpl(
         if (!fuse.IsDone()) {
             std::cout << ">>> Skipping rivet " << placement.instanceId
                       << " because fuse operation failed." << std::endl;
+            std::cout << ">>>   host_face=" << placement.hostFaceId
+                      << " radius=" << placement.radius
+                      << " height=" << placement.height
+                      << " base=(" << placement.basePoint.X()
+                      << ", " << placement.basePoint.Y()
+                      << ", " << placement.basePoint.Z() << ")"
+                      << " normal=(" << placement.normal.X()
+                      << ", " << placement.normal.Y()
+                      << ", " << placement.normal.Z() << ")"
+                      << std::endl;
+            std::cout << ">>>   current_shape type=" << ShapeTypeName(currentShape.ShapeType())
+                      << " valid=" << (IsShapeValid(currentShape) ? "true" : "false")
+                      << " solids=" << CountSubShapes(currentShape, TopAbs_SOLID)
+                      << " shells=" << CountSubShapes(currentShape, TopAbs_SHELL)
+                      << " faces=" << CountSubShapes(currentShape, TopAbs_FACE)
+                      << std::endl;
+            std::cout << ">>>   rivet_shape type=" << ShapeTypeName(rivetSolid.ShapeType())
+                      << " valid=" << (IsShapeValid(rivetSolid) ? "true" : "false")
+                      << " solids=" << CountSubShapes(rivetSolid, TopAbs_SOLID)
+                      << " shells=" << CountSubShapes(rivetSolid, TopAbs_SHELL)
+                      << " faces=" << CountSubShapes(rivetSolid, TopAbs_FACE)
+                      << std::endl;
+            if (fuse.HasErrors()) {
+                std::ostringstream errorStream;
+                fuse.DumpErrors(errorStream);
+                std::cout << ">>>   OCC fuse errors:\n" << errorStream.str();
+            }
+            if (fuse.HasWarnings()) {
+                std::ostringstream warningStream;
+                fuse.DumpWarnings(warningStream);
+                std::cout << ">>>   OCC fuse warnings:\n" << warningStream.str();
+            }
             continue;
         }
 
