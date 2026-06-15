@@ -35,6 +35,8 @@
 #include <iomanip>
 #include <iostream>
 #include <algorithm>
+#include <map>
+#include <regex>
 #include <set>
 #include <sstream>
 #include <string>
@@ -75,10 +77,47 @@ struct LabelsInstanceEntry {
     double height = 0.0;
 };
 
+struct RivetFaceSignature {
+    int instanceId = -1;
+    int surfaceType = 0;
+    int numEdges = 0;
+    double area = 0.0;
+    double centerX = 0.0;
+    double centerY = 0.0;
+    double centerZ = 0.0;
+    double radius = 0.0;
+};
+
 struct InjectionTarget {
     TopoDS_Shape originalSubshape;
     TopoDS_Shape workingShape;
     bool isSubshapeMode = false;
+};
+
+struct LabelsData {
+    std::vector<LabelsFaceEntry> faces;
+    std::vector<LabelsInstanceEntry> instances;
+};
+
+struct DatasetValidationResult {
+    std::string modelName;
+    std::string stepPath;
+    std::string labelsPath;
+    bool stepExists = false;
+    bool labelsParsed = false;
+    bool shapeLoaded = false;
+    bool shapeValid = false;
+    bool t1 = false;
+    bool t2 = false;
+    bool t3 = false;
+    int faceCount = 0;
+    int labelFaceCount = 0;
+    int rivetFaceCount = 0;
+    int backgroundFaceCount = 0;
+    int instanceCount = 0;
+    int duplicateFaceKeyCount = 0;
+    int graphMismatchCount = 0;
+    std::string message;
 };
 
 bool IsShapeValid(const TopoDS_Shape& shape);
@@ -182,6 +221,324 @@ std::vector<FaceFeature> ExtractFeatures(const TopoDS_Shape& shape) {
     FeatureExtractor extractor(shape);
     extractor.Extract();
     return extractor.GetResults();
+}
+
+std::string CsvEscape(const std::string& value) {
+    std::ostringstream escaped;
+    escaped << '"';
+    for (const char ch : value) {
+        if (ch == '"') {
+            escaped << "\"\"";
+        } else {
+            escaped << ch;
+        }
+    }
+    escaped << '"';
+    return escaped.str();
+}
+
+std::string ReadTextFile(const fs::path& filePath) {
+    std::ifstream input(filePath);
+    std::ostringstream buffer;
+    buffer << input.rdbuf();
+    return buffer.str();
+}
+
+bool ParseLabelsJson(const fs::path& labelsPath, LabelsData& labels) {
+    labels = {};
+    const std::string text = ReadTextFile(labelsPath);
+    if (text.empty()) {
+        return false;
+    }
+
+    const std::regex faceRegex(
+        R"json(\{"face_id":\s*(-?\d+),\s*"semantic":\s*"([^"]+)",\s*"instance_id":\s*(-?\d+),\s*"operation":\s*"([^"]+)"\})json"
+    );
+    for (std::sregex_iterator it(text.begin(), text.end(), faceRegex), end; it != end; ++it) {
+        LabelsFaceEntry entry;
+        entry.faceId = std::stoi((*it)[1].str());
+        entry.semantic = (*it)[2].str();
+        entry.instanceId = std::stoi((*it)[3].str());
+        entry.operation = (*it)[4].str();
+        labels.faces.push_back(entry);
+    }
+
+    const std::regex instanceRegex(
+        R"json(\{"instance_id":\s*(-?\d+),\s*"type":\s*"([^"]+)",\s*"host_face":\s*(-?\d+),\s*"inverse_op":\s*\{"kind":\s*"([^"]+)",\s*"radius":\s*([-+0-9.eE]+),\s*"height":\s*([-+0-9.eE]+)\}\})json"
+    );
+    for (std::sregex_iterator it(text.begin(), text.end(), instanceRegex), end; it != end; ++it) {
+        LabelsInstanceEntry entry;
+        entry.instanceId = std::stoi((*it)[1].str());
+        entry.type = (*it)[2].str();
+        entry.hostFaceId = std::stoi((*it)[3].str());
+        entry.radius = std::stod((*it)[5].str());
+        entry.height = std::stod((*it)[6].str());
+        labels.instances.push_back(entry);
+    }
+
+    return !labels.faces.empty();
+}
+
+std::map<std::string, int> BuildFaceKeyCounts(const std::vector<FaceFeature>& features) {
+    std::map<std::string, int> counts;
+    for (const auto& feature : features) {
+        counts[feature.faceKey]++;
+    }
+    return counts;
+}
+
+int CountDuplicateFaceKeys(const std::vector<FaceFeature>& features) {
+    int duplicates = 0;
+    for (const auto& [key, count] : BuildFaceKeyCounts(features)) {
+        if (count > 1) {
+            duplicates++;
+        }
+    }
+    return duplicates;
+}
+
+bool HaveStableFaceOrder(const std::vector<FaceFeature>& first, const std::vector<FaceFeature>& second) {
+    if (first.size() != second.size()) {
+        return false;
+    }
+    for (size_t index = 0; index < first.size(); ++index) {
+        if (first[index].faceKey != second[index].faceKey) {
+            return false;
+        }
+    }
+    return true;
+}
+
+int CountGraphMismatches(const std::vector<FaceFeature>& first, const std::vector<FaceFeature>& second) {
+    if (first.size() != second.size()) {
+        return static_cast<int>(std::max(first.size(), second.size()));
+    }
+
+    int mismatches = 0;
+    for (size_t index = 0; index < first.size(); ++index) {
+        if (first[index].neighborIds != second[index].neighborIds ||
+            first[index].neighborEdgeTypes != second[index].neighborEdgeTypes) {
+            mismatches++;
+        }
+    }
+    return mismatches;
+}
+
+bool ValidateLabelFaceIds(const LabelsData& labels, int faceCount) {
+    if (faceCount <= 0 || static_cast<int>(labels.faces.size()) != faceCount) {
+        return false;
+    }
+
+    std::set<int> seen;
+    for (const auto& face : labels.faces) {
+        if (face.faceId < 1 || face.faceId > faceCount || !seen.insert(face.faceId).second) {
+            return false;
+        }
+    }
+    return static_cast<int>(seen.size()) == faceCount;
+}
+
+bool ValidateRivetLabels(const LabelsData& labels) {
+    std::set<int> instanceIds;
+    for (const auto& instance : labels.instances) {
+        if (instance.instanceId <= 0 || instance.type != "rivet" ||
+            instance.hostFaceId <= 0 || instance.radius <= 0.0 || instance.height <= 0.0) {
+            return false;
+        }
+        instanceIds.insert(instance.instanceId);
+    }
+
+    for (const auto& face : labels.faces) {
+        if (face.semantic == "rivet") {
+            if (face.instanceId <= 0 || face.operation != "remove_protrusion" ||
+                instanceIds.find(face.instanceId) == instanceIds.end()) {
+                return false;
+            }
+        } else if (face.semantic == "background") {
+            if (face.instanceId != -1 || face.operation != "keep") {
+                return false;
+            }
+        } else {
+            return false;
+        }
+    }
+    return !labels.instances.empty();
+}
+
+double SquaredDistance(const FaceFeature& lhs, const RivetFaceSignature& rhs) {
+    const double dx = lhs.centerX - rhs.centerX;
+    const double dy = lhs.centerY - rhs.centerY;
+    const double dz = lhs.centerZ - rhs.centerZ;
+    return dx * dx + dy * dy + dz * dz;
+}
+
+RivetFaceSignature BuildRivetFaceSignature(int instanceId, const FaceFeature& feature) {
+    return {
+        instanceId,
+        feature.surfaceType,
+        feature.numEdges,
+        feature.area,
+        feature.centerX,
+        feature.centerY,
+        feature.centerZ,
+        feature.radius,
+    };
+}
+
+std::vector<RivetFaceSignature> BuildRivetFaceSignatures(
+    const TopoDS_Shape& shape,
+    const std::vector<std::pair<int, std::vector<TopoDS_Shape>>>& rivetFacesByInstance
+) {
+    std::vector<RivetFaceSignature> signatures;
+    const auto features = ExtractFeatures(shape);
+
+    TopTools_IndexedMapOfShape faceMap;
+    TopExp::MapShapes(shape, TopAbs_FACE, faceMap);
+    for (const auto& [instanceId, rivetFaces] : rivetFacesByInstance) {
+        std::set<int> faceIds;
+        for (const auto& rivetFace : rivetFaces) {
+            const int faceId = faceMap.FindIndex(rivetFace);
+            if (faceId > 0 && faceId <= static_cast<int>(features.size())) {
+                faceIds.insert(faceId);
+            }
+        }
+        for (const int faceId : faceIds) {
+            signatures.push_back(BuildRivetFaceSignature(instanceId, features[static_cast<size_t>(faceId - 1)]));
+        }
+    }
+
+    return signatures;
+}
+
+double ComputeRivetSignatureScore(const FaceFeature& feature, const RivetFaceSignature& signature) {
+    if (feature.surfaceType != signature.surfaceType) {
+        return 1.0e100;
+    }
+    if (std::abs(feature.area - signature.area) > std::max(1.0e-5, std::abs(signature.area) * 0.35)) {
+        return 1.0e100;
+    }
+
+    const double distanceScale = std::max(1.0, std::sqrt(std::max(signature.area, 1.0e-9)));
+    const double areaScale = std::max(std::abs(signature.area), 1.0e-9);
+    const double radiusScale = std::max(std::abs(signature.radius), 1.0e-9);
+    const double areaTerm = std::abs(feature.area - signature.area) / areaScale;
+    const double radiusTerm =
+        signature.radius > 0.0 ? std::abs(feature.radius - signature.radius) / radiusScale : 0.0;
+    const double edgeTerm = static_cast<double>(std::abs(feature.numEdges - signature.numEdges)) * 0.05;
+    const double distanceTerm = SquaredDistance(feature, signature) / (distanceScale * distanceScale);
+    return distanceTerm + areaTerm * 4.0 + radiusTerm * 2.0 + edgeTerm;
+}
+
+std::map<int, std::set<int>> MatchRivetFacesAfterReload(
+    const std::vector<RivetFaceSignature>& signatures,
+    const std::vector<FaceFeature>& reloadedFeatures
+) {
+    std::map<int, std::set<int>> matchedFaceIdsByInstance;
+    std::set<int> usedFaceIds;
+
+    for (const auto& signature : signatures) {
+        double bestScore = 1.0e100;
+        int bestFaceId = -1;
+        for (const auto& feature : reloadedFeatures) {
+            if (usedFaceIds.find(feature.id) != usedFaceIds.end()) {
+                continue;
+            }
+            const double score = ComputeRivetSignatureScore(feature, signature);
+            if (score < bestScore) {
+                bestScore = score;
+                bestFaceId = feature.id;
+            }
+        }
+
+        if (bestFaceId > 0 && bestScore < 0.75) {
+            usedFaceIds.insert(bestFaceId);
+            matchedFaceIdsByInstance[signature.instanceId].insert(bestFaceId);
+        }
+    }
+
+    return matchedFaceIdsByInstance;
+}
+
+DatasetValidationResult ValidateWingRivetSample(const fs::path& labelsPath, const fs::path& stepPath) {
+    DatasetValidationResult result;
+    result.modelName = labelsPath.stem().string();
+    result.labelsPath = labelsPath.string();
+    result.stepPath = stepPath.string();
+    result.stepExists = fs::exists(stepPath);
+
+    LabelsData labels;
+    result.labelsParsed = ParseLabelsJson(labelsPath, labels);
+    result.labelFaceCount = static_cast<int>(labels.faces.size());
+    result.instanceCount = static_cast<int>(labels.instances.size());
+    for (const auto& face : labels.faces) {
+        if (face.semantic == "rivet") {
+            result.rivetFaceCount++;
+        } else if (face.semantic == "background") {
+            result.backgroundFaceCount++;
+        }
+    }
+
+    if (!result.labelsParsed) {
+        result.message = "failed_to_parse_labels";
+        return result;
+    }
+    if (!result.stepExists) {
+        result.message = "missing_output_step";
+        return result;
+    }
+
+    TopoDS_Shape shape;
+    result.shapeLoaded = LoadShapeFromStep(stepPath.string(), shape);
+    if (!result.shapeLoaded) {
+        result.message = "failed_to_load_step";
+        return result;
+    }
+
+    result.shapeValid = IsShapeValid(shape);
+    const auto firstFeatures = ExtractFeatures(shape);
+    const auto secondFeatures = ExtractFeatures(shape);
+    result.faceCount = static_cast<int>(firstFeatures.size());
+    result.duplicateFaceKeyCount =
+        std::max(CountDuplicateFaceKeys(firstFeatures), CountDuplicateFaceKeys(secondFeatures));
+    result.graphMismatchCount = CountGraphMismatches(firstFeatures, secondFeatures);
+
+    const bool faceIdsValid = ValidateLabelFaceIds(labels, result.faceCount);
+    const bool faceOrderStable = HaveStableFaceOrder(firstFeatures, secondFeatures);
+    const bool rivetLabelsValid = ValidateRivetLabels(labels);
+
+    result.t1 =
+        result.shapeLoaded &&
+        faceIdsValid &&
+        faceOrderStable &&
+        result.duplicateFaceKeyCount == 0;
+    result.t2 =
+        result.shapeValid &&
+        result.rivetFaceCount > 0 &&
+        result.instanceCount > 0 &&
+        rivetLabelsValid;
+    result.t3 =
+        result.graphMismatchCount == 0 &&
+        faceOrderStable;
+
+    if (result.t1 && result.t2 && result.t3) {
+        result.message = "ok";
+    } else if (!faceIdsValid) {
+        result.message = "label_face_id_mismatch";
+    } else if (!faceOrderStable) {
+        result.message = "face_order_unstable";
+    } else if (result.duplicateFaceKeyCount > 0) {
+        result.message = "duplicate_face_keys";
+    } else if (!result.shapeValid) {
+        result.message = "invalid_brep";
+    } else if (!rivetLabelsValid) {
+        result.message = "invalid_rivet_labels";
+    } else if (result.graphMismatchCount > 0) {
+        result.message = "graph_unstable";
+    } else {
+        result.message = "unknown_failure";
+    }
+
+    return result;
 }
 
 bool IsRevolvedMechanicalSurface(const FaceFeature& feature) {
@@ -731,6 +1088,12 @@ int RunWingRivetInjectionImpl(
         }
     }
 
+    const auto rivetSignatures = BuildRivetFaceSignatures(finalOutputShape, rivetFacesByInstance);
+    if (rivetSignatures.empty()) {
+        std::cout << ">>> Failed to collect rivet face signatures before STEP export." << std::endl;
+        return 1;
+    }
+
     if (!SaveShapeToStep(finalOutputShape, outputStepFile)) {
         std::cout << ">>> Failed to export modified STEP model." << std::endl;
         return 1;
@@ -755,9 +1118,15 @@ int RunWingRivetInjectionImpl(
         std::cout << ">>> Output rivet-only STEP: " << rivetOnlyStepFile << std::endl;
     }
 
-    const auto finalFeatures = ExtractFeatures(finalOutputShape);
-    TopTools_IndexedMapOfShape finalFaceMap;
-    TopExp::MapShapes(finalOutputShape, TopAbs_FACE, finalFaceMap);
+    TopoDS_Shape reloadedOutputShape;
+    if (!LoadShapeFromStep(outputStepFile, reloadedOutputShape)) {
+        std::cout << ">>> Failed to reload exported STEP model for label alignment." << std::endl;
+        return 1;
+    }
+
+    const auto finalFeatures = ExtractFeatures(reloadedOutputShape);
+    const auto matchedRivetFaceIdsByInstance =
+        MatchRivetFacesAfterReload(rivetSignatures, finalFeatures);
 
     std::vector<LabelsFaceEntry> faceEntries;
     faceEntries.reserve(finalFeatures.size());
@@ -765,21 +1134,26 @@ int RunWingRivetInjectionImpl(
         faceEntries.push_back({feature.id, "background", -1, "keep"});
     }
 
-    for (const auto& [instanceId, rivetFaces] : rivetFacesByInstance) {
-        std::set<int> finalFaceIds;
-        for (const auto& rivetFace : rivetFaces) {
-            const int finalFaceId = finalFaceMap.FindIndex(rivetFace);
-            if (finalFaceId > 0) {
-                finalFaceIds.insert(finalFaceId);
-            }
-        }
-
+    for (const auto& [instanceId, finalFaceIds] : matchedRivetFaceIdsByInstance) {
         for (const int finalFaceId : finalFaceIds) {
             auto& entry = faceEntries[static_cast<size_t>(finalFaceId - 1)];
             entry.semantic = "rivet";
             entry.instanceId = instanceId;
             entry.operation = "remove_protrusion";
         }
+    }
+
+    int matchedInstanceCount = 0;
+    for (const auto& instance : labelInstances) {
+        const auto it = matchedRivetFaceIdsByInstance.find(instance.instanceId);
+        if (it != matchedRivetFaceIdsByInstance.end() && !it->second.empty()) {
+            matchedInstanceCount++;
+        }
+    }
+    if (matchedInstanceCount != static_cast<int>(labelInstances.size())) {
+        std::cout << ">>> Failed to align every rivet instance after STEP reload. matched="
+                  << matchedInstanceCount << " expected=" << labelInstances.size() << std::endl;
+        return 1;
     }
 
     WriteLabelsJson(inputFile, outputStepFile, outputLabelsFile, faceEntries, labelInstances);
@@ -849,4 +1223,102 @@ int RunBatchWingRivetInjection(const std::string& inputDir) {
     std::cout << ">>> Output labels dir: " << outputLabelsDir.string() << std::endl;
 
     return failureCount == 0 ? 0 : 2;
+}
+
+int RunWingRivetDatasetValidation(const std::string& inputDir) {
+    const fs::path inputPath(inputDir);
+    if (!fs::exists(inputPath) || !fs::is_directory(inputPath)) {
+        std::cout << ">>> Input directory does not exist: " << inputDir << std::endl;
+        return 1;
+    }
+
+    const fs::path outputStepDir = inputPath / "wing_rivet_steps";
+    const fs::path outputLabelsDir = inputPath / "wing_rivet_labels";
+    if (!fs::exists(outputStepDir) || !fs::is_directory(outputStepDir) ||
+        !fs::exists(outputLabelsDir) || !fs::is_directory(outputLabelsDir)) {
+        std::cout << ">>> Missing wing_rivet_steps or wing_rivet_labels directory under: "
+                  << inputDir << std::endl;
+        return 1;
+    }
+
+    const fs::path statsPath = inputPath / "wing_rivet_dataset_stats.csv";
+    std::ofstream statsFile(statsPath);
+    statsFile
+        << "model_name,step_path,labels_path,status,t1_face_id_stable,t2_injection_valid,"
+        << "t3_graph_stable,face_count,label_face_count,rivet_face_count,background_face_count,"
+        << "instance_count,shape_valid,duplicate_face_key_count,graph_mismatch_count,message\n";
+
+    int total = 0;
+    int passCount = 0;
+    int failCount = 0;
+    int totalFaces = 0;
+    int totalRivetFaces = 0;
+    int totalInstances = 0;
+
+    std::cout << ">>> Validating wing-rivet dataset: " << inputDir << std::endl;
+    for (const auto& entry : fs::directory_iterator(outputLabelsDir)) {
+        if (!entry.is_regular_file() || entry.path().extension() != ".json") {
+            continue;
+        }
+
+        const std::string suffix = "_wing_rivets.labels";
+        std::string stem = entry.path().stem().string();
+        if (stem.size() <= suffix.size() ||
+            stem.substr(stem.size() - suffix.size()) != suffix) {
+            continue;
+        }
+        const std::string modelStem = stem.substr(0, stem.size() - suffix.size());
+        const fs::path stepPath = outputStepDir / (modelStem + "_wing_rivets.step");
+
+        DatasetValidationResult result = ValidateWingRivetSample(entry.path(), stepPath);
+        const bool pass = result.t1 && result.t2 && result.t3;
+        total++;
+        if (pass) {
+            passCount++;
+        } else {
+            failCount++;
+        }
+        totalFaces += result.faceCount;
+        totalRivetFaces += result.rivetFaceCount;
+        totalInstances += result.instanceCount;
+
+        statsFile
+            << CsvEscape(modelStem) << ","
+            << CsvEscape(result.stepPath) << ","
+            << CsvEscape(result.labelsPath) << ","
+            << (pass ? "PASS" : "FAIL") << ","
+            << (result.t1 ? "PASS" : "FAIL") << ","
+            << (result.t2 ? "PASS" : "FAIL") << ","
+            << (result.t3 ? "PASS" : "FAIL") << ","
+            << result.faceCount << ","
+            << result.labelFaceCount << ","
+            << result.rivetFaceCount << ","
+            << result.backgroundFaceCount << ","
+            << result.instanceCount << ","
+            << (result.shapeValid ? "true" : "false") << ","
+            << result.duplicateFaceKeyCount << ","
+            << result.graphMismatchCount << ","
+            << CsvEscape(result.message) << "\n";
+
+        std::cout << ">>> [" << (pass ? "PASS" : "FAIL") << "] " << modelStem
+                  << " faces=" << result.faceCount
+                  << " rivet_faces=" << result.rivetFaceCount
+                  << " instances=" << result.instanceCount
+                  << " t1=" << (result.t1 ? "PASS" : "FAIL")
+                  << " t2=" << (result.t2 ? "PASS" : "FAIL")
+                  << " t3=" << (result.t3 ? "PASS" : "FAIL")
+                  << " message=" << result.message
+                  << std::endl;
+    }
+
+    std::cout << ">>> Dataset validation complete." << std::endl;
+    std::cout << ">>> Total samples: " << total << std::endl;
+    std::cout << ">>> Pass count: " << passCount << std::endl;
+    std::cout << ">>> Failure count: " << failCount << std::endl;
+    std::cout << ">>> Total faces: " << totalFaces << std::endl;
+    std::cout << ">>> Total rivet faces: " << totalRivetFaces << std::endl;
+    std::cout << ">>> Total rivet instances: " << totalInstances << std::endl;
+    std::cout << ">>> Stats CSV: " << statsPath.string() << std::endl;
+
+    return failCount == 0 ? 0 : 2;
 }

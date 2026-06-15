@@ -49,5 +49,6 @@ data/plane_model/**/*.stp
 data/plane_model/**/*.STP
 data/plane_model/wing_rivet_steps/
 data/plane_model/wing_rivet_labels/
+data/plane_model/wing_rivet_dataset_stats.csv
 data/plane_model/wing_rivet_screening_report.md
 data/plane_model/wing_rivet_screenshots/
