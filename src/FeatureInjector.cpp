@@ -29,12 +29,12 @@
 #include <gp_Pnt2d.hxx>
 #include <gp_Vec.hxx>
 
+#include <algorithm>
+#include <cctype>
 #include <filesystem>
 #include <fstream>
-#include <cctype>
 #include <iomanip>
 #include <iostream>
-#include <algorithm>
 #include <map>
 #include <regex>
 #include <set>
@@ -45,6 +45,8 @@
 namespace fs = std::filesystem;
 
 namespace {
+
+// Data containers used by the wing-rivet injection and validation pipeline.
 struct RivetPlacement {
     int instanceId = -1;
     int hostFaceId = -1;
@@ -122,6 +124,7 @@ struct DatasetValidationResult {
 
 bool IsShapeValid(const TopoDS_Shape& shape);
 
+// Basic STEP, CSV, JSON, and face-feature helpers.
 std::string ShapeTypeName(TopAbs_ShapeEnum shapeType) {
     switch (shapeType) {
     case TopAbs_COMPOUND:
@@ -279,6 +282,7 @@ bool ParseLabelsJson(const fs::path& labelsPath, LabelsData& labels) {
     return !labels.faces.empty();
 }
 
+// Dataset validation helpers.
 std::map<std::string, int> BuildFaceKeyCounts(const std::vector<FaceFeature>& features) {
     std::map<std::string, int> counts;
     for (const auto& feature : features) {
@@ -365,6 +369,8 @@ bool ValidateRivetLabels(const LabelsData& labels) {
     return !labels.instances.empty();
 }
 
+// Rivet-face matching helpers. STEP export can renumber faces, so labels are
+// recovered by matching generated rivet geometry back onto the reloaded model.
 double SquaredDistance(const FaceFeature& lhs, const RivetFaceSignature& rhs) {
     const double dx = lhs.centerX - rhs.centerX;
     const double dy = lhs.centerY - rhs.centerY;
@@ -459,6 +465,8 @@ std::map<int, std::set<int>> MatchRivetFacesAfterReload(
     return matchedFaceIdsByInstance;
 }
 
+// The signature pass can miss top cap faces after boolean fusion. Placement
+// geometry gives a second, explicit way to recover those rivet faces.
 bool IsRivetFaceByPlacementGeometry(
     const FaceFeature& feature,
     const RivetPlacement& placement
@@ -617,6 +625,8 @@ DatasetValidationResult ValidateWingRivetSample(const fs::path& labelsPath, cons
     return result;
 }
 
+// Wing host-face selection. These filters avoid placing rivets on fuselage,
+// engine, wheel, cap, or other mechanical detail surfaces.
 bool IsRevolvedMechanicalSurface(const FaceFeature& feature) {
     return feature.surfaceType == GeomAbs_Cylinder ||
            feature.surfaceType == GeomAbs_Cone ||
@@ -731,6 +741,7 @@ std::vector<WingHostFace> SelectWingHostFaces(
     return hostFaces;
 }
 
+// Shape ownership and assembly replacement helpers.
 TopoDS_Face GetFaceById(const TopoDS_Shape& shape, int faceId) {
     TopTools_IndexedMapOfShape faceMap;
     TopExp::MapShapes(shape, TopAbs_FACE, faceMap);
@@ -823,6 +834,7 @@ TopoDS_Shape RebuildShapeWithReplacement(
     return reshape->Apply(originalShape);
 }
 
+// Rivet placement and geometry construction helpers.
 bool IsUvInsideFace(const TopoDS_Face& face, double u, double v) {
     BRepClass_FaceClassifier classifier;
     classifier.Perform(face, gp_Pnt2d(u, v), Precision::Confusion());
@@ -934,6 +946,7 @@ std::vector<TopoDS_Shape> CollectGeneratedRivetFaces(
     return generatedFaces;
 }
 
+// Shape validation and output helpers.
 bool IsShapeValid(const TopoDS_Shape& shape) {
     if (shape.IsNull()) {
         return false;
@@ -1012,6 +1025,7 @@ void WriteLabelsJson(
 }
 }
 
+// Public command entry points.
 int RunWingRivetInjectionImpl(
     const std::string& inputFile,
     const std::string& outputStepFile,

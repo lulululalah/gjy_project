@@ -18,19 +18,14 @@ PROJECT_ROOT = Path(__file__).resolve().parent.parent
 DEFAULT_INFERENCE_CSV = PROJECT_ROOT / "data" / "current_inference.csv"
 DEFAULT_DETECTOR = PROJECT_ROOT / "build" / "Release" / "Detector.exe"
 
-def build_label_colors(num_classes):
-    from OCC.Core.Quantity import Quantity_NOC_GREEN, Quantity_NOC_RED
 
-    if num_classes <= 2:
-        return {
-            0: None,
-            1: Quantity_NOC_RED,
-        }
+def load_truth_labels(labels_path):
+    import json
 
+    truth = json.load(Path(labels_path).open("r", encoding="utf-8"))
     return {
-        0: None,
-        1: Quantity_NOC_GREEN,
-        2: Quantity_NOC_RED,
+        int(row["face_id"]): (1 if row["semantic"] == "rivet" else 0)
+        for row in truth["faces"]
     }
 
 
@@ -102,14 +97,44 @@ def write_predictions_csv(prediction_path, pred_labels):
     print(f"Prediction CSV ready: {prediction_path}")
 
 
-def visualize_cad_results(step_path, pred_labels, num_classes):
-    from OCC.Core.Quantity import Quantity_NOC_GRAY
+def suppress_large_positive_faces(csv_path, pred_labels, max_relative_area):
+    if max_relative_area is None or max_relative_area <= 0:
+        return pred_labels
+
+    filtered_labels = list(pred_labels)
+    suppressed_count = 0
+
+    with Path(csv_path).open("r", newline="", encoding="utf-8") as csv_file:
+        for row in csv.DictReader(csv_file):
+            face_idx = int(row["id"]) - 1
+            if face_idx < 0 or face_idx >= len(filtered_labels):
+                continue
+
+            if filtered_labels[face_idx] == 1 and float(row["relativeArea"]) > max_relative_area:
+                filtered_labels[face_idx] = 0
+                suppressed_count += 1
+
+    if suppressed_count:
+        print(
+            "Suppressed large positive faces: "
+            f"{suppressed_count} (relativeArea > {max_relative_area:g})"
+        )
+
+    return filtered_labels
+
+
+def visualize_cad_results(step_path, pred_labels, labels_path):
+    from OCC.Core.Quantity import (
+        Quantity_NOC_GRAY,
+        Quantity_NOC_GREEN,
+        Quantity_NOC_RED,
+        Quantity_NOC_YELLOW,
+    )
     from OCC.Core.STEPControl import STEPControl_Reader
     from OCC.Core.TopAbs import TopAbs_FACE
     from OCC.Core.TopoDS import topods
     from OCC.Display.SimpleGui import init_display
 
-    label_colors = build_label_colors(num_classes)
     reader = STEPControl_Reader()
     if reader.ReadFile(str(step_path)) != 1:
         raise RuntimeError(f"Unable to read STEP file: {step_path}")
@@ -118,7 +143,9 @@ def visualize_cad_results(step_path, pred_labels, num_classes):
     shape = reader.OneShape()
 
     display, start_display, _, _ = init_display()
-    print(f"Displaying model: {step_path}")
+    truth_labels = load_truth_labels(labels_path)
+    print(f"Displaying comparison: {step_path}")
+    print("green=TP, red=FP, yellow=FN, gray=TN")
 
     from OCC.Core.TopExp import topexp
     from OCC.Core.TopTools import TopTools_IndexedMapOfShape
@@ -134,15 +161,27 @@ def visualize_cad_results(step_path, pred_labels, num_classes):
         label_counts[label] = label_counts.get(label, 0) + 1
     print(f"Label distribution: {label_counts}")
 
+    confusion = {"tp": 0, "fp": 0, "fn": 0, "tn": 0}
     for i in range(1, num_faces + 1):
         face = topods.Face(face_map.FindKey(i))
         label = pred_labels[i - 1] if (i - 1) < len(pred_labels) else 0
-        color = label_colors.get(label)
 
-        if color is None:
-            display.DisplayShape(face, color=Quantity_NOC_GRAY, update=False)
+        truth_label = truth_labels.get(i, 0)
+        if label == 1 and truth_label == 1:
+            color = Quantity_NOC_GREEN
+            confusion["tp"] += 1
+        elif label == 1 and truth_label == 0:
+            color = Quantity_NOC_RED
+            confusion["fp"] += 1
+        elif label == 0 and truth_label == 1:
+            color = Quantity_NOC_YELLOW
+            confusion["fn"] += 1
         else:
-            display.DisplayShape(face, color=color, update=False)
+            color = Quantity_NOC_GRAY
+            confusion["tn"] += 1
+        display.DisplayShape(face, color=color, update=False)
+
+    print(f"Comparison stats: {confusion}")
 
     display.FitAll()
     start_display()
@@ -159,9 +198,11 @@ def parse_args():
     parser.add_argument("--hidden-dim", type=int, default=64, help="Hidden dimension used during training. Default: 64")
     parser.add_argument("--skip-export", action="store_true", help="Reuse an existing inference CSV instead of calling Detector.")
     parser.add_argument("--no-display", action="store_true", help="Only export predictions; do not open the OCC viewer.")
+    parser.add_argument("--compare-labels", type=Path, required=True, help="labels.json for true-vs-prediction comparison visualization.")
     parser.add_argument("--inference-mode", choices=["full", "window"], default="full", help="Run full-graph inference or per-face k-hop window inference. Default: full")
     parser.add_argument("--window-hop", type=int, default=2, help="k-hop radius for window inference. Default: 2")
     parser.add_argument("--inference-batch-size", type=int, default=128, help="Window inference batch size. Default: 128")
+    parser.add_argument("--max-rivet-relative-area", type=float, default=1e-4, help="Suppress predicted rivet faces larger than this relative area. Use <=0 to disable. Default: 1e-4")
     return parser.parse_args()
 
 
@@ -181,10 +222,11 @@ def main():
         inference_batch_size=args.inference_batch_size,
     )
     print("Inference finished.")
+    predicted_labels = suppress_large_positive_faces(args.csv, predicted_labels, args.max_rivet_relative_area)
     if args.pred_out:
         write_predictions_csv(args.pred_out, predicted_labels)
     if not args.no_display:
-        visualize_cad_results(args.step_model, predicted_labels, num_classes)
+        visualize_cad_results(args.step_model, predicted_labels, labels_path=args.compare_labels)
 
 
 if __name__ == "__main__":
