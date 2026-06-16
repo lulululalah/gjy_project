@@ -1,4 +1,5 @@
 import argparse
+import csv
 from pathlib import Path
 
 import numpy as np
@@ -27,9 +28,10 @@ FEATURE_COLS = [
     "numEdges",
 ]
 
-DEFAULT_CSV = Path("data/full_training_set.csv")
+DEFAULT_CSV = Path("data/wing_rivet_training_set.csv")
 DEFAULT_MODEL_PATH = Path("rivet_gnn.pth")
 DEFAULT_STATS_PATH = Path("rivet_gnn_stats.npz")
+DEFAULT_EVAL_PATH = Path("rivet_gnn_eval.csv")
 
 
 def split_tokens(value):
@@ -74,9 +76,94 @@ def build_graph(group_df, feature_mean, feature_std):
         edge_index=edge_index,
         edge_attr=edge_attr,
         y=y,
+        target_mask=torch.ones(y.size(0), dtype=torch.bool),
         graph_id=int(local_df["graph_id"].iloc[0]),
         model_name=str(local_df["model_name"].iloc[0]),
     )
+
+
+def khop_nodes(edge_index, center_idx, hop_count, num_nodes):
+    adjacency = [[] for _ in range(num_nodes)]
+    for src, dst in edge_index.t().tolist():
+        adjacency[src].append(dst)
+        adjacency[dst].append(src)
+
+    visited = {center_idx}
+    frontier = {center_idx}
+    for _ in range(hop_count):
+        next_frontier = set()
+        for node_idx in frontier:
+            for neighbor_idx in adjacency[node_idx]:
+                if neighbor_idx not in visited:
+                    visited.add(neighbor_idx)
+                    next_frontier.add(neighbor_idx)
+        frontier = next_frontier
+        if not frontier:
+            break
+
+    return sorted(visited)
+
+
+def build_window_graph(full_graph, center_idx, hop_count):
+    node_ids = khop_nodes(full_graph.edge_index, center_idx, hop_count, full_graph.num_nodes)
+    old_to_new = {old_idx: new_idx for new_idx, old_idx in enumerate(node_ids)}
+
+    local_edges = []
+    local_edge_attrs = []
+    for edge_pos, (src, dst) in enumerate(full_graph.edge_index.t().tolist()):
+        if src in old_to_new and dst in old_to_new:
+            local_edges.append([old_to_new[src], old_to_new[dst]])
+            local_edge_attrs.append(full_graph.edge_attr[edge_pos].tolist())
+
+    if local_edges:
+        edge_index = torch.tensor(local_edges, dtype=torch.long).t().contiguous()
+        edge_attr = torch.tensor(local_edge_attrs, dtype=torch.float)
+    else:
+        edge_index = torch.empty((2, 0), dtype=torch.long)
+        edge_attr = torch.empty((0, full_graph.edge_attr.size(1)), dtype=torch.float)
+
+    target_mask = torch.zeros(len(node_ids), dtype=torch.bool)
+    target_mask[old_to_new[center_idx]] = True
+
+    return Data(
+        x=full_graph.x[node_ids],
+        edge_index=edge_index,
+        edge_attr=edge_attr,
+        y=full_graph.y[node_ids],
+        target_mask=target_mask,
+        graph_id=int(full_graph.graph_id),
+        model_name=str(full_graph.model_name),
+        center_face_id=center_idx + 1,
+    )
+
+
+def sample_window_centers(full_graph, background_ratio, rng):
+    labels = full_graph.y.cpu().numpy()
+    positive = np.flatnonzero(labels == 1)
+    negative = np.flatnonzero(labels == 0)
+
+    if background_ratio is None or background_ratio <= 0 or len(positive) == 0:
+        return np.arange(full_graph.num_nodes)
+
+    max_negative = min(len(negative), len(positive) * background_ratio)
+    if max_negative <= 0:
+        centers = positive.astype(int)
+        rng.shuffle(centers)
+        return centers
+
+    random_negative = rng.choice(negative, size=max_negative, replace=False)
+    centers = np.concatenate([positive, random_negative]).astype(int)
+    rng.shuffle(centers)
+    return centers
+
+
+def build_window_dataset(full_graphs, hop_count, background_ratio, seed):
+    rng = np.random.default_rng(seed)
+    windows = []
+    for full_graph in full_graphs:
+        for center_idx in sample_window_centers(full_graph, background_ratio, rng):
+            windows.append(build_window_graph(full_graph, int(center_idx), hop_count))
+    return windows
 
 
 def load_feature_stats(stats_path):
@@ -104,7 +191,7 @@ def load_cad_data(csv_path, stats_path=DEFAULT_STATS_PATH):
     return build_graph(group, feature_mean, feature_std)
 
 
-def load_graph_dataset(csv_path):
+def load_graph_dataset(csv_path, training_mode="full", window_hop=2, background_ratio=5, seed=42):
     df = pd.read_csv(csv_path)
     if "graph_id" not in df.columns or "model_name" not in df.columns:
         raise ValueError("CSV is missing graph_id/model_name columns. Please re-export training data.")
@@ -113,9 +200,14 @@ def load_graph_dataset(csv_path):
     feature_mean = feature_matrix.mean(axis=0)
     feature_std = feature_matrix.std(axis=0) + 1e-6
 
-    graphs = []
+    full_graphs = []
     for _, group in df.groupby("graph_id", sort=True):
-        graphs.append(build_graph(group, feature_mean, feature_std))
+        full_graphs.append(build_graph(group, feature_mean, feature_std))
+
+    if training_mode == "window":
+        graphs = build_window_dataset(full_graphs, window_hop, background_ratio, seed)
+    else:
+        graphs = full_graphs
 
     return graphs, feature_mean, feature_std
 
@@ -172,10 +264,11 @@ class RivetGNN(torch.nn.Module):
         return F.log_softmax(x, dim=1)
 
 
-def compute_class_weights(graphs, num_classes=3):
+def compute_class_weights(graphs, num_classes=2):
     labels = []
     for graph in graphs:
-        labels.append(graph.y.cpu())
+        target_mask = getattr(graph, "target_mask", torch.ones(graph.y.size(0), dtype=torch.bool))
+        labels.append(graph.y[target_mask].cpu())
 
     if not labels:
         return torch.ones(num_classes, dtype=torch.float)
@@ -187,30 +280,133 @@ def compute_class_weights(graphs, num_classes=3):
     return weights
 
 
-def evaluate(model, loader, device, class_weights=None):
+def compute_metrics_from_confusion(confusion):
+    metrics = []
+    for class_id in range(confusion.shape[0]):
+        tp = int(confusion[class_id, class_id].item())
+        fp = int(confusion[:, class_id].sum().item() - tp)
+        fn = int(confusion[class_id, :].sum().item() - tp)
+        support = int(confusion[class_id, :].sum().item())
+        precision = tp / max(tp + fp, 1)
+        recall = tp / max(tp + fn, 1)
+        f1 = 2.0 * precision * recall / max(precision + recall, 1e-12)
+        iou = tp / max(tp + fp + fn, 1)
+        metrics.append({
+            "class_id": class_id,
+            "support": support,
+            "tp": tp,
+            "fp": fp,
+            "fn": fn,
+            "precision": precision,
+            "recall": recall,
+            "f1": f1,
+            "iou": iou,
+        })
+    return metrics
+
+
+def summarize_metrics(metrics):
+    if not metrics:
+        return {"macro_precision": 0.0, "macro_recall": 0.0, "macro_f1": 0.0, "miou": 0.0}
+    return {
+        "macro_precision": float(np.mean([item["precision"] for item in metrics])),
+        "macro_recall": float(np.mean([item["recall"] for item in metrics])),
+        "macro_f1": float(np.mean([item["f1"] for item in metrics])),
+        "miou": float(np.mean([item["iou"] for item in metrics])),
+    }
+
+
+def evaluate(model, loader, device, num_classes, class_weights=None):
     model.eval()
     total_loss = 0.0
     total_correct = 0
     total_nodes = 0
+    confusion = torch.zeros((num_classes, num_classes), dtype=torch.long)
 
     with torch.no_grad():
         for batch in loader:
             batch = batch.to(device)
             out = model(batch)
-            loss = F.nll_loss(out, batch.y, weight=class_weights)
+            target_mask = getattr(batch, "target_mask", torch.ones(batch.y.size(0), dtype=torch.bool, device=batch.y.device))
+            loss = F.nll_loss(out[target_mask], batch.y[target_mask], weight=class_weights)
 
-            total_loss += loss.item() * batch.num_nodes
-            total_correct += int((out.argmax(dim=1) == batch.y).sum().item())
-            total_nodes += batch.num_nodes
+            pred = out.argmax(dim=1)
+            target_count = int(target_mask.sum().item())
+            total_loss += loss.item() * target_count
+            total_correct += int((pred[target_mask] == batch.y[target_mask]).sum().item())
+            total_nodes += target_count
+            for true_label, pred_label in zip(batch.y[target_mask].cpu(), pred[target_mask].cpu()):
+                confusion[int(true_label), int(pred_label)] += 1
 
     if total_nodes == 0:
-        return 0.0, 0.0
+        metrics = compute_metrics_from_confusion(confusion)
+        return 0.0, 0.0, metrics, summarize_metrics(metrics)
 
-    return total_loss / total_nodes, total_correct / total_nodes
+    metrics = compute_metrics_from_confusion(confusion)
+    return total_loss / total_nodes, total_correct / total_nodes, metrics, summarize_metrics(metrics)
+
+
+def write_eval_csv(output_path, metrics, summary, val_loss, val_acc):
+    output_path = Path(output_path)
+    with output_path.open("w", newline="", encoding="utf-8") as csv_file:
+        fieldnames = [
+            "class_id",
+            "support",
+            "tp",
+            "fp",
+            "fn",
+            "precision",
+            "recall",
+            "f1",
+            "iou",
+            "val_loss",
+            "val_acc",
+            "macro_precision",
+            "macro_recall",
+            "macro_f1",
+            "miou",
+        ]
+        writer = csv.DictWriter(csv_file, fieldnames=fieldnames)
+        writer.writeheader()
+        for item in metrics:
+            writer.writerow({
+                **item,
+                "val_loss": val_loss,
+                "val_acc": val_acc,
+                **summary,
+            })
+
+
+def print_metric_table(metrics, summary):
+    print("Validation class metrics:")
+    print("class | support | precision | recall | f1 | iou")
+    for item in metrics:
+        print(
+            f"{item['class_id']:>5} | "
+            f"{item['support']:>7} | "
+            f"{item['precision']:.4f} | "
+            f"{item['recall']:.4f} | "
+            f"{item['f1']:.4f} | "
+            f"{item['iou']:.4f}"
+        )
+    print(
+        "macro | "
+        f"precision={summary['macro_precision']:.4f} | "
+        f"recall={summary['macro_recall']:.4f} | "
+        f"f1={summary['macro_f1']:.4f} | "
+        f"mIoU={summary['miou']:.4f}"
+    )
 
 
 def train(args):
-    graphs, feature_mean, feature_std = load_graph_dataset(args.csv)
+    graphs, feature_mean, feature_std = load_graph_dataset(
+        args.csv,
+        training_mode=args.training_mode,
+        window_hop=args.window_hop,
+        background_ratio=args.background_ratio,
+        seed=args.seed,
+    )
+    num_classes = max(int(graph.y.max().item()) for graph in graphs) + 1
     train_graphs, val_graphs = split_dataset(graphs, train_ratio=args.train_ratio, seed=args.seed)
 
     train_loader = DataLoader(train_graphs, batch_size=args.batch_size, shuffle=True)
@@ -221,12 +417,17 @@ def train(args):
         node_features=train_graphs[0].num_node_features,
         edge_features=1,
         hidden_dim=args.hidden_dim,
+        num_classes=num_classes,
     ).to(device)
 
     optimizer = torch.optim.Adam(model.parameters(), lr=args.lr)
-    class_weights = compute_class_weights(train_graphs).to(device)
+    class_weights = compute_class_weights(train_graphs, num_classes=num_classes).to(device)
 
     print(f"Loaded {len(graphs)} graphs from {args.csv}")
+    print(f"Classes: {num_classes}")
+    print(f"Training mode: {args.training_mode}")
+    if args.training_mode == "window":
+        print(f"Window hop: {args.window_hop}, background ratio: {args.background_ratio}")
     print(f"Train graphs: {len(train_graphs)}, Val graphs: {len(val_graphs)}")
     print(f"Training on: {device}")
     print(f"Class weights: {class_weights.cpu().tolist()}")
@@ -242,15 +443,23 @@ def train(args):
             batch = batch.to(device)
             optimizer.zero_grad()
             out = model(batch)
-            loss = F.nll_loss(out, batch.y, weight=class_weights)
+            target_mask = getattr(batch, "target_mask", torch.ones(batch.y.size(0), dtype=torch.bool, device=batch.y.device))
+            loss = F.nll_loss(out[target_mask], batch.y[target_mask], weight=class_weights)
             loss.backward()
             optimizer.step()
 
-            total_loss += loss.item() * batch.num_nodes
-            total_nodes += batch.num_nodes
+            target_count = int(target_mask.sum().item())
+            total_loss += loss.item() * target_count
+            total_nodes += target_count
 
         train_loss = total_loss / max(total_nodes, 1)
-        val_loss, val_acc = evaluate(model, val_loader, device, class_weights=class_weights)
+        val_loss, val_acc, val_metrics, val_summary = evaluate(
+            model,
+            val_loader,
+            device,
+            num_classes,
+            class_weights=class_weights,
+        )
 
         if val_loss < best_val_loss:
             best_val_loss = val_loss
@@ -261,17 +470,31 @@ def train(args):
                 mean=feature_mean,
                 std=feature_std,
             )
+            write_eval_csv(args.eval_out, val_metrics, val_summary, val_loss, val_acc)
 
         if epoch == 1 or epoch % 10 == 0 or epoch == args.epochs:
             print(
                 f"Epoch {epoch:03d} | "
                 f"train_loss={train_loss:.4f} | "
                 f"val_loss={val_loss:.4f} | "
-                f"val_acc={val_acc:.4f}"
+                f"val_acc={val_acc:.4f} | "
+                f"miou={val_summary['miou']:.4f}"
             )
 
+    best_state = torch.load(args.model_out, map_location=device)
+    model.load_state_dict(best_state)
+    final_val_loss, final_val_acc, final_metrics, final_summary = evaluate(
+        model,
+        val_loader,
+        device,
+        num_classes,
+        class_weights=class_weights,
+    )
+    write_eval_csv(args.eval_out, final_metrics, final_summary, final_val_loss, final_val_acc)
+    print_metric_table(final_metrics, final_summary)
     print(f"Best model saved to: {args.model_out}")
     print(f"Feature stats saved to: {args.stats_out}")
+    print(f"Evaluation metrics saved to: {args.eval_out}")
 
 
 def parse_args():
@@ -279,12 +502,16 @@ def parse_args():
     parser.add_argument("--csv", type=Path, default=DEFAULT_CSV, help=f"Training CSV path. Default: {DEFAULT_CSV}")
     parser.add_argument("--model-out", type=Path, default=DEFAULT_MODEL_PATH, help=f"Model output path. Default: {DEFAULT_MODEL_PATH}")
     parser.add_argument("--stats-out", type=Path, default=DEFAULT_STATS_PATH, help=f"Normalization stats output. Default: {DEFAULT_STATS_PATH}")
+    parser.add_argument("--eval-out", type=Path, default=DEFAULT_EVAL_PATH, help=f"Evaluation CSV output. Default: {DEFAULT_EVAL_PATH}")
     parser.add_argument("--epochs", type=int, default=150, help="Training epochs. Default: 150")
     parser.add_argument("--batch-size", type=int, default=8, help="Graphs per batch. Default: 8")
     parser.add_argument("--hidden-dim", type=int, default=64, help="Hidden dimension. Default: 64")
     parser.add_argument("--lr", type=float, default=0.005, help="Learning rate. Default: 0.005")
     parser.add_argument("--train-ratio", type=float, default=0.8, help="Train split ratio. Default: 0.8")
     parser.add_argument("--seed", type=int, default=42, help="Random seed. Default: 42")
+    parser.add_argument("--training-mode", choices=["full", "window"], default="full", help="Use full-graph or k-hop window samples. Default: full")
+    parser.add_argument("--window-hop", type=int, default=2, help="k-hop radius for window training. Default: 2")
+    parser.add_argument("--background-ratio", type=int, default=5, help="Background center samples per positive center in window mode. Default: 5")
     return parser.parse_args()
 
 

@@ -459,6 +459,82 @@ std::map<int, std::set<int>> MatchRivetFacesAfterReload(
     return matchedFaceIdsByInstance;
 }
 
+bool IsRivetFaceByPlacementGeometry(
+    const FaceFeature& feature,
+    const RivetPlacement& placement
+) {
+    const double radius = std::max(placement.radius, 1.0e-9);
+    const double height = placement.height;
+    const gp_Vec axis(placement.normal);
+    const gp_Vec centerVector(
+        placement.basePoint,
+        gp_Pnt(feature.centerX, feature.centerY, feature.centerZ)
+    );
+    const double axial = centerVector.Dot(axis);
+    const double squaredDistance = centerVector.SquareMagnitude();
+    const double radialSquared = std::max(0.0, squaredDistance - axial * axial);
+    const double radial = std::sqrt(radialSquared);
+
+    if (feature.surfaceType == GeomAbs_Cylinder) {
+        const bool radiusMatches =
+            feature.radius > 0.0 &&
+            std::abs(feature.radius - radius) <= std::max(1.0e-4, radius * 0.35);
+        const bool axialInRivetRange =
+            axial >= -radius * 0.75 &&
+            axial <= height + radius * 0.75;
+        const bool radialMatches =
+            radial >= radius * 0.35 &&
+            radial <= radius * 1.65;
+        return radiusMatches && axialInRivetRange && radialMatches;
+    }
+
+    if (feature.surfaceType == GeomAbs_Plane) {
+        const double expectedTopArea = M_PI * radius * radius;
+        const bool nearTop =
+            std::abs(axial - height) <= std::max(1.0e-4, radius * 0.35);
+        const bool nearAxis = radial <= radius * 0.55;
+        const bool areaMatches =
+            expectedTopArea > 0.0 &&
+            std::abs(feature.area - expectedTopArea) <=
+                std::max(1.0e-4, expectedTopArea * 0.45);
+        const double normalDot =
+            std::abs(feature.normalX * placement.normal.X() +
+                     feature.normalY * placement.normal.Y() +
+                     feature.normalZ * placement.normal.Z());
+        return nearTop && nearAxis && areaMatches && normalDot >= 0.85;
+    }
+
+    return false;
+}
+
+void AugmentRivetFaceMatchesFromPlacements(
+    const std::vector<RivetPlacement>& placements,
+    const std::vector<FaceFeature>& reloadedFeatures,
+    std::map<int, std::set<int>>& matchedFaceIdsByInstance
+) {
+    std::set<int> usedFaceIds;
+    for (const auto& [instanceId, faceIds] : matchedFaceIdsByInstance) {
+        usedFaceIds.insert(faceIds.begin(), faceIds.end());
+    }
+
+    for (const auto& placement : placements) {
+        for (const auto& feature : reloadedFeatures) {
+            const bool alreadyOwnedByThisInstance =
+                matchedFaceIdsByInstance[placement.instanceId].find(feature.id) !=
+                matchedFaceIdsByInstance[placement.instanceId].end();
+            if (!alreadyOwnedByThisInstance && usedFaceIds.find(feature.id) != usedFaceIds.end()) {
+                continue;
+            }
+            if (!IsRivetFaceByPlacementGeometry(feature, placement)) {
+                continue;
+            }
+
+            matchedFaceIdsByInstance[placement.instanceId].insert(feature.id);
+            usedFaceIds.insert(feature.id);
+        }
+    }
+}
+
 DatasetValidationResult ValidateWingRivetSample(const fs::path& labelsPath, const fs::path& stepPath) {
     DatasetValidationResult result;
     result.modelName = labelsPath.stem().string();
@@ -999,6 +1075,7 @@ int RunWingRivetInjectionImpl(
     std::vector<std::pair<int, std::vector<TopoDS_Shape>>> rivetFacesByInstance;
     std::vector<LabelsInstanceEntry> labelInstances;
     std::vector<TopoDS_Shape> acceptedRivetShapes;
+    std::vector<RivetPlacement> acceptedPlacements;
 
     std::cout << ">>> Injection target type=" << ShapeTypeName(currentShape.ShapeType())
               << " subshape_mode=" << (injectionTarget.isSubshapeMode ? "true" : "false")
@@ -1060,6 +1137,7 @@ int RunWingRivetInjectionImpl(
 
         currentShape = candidateShape;
         acceptedRivetShapes.push_back(rivetSolid);
+        acceptedPlacements.push_back(placement);
         rivetFacesByInstance.push_back({placement.instanceId, CollectGeneratedRivetFaces(fuse, rivetSolid)});
         labelInstances.push_back({
             placement.instanceId,
@@ -1125,8 +1203,13 @@ int RunWingRivetInjectionImpl(
     }
 
     const auto finalFeatures = ExtractFeatures(reloadedOutputShape);
-    const auto matchedRivetFaceIdsByInstance =
+    auto matchedRivetFaceIdsByInstance =
         MatchRivetFacesAfterReload(rivetSignatures, finalFeatures);
+    AugmentRivetFaceMatchesFromPlacements(
+        acceptedPlacements,
+        finalFeatures,
+        matchedRivetFaceIdsByInstance
+    );
 
     std::vector<LabelsFaceEntry> faceEntries;
     faceEntries.reserve(finalFeatures.size());

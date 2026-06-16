@@ -9,6 +9,7 @@
 #include <iomanip>
 #include <iostream>
 #include <map>
+#include <regex>
 #include <set>
 #include <sstream>
 #include <string>
@@ -51,6 +52,73 @@ std::vector<FaceFeature> ExtractFaceFeaturesFromStep(const std::string& inputFil
 
 void WriteFaceCsvHeader(std::ofstream& dataFile) {
     dataFile << kFaceCsvHeader;
+}
+
+struct TrainingLabelEntry {
+    int faceId = 0;
+    std::string semantic;
+};
+
+std::string ReadTextFile(const fs::path& filePath) {
+    std::ifstream input(filePath);
+    std::ostringstream buffer;
+    buffer << input.rdbuf();
+    return buffer.str();
+}
+
+bool ParseWingRivetLabels(const fs::path& labelsPath, std::vector<TrainingLabelEntry>& labels) {
+    labels.clear();
+    const std::string text = ReadTextFile(labelsPath);
+    if (text.empty()) {
+        return false;
+    }
+
+    const std::regex faceRegex(
+        R"json(\{"face_id":\s*(-?\d+),\s*"semantic":\s*"([^"]+)",\s*"instance_id":\s*(-?\d+),\s*"operation":\s*"([^"]+)"\})json"
+    );
+    for (std::sregex_iterator it(text.begin(), text.end(), faceRegex), end; it != end; ++it) {
+        TrainingLabelEntry entry;
+        entry.faceId = std::stoi((*it)[1].str());
+        entry.semantic = (*it)[2].str();
+        labels.push_back(entry);
+    }
+
+    return !labels.empty();
+}
+
+int SemanticToTrainingLabel(const std::string& semantic) {
+    if (semantic == "rivet") {
+        return 1;
+    }
+    return 0;
+}
+
+bool BuildFaceLabelMap(
+    const std::vector<TrainingLabelEntry>& labels,
+    int expectedFaceCount,
+    std::vector<int>& faceLabels
+) {
+    if (expectedFaceCount <= 0 || static_cast<int>(labels.size()) != expectedFaceCount) {
+        return false;
+    }
+
+    faceLabels.assign(expectedFaceCount + 1, 0);
+    std::vector<bool> seen(expectedFaceCount + 1, false);
+    for (const auto& entry : labels) {
+        if (entry.faceId < 1 || entry.faceId > expectedFaceCount || seen[entry.faceId]) {
+            return false;
+        }
+        seen[entry.faceId] = true;
+        faceLabels[entry.faceId] = SemanticToTrainingLabel(entry.semantic);
+    }
+
+    for (int faceId = 1; faceId <= expectedFaceCount; ++faceId) {
+        if (!seen[faceId]) {
+            return false;
+        }
+    }
+
+    return true;
 }
 
 std::string EscapeJson(const std::string& value) {
@@ -195,6 +263,23 @@ void ExportFaceFeaturesForShape(
     }
 }
 
+void ExportFaceFeaturesWithTrueLabels(
+    std::ofstream& dataFile,
+    const std::vector<FaceFeature>& features,
+    const std::vector<int>& faceLabels,
+    int graphId,
+    const std::string& modelName
+) {
+    auto rows = features;
+    for (auto& feature : rows) {
+        if (feature.id < 1 || feature.id >= static_cast<int>(faceLabels.size())) {
+            continue;
+        }
+        feature.semanticTag = faceLabels[feature.id];
+        WriteFaceRow(dataFile, graphId, modelName, feature);
+    }
+}
+
 void WriteFaceDumpJson(
     const std::string& inputFile,
     const std::vector<FaceFeature>& features,
@@ -280,6 +365,79 @@ void RunBatchTrainingExport(const std::string& inputDir, const std::string& outp
     }
 
     std::cout << ">>> Export complete. Models processed: " << graphId << std::endl;
+}
+
+int RunWingRivetTrainingExport(const std::string& inputDir, const std::string& outputCsv) {
+    const fs::path inputPath(inputDir);
+    const fs::path stepDir = inputPath / "wing_rivet_steps";
+    const fs::path labelsDir = inputPath / "wing_rivet_labels";
+
+    if (!fs::exists(stepDir) || !fs::exists(labelsDir)) {
+        std::cout << ">>> Missing wing_rivet_steps or wing_rivet_labels directory under: "
+                  << inputDir << std::endl;
+        return 1;
+    }
+
+    std::ofstream dataFile(outputCsv);
+    WriteFaceCsvHeader(dataFile);
+
+    int graphId = 0;
+    int skipped = 0;
+    for (const auto& entry : fs::directory_iterator(labelsDir)) {
+        if (!entry.is_regular_file() || entry.path().extension() != ".json") {
+            continue;
+        }
+
+        const std::string suffix = "_wing_rivets.labels";
+        const std::string stem = entry.path().stem().string();
+        if (stem.size() <= suffix.size() || stem.rfind(suffix) != stem.size() - suffix.size()) {
+            continue;
+        }
+
+        const std::string modelStem = stem.substr(0, stem.size() - suffix.size());
+        const fs::path stepPath = stepDir / (modelStem + "_wing_rivets.step");
+        if (!fs::exists(stepPath)) {
+            std::cout << ">>> Skip " << modelStem << ": missing STEP " << stepPath << std::endl;
+            skipped++;
+            continue;
+        }
+
+        const auto features = ExtractFaceFeaturesFromStep(stepPath.string());
+        if (features.empty()) {
+            std::cout << ">>> Skip " << modelStem << ": failed to extract features." << std::endl;
+            skipped++;
+            continue;
+        }
+
+        std::vector<TrainingLabelEntry> labels;
+        if (!ParseWingRivetLabels(entry.path(), labels)) {
+            std::cout << ">>> Skip " << modelStem << ": failed to parse labels." << std::endl;
+            skipped++;
+            continue;
+        }
+
+        std::vector<int> faceLabels;
+        if (!BuildFaceLabelMap(labels, static_cast<int>(features.size()), faceLabels)) {
+            std::cout << ">>> Skip " << modelStem << ": face_id/label count mismatch." << std::endl;
+            skipped++;
+            continue;
+        }
+
+        ExportFaceFeaturesWithTrueLabels(
+            dataFile,
+            features,
+            faceLabels,
+            graphId,
+            stepPath.filename().string()
+        );
+
+        graphId++;
+        std::cout << "  - Exported: " << stepPath.filename() << std::endl;
+    }
+
+    std::cout << ">>> Wing-rivet training export complete. Models processed: " << graphId
+              << ", skipped: " << skipped << std::endl;
+    return graphId > 0 ? 0 : 2;
 }
 
 void RunSingleInferenceExport(const std::string& inputFile, const std::string& outputCsv) {

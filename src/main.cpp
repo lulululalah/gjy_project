@@ -11,6 +11,7 @@ namespace
     {
         std::filesystem::path trainingInputDir;
         std::filesystem::path faceTrainingCsv;
+        std::filesystem::path wingRivetTrainingCsv;
         std::filesystem::path faceInferenceCsv;
         std::filesystem::path faceDumpJson;
     };
@@ -21,6 +22,7 @@ namespace
         return {
             projectRoot / "data" / "dirty_training_set",
             projectRoot / "data" / "full_training_set.csv",
+            projectRoot / "data" / "wing_rivet_training_set.csv",
             projectRoot / "data" / "current_inference.csv",
             projectRoot / "data" / "current_faces.json",
         };
@@ -36,7 +38,8 @@ namespace
             << "  Detector.exe --check-face-id <file>\n"
             << "  Detector.exe --inject-wing-rivets <file>\n"
             << "  Detector.exe --inject-wing-rivets-batch <dir>\n"
-            << "  Detector.exe --validate-wing-rivet-dataset <dir>\n";
+            << "  Detector.exe --validate-wing-rivet-dataset <dir>\n"
+            << "  Detector.exe --export-wing-rivet-training <dir>\n";
     }
 }
 
@@ -84,6 +87,11 @@ int main(int argc, char *argv[])
     {
         const std::string dirPath = argv[2];
         return RunWingRivetDatasetValidation(dirPath);
+    }
+    else if (mode == "--export-wing-rivet-training" && argc >= 3)
+    {
+        const std::string dirPath = argv[2];
+        return RunWingRivetTrainingExport(dirPath, paths.wingRivetTrainingCsv.string());
     }
     else
     {

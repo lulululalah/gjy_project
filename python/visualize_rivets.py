@@ -1,26 +1,37 @@
 import argparse
+import csv
 import subprocess
 from pathlib import Path
 
 import torch
-from OCC.Core.Quantity import Quantity_NOC_GRAY, Quantity_NOC_GREEN, Quantity_NOC_RED
-from OCC.Core.STEPControl import STEPControl_Reader
-from OCC.Core.TopAbs import TopAbs_FACE
-from OCC.Core.TopoDS import topods
-from OCC.Display.SimpleGui import init_display
-
-from train_rivet_gcn import DEFAULT_MODEL_PATH, DEFAULT_STATS_PATH, RivetGNN, load_cad_data
+from torch_geometric.loader import DataLoader
+from train_rivet_gcn import (
+    DEFAULT_MODEL_PATH,
+    DEFAULT_STATS_PATH,
+    RivetGNN,
+    build_window_graph,
+    load_cad_data,
+)
 
 
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
 DEFAULT_INFERENCE_CSV = PROJECT_ROOT / "data" / "current_inference.csv"
 DEFAULT_DETECTOR = PROJECT_ROOT / "build" / "Release" / "Detector.exe"
 
-LABEL_COLORS = {
-    0: None,
-    1: Quantity_NOC_GREEN,
-    2: Quantity_NOC_RED,
-}
+def build_label_colors(num_classes):
+    from OCC.Core.Quantity import Quantity_NOC_GREEN, Quantity_NOC_RED
+
+    if num_classes <= 2:
+        return {
+            0: None,
+            1: Quantity_NOC_RED,
+        }
+
+    return {
+        0: None,
+        1: Quantity_NOC_GREEN,
+        2: Quantity_NOC_RED,
+    }
 
 
 def export_inference_csv(step_path, detector_path, csv_path):
@@ -46,28 +57,59 @@ def export_inference_csv(step_path, detector_path, csv_path):
         raise FileNotFoundError(f"Inference CSV was not generated: {csv_path}")
 
 
-def run_inference(csv_path, model_path, stats_path, hidden_dim):
+def run_inference(csv_path, model_path, stats_path, hidden_dim, inference_mode="full", window_hop=2, inference_batch_size=128):
     data = load_cad_data(csv_path, stats_path=stats_path)
 
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    state_dict = torch.load(model_path, map_location=device)
+    classifier_weight = state_dict.get("classifier.weight")
+    num_classes = int(classifier_weight.shape[0]) if classifier_weight is not None else 3
     model = RivetGNN(
         node_features=data.num_node_features,
         edge_features=1,
         hidden_dim=hidden_dim,
+        num_classes=num_classes,
     ).to(device)
 
-    state_dict = torch.load(model_path, map_location=device)
     model.load_state_dict(state_dict)
     model.eval()
 
-    with torch.no_grad():
-        out = model(data.to(device))
-        pred = out.argmax(dim=1).cpu().tolist()
+    if inference_mode == "window":
+        windows = [build_window_graph(data.cpu(), center_idx, window_hop) for center_idx in range(data.num_nodes)]
+        loader = DataLoader(windows, batch_size=inference_batch_size, shuffle=False)
+        pred = []
+        with torch.no_grad():
+            for batch in loader:
+                batch = batch.to(device)
+                out = model(batch)
+                pred.extend(out.argmax(dim=1)[batch.target_mask].cpu().tolist())
+    else:
+        with torch.no_grad():
+            out = model(data.to(device))
+            pred = out.argmax(dim=1).cpu().tolist()
 
-    return pred
+    return pred, num_classes
 
 
-def visualize_cad_results(step_path, pred_labels):
+def write_predictions_csv(prediction_path, pred_labels):
+    prediction_path = Path(prediction_path)
+    prediction_path.parent.mkdir(parents=True, exist_ok=True)
+    with prediction_path.open("w", newline="", encoding="utf-8") as csv_file:
+        writer = csv.writer(csv_file)
+        writer.writerow(["face_id", "pred_label"])
+        for face_id, label in enumerate(pred_labels, start=1):
+            writer.writerow([face_id, label])
+    print(f"Prediction CSV ready: {prediction_path}")
+
+
+def visualize_cad_results(step_path, pred_labels, num_classes):
+    from OCC.Core.Quantity import Quantity_NOC_GRAY
+    from OCC.Core.STEPControl import STEPControl_Reader
+    from OCC.Core.TopAbs import TopAbs_FACE
+    from OCC.Core.TopoDS import topods
+    from OCC.Display.SimpleGui import init_display
+
+    label_colors = build_label_colors(num_classes)
     reader = STEPControl_Reader()
     if reader.ReadFile(str(step_path)) != 1:
         raise RuntimeError(f"Unable to read STEP file: {step_path}")
@@ -95,7 +137,7 @@ def visualize_cad_results(step_path, pred_labels):
     for i in range(1, num_faces + 1):
         face = topods.Face(face_map.FindKey(i))
         label = pred_labels[i - 1] if (i - 1) < len(pred_labels) else 0
-        color = LABEL_COLORS.get(label)
+        color = label_colors.get(label)
 
         if color is None:
             display.DisplayShape(face, color=Quantity_NOC_GRAY, update=False)
@@ -113,8 +155,13 @@ def parse_args():
     parser.add_argument("--csv", type=Path, default=DEFAULT_INFERENCE_CSV, help=f"Inference CSV path. Default: {DEFAULT_INFERENCE_CSV}")
     parser.add_argument("--model", type=Path, default=DEFAULT_MODEL_PATH, help=f"Trained model path. Default: {DEFAULT_MODEL_PATH}")
     parser.add_argument("--stats", type=Path, default=DEFAULT_STATS_PATH, help=f"Normalization stats path. Default: {DEFAULT_STATS_PATH}")
+    parser.add_argument("--pred-out", type=Path, help="Optional prediction CSV output path.")
     parser.add_argument("--hidden-dim", type=int, default=64, help="Hidden dimension used during training. Default: 64")
     parser.add_argument("--skip-export", action="store_true", help="Reuse an existing inference CSV instead of calling Detector.")
+    parser.add_argument("--no-display", action="store_true", help="Only export predictions; do not open the OCC viewer.")
+    parser.add_argument("--inference-mode", choices=["full", "window"], default="full", help="Run full-graph inference or per-face k-hop window inference. Default: full")
+    parser.add_argument("--window-hop", type=int, default=2, help="k-hop radius for window inference. Default: 2")
+    parser.add_argument("--inference-batch-size", type=int, default=128, help="Window inference batch size. Default: 128")
     return parser.parse_args()
 
 
@@ -124,9 +171,20 @@ def main():
     if not args.skip_export:
         export_inference_csv(args.step_model, args.detector, args.csv)
 
-    predicted_labels = run_inference(args.csv, args.model, args.stats, args.hidden_dim)
+    predicted_labels, num_classes = run_inference(
+        args.csv,
+        args.model,
+        args.stats,
+        args.hidden_dim,
+        inference_mode=args.inference_mode,
+        window_hop=args.window_hop,
+        inference_batch_size=args.inference_batch_size,
+    )
     print("Inference finished.")
-    visualize_cad_results(args.step_model, predicted_labels)
+    if args.pred_out:
+        write_predictions_csv(args.pred_out, predicted_labels)
+    if not args.no_display:
+        visualize_cad_results(args.step_model, predicted_labels, num_classes)
 
 
 if __name__ == "__main__":
