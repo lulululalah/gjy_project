@@ -3,6 +3,7 @@
 #include "FeatureExtractor.h"
 
 #include <BRepAlgoAPI_Fuse.hxx>
+#include <BRepBndLib.hxx>
 #include <BRep_Builder.hxx>
 #include <BRepCheck_Analyzer.hxx>
 #include <BRepClass_FaceClassifier.hxx>
@@ -11,6 +12,7 @@
 #include <BRepTools_ReShape.hxx>
 #include <BRepTools.hxx>
 #include <BRepAdaptor_Surface.hxx>
+#include <Bnd_Box.hxx>
 #include <GeomAbs_SurfaceType.hxx>
 #include <Precision.hxx>
 #include <STEPControl_Reader.hxx>
@@ -515,6 +517,58 @@ bool IsRivetFaceByPlacementGeometry(
     return false;
 }
 
+bool IsRivetTopNeighborFace(
+    const FaceFeature& candidate,
+    const RivetPlacement& placement
+) {
+    if (candidate.surfaceType != GeomAbs_Plane) {
+        return false;
+    }
+
+    const double radius = std::max(placement.radius, 1.0e-9);
+    const double expectedTopArea = M_PI * radius * radius;
+    const bool areaMatches =
+        std::abs(candidate.area - expectedTopArea) <=
+        std::max(1.0e-4, expectedTopArea * 0.55);
+    const bool compactEnough = candidate.compactness > 0.0 && candidate.compactness <= 1.35;
+    return areaMatches && compactEnough;
+}
+
+void AddNeighborTopFacesForMatchedRivet(
+    const RivetPlacement& placement,
+    const std::vector<FaceFeature>& reloadedFeatures,
+    std::map<int, std::set<int>>& matchedFaceIdsByInstance,
+    std::set<int>& usedFaceIds
+) {
+    std::map<int, const FaceFeature*> featureById;
+    for (const auto& feature : reloadedFeatures) {
+        featureById[feature.id] = &feature;
+    }
+
+    const auto existingFaceIds = matchedFaceIdsByInstance[placement.instanceId];
+    for (const int faceId : existingFaceIds) {
+        const auto faceIt = featureById.find(faceId);
+        if (faceIt == featureById.end() ||
+            faceIt->second->surfaceType != GeomAbs_Cylinder) {
+            continue;
+        }
+
+        for (const int neighborId : faceIt->second->neighborIds) {
+            const auto neighborIt = featureById.find(neighborId);
+            if (neighborIt == featureById.end() ||
+                usedFaceIds.find(neighborId) != usedFaceIds.end()) {
+                continue;
+            }
+            if (!IsRivetTopNeighborFace(*neighborIt->second, placement)) {
+                continue;
+            }
+
+            matchedFaceIdsByInstance[placement.instanceId].insert(neighborId);
+            usedFaceIds.insert(neighborId);
+        }
+    }
+}
+
 void AugmentRivetFaceMatchesFromPlacements(
     const std::vector<RivetPlacement>& placements,
     const std::vector<FaceFeature>& reloadedFeatures,
@@ -540,6 +594,13 @@ void AugmentRivetFaceMatchesFromPlacements(
             matchedFaceIdsByInstance[placement.instanceId].insert(feature.id);
             usedFaceIds.insert(feature.id);
         }
+
+        AddNeighborTopFacesForMatchedRivet(
+            placement,
+            reloadedFeatures,
+            matchedFaceIdsByInstance,
+            usedFaceIds
+        );
     }
 }
 
@@ -680,9 +741,11 @@ bool IsPrimaryWingSkinCandidate(const FaceFeature& feature) {
 
     const bool isLargeEnough = feature.area >= 4.0;
     const bool isAwayFromCenterline = std::abs(feature.centerZ) >= 1.5;
-    const bool isWingSkinSurface = feature.surfaceType == GeomAbs_Plane;
+    const bool isWingSkinSurface =
+        feature.surfaceType == GeomAbs_Plane ||
+        feature.surfaceType == GeomAbs_BSplineSurface;
     const bool isWingLikeOrientation =
-        std::abs(feature.normalY) >= 0.95 &&
+        feature.normalY >= 0.85 &&
         std::abs(feature.normalZ) <= 0.15;
     return isLargeEnough && isAwayFromCenterline && isWingSkinSurface && isWingLikeOrientation;
 }
@@ -705,15 +768,24 @@ bool IsFallbackWingCandidate(const FaceFeature& feature) {
 
 double ComputeWingScore(const FaceFeature& feature) {
     const double verticalPreference = 20.0 + feature.centerY;
-    return feature.area * (1.0 + std::abs(feature.centerZ)) * std::max(verticalPreference, 0.1);
+    const double surfacePreference =
+        feature.surfaceType == GeomAbs_BSplineSurface ? 5.0 :
+        feature.surfaceType == GeomAbs_Plane ? 0.2 :
+        1.0;
+    return feature.area *
+           (1.0 + std::abs(feature.centerZ)) *
+           std::max(verticalPreference, 0.1) *
+           surfacePreference;
 }
 
 std::vector<WingHostFace> SelectWingHostFaces(
     const std::vector<FaceFeature>& features,
     bool usePrimaryCandidates
 ) {
-    WingHostFace positiveWing;
-    WingHostFace negativeWing;
+    WingHostFace visiblePositiveWing;
+    WingHostFace visibleNegativeWing;
+    WingHostFace fallbackPositiveWing;
+    WingHostFace fallbackNegativeWing;
     for (const auto& feature : features) {
         const bool isCandidate = usePrimaryCandidates
             ? IsPrimaryWingSkinCandidate(feature)
@@ -723,20 +795,43 @@ std::vector<WingHostFace> SelectWingHostFaces(
         }
 
         const double score = ComputeWingScore(feature);
-        WingHostFace* bucket = feature.centerZ >= 0.0 ? &positiveWing : &negativeWing;
-        if (score > bucket->score) {
-            bucket->faceId = feature.id;
-            bucket->score = score;
-            bucket->feature = feature;
+        WingHostFace* fallbackBucket =
+            feature.centerZ >= 0.0 ? &fallbackPositiveWing : &fallbackNegativeWing;
+        if (score > fallbackBucket->score) {
+            fallbackBucket->faceId = feature.id;
+            fallbackBucket->score = score;
+            fallbackBucket->feature = feature;
+        }
+
+        if (feature.normalY <= 0.0) {
+            continue;
+        }
+
+        WingHostFace* visibleBucket =
+            feature.centerZ >= 0.0 ? &visiblePositiveWing : &visibleNegativeWing;
+        if (score > visibleBucket->score) {
+            visibleBucket->faceId = feature.id;
+            visibleBucket->score = score;
+            visibleBucket->feature = feature;
         }
     }
 
     std::vector<WingHostFace> hostFaces;
-    if (positiveWing.faceId > 0) {
-        hostFaces.push_back(positiveWing);
+    if (visiblePositiveWing.faceId > 0) {
+        hostFaces.push_back(visiblePositiveWing);
     }
-    if (negativeWing.faceId > 0) {
-        hostFaces.push_back(negativeWing);
+    if (visibleNegativeWing.faceId > 0) {
+        hostFaces.push_back(visibleNegativeWing);
+    }
+    if (!hostFaces.empty()) {
+        return hostFaces;
+    }
+
+    if (fallbackPositiveWing.faceId > 0) {
+        hostFaces.push_back(fallbackPositiveWing);
+    }
+    if (fallbackNegativeWing.faceId > 0) {
+        hostFaces.push_back(fallbackNegativeWing);
     }
     return hostFaces;
 }
@@ -835,6 +930,38 @@ TopoDS_Shape RebuildShapeWithReplacement(
 }
 
 // Rivet placement and geometry construction helpers.
+gp_Pnt ComputeShapeCenter(const TopoDS_Shape& shape) {
+    Bnd_Box box;
+    BRepBndLib::Add(shape, box);
+    if (box.IsVoid()) {
+        return gp_Pnt(0.0, 0.0, 0.0);
+    }
+
+    double xMin = 0.0;
+    double yMin = 0.0;
+    double zMin = 0.0;
+    double xMax = 0.0;
+    double yMax = 0.0;
+    double zMax = 0.0;
+    box.Get(xMin, yMin, zMin, xMax, yMax, zMax);
+    return gp_Pnt(
+        (xMin + xMax) * 0.5,
+        (yMin + yMax) * 0.5,
+        (zMin + zMax) * 0.5
+    );
+}
+
+void OrientNormalAwayFromCenter(const gp_Pnt& point, const gp_Pnt& shapeCenter, gp_Dir& normal) {
+    gp_Vec centerToPoint(shapeCenter, point);
+    if (centerToPoint.SquareMagnitude() <= Precision::SquareConfusion()) {
+        return;
+    }
+
+    if (gp_Vec(normal).Dot(centerToPoint) < 0.0) {
+        normal.Reverse();
+    }
+}
+
 bool IsUvInsideFace(const TopoDS_Face& face, double u, double v) {
     BRepClass_FaceClassifier classifier;
     classifier.Perform(face, gp_Pnt2d(u, v), Precision::Confusion());
@@ -867,6 +994,7 @@ std::vector<RivetPlacement> BuildWingRivetPlacements(
     int hostFaceId,
     const TopoDS_Face& hostFace,
     const FaceFeature& hostFeature,
+    const gp_Pnt& shapeCenter,
     int startingInstanceId
 ) {
     double uMin = 0.0;
@@ -878,7 +1006,7 @@ std::vector<RivetPlacement> BuildWingRivetPlacements(
     const std::vector<double> uFractions = {0.22, 0.38, 0.54, 0.70};
     const std::vector<double> vFractions = {0.38, 0.58};
     const double faceScale = std::sqrt(std::max(hostFeature.area, 1.0));
-    const double rivetRadius = std::clamp(faceScale * 0.02, 0.03, faceScale * 0.08);
+    const double rivetRadius = std::clamp(faceScale * 0.02, 0.03, 2.5);
     const double rivetHeight = std::max(rivetRadius * 0.65, 0.02);
 
     std::vector<RivetPlacement> placements;
@@ -896,6 +1024,7 @@ std::vector<RivetPlacement> BuildWingRivetPlacements(
             if (!EvaluateFacePointAndNormal(hostFace, u, v, point, normal)) {
                 continue;
             }
+            OrientNormalAwayFromCenter(point, shapeCenter, normal);
 
             placements.push_back({
                 instanceId++,
@@ -1044,6 +1173,7 @@ int RunWingRivetInjectionImpl(
         std::cout << ">>> Failed to extract original face features." << std::endl;
         return 1;
     }
+    const gp_Pnt shapeCenter = ComputeShapeCenter(originalShape);
 
     std::vector<WingHostFace> hostFaces = SelectWingHostFaces(originalFeatures, true);
     if (hostFaces.empty()) {
@@ -1066,6 +1196,7 @@ int RunWingRivetInjectionImpl(
             hostFaceInfo.faceId,
             hostFace,
             hostFaceInfo.feature,
+            shapeCenter,
             nextInstanceId
         );
         nextInstanceId += static_cast<int>(facePlacements.size());

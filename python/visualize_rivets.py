@@ -97,6 +97,17 @@ def write_predictions_csv(prediction_path, pred_labels):
     print(f"Prediction CSV ready: {prediction_path}")
 
 
+def read_predictions_csv(prediction_path):
+    pred_labels = []
+    with Path(prediction_path).open("r", newline="", encoding="utf-8") as csv_file:
+        for row in csv.DictReader(csv_file):
+            face_id = int(row["face_id"])
+            while len(pred_labels) < face_id:
+                pred_labels.append(0)
+            pred_labels[face_id - 1] = int(row["pred_label"])
+    return pred_labels
+
+
 def suppress_large_positive_faces(csv_path, pred_labels, max_relative_area):
     if max_relative_area is None or max_relative_area <= 0:
         return pred_labels
@@ -123,7 +134,12 @@ def suppress_large_positive_faces(csv_path, pred_labels, max_relative_area):
     return filtered_labels
 
 
-def visualize_cad_results(step_path, pred_labels, labels_path):
+def visualize_cad_results(
+    step_path,
+    pred_labels,
+    labels_path,
+    context_transparency=0.82,
+):
     from OCC.Core.Quantity import (
         Quantity_NOC_GRAY,
         Quantity_NOC_GREEN,
@@ -146,6 +162,13 @@ def visualize_cad_results(step_path, pred_labels, labels_path):
     truth_labels = load_truth_labels(labels_path)
     print(f"Displaying comparison: {step_path}")
     print("green=TP, red=FP, yellow=FN, gray=TN")
+    print(f"transparent gray=model context (transparency={context_transparency:g})")
+    display.DisplayShape(
+        shape,
+        color=Quantity_NOC_GRAY,
+        transparency=context_transparency,
+        update=False,
+    )
 
     from OCC.Core.TopExp import topexp
     from OCC.Core.TopTools import TopTools_IndexedMapOfShape
@@ -179,6 +202,9 @@ def visualize_cad_results(step_path, pred_labels, labels_path):
         else:
             color = Quantity_NOC_GRAY
             confusion["tn"] += 1
+
+        if label == 0 and truth_label == 0:
+            continue
         display.DisplayShape(face, color=color, update=False)
 
     print(f"Comparison stats: {confusion}")
@@ -194,11 +220,13 @@ def parse_args():
     parser.add_argument("--csv", type=Path, default=DEFAULT_INFERENCE_CSV, help=f"Inference CSV path. Default: {DEFAULT_INFERENCE_CSV}")
     parser.add_argument("--model", type=Path, default=DEFAULT_MODEL_PATH, help=f"Trained model path. Default: {DEFAULT_MODEL_PATH}")
     parser.add_argument("--stats", type=Path, default=DEFAULT_STATS_PATH, help=f"Normalization stats path. Default: {DEFAULT_STATS_PATH}")
+    parser.add_argument("--pred-in", type=Path, help="Read an existing prediction CSV instead of running model inference.")
     parser.add_argument("--pred-out", type=Path, help="Optional prediction CSV output path.")
     parser.add_argument("--hidden-dim", type=int, default=64, help="Hidden dimension used during training. Default: 64")
     parser.add_argument("--skip-export", action="store_true", help="Reuse an existing inference CSV instead of calling Detector.")
     parser.add_argument("--no-display", action="store_true", help="Only export predictions; do not open the OCC viewer.")
     parser.add_argument("--compare-labels", type=Path, required=True, help="labels.json for true-vs-prediction comparison visualization.")
+    parser.add_argument("--context-transparency", type=float, default=0.82, help="Transparency for the full-model context. Default: 0.82")
     parser.add_argument("--inference-mode", choices=["full", "window"], default="full", help="Run full-graph inference or per-face k-hop window inference. Default: full")
     parser.add_argument("--window-hop", type=int, default=2, help="k-hop radius for window inference. Default: 2")
     parser.add_argument("--inference-batch-size", type=int, default=128, help="Window inference batch size. Default: 128")
@@ -209,24 +237,35 @@ def parse_args():
 def main():
     args = parse_args()
 
-    if not args.skip_export:
-        export_inference_csv(args.step_model, args.detector, args.csv)
+    if args.pred_in:
+        predicted_labels = read_predictions_csv(args.pred_in)
+        print(f"Loaded predictions: {args.pred_in}")
+    else:
+        if not args.skip_export:
+            export_inference_csv(args.step_model, args.detector, args.csv)
 
-    predicted_labels, num_classes = run_inference(
-        args.csv,
-        args.model,
-        args.stats,
-        args.hidden_dim,
-        inference_mode=args.inference_mode,
-        window_hop=args.window_hop,
-        inference_batch_size=args.inference_batch_size,
-    )
-    print("Inference finished.")
-    predicted_labels = suppress_large_positive_faces(args.csv, predicted_labels, args.max_rivet_relative_area)
+        predicted_labels, _ = run_inference(
+            args.csv,
+            args.model,
+            args.stats,
+            args.hidden_dim,
+            inference_mode=args.inference_mode,
+            window_hop=args.window_hop,
+            inference_batch_size=args.inference_batch_size,
+        )
+        print("Inference finished.")
+        predicted_labels = suppress_large_positive_faces(args.csv, predicted_labels, args.max_rivet_relative_area)
+
     if args.pred_out:
         write_predictions_csv(args.pred_out, predicted_labels)
+
     if not args.no_display:
-        visualize_cad_results(args.step_model, predicted_labels, labels_path=args.compare_labels)
+        visualize_cad_results(
+            args.step_model,
+            predicted_labels,
+            labels_path=args.compare_labels,
+            context_transparency=args.context_transparency,
+        )
 
 
 if __name__ == "__main__":
