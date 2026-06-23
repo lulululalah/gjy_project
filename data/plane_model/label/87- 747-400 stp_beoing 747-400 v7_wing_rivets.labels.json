@@ -1,7 +1,7 @@
 {
   "model_id": "87- 747-400 stp_beoing 747-400 v7_wing_rivets",
   "base_model": "87- 747-400 stp_beoing 747-400 v7.step",
-  "output_step": "C:\\Users\\1\\Desktop\\model\\step\\87- 747-400 stp_beoing 747-400 v7_wing_rivets.step",
+  "output_step": "D:\\Projects\\gjy_byproject\\data\\plane_model\\step\\87- 747-400 stp_beoing 747-400 v7_wing_rivets.step",
   "faces": [
     {"face_id": 1, "semantic": "background", "instance_id": -1, "operation": "keep"},
     {"face_id": 2, "semantic": "background", "instance_id": -1, "operation": "keep"},

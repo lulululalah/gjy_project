@@ -191,6 +191,22 @@ def load_cad_data(csv_path, stats_path=DEFAULT_STATS_PATH):
     return build_graph(group, feature_mean, feature_std)
 
 
+def build_graphs_from_dataframe(df, feature_mean, feature_std):
+    if "graph_id" not in df.columns or "model_name" not in df.columns:
+        raise ValueError("CSV is missing graph_id/model_name columns. Please re-export training data.")
+
+    graphs = []
+    for _, group in df.groupby("graph_id", sort=True):
+        graphs.append(build_graph(group, feature_mean, feature_std))
+    return graphs
+
+
+def prepare_graph_samples(full_graphs, training_mode="full", window_hop=2, background_ratio=5, seed=42):
+    if training_mode == "window":
+        return build_window_dataset(full_graphs, window_hop, background_ratio, seed)
+    return full_graphs
+
+
 def load_graph_dataset(csv_path, training_mode="full", window_hop=2, background_ratio=5, seed=42):
     df = pd.read_csv(csv_path)
     if "graph_id" not in df.columns or "model_name" not in df.columns:
@@ -200,16 +216,48 @@ def load_graph_dataset(csv_path, training_mode="full", window_hop=2, background_
     feature_mean = feature_matrix.mean(axis=0)
     feature_std = feature_matrix.std(axis=0) + 1e-6
 
-    full_graphs = []
-    for _, group in df.groupby("graph_id", sort=True):
-        full_graphs.append(build_graph(group, feature_mean, feature_std))
-
-    if training_mode == "window":
-        graphs = build_window_dataset(full_graphs, window_hop, background_ratio, seed)
-    else:
-        graphs = full_graphs
+    full_graphs = build_graphs_from_dataframe(df, feature_mean, feature_std)
+    graphs = prepare_graph_samples(full_graphs, training_mode, window_hop, background_ratio, seed)
 
     return graphs, feature_mean, feature_std
+
+
+def load_explicit_train_val_datasets(
+    train_csv_path,
+    val_csv_path,
+    training_mode="full",
+    window_hop=2,
+    background_ratio=5,
+    seed=42,
+):
+    train_df = pd.read_csv(train_csv_path)
+    val_df = pd.read_csv(val_csv_path)
+    for name, df in [("train", train_df), ("val", val_df)]:
+        if "graph_id" not in df.columns or "model_name" not in df.columns:
+            raise ValueError(f"{name} CSV is missing graph_id/model_name columns. Please re-export training data.")
+
+    feature_matrix = train_df[FEATURE_COLS].astype(float).to_numpy()
+    feature_mean = feature_matrix.mean(axis=0)
+    feature_std = feature_matrix.std(axis=0) + 1e-6
+
+    train_full_graphs = build_graphs_from_dataframe(train_df, feature_mean, feature_std)
+    val_full_graphs = build_graphs_from_dataframe(val_df, feature_mean, feature_std)
+
+    train_graphs = prepare_graph_samples(
+        train_full_graphs,
+        training_mode,
+        window_hop,
+        background_ratio,
+        seed,
+    )
+    val_graphs = prepare_graph_samples(
+        val_full_graphs,
+        training_mode,
+        window_hop,
+        background_ratio,
+        seed + 1,
+    )
+    return train_graphs, val_graphs, feature_mean, feature_std
 
 
 def split_dataset(graphs, train_ratio=0.8, seed=42):
@@ -399,15 +447,32 @@ def print_metric_table(metrics, summary):
 
 
 def train(args):
-    graphs, feature_mean, feature_std = load_graph_dataset(
-        args.csv,
-        training_mode=args.training_mode,
-        window_hop=args.window_hop,
-        background_ratio=args.background_ratio,
-        seed=args.seed,
-    )
+    if args.val_csv is not None:
+        train_graphs, val_graphs, feature_mean, feature_std = load_explicit_train_val_datasets(
+            args.csv,
+            args.val_csv,
+            training_mode=args.training_mode,
+            window_hop=args.window_hop,
+            background_ratio=args.background_ratio,
+            seed=args.seed,
+        )
+        graphs = train_graphs + val_graphs
+        split_description = f"explicit train={args.csv}, val={args.val_csv}"
+    else:
+        graphs, feature_mean, feature_std = load_graph_dataset(
+            args.csv,
+            training_mode=args.training_mode,
+            window_hop=args.window_hop,
+            background_ratio=args.background_ratio,
+            seed=args.seed,
+        )
+        train_graphs, val_graphs = split_dataset(graphs, train_ratio=args.train_ratio, seed=args.seed)
+        split_description = f"random split from {args.csv}"
+
+    if not train_graphs or not val_graphs:
+        raise ValueError("Training and validation datasets must both contain at least one graph/sample.")
+
     num_classes = max(int(graph.y.max().item()) for graph in graphs) + 1
-    train_graphs, val_graphs = split_dataset(graphs, train_ratio=args.train_ratio, seed=args.seed)
 
     train_loader = DataLoader(train_graphs, batch_size=args.batch_size, shuffle=True)
     val_loader = DataLoader(val_graphs, batch_size=args.batch_size, shuffle=False)
@@ -423,7 +488,7 @@ def train(args):
     optimizer = torch.optim.Adam(model.parameters(), lr=args.lr)
     class_weights = compute_class_weights(train_graphs, num_classes=num_classes).to(device)
 
-    print(f"Loaded {len(graphs)} graphs from {args.csv}")
+    print(f"Loaded {len(graphs)} graph samples ({split_description})")
     print(f"Classes: {num_classes}")
     print(f"Training mode: {args.training_mode}")
     if args.training_mode == "window":
@@ -500,6 +565,7 @@ def train(args):
 def parse_args():
     parser = argparse.ArgumentParser(description="Train RivetGNN using one STEP model per graph.")
     parser.add_argument("--csv", type=Path, default=DEFAULT_CSV, help=f"Training CSV path. Default: {DEFAULT_CSV}")
+    parser.add_argument("--val-csv", type=Path, default=None, help="Optional explicit validation CSV path. When set, --csv is used only for training.")
     parser.add_argument("--model-out", type=Path, default=DEFAULT_MODEL_PATH, help=f"Model output path. Default: {DEFAULT_MODEL_PATH}")
     parser.add_argument("--stats-out", type=Path, default=DEFAULT_STATS_PATH, help=f"Normalization stats output. Default: {DEFAULT_STATS_PATH}")
     parser.add_argument("--eval-out", type=Path, default=DEFAULT_EVAL_PATH, help=f"Evaluation CSV output. Default: {DEFAULT_EVAL_PATH}")

@@ -1,7 +1,7 @@
 {
   "model_id": "91- 737-800 stp 3dm_737_wing_rivets",
   "base_model": "91- 737-800 stp 3dm_737.stp",
-  "output_step": "C:\\Users\\1\\Desktop\\model\\step\\91- 737-800 stp 3dm_737_wing_rivets.step",
+  "output_step": "D:\\Projects\\gjy_byproject\\data\\plane_model\\step\\91- 737-800 stp 3dm_737_wing_rivets.step",
   "faces": [
     {"face_id": 1, "semantic": "background", "instance_id": -1, "operation": "keep"},
     {"face_id": 2, "semantic": "background", "instance_id": -1, "operation": "keep"},

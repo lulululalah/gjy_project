@@ -1,7 +1,7 @@
 {
   "model_id": "237-an-124 STP STL_Antonov An-124 Rusian v2_wing_rivets",
   "base_model": "237-an-124 STP STL_Antonov An-124 Rusian v2.step",
-  "output_step": "C:\\Users\\1\\Desktop\\model\\step\\237-an-124 STP STL_Antonov An-124 Rusian v2_wing_rivets.step",
+  "output_step": "D:\\Projects\\gjy_byproject\\data\\plane_model\\step\\237-an-124 STP STL_Antonov An-124 Rusian v2_wing_rivets.step",
   "faces": [
     {"face_id": 1, "semantic": "background", "instance_id": -1, "operation": "keep"},
     {"face_id": 2, "semantic": "background", "instance_id": -1, "operation": "keep"},

@@ -1,7 +1,7 @@
 {
   "model_id": "213-F14 tomcat SolidWorks stp_Tomcat-assembly_wing_rivets",
   "base_model": "213-F14 tomcat SolidWorks stp_Tomcat-assembly.STEP",
-  "output_step": "C:\\Users\\1\\Desktop\\model\\step\\213-F14 tomcat SolidWorks stp_Tomcat-assembly_wing_rivets.step",
+  "output_step": "D:\\Projects\\gjy_byproject\\data\\plane_model\\step\\213-F14 tomcat SolidWorks stp_Tomcat-assembly_wing_rivets.step",
   "faces": [
     {"face_id": 1, "semantic": "background", "instance_id": -1, "operation": "keep"},
     {"face_id": 2, "semantic": "background", "instance_id": -1, "operation": "keep"},

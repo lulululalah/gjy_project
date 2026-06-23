@@ -1,7 +1,7 @@
 {
   "model_id": "89- 737-800 stp igs x_t STL_AIR INDIA BOEING 737-800_wing_rivets",
   "base_model": "89- 737-800 stp igs x_t STL_AIR INDIA BOEING 737-800.STEP",
-  "output_step": "C:\\Users\\1\\Desktop\\model\\step\\89- 737-800 stp igs x_t STL_AIR INDIA BOEING 737-800_wing_rivets.step",
+  "output_step": "D:\\Projects\\gjy_byproject\\data\\plane_model\\step\\89- 737-800 stp igs x_t STL_AIR INDIA BOEING 737-800_wing_rivets.step",
   "faces": [
     {"face_id": 1, "semantic": "background", "instance_id": -1, "operation": "keep"},
     {"face_id": 2, "semantic": "rivet", "instance_id": 2, "operation": "remove_protrusion"},

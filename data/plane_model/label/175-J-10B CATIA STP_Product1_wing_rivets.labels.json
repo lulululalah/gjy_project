@@ -1,7 +1,7 @@
 {
   "model_id": "175-J-10B CATIA STP_Product1_wing_rivets",
   "base_model": "175-J-10B CATIA STP_Product1.stp",
-  "output_step": "C:\\Users\\1\\Desktop\\model\\step\\175-J-10B CATIA STP_Product1_wing_rivets.step",
+  "output_step": "D:\\Projects\\gjy_byproject\\data\\plane_model\\step\\175-J-10B CATIA STP_Product1_wing_rivets.step",
   "faces": [
     {"face_id": 1, "semantic": "background", "instance_id": -1, "operation": "keep"},
     {"face_id": 2, "semantic": "background", "instance_id": -1, "operation": "keep"},

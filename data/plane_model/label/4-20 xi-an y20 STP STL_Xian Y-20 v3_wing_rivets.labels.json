@@ -1,7 +1,7 @@
 {
   "model_id": "4-20 xi-an y20 STP STL_Xian Y-20 v3_wing_rivets",
   "base_model": "4-20 xi-an y20 STP STL_Xian Y-20 v3.step",
-  "output_step": "C:\\Users\\1\\Desktop\\model\\step\\4-20 xi-an y20 STP STL_Xian Y-20 v3_wing_rivets.step",
+  "output_step": "D:\\Projects\\gjy_byproject\\data\\plane_model\\step\\4-20 xi-an y20 STP STL_Xian Y-20 v3_wing_rivets.step",
   "faces": [
     {"face_id": 1, "semantic": "background", "instance_id": -1, "operation": "keep"},
     {"face_id": 2, "semantic": "background", "instance_id": -1, "operation": "keep"},

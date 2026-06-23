@@ -3,20 +3,12 @@ import csv
 import subprocess
 from pathlib import Path
 
-import torch
-from torch_geometric.loader import DataLoader
-from train_rivet_gcn import (
-    DEFAULT_MODEL_PATH,
-    DEFAULT_STATS_PATH,
-    RivetGNN,
-    build_window_graph,
-    load_cad_data,
-)
-
 
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
 DEFAULT_INFERENCE_CSV = PROJECT_ROOT / "data" / "current_inference.csv"
 DEFAULT_DETECTOR = PROJECT_ROOT / "build" / "Release" / "Detector.exe"
+DEFAULT_MODEL_PATH = PROJECT_ROOT / "rivet_gnn.pth"
+DEFAULT_STATS_PATH = PROJECT_ROOT / "rivet_gnn_stats.npz"
 
 
 def load_truth_labels(labels_path):
@@ -53,6 +45,14 @@ def export_inference_csv(step_path, detector_path, csv_path):
 
 
 def run_inference(csv_path, model_path, stats_path, hidden_dim, inference_mode="full", window_hop=2, inference_batch_size=128):
+    import torch
+    from torch_geometric.loader import DataLoader
+    from train_rivet_gcn import (
+        RivetGNN,
+        build_window_graph,
+        load_cad_data,
+    )
+
     data = load_cad_data(csv_path, stats_path=stats_path)
 
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -139,6 +139,7 @@ def visualize_cad_results(
     pred_labels,
     labels_path,
     context_transparency=0.82,
+    marker_radius=0.0,
 ):
     from OCC.Core.Quantity import (
         Quantity_NOC_GRAY,
@@ -146,6 +147,10 @@ def visualize_cad_results(
         Quantity_NOC_RED,
         Quantity_NOC_YELLOW,
     )
+    from OCC.Core.Bnd import Bnd_Box
+    from OCC.Core.BRepBndLib import brepbndlib
+    from OCC.Core.BRepPrimAPI import BRepPrimAPI_MakeSphere
+    from OCC.Core.gp import gp_Pnt
     from OCC.Core.STEPControl import STEPControl_Reader
     from OCC.Core.TopAbs import TopAbs_FACE
     from OCC.Core.TopoDS import topods
@@ -179,12 +184,24 @@ def visualize_cad_results(
     num_faces = face_map.Size()
     print(f"Model faces: {num_faces}, Predicted labels: {len(pred_labels)}")
 
+    model_box = Bnd_Box()
+    brepbndlib.Add(shape, model_box)
+    x_min, y_min, z_min, x_max, y_max, z_max = model_box.Get()
+    diagonal = ((x_max - x_min) ** 2 + (y_max - y_min) ** 2 + (z_max - z_min) ** 2) ** 0.5
+    auto_marker_radius = min(max(diagonal * 0.001, 2.0), 12.0)
+    use_markers = marker_radius and marker_radius > 0
+    if use_markers:
+        print(f"Marker radius: {marker_radius:g}")
+    else:
+        print(f"Marker radius: disabled (auto suggestion: {auto_marker_radius:g})")
+
     label_counts = {}
     for label in pred_labels:
         label_counts[label] = label_counts.get(label, 0) + 1
     print(f"Label distribution: {label_counts}")
 
     confusion = {"tp": 0, "fp": 0, "fn": 0, "tn": 0}
+    highlight_markers = []
     for i in range(1, num_faces + 1):
         face = topods.Face(face_map.FindKey(i))
         label = pred_labels[i - 1] if (i - 1) < len(pred_labels) else 0
@@ -207,7 +224,21 @@ def visualize_cad_results(
             continue
         display.DisplayShape(face, color=color, update=False)
 
+        if use_markers:
+            face_box = Bnd_Box()
+            brepbndlib.Add(face, face_box)
+            fx_min, fy_min, fz_min, fx_max, fy_max, fz_max = face_box.Get()
+            center = gp_Pnt(
+                (fx_min + fx_max) * 0.5,
+                (fy_min + fy_max) * 0.5,
+                (fz_min + fz_max) * 0.5,
+            )
+            highlight_markers.append((center, color))
+
     print(f"Comparison stats: {confusion}")
+    for center, color in highlight_markers:
+        marker = BRepPrimAPI_MakeSphere(center, marker_radius).Shape()
+        display.DisplayShape(marker, color=color, update=False)
 
     display.FitAll()
     start_display()
@@ -227,6 +258,7 @@ def parse_args():
     parser.add_argument("--no-display", action="store_true", help="Only export predictions; do not open the OCC viewer.")
     parser.add_argument("--compare-labels", type=Path, required=True, help="labels.json for true-vs-prediction comparison visualization.")
     parser.add_argument("--context-transparency", type=float, default=0.82, help="Transparency for the full-model context. Default: 0.82")
+    parser.add_argument("--marker-radius", type=float, default=0.0, help="Overlay marker sphere radius. Use 0 to disable markers. Default: 0")
     parser.add_argument("--inference-mode", choices=["full", "window"], default="full", help="Run full-graph inference or per-face k-hop window inference. Default: full")
     parser.add_argument("--window-hop", type=int, default=2, help="k-hop radius for window inference. Default: 2")
     parser.add_argument("--inference-batch-size", type=int, default=128, help="Window inference batch size. Default: 128")
@@ -265,6 +297,7 @@ def main():
             predicted_labels,
             labels_path=args.compare_labels,
             context_transparency=args.context_transparency,
+            marker_radius=args.marker_radius,
         )
 
 
