@@ -24,7 +24,8 @@ namespace
         "centerZ,meanCurvature,radius,numWires,innerWireCount,minInnerWireLength,maxInnerWireLength,"
         "numEdges,neighborAreaMean,neighborAreaMax,areaToNeighborMean,areaToNeighborMax,"
         "neighborPlaneCount,neighborCylinderCount,neighborCurvedCount,convexEdgeCount,concaveEdgeCount,"
-        "smoothEdgeCount,convexEdgeRatio,concaveEdgeRatio,neighbors,edge_types,label\n";
+        "smoothEdgeCount,convexEdgeRatio,concaveEdgeRatio,neighbors,edge_types,edge_area_ratios,"
+        "edge_neighbor_surface_types,shared_edge_lengths,label\n";
 
     bool IsStepFile(const fs::path &filePath)
     {
@@ -249,6 +250,27 @@ namespace
         {
             dataFile << feature.neighborEdgeTypes[j]
                      << (j + 1 == feature.neighborEdgeTypes.size() ? "" : " ");
+        }
+
+        dataFile << "\",\"";
+        for (size_t j = 0; j < feature.neighborAreaRatios.size(); ++j)
+        {
+            dataFile << feature.neighborAreaRatios[j]
+                     << (j + 1 == feature.neighborAreaRatios.size() ? "" : " ");
+        }
+
+        dataFile << "\",\"";
+        for (size_t j = 0; j < feature.neighborSurfaceTypes.size(); ++j)
+        {
+            dataFile << feature.neighborSurfaceTypes[j]
+                     << (j + 1 == feature.neighborSurfaceTypes.size() ? "" : " ");
+        }
+
+        dataFile << "\",\"";
+        for (size_t j = 0; j < feature.sharedEdgeLengths.size(); ++j)
+        {
+            dataFile << feature.sharedEdgeLengths[j]
+                     << (j + 1 == feature.sharedEdgeLengths.size() ? "" : " ");
         }
 
         dataFile << "\"," << feature.semanticTag << "\n";

@@ -53,6 +53,9 @@ struct FaceFeature
     double concaveEdgeRatio = 0.0;
     std::vector<int> neighborIds;
     std::vector<int> neighborEdgeTypes;
+    std::vector<double> neighborAreaRatios;
+    std::vector<int> neighborSurfaceTypes;
+    std::vector<double> sharedEdgeLengths;
     int semanticTag = 0;
 };
 

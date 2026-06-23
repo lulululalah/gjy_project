@@ -40,6 +40,13 @@ FEATURE_COLS = [
     "concaveEdgeRatio",
 ]
 
+EDGE_ATTR_COLS = [
+    "edge_types",
+    "edge_area_ratios",
+    "edge_neighbor_surface_types",
+    "shared_edge_lengths",
+]
+
 DEFAULT_CSV = Path("data/wing_rivet_training_set.csv")
 DEFAULT_MODEL_PATH = Path("rivet_gnn.pth")
 DEFAULT_STATS_PATH = Path("rivet_gnn_stats.npz")
@@ -52,7 +59,11 @@ def split_tokens(value):
     return str(value).split()
 
 
-def build_graph(group_df, feature_mean, feature_std):
+def token_at(tokens, index, default="0"):
+    return tokens[index] if index < len(tokens) else default
+
+
+def build_graph(group_df, feature_mean, feature_std, edge_mean=None, edge_std=None):
     local_df = group_df.reset_index(drop=True).copy()
     node_features = local_df[FEATURE_COLS].astype(float).to_numpy()
     node_features = (node_features - feature_mean) / feature_std
@@ -63,22 +74,32 @@ def build_graph(group_df, feature_mean, feature_std):
 
     for node_idx, row in local_df.iterrows():
         neighbor_ids = split_tokens(row["neighbors"])
-        edge_types = split_tokens(row["edge_types"])
+        edge_attr_tokens = {
+            col: split_tokens(row[col]) if col in local_df.columns else []
+            for col in EDGE_ATTR_COLS
+        }
 
-        for neighbor_id_str, edge_type_str in zip(neighbor_ids, edge_types):
+        for edge_pos, neighbor_id_str in enumerate(neighbor_ids):
             neighbor_id = int(neighbor_id_str)
             if neighbor_id not in id_to_index:
                 continue
 
             edge_index.append([node_idx, id_to_index[neighbor_id]])
-            edge_attr.append([float(edge_type_str)])
+            edge_attr.append([
+                float(token_at(edge_attr_tokens[col], edge_pos))
+                for col in EDGE_ATTR_COLS
+            ])
 
     if edge_index:
         edge_index = torch.tensor(edge_index, dtype=torch.long).t().contiguous()
         edge_attr = torch.tensor(edge_attr, dtype=torch.float)
+        if edge_mean is not None and edge_std is not None:
+            edge_mean_tensor = torch.tensor(edge_mean, dtype=torch.float)
+            edge_std_tensor = torch.tensor(edge_std, dtype=torch.float)
+            edge_attr = (edge_attr - edge_mean_tensor) / edge_std_tensor
     else:
         edge_index = torch.empty((2, 0), dtype=torch.long)
-        edge_attr = torch.empty((0, 1), dtype=torch.float)
+        edge_attr = torch.empty((0, len(EDGE_ATTR_COLS)), dtype=torch.float)
 
     x = torch.tensor(node_features, dtype=torch.float)
     y = torch.tensor(local_df["label"].astype(int).to_numpy(), dtype=torch.long)
@@ -178,13 +199,34 @@ def build_window_dataset(full_graphs, hop_count, background_ratio, seed):
     return windows
 
 
+def collect_edge_attr_matrix(df):
+    rows = []
+    for _, row in df.iterrows():
+        neighbor_ids = split_tokens(row["neighbors"])
+        edge_attr_tokens = {
+            col: split_tokens(row[col]) if col in df.columns else []
+            for col in EDGE_ATTR_COLS
+        }
+        for edge_pos in range(len(neighbor_ids)):
+            rows.append([
+                float(token_at(edge_attr_tokens[col], edge_pos))
+                for col in EDGE_ATTR_COLS
+            ])
+
+    if not rows:
+        return np.empty((0, len(EDGE_ATTR_COLS)), dtype=float)
+    return np.asarray(rows, dtype=float)
+
+
 def load_feature_stats(stats_path):
     stats_file = Path(stats_path)
     if not stats_file.exists():
-        return None, None
+        return None, None, None, None
 
     stats = np.load(stats_file, allow_pickle=True)
-    return stats["mean"], stats["std"]
+    edge_mean = stats["edge_mean"] if "edge_mean" in stats.files else None
+    edge_std = stats["edge_std"] if "edge_std" in stats.files else None
+    return stats["mean"], stats["std"], edge_mean, edge_std
 
 
 def load_cad_data(csv_path, stats_path=DEFAULT_STATS_PATH):
@@ -192,24 +234,28 @@ def load_cad_data(csv_path, stats_path=DEFAULT_STATS_PATH):
     if "graph_id" not in df.columns or "model_name" not in df.columns:
         raise ValueError("CSV is missing graph_id/model_name columns. Please re-export inference data.")
 
-    feature_mean, feature_std = load_feature_stats(stats_path)
+    feature_mean, feature_std, edge_mean, edge_std = load_feature_stats(stats_path)
     if feature_mean is None or feature_std is None:
         feature_matrix = df[FEATURE_COLS].astype(float).to_numpy()
         feature_mean = feature_matrix.mean(axis=0)
         feature_std = feature_matrix.std(axis=0) + 1e-6
+    if edge_mean is None or edge_std is None:
+        edge_matrix = collect_edge_attr_matrix(df)
+        edge_mean = edge_matrix.mean(axis=0) if len(edge_matrix) else np.zeros(len(EDGE_ATTR_COLS))
+        edge_std = edge_matrix.std(axis=0) + 1e-6 if len(edge_matrix) else np.ones(len(EDGE_ATTR_COLS))
 
     first_graph_id = df["graph_id"].iloc[0]
     group = df[df["graph_id"] == first_graph_id]
-    return build_graph(group, feature_mean, feature_std)
+    return build_graph(group, feature_mean, feature_std, edge_mean, edge_std)
 
 
-def build_graphs_from_dataframe(df, feature_mean, feature_std):
+def build_graphs_from_dataframe(df, feature_mean, feature_std, edge_mean=None, edge_std=None):
     if "graph_id" not in df.columns or "model_name" not in df.columns:
         raise ValueError("CSV is missing graph_id/model_name columns. Please re-export training data.")
 
     graphs = []
     for _, group in df.groupby("graph_id", sort=True):
-        graphs.append(build_graph(group, feature_mean, feature_std))
+        graphs.append(build_graph(group, feature_mean, feature_std, edge_mean, edge_std))
     return graphs
 
 
@@ -227,11 +273,14 @@ def load_graph_dataset(csv_path, training_mode="full", window_hop=2, background_
     feature_matrix = df[FEATURE_COLS].astype(float).to_numpy()
     feature_mean = feature_matrix.mean(axis=0)
     feature_std = feature_matrix.std(axis=0) + 1e-6
+    edge_matrix = collect_edge_attr_matrix(df)
+    edge_mean = edge_matrix.mean(axis=0) if len(edge_matrix) else np.zeros(len(EDGE_ATTR_COLS))
+    edge_std = edge_matrix.std(axis=0) + 1e-6 if len(edge_matrix) else np.ones(len(EDGE_ATTR_COLS))
 
-    full_graphs = build_graphs_from_dataframe(df, feature_mean, feature_std)
+    full_graphs = build_graphs_from_dataframe(df, feature_mean, feature_std, edge_mean, edge_std)
     graphs = prepare_graph_samples(full_graphs, training_mode, window_hop, background_ratio, seed)
 
-    return graphs, feature_mean, feature_std
+    return graphs, feature_mean, feature_std, edge_mean, edge_std
 
 
 def load_explicit_train_val_datasets(
@@ -251,9 +300,12 @@ def load_explicit_train_val_datasets(
     feature_matrix = train_df[FEATURE_COLS].astype(float).to_numpy()
     feature_mean = feature_matrix.mean(axis=0)
     feature_std = feature_matrix.std(axis=0) + 1e-6
+    edge_matrix = collect_edge_attr_matrix(train_df)
+    edge_mean = edge_matrix.mean(axis=0) if len(edge_matrix) else np.zeros(len(EDGE_ATTR_COLS))
+    edge_std = edge_matrix.std(axis=0) + 1e-6 if len(edge_matrix) else np.ones(len(EDGE_ATTR_COLS))
 
-    train_full_graphs = build_graphs_from_dataframe(train_df, feature_mean, feature_std)
-    val_full_graphs = build_graphs_from_dataframe(val_df, feature_mean, feature_std)
+    train_full_graphs = build_graphs_from_dataframe(train_df, feature_mean, feature_std, edge_mean, edge_std)
+    val_full_graphs = build_graphs_from_dataframe(val_df, feature_mean, feature_std, edge_mean, edge_std)
 
     train_graphs = prepare_graph_samples(
         train_full_graphs,
@@ -269,7 +321,7 @@ def load_explicit_train_val_datasets(
         background_ratio,
         seed + 1,
     )
-    return train_graphs, val_graphs, feature_mean, feature_std
+    return train_graphs, val_graphs, feature_mean, feature_std, edge_mean, edge_std
 
 
 def split_dataset(graphs, train_ratio=0.8, seed=42):
@@ -460,7 +512,7 @@ def print_metric_table(metrics, summary):
 
 def train(args):
     if args.val_csv is not None:
-        train_graphs, val_graphs, feature_mean, feature_std = load_explicit_train_val_datasets(
+        train_graphs, val_graphs, feature_mean, feature_std, edge_mean, edge_std = load_explicit_train_val_datasets(
             args.csv,
             args.val_csv,
             training_mode=args.training_mode,
@@ -471,7 +523,7 @@ def train(args):
         graphs = train_graphs + val_graphs
         split_description = f"explicit train={args.csv}, val={args.val_csv}"
     else:
-        graphs, feature_mean, feature_std = load_graph_dataset(
+        graphs, feature_mean, feature_std, edge_mean, edge_std = load_graph_dataset(
             args.csv,
             training_mode=args.training_mode,
             window_hop=args.window_hop,
@@ -492,7 +544,7 @@ def train(args):
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     model = RivetGNN(
         node_features=train_graphs[0].num_node_features,
-        edge_features=1,
+        edge_features=train_graphs[0].edge_attr.size(1),
         hidden_dim=args.hidden_dim,
         num_classes=num_classes,
     ).to(device)
@@ -544,8 +596,11 @@ def train(args):
             np.savez(
                 args.stats_out,
                 feature_cols=np.array(FEATURE_COLS, dtype=object),
+                edge_attr_cols=np.array(EDGE_ATTR_COLS, dtype=object),
                 mean=feature_mean,
                 std=feature_std,
+                edge_mean=edge_mean,
+                edge_std=edge_std,
             )
             write_eval_csv(args.eval_out, val_metrics, val_summary, val_loss, val_acc)
 

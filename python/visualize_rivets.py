@@ -61,7 +61,7 @@ def run_inference(csv_path, model_path, stats_path, hidden_dim, inference_mode="
     num_classes = int(classifier_weight.shape[0]) if classifier_weight is not None else 3
     model = RivetGNN(
         node_features=data.num_node_features,
-        edge_features=1,
+        edge_features=data.edge_attr.size(1),
         hidden_dim=hidden_dim,
         num_classes=num_classes,
     ).to(device)

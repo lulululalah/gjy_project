@@ -292,8 +292,22 @@ void FeatureExtractor::ComputeGeometricAttributes(const TopTools_IndexedMapOfSha
                         auto it_nb = std::find(feat.neighborIds.begin(), feat.neighborIds.end(), neighborId);
                         if (it_nb == feat.neighborIds.end())
                         {
+                            GProp_GProps neighborAreaProps;
+                            BRepGProp::SurfaceProperties(neighborFace, neighborAreaProps);
+                            const double neighborArea = neighborAreaProps.Mass();
+
+                            BRepAdaptor_Surface neighborSurface(neighborFace);
+
+                            GProp_GProps sharedEdgeProps;
+                            BRepGProp::LinearProperties(sharedEdge, sharedEdgeProps);
+
                             feat.neighborIds.push_back(neighborId);
                             feat.neighborEdgeTypes.push_back(mlEdgeType);
+                            feat.neighborAreaRatios.push_back(
+                                neighborArea > 1.0e-12 ? feat.area / neighborArea : 0.0
+                            );
+                            feat.neighborSurfaceTypes.push_back(neighborSurface.GetType());
+                            feat.sharedEdgeLengths.push_back(sharedEdgeProps.Mass());
                             if (mlEdgeType > 0) {
                                 feat.convexEdgeCount++;
                             } else if (mlEdgeType < 0) {
