@@ -217,16 +217,10 @@ void FeatureExtractor::ComputeGeometricAttributes(const TopTools_IndexedMapOfSha
         feat.minInnerWireLength = 0.0;
         feat.maxInnerWireLength = 0.0;
         feat.innerWireLengths.clear();
-        feat.innerWireCenterXs.clear();
-        feat.innerWireCenterYs.clear();
-        feat.innerWireCenterZs.clear();
 
         if (wireLengths.size() > 1) {
             struct InnerWireRecord {
                 double length;
-                double centerX;
-                double centerY;
-                double centerZ;
             };
 
             std::vector<InnerWireRecord> innerWireRecords;
@@ -237,12 +231,8 @@ void FeatureExtractor::ComputeGeometricAttributes(const TopTools_IndexedMapOfSha
                 const TopoDS_Wire wire = TopoDS::Wire(innerWireExp.Current());
                 GProp_GProps wireProps;
                 BRepGProp::LinearProperties(wire, wireProps);
-                const gp_Pnt wireCenter = wireProps.CentreOfMass();
                 innerWireRecords.push_back({
                     wireProps.Mass(),
-                    wireCenter.X(),
-                    wireCenter.Y(),
-                    wireCenter.Z(),
                 });
             }
 
@@ -261,9 +251,6 @@ void FeatureExtractor::ComputeGeometricAttributes(const TopTools_IndexedMapOfSha
                 minInnerWireLength = std::min(minInnerWireLength, innerWireRecords[wireIdx].length);
                 maxInnerWireLength = std::max(maxInnerWireLength, innerWireRecords[wireIdx].length);
                 feat.innerWireLengths.push_back(innerWireRecords[wireIdx].length);
-                feat.innerWireCenterXs.push_back(innerWireRecords[wireIdx].centerX);
-                feat.innerWireCenterYs.push_back(innerWireRecords[wireIdx].centerY);
-                feat.innerWireCenterZs.push_back(innerWireRecords[wireIdx].centerZ);
             }
 
             feat.minInnerWireLength = minInnerWireLength;
@@ -307,6 +294,13 @@ void FeatureExtractor::ComputeGeometricAttributes(const TopTools_IndexedMapOfSha
                         {
                             feat.neighborIds.push_back(neighborId);
                             feat.neighborEdgeTypes.push_back(mlEdgeType);
+                            if (mlEdgeType > 0) {
+                                feat.convexEdgeCount++;
+                            } else if (mlEdgeType < 0) {
+                                feat.concaveEdgeCount++;
+                            } else {
+                                feat.smoothEdgeCount++;
+                            }
                         }
                     }
                 }
@@ -316,6 +310,47 @@ void FeatureExtractor::ComputeGeometricAttributes(const TopTools_IndexedMapOfSha
     }
 
     for (auto& feature : myResults) {
+        double neighborAreaSum = 0.0;
+        int validNeighborCount = 0;
+        feature.neighborAreaMax = 0.0;
+        feature.neighborPlaneCount = 0;
+        feature.neighborCylinderCount = 0;
+        feature.neighborCurvedCount = 0;
+
+        for (const int neighborId : feature.neighborIds) {
+            if (neighborId <= 0 || neighborId > static_cast<int>(myResults.size())) {
+                continue;
+            }
+
+            const auto& neighbor = myResults[static_cast<size_t>(neighborId - 1)];
+            neighborAreaSum += neighbor.area;
+            feature.neighborAreaMax = std::max(feature.neighborAreaMax, neighbor.area);
+            validNeighborCount++;
+
+            if (neighbor.surfaceType == GeomAbs_Plane) {
+                feature.neighborPlaneCount++;
+            } else if (neighbor.surfaceType == GeomAbs_Cylinder) {
+                feature.neighborCylinderCount++;
+                feature.neighborCurvedCount++;
+            } else {
+                feature.neighborCurvedCount++;
+            }
+        }
+
+        if (validNeighborCount > 0) {
+            feature.neighborAreaMean = neighborAreaSum / static_cast<double>(validNeighborCount);
+            feature.areaToNeighborMean =
+                feature.neighborAreaMean > 1.0e-12 ? feature.area / feature.neighborAreaMean : 0.0;
+            feature.areaToNeighborMax =
+                feature.neighborAreaMax > 1.0e-12 ? feature.area / feature.neighborAreaMax : 0.0;
+        }
+
+        const int typedEdgeCount = feature.convexEdgeCount + feature.concaveEdgeCount + feature.smoothEdgeCount;
+        if (typedEdgeCount > 0) {
+            feature.convexEdgeRatio = static_cast<double>(feature.convexEdgeCount) / static_cast<double>(typedEdgeCount);
+            feature.concaveEdgeRatio = static_cast<double>(feature.concaveEdgeCount) / static_cast<double>(typedEdgeCount);
+        }
+
         feature.faceKey = BuildFaceKey(feature, myResults);
     }
 

@@ -26,6 +26,18 @@ FEATURE_COLS = [
     "minInnerWireLength",
     "maxInnerWireLength",
     "numEdges",
+    "neighborAreaMean",
+    "neighborAreaMax",
+    "areaToNeighborMean",
+    "areaToNeighborMax",
+    "neighborPlaneCount",
+    "neighborCylinderCount",
+    "neighborCurvedCount",
+    "convexEdgeCount",
+    "concaveEdgeCount",
+    "smoothEdgeCount",
+    "convexEdgeRatio",
+    "concaveEdgeRatio",
 ]
 
 DEFAULT_CSV = Path("data/wing_rivet_training_set.csv")

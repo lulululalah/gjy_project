@@ -22,7 +22,9 @@ namespace
     constexpr const char *kFaceCsvHeader =
         "graph_id,model_name,id,area,relativeArea,perimeter,compactness,surfaceType,nx,ny,nz,"
         "centerZ,meanCurvature,radius,numWires,innerWireCount,minInnerWireLength,maxInnerWireLength,"
-        "numEdges,neighbors,edge_types,label\n";
+        "numEdges,neighborAreaMean,neighborAreaMax,areaToNeighborMean,areaToNeighborMax,"
+        "neighborPlaneCount,neighborCylinderCount,neighborCurvedCount,convexEdgeCount,concaveEdgeCount,"
+        "smoothEdgeCount,convexEdgeRatio,concaveEdgeRatio,neighbors,edge_types,label\n";
 
     bool IsStepFile(const fs::path &filePath)
     {
@@ -139,7 +141,8 @@ namespace
         return true;
     }
 
-    std::string EscapeJson(const std::string &value)
+    std::string EscapeJson(const std::string
+                               &value)
     {
         std::ostringstream escaped;
         for (const char ch : value)
@@ -228,7 +231,13 @@ namespace
                  << feature.surfaceType << "," << feature.normalX << "," << feature.normalY << ","
                  << feature.normalZ << "," << feature.centerZ << "," << feature.meanCurvature << ","
                  << feature.radius << "," << feature.numWires << "," << feature.innerWireCount << ","
-                 << feature.minInnerWireLength << "," << feature.maxInnerWireLength << "," << feature.numEdges << ",\"";
+                 << feature.minInnerWireLength << "," << feature.maxInnerWireLength << "," << feature.numEdges << ","
+                 << feature.neighborAreaMean << "," << feature.neighborAreaMax << ","
+                 << feature.areaToNeighborMean << "," << feature.areaToNeighborMax << ","
+                 << feature.neighborPlaneCount << "," << feature.neighborCylinderCount << ","
+                 << feature.neighborCurvedCount << "," << feature.convexEdgeCount << ","
+                 << feature.concaveEdgeCount << "," << feature.smoothEdgeCount << ","
+                 << feature.convexEdgeRatio << "," << feature.concaveEdgeRatio << ",\"";
 
         for (size_t j = 0; j < feature.neighborIds.size(); ++j)
         {
@@ -424,12 +433,18 @@ void RunBatchTrainingExport(const std::string &inputDir, const std::string &outp
 int RunWingRivetTrainingExport(const std::string &inputDir, const std::string &outputCsv)
 {
     const fs::path inputPath(inputDir);
-    const fs::path stepDir = inputPath / "wing_rivet_steps";
-    const fs::path labelsDir = inputPath / "wing_rivet_labels";
+    fs::path stepDir = inputPath / "step";
+    fs::path labelsDir = inputPath / "label";
 
     if (!fs::exists(stepDir) || !fs::exists(labelsDir))
     {
-        std::cout << ">>> Missing wing_rivet_steps or wing_rivet_labels directory under: "
+        stepDir = inputPath / "wing_rivet_steps";
+        labelsDir = inputPath / "wing_rivet_labels";
+    }
+
+    if (!fs::exists(stepDir) || !fs::exists(labelsDir))
+    {
+        std::cout << ">>> Missing step/label or wing_rivet_steps/wing_rivet_labels directory under: "
                   << inputDir << std::endl;
         return 1;
     }
