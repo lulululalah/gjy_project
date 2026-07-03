@@ -1559,13 +1559,13 @@
     {"face_id": 1554, "semantic": "background", "instance_id": -1, "operation": "keep"}
   ],
   "instances": [
-    {"instance_id": 1, "type": "rivet", "host_face": 86, "inverse_op": {"kind": "remove_protrusion", "radius": 0.053203, "height": 0.034582}},
-    {"instance_id": 2, "type": "rivet", "host_face": 86, "inverse_op": {"kind": "remove_protrusion", "radius": 0.053203, "height": 0.034582}},
-    {"instance_id": 3, "type": "rivet", "host_face": 86, "inverse_op": {"kind": "remove_protrusion", "radius": 0.053203, "height": 0.034582}},
-    {"instance_id": 4, "type": "rivet", "host_face": 86, "inverse_op": {"kind": "remove_protrusion", "radius": 0.053203, "height": 0.034582}},
-    {"instance_id": 5, "type": "rivet", "host_face": 86, "inverse_op": {"kind": "remove_protrusion", "radius": 0.053203, "height": 0.034582}},
-    {"instance_id": 6, "type": "rivet", "host_face": 86, "inverse_op": {"kind": "remove_protrusion", "radius": 0.053203, "height": 0.034582}},
-    {"instance_id": 7, "type": "rivet", "host_face": 86, "inverse_op": {"kind": "remove_protrusion", "radius": 0.053203, "height": 0.034582}},
-    {"instance_id": 8, "type": "rivet", "host_face": 86, "inverse_op": {"kind": "remove_protrusion", "radius": 0.053203, "height": 0.034582}}
+    {"instance_id": 1, "type": "rivet", "host_face": 86, "inverse_op": {"kind": "remove_protrusion", "radius": 0.003192, "height": 0.002075}},
+    {"instance_id": 2, "type": "rivet", "host_face": 86, "inverse_op": {"kind": "remove_protrusion", "radius": 0.003192, "height": 0.002075}},
+    {"instance_id": 3, "type": "rivet", "host_face": 86, "inverse_op": {"kind": "remove_protrusion", "radius": 0.003192, "height": 0.002075}},
+    {"instance_id": 4, "type": "rivet", "host_face": 86, "inverse_op": {"kind": "remove_protrusion", "radius": 0.003192, "height": 0.002075}},
+    {"instance_id": 5, "type": "rivet", "host_face": 86, "inverse_op": {"kind": "remove_protrusion", "radius": 0.003192, "height": 0.002075}},
+    {"instance_id": 6, "type": "rivet", "host_face": 86, "inverse_op": {"kind": "remove_protrusion", "radius": 0.003192, "height": 0.002075}},
+    {"instance_id": 7, "type": "rivet", "host_face": 86, "inverse_op": {"kind": "remove_protrusion", "radius": 0.003192, "height": 0.002075}},
+    {"instance_id": 8, "type": "rivet", "host_face": 86, "inverse_op": {"kind": "remove_protrusion", "radius": 0.003192, "height": 0.002075}}
   ]
 }

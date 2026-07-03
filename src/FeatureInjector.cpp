@@ -1063,9 +1063,9 @@ std::vector<gp_Pnt2d> BuildTrimInsetUvSamples(
     const double uvScale = std::max(uRange, vRange);
     const double duplicateTolerance = uvScale * 1.0e-3;
     const std::vector<double> insetDistances = {
-        uvScale * 0.035,
-        uvScale * 0.060,
-        uvScale * 0.095,
+        uvScale * 0.080,
+        uvScale * 0.120,
+        uvScale * 0.180,
     };
 
     std::vector<gp_Pnt2d> candidates;
@@ -1175,8 +1175,8 @@ std::vector<RivetPlacement> BuildWingRivetPlacements(
     const std::vector<double> uFractions = {0.22, 0.38, 0.54, 0.70};
     const std::vector<double> vFractions = {0.38, 0.58};
     const double faceScale = std::sqrt(std::max(hostFeature.area, 1.0));
-    const double rivetRadius = std::clamp(faceScale * 0.02, 0.03, 2.5);
-    const double rivetHeight = std::max(rivetRadius * 0.65, 0.02);
+    const double rivetRadius = std::clamp(faceScale * 0.0012, 0.003, 0.16);
+    const double rivetHeight = std::max(rivetRadius * 0.65, 0.002);
 
     std::vector<RivetPlacement> placements;
     int instanceId = startingInstanceId;

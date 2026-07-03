@@ -1542,21 +1542,21 @@
     {"face_id": 1537, "semantic": "background", "instance_id": -1, "operation": "keep"}
   ],
   "instances": [
-    {"instance_id": 1, "type": "rivet", "host_face": 496, "inverse_op": {"kind": "remove_protrusion", "radius": 2.500000, "height": 1.625000}},
-    {"instance_id": 2, "type": "rivet", "host_face": 496, "inverse_op": {"kind": "remove_protrusion", "radius": 2.500000, "height": 1.625000}},
-    {"instance_id": 3, "type": "rivet", "host_face": 496, "inverse_op": {"kind": "remove_protrusion", "radius": 2.500000, "height": 1.625000}},
-    {"instance_id": 4, "type": "rivet", "host_face": 496, "inverse_op": {"kind": "remove_protrusion", "radius": 2.500000, "height": 1.625000}},
-    {"instance_id": 5, "type": "rivet", "host_face": 496, "inverse_op": {"kind": "remove_protrusion", "radius": 2.500000, "height": 1.625000}},
-    {"instance_id": 6, "type": "rivet", "host_face": 496, "inverse_op": {"kind": "remove_protrusion", "radius": 2.500000, "height": 1.625000}},
-    {"instance_id": 7, "type": "rivet", "host_face": 496, "inverse_op": {"kind": "remove_protrusion", "radius": 2.500000, "height": 1.625000}},
-    {"instance_id": 8, "type": "rivet", "host_face": 496, "inverse_op": {"kind": "remove_protrusion", "radius": 2.500000, "height": 1.625000}},
-    {"instance_id": 9, "type": "rivet", "host_face": 508, "inverse_op": {"kind": "remove_protrusion", "radius": 2.500000, "height": 1.625000}},
-    {"instance_id": 10, "type": "rivet", "host_face": 508, "inverse_op": {"kind": "remove_protrusion", "radius": 2.500000, "height": 1.625000}},
-    {"instance_id": 11, "type": "rivet", "host_face": 508, "inverse_op": {"kind": "remove_protrusion", "radius": 2.500000, "height": 1.625000}},
-    {"instance_id": 12, "type": "rivet", "host_face": 508, "inverse_op": {"kind": "remove_protrusion", "radius": 2.500000, "height": 1.625000}},
-    {"instance_id": 13, "type": "rivet", "host_face": 508, "inverse_op": {"kind": "remove_protrusion", "radius": 2.500000, "height": 1.625000}},
-    {"instance_id": 14, "type": "rivet", "host_face": 508, "inverse_op": {"kind": "remove_protrusion", "radius": 2.500000, "height": 1.625000}},
-    {"instance_id": 15, "type": "rivet", "host_face": 508, "inverse_op": {"kind": "remove_protrusion", "radius": 2.500000, "height": 1.625000}},
-    {"instance_id": 16, "type": "rivet", "host_face": 508, "inverse_op": {"kind": "remove_protrusion", "radius": 2.500000, "height": 1.625000}}
+    {"instance_id": 1, "type": "rivet", "host_face": 496, "inverse_op": {"kind": "remove_protrusion", "radius": 0.160000, "height": 0.104000}},
+    {"instance_id": 2, "type": "rivet", "host_face": 496, "inverse_op": {"kind": "remove_protrusion", "radius": 0.160000, "height": 0.104000}},
+    {"instance_id": 3, "type": "rivet", "host_face": 496, "inverse_op": {"kind": "remove_protrusion", "radius": 0.160000, "height": 0.104000}},
+    {"instance_id": 4, "type": "rivet", "host_face": 496, "inverse_op": {"kind": "remove_protrusion", "radius": 0.160000, "height": 0.104000}},
+    {"instance_id": 5, "type": "rivet", "host_face": 496, "inverse_op": {"kind": "remove_protrusion", "radius": 0.160000, "height": 0.104000}},
+    {"instance_id": 6, "type": "rivet", "host_face": 496, "inverse_op": {"kind": "remove_protrusion", "radius": 0.160000, "height": 0.104000}},
+    {"instance_id": 7, "type": "rivet", "host_face": 496, "inverse_op": {"kind": "remove_protrusion", "radius": 0.160000, "height": 0.104000}},
+    {"instance_id": 8, "type": "rivet", "host_face": 496, "inverse_op": {"kind": "remove_protrusion", "radius": 0.160000, "height": 0.104000}},
+    {"instance_id": 9, "type": "rivet", "host_face": 508, "inverse_op": {"kind": "remove_protrusion", "radius": 0.160000, "height": 0.104000}},
+    {"instance_id": 10, "type": "rivet", "host_face": 508, "inverse_op": {"kind": "remove_protrusion", "radius": 0.160000, "height": 0.104000}},
+    {"instance_id": 11, "type": "rivet", "host_face": 508, "inverse_op": {"kind": "remove_protrusion", "radius": 0.160000, "height": 0.104000}},
+    {"instance_id": 12, "type": "rivet", "host_face": 508, "inverse_op": {"kind": "remove_protrusion", "radius": 0.160000, "height": 0.104000}},
+    {"instance_id": 13, "type": "rivet", "host_face": 508, "inverse_op": {"kind": "remove_protrusion", "radius": 0.160000, "height": 0.104000}},
+    {"instance_id": 14, "type": "rivet", "host_face": 508, "inverse_op": {"kind": "remove_protrusion", "radius": 0.160000, "height": 0.104000}},
+    {"instance_id": 15, "type": "rivet", "host_face": 508, "inverse_op": {"kind": "remove_protrusion", "radius": 0.160000, "height": 0.104000}},
+    {"instance_id": 16, "type": "rivet", "host_face": 508, "inverse_op": {"kind": "remove_protrusion", "radius": 0.160000, "height": 0.104000}}
   ]
 }
