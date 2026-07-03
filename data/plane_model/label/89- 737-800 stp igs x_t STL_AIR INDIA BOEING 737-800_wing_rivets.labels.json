@@ -1,18 +1,42 @@
 {
   "model_id": "89- 737-800 stp igs x_t STL_AIR INDIA BOEING 737-800_wing_rivets",
   "base_model": "89- 737-800 stp igs x_t STL_AIR INDIA BOEING 737-800.STEP",
-  "output_step": "D:\\Projects\\gjy_byproject\\data\\plane_model\\step\\89- 737-800 stp igs x_t STL_AIR INDIA BOEING 737-800_wing_rivets.step",
+  "output_step": "data\\plane_model\\step\\89- 737-800 stp igs x_t STL_AIR INDIA BOEING 737-800_wing_rivets.step",
   "faces": [
     {"face_id": 1, "semantic": "background", "instance_id": -1, "operation": "keep"},
-    {"face_id": 2, "semantic": "rivet", "instance_id": 2, "operation": "remove_protrusion"},
+    {"face_id": 2, "semantic": "rivet", "instance_id": 8, "operation": "remove_protrusion"},
     {"face_id": 3, "semantic": "background", "instance_id": -1, "operation": "keep"},
-    {"face_id": 4, "semantic": "rivet", "instance_id": 1, "operation": "remove_protrusion"},
-    {"face_id": 5, "semantic": "rivet", "instance_id": 1, "operation": "remove_protrusion"},
-    {"face_id": 6, "semantic": "rivet", "instance_id": 1, "operation": "remove_protrusion"},
-    {"face_id": 7, "semantic": "rivet", "instance_id": 1, "operation": "remove_protrusion"}
+    {"face_id": 4, "semantic": "background", "instance_id": -1, "operation": "keep"},
+    {"face_id": 5, "semantic": "rivet", "instance_id": 7, "operation": "remove_protrusion"},
+    {"face_id": 6, "semantic": "background", "instance_id": -1, "operation": "keep"},
+    {"face_id": 7, "semantic": "background", "instance_id": -1, "operation": "keep"},
+    {"face_id": 8, "semantic": "rivet", "instance_id": 6, "operation": "remove_protrusion"},
+    {"face_id": 9, "semantic": "background", "instance_id": -1, "operation": "keep"},
+    {"face_id": 10, "semantic": "background", "instance_id": -1, "operation": "keep"},
+    {"face_id": 11, "semantic": "rivet", "instance_id": 5, "operation": "remove_protrusion"},
+    {"face_id": 12, "semantic": "background", "instance_id": -1, "operation": "keep"},
+    {"face_id": 13, "semantic": "background", "instance_id": -1, "operation": "keep"},
+    {"face_id": 14, "semantic": "rivet", "instance_id": 4, "operation": "remove_protrusion"},
+    {"face_id": 15, "semantic": "background", "instance_id": -1, "operation": "keep"},
+    {"face_id": 16, "semantic": "background", "instance_id": -1, "operation": "keep"},
+    {"face_id": 17, "semantic": "rivet", "instance_id": 3, "operation": "remove_protrusion"},
+    {"face_id": 18, "semantic": "background", "instance_id": -1, "operation": "keep"},
+    {"face_id": 19, "semantic": "background", "instance_id": -1, "operation": "keep"},
+    {"face_id": 20, "semantic": "rivet", "instance_id": 2, "operation": "remove_protrusion"},
+    {"face_id": 21, "semantic": "background", "instance_id": -1, "operation": "keep"},
+    {"face_id": 22, "semantic": "rivet", "instance_id": 1, "operation": "remove_protrusion"},
+    {"face_id": 23, "semantic": "rivet", "instance_id": 1, "operation": "remove_protrusion"},
+    {"face_id": 24, "semantic": "rivet", "instance_id": 1, "operation": "remove_protrusion"},
+    {"face_id": 25, "semantic": "rivet", "instance_id": 1, "operation": "remove_protrusion"}
   ],
   "instances": [
     {"instance_id": 1, "type": "rivet", "host_face": 884, "inverse_op": {"kind": "remove_protrusion", "radius": 1.174971, "height": 0.763731}},
-    {"instance_id": 2, "type": "rivet", "host_face": 884, "inverse_op": {"kind": "remove_protrusion", "radius": 1.174971, "height": 0.763731}}
+    {"instance_id": 2, "type": "rivet", "host_face": 884, "inverse_op": {"kind": "remove_protrusion", "radius": 1.174971, "height": 0.763731}},
+    {"instance_id": 3, "type": "rivet", "host_face": 884, "inverse_op": {"kind": "remove_protrusion", "radius": 1.174971, "height": 0.763731}},
+    {"instance_id": 4, "type": "rivet", "host_face": 884, "inverse_op": {"kind": "remove_protrusion", "radius": 1.174971, "height": 0.763731}},
+    {"instance_id": 5, "type": "rivet", "host_face": 884, "inverse_op": {"kind": "remove_protrusion", "radius": 1.174971, "height": 0.763731}},
+    {"instance_id": 6, "type": "rivet", "host_face": 884, "inverse_op": {"kind": "remove_protrusion", "radius": 1.174971, "height": 0.763731}},
+    {"instance_id": 7, "type": "rivet", "host_face": 884, "inverse_op": {"kind": "remove_protrusion", "radius": 1.174971, "height": 0.763731}},
+    {"instance_id": 8, "type": "rivet", "host_face": 884, "inverse_op": {"kind": "remove_protrusion", "radius": 1.174971, "height": 0.763731}}
   ]
 }

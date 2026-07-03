@@ -36,9 +36,9 @@ def is_step_file(path: Path) -> bool:
 def output_paths_for(input_path: Path, model_dir: Path) -> list[Path]:
     stem = input_path.stem
     return [
-        model_dir / "wing_rivet_steps" / f"{stem}_wing_rivets.step",
-        model_dir / "wing_rivet_steps" / f"{stem}_rivet_only.step",
-        model_dir / "wing_rivet_labels" / f"{stem}_wing_rivets.labels.json",
+        model_dir / "step" / f"{stem}_wing_rivets.step",
+        model_dir / "step" / f"{stem}_rivet_only.step",
+        model_dir / "label" / f"{stem}_wing_rivets.labels.json",
     ]
 
 
@@ -46,9 +46,9 @@ def success_output_paths_for(input_path: Path, success_dir: Path) -> list[Path]:
     stem = input_path.stem
     return [
         success_dir / input_path.name,
-        success_dir / "wing_rivet_steps" / f"{stem}_wing_rivets.step",
-        success_dir / "wing_rivet_steps" / f"{stem}_rivet_only.step",
-        success_dir / "wing_rivet_labels" / f"{stem}_wing_rivets.labels.json",
+        success_dir / "step" / f"{stem}_wing_rivets.step",
+        success_dir / "step" / f"{stem}_rivet_only.step",
+        success_dir / "label" / f"{stem}_wing_rivets.labels.json",
     ]
 
 
@@ -56,9 +56,9 @@ def failure_output_paths_for(input_path: Path, failure_dir: Path) -> list[Path]:
     stem = input_path.stem
     return [
         failure_dir / input_path.name,
-        failure_dir / "wing_rivet_steps" / f"{stem}_wing_rivets.step",
-        failure_dir / "wing_rivet_steps" / f"{stem}_rivet_only.step",
-        failure_dir / "wing_rivet_labels" / f"{stem}_wing_rivets.labels.json",
+        failure_dir / "step" / f"{stem}_wing_rivets.step",
+        failure_dir / "step" / f"{stem}_rivet_only.step",
+        failure_dir / "label" / f"{stem}_wing_rivets.labels.json",
     ]
 
 

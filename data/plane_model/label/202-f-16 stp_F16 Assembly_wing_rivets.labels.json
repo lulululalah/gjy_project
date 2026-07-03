@@ -1,7 +1,7 @@
 {
   "model_id": "202-f-16 stp_F16 Assembly_wing_rivets",
   "base_model": "202-f-16 stp_F16 Assembly.STEP",
-  "output_step": "D:\\Projects\\gjy_byproject\\data\\plane_model\\step\\202-f-16 stp_F16 Assembly_wing_rivets.step",
+  "output_step": "data\\plane_model\\step\\202-f-16 stp_F16 Assembly_wing_rivets.step",
   "faces": [
     {"face_id": 1, "semantic": "background", "instance_id": -1, "operation": "keep"},
     {"face_id": 2, "semantic": "background", "instance_id": -1, "operation": "keep"},
@@ -53,9 +53,9 @@
     {"face_id": 48, "semantic": "background", "instance_id": -1, "operation": "keep"},
     {"face_id": 49, "semantic": "background", "instance_id": -1, "operation": "keep"},
     {"face_id": 50, "semantic": "background", "instance_id": -1, "operation": "keep"},
-    {"face_id": 51, "semantic": "rivet", "instance_id": 7, "operation": "remove_protrusion"},
+    {"face_id": 51, "semantic": "rivet", "instance_id": 8, "operation": "remove_protrusion"},
     {"face_id": 52, "semantic": "background", "instance_id": -1, "operation": "keep"},
-    {"face_id": 53, "semantic": "rivet", "instance_id": 7, "operation": "remove_protrusion"},
+    {"face_id": 53, "semantic": "rivet", "instance_id": 8, "operation": "remove_protrusion"},
     {"face_id": 54, "semantic": "background", "instance_id": -1, "operation": "keep"},
     {"face_id": 55, "semantic": "background", "instance_id": -1, "operation": "keep"},
     {"face_id": 56, "semantic": "background", "instance_id": -1, "operation": "keep"},
@@ -67,9 +67,9 @@
     {"face_id": 62, "semantic": "rivet", "instance_id": 2, "operation": "remove_protrusion"},
     {"face_id": 63, "semantic": "rivet", "instance_id": 3, "operation": "remove_protrusion"},
     {"face_id": 64, "semantic": "rivet", "instance_id": 4, "operation": "remove_protrusion"},
-    {"face_id": 65, "semantic": "rivet", "instance_id": 5, "operation": "remove_protrusion"},
-    {"face_id": 66, "semantic": "rivet", "instance_id": 6, "operation": "remove_protrusion"},
-    {"face_id": 67, "semantic": "background", "instance_id": -1, "operation": "keep"},
+    {"face_id": 65, "semantic": "rivet", "instance_id": 6, "operation": "remove_protrusion"},
+    {"face_id": 66, "semantic": "rivet", "instance_id": 5, "operation": "remove_protrusion"},
+    {"face_id": 67, "semantic": "rivet", "instance_id": 7, "operation": "remove_protrusion"},
     {"face_id": 68, "semantic": "background", "instance_id": -1, "operation": "keep"},
     {"face_id": 69, "semantic": "background", "instance_id": -1, "operation": "keep"},
     {"face_id": 70, "semantic": "background", "instance_id": -1, "operation": "keep"},
@@ -82,14 +82,14 @@
     {"face_id": 77, "semantic": "background", "instance_id": -1, "operation": "keep"},
     {"face_id": 78, "semantic": "background", "instance_id": -1, "operation": "keep"},
     {"face_id": 79, "semantic": "background", "instance_id": -1, "operation": "keep"},
-    {"face_id": 80, "semantic": "rivet", "instance_id": 1, "operation": "remove_protrusion"},
-    {"face_id": 81, "semantic": "rivet", "instance_id": 2, "operation": "remove_protrusion"},
-    {"face_id": 82, "semantic": "rivet", "instance_id": 3, "operation": "remove_protrusion"},
-    {"face_id": 83, "semantic": "rivet", "instance_id": 4, "operation": "remove_protrusion"},
-    {"face_id": 84, "semantic": "rivet", "instance_id": 5, "operation": "remove_protrusion"},
+    {"face_id": 80, "semantic": "background", "instance_id": -1, "operation": "keep"},
+    {"face_id": 81, "semantic": "rivet", "instance_id": 1, "operation": "remove_protrusion"},
+    {"face_id": 82, "semantic": "rivet", "instance_id": 2, "operation": "remove_protrusion"},
+    {"face_id": 83, "semantic": "rivet", "instance_id": 3, "operation": "remove_protrusion"},
+    {"face_id": 84, "semantic": "rivet", "instance_id": 4, "operation": "remove_protrusion"},
     {"face_id": 85, "semantic": "rivet", "instance_id": 6, "operation": "remove_protrusion"},
-    {"face_id": 86, "semantic": "background", "instance_id": -1, "operation": "keep"},
-    {"face_id": 87, "semantic": "background", "instance_id": -1, "operation": "keep"},
+    {"face_id": 86, "semantic": "rivet", "instance_id": 5, "operation": "remove_protrusion"},
+    {"face_id": 87, "semantic": "rivet", "instance_id": 7, "operation": "remove_protrusion"},
     {"face_id": 88, "semantic": "background", "instance_id": -1, "operation": "keep"},
     {"face_id": 89, "semantic": "background", "instance_id": -1, "operation": "keep"},
     {"face_id": 90, "semantic": "background", "instance_id": -1, "operation": "keep"},
@@ -6597,7 +6597,9 @@
     {"face_id": 6592, "semantic": "background", "instance_id": -1, "operation": "keep"},
     {"face_id": 6593, "semantic": "background", "instance_id": -1, "operation": "keep"},
     {"face_id": 6594, "semantic": "background", "instance_id": -1, "operation": "keep"},
-    {"face_id": 6595, "semantic": "background", "instance_id": -1, "operation": "keep"}
+    {"face_id": 6595, "semantic": "background", "instance_id": -1, "operation": "keep"},
+    {"face_id": 6596, "semantic": "background", "instance_id": -1, "operation": "keep"},
+    {"face_id": 6597, "semantic": "background", "instance_id": -1, "operation": "keep"}
   ],
   "instances": [
     {"instance_id": 1, "type": "rivet", "host_face": 62, "inverse_op": {"kind": "remove_protrusion", "radius": 2.500000, "height": 1.625000}},
@@ -6606,6 +6608,7 @@
     {"instance_id": 4, "type": "rivet", "host_face": 62, "inverse_op": {"kind": "remove_protrusion", "radius": 2.500000, "height": 1.625000}},
     {"instance_id": 5, "type": "rivet", "host_face": 62, "inverse_op": {"kind": "remove_protrusion", "radius": 2.500000, "height": 1.625000}},
     {"instance_id": 6, "type": "rivet", "host_face": 62, "inverse_op": {"kind": "remove_protrusion", "radius": 2.500000, "height": 1.625000}},
-    {"instance_id": 7, "type": "rivet", "host_face": 62, "inverse_op": {"kind": "remove_protrusion", "radius": 2.500000, "height": 1.625000}}
+    {"instance_id": 7, "type": "rivet", "host_face": 62, "inverse_op": {"kind": "remove_protrusion", "radius": 2.500000, "height": 1.625000}},
+    {"instance_id": 8, "type": "rivet", "host_face": 62, "inverse_op": {"kind": "remove_protrusion", "radius": 2.500000, "height": 1.625000}}
   ]
 }

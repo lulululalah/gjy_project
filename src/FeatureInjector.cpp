@@ -5,6 +5,7 @@
 #include <BRepAlgoAPI_Fuse.hxx>
 #include <BRepBndLib.hxx>
 #include <BRep_Builder.hxx>
+#include <BRep_Tool.hxx>
 #include <BRepCheck_Analyzer.hxx>
 #include <BRepClass_FaceClassifier.hxx>
 #include <BRepLProp_SLProps.hxx>
@@ -13,6 +14,7 @@
 #include <BRepTools.hxx>
 #include <BRepAdaptor_Surface.hxx>
 #include <Bnd_Box.hxx>
+#include <Geom2d_Curve.hxx>
 #include <GeomAbs_SurfaceType.hxx>
 #include <Precision.hxx>
 #include <STEPControl_Reader.hxx>
@@ -24,6 +26,7 @@
 #include <TopTools_IndexedDataMapOfShapeListOfShape.hxx>
 #include <TopoDS.hxx>
 #include <TopoDS_Compound.hxx>
+#include <TopoDS_Edge.hxx>
 #include <TopoDS_Face.hxx>
 #include <gp_Ax2.hxx>
 #include <gp_Dir.hxx>
@@ -33,6 +36,7 @@
 
 #include <algorithm>
 #include <cctype>
+#include <cmath>
 #include <filesystem>
 #include <fstream>
 #include <iomanip>
@@ -96,6 +100,10 @@ struct InjectionTarget {
     TopoDS_Shape originalSubshape;
     TopoDS_Shape workingShape;
     bool isSubshapeMode = false;
+    bool isPerSolidMode = false;
+    std::map<int, int> solidIndexByHostFaceId;
+    std::map<int, TopoDS_Shape> originalSolidByIndex;
+    std::map<int, TopoDS_Shape> workingSolidByIndex;
 };
 
 struct LabelsData {
@@ -892,26 +900,44 @@ InjectionTarget BuildInjectionTarget(
         return target;
     }
 
-    int solidIndex = -1;
+    bool canUsePerSolidMode = true;
+    int sharedSolidIndex = -1;
     for (const auto& hostFace : hostFaces) {
         const int currentIndex = FindOwningSolidIndex(originalShape, hostFace.faceId);
         if (currentIndex <= 0) {
-            solidIndex = -1;
+            canUsePerSolidMode = false;
             break;
         }
 
-        if (solidIndex < 0) {
-            solidIndex = currentIndex;
-        } else if (solidIndex != currentIndex) {
-            solidIndex = -1;
-            break;
+        target.solidIndexByHostFaceId[hostFace.faceId] = currentIndex;
+        if (target.originalSolidByIndex.find(currentIndex) == target.originalSolidByIndex.end()) {
+            TopoDS_Shape ownerSolid = GetSolidByIndex(originalShape, currentIndex);
+            if (ownerSolid.IsNull()) {
+                canUsePerSolidMode = false;
+                break;
+            }
+            target.originalSolidByIndex[currentIndex] = ownerSolid;
+            target.workingSolidByIndex[currentIndex] = ownerSolid;
+        }
+
+        if (sharedSolidIndex < 0) {
+            sharedSolidIndex = currentIndex;
+        } else if (sharedSolidIndex != currentIndex) {
+            sharedSolidIndex = 0;
         }
     }
 
-    if (solidIndex > 0) {
-        target.originalSubshape = GetSolidByIndex(originalShape, solidIndex);
+    if (canUsePerSolidMode && sharedSolidIndex > 0) {
+        target.originalSubshape = target.originalSolidByIndex[sharedSolidIndex];
         target.workingShape = target.originalSubshape;
         target.isSubshapeMode = true;
+        target.isPerSolidMode = true;
+        return target;
+    }
+
+    if (canUsePerSolidMode && !target.workingSolidByIndex.empty()) {
+        target.workingShape = originalShape;
+        target.isPerSolidMode = true;
         return target;
     }
 
@@ -926,6 +952,22 @@ TopoDS_Shape RebuildShapeWithReplacement(
 ) {
     Handle(BRepTools_ReShape) reshape = new BRepTools_ReShape();
     reshape->Replace(originalSubshape, replacementSubshape);
+    return reshape->Apply(originalShape);
+}
+
+TopoDS_Shape RebuildShapeWithSolidReplacements(
+    const TopoDS_Shape& originalShape,
+    const std::map<int, TopoDS_Shape>& originalSolidByIndex,
+    const std::map<int, TopoDS_Shape>& replacementSolidByIndex
+) {
+    Handle(BRepTools_ReShape) reshape = new BRepTools_ReShape();
+    for (const auto& [solidIndex, replacementSolid] : replacementSolidByIndex) {
+        const auto originalIt = originalSolidByIndex.find(solidIndex);
+        if (originalIt == originalSolidByIndex.end() || replacementSolid.IsNull()) {
+            continue;
+        }
+        reshape->Replace(originalIt->second, replacementSolid);
+    }
     return reshape->Apply(originalShape);
 }
 
@@ -990,6 +1032,133 @@ bool EvaluateFacePointAndNormal(
     return true;
 }
 
+bool IsDuplicateUvSample(
+    const std::vector<gp_Pnt2d>& samples,
+    double u,
+    double v,
+    double tolerance
+) {
+    const double toleranceSquared = tolerance * tolerance;
+    for (const auto& sample : samples) {
+        const double du = sample.X() - u;
+        const double dv = sample.Y() - v;
+        if (du * du + dv * dv <= toleranceSquared) {
+            return true;
+        }
+    }
+    return false;
+}
+
+std::vector<gp_Pnt2d> BuildTrimInsetUvSamples(
+    const TopoDS_Face& hostFace,
+    double uMin,
+    double uMax,
+    double vMin,
+    double vMax,
+    int maxSamples
+) {
+    const double uRange = std::max(uMax - uMin, Precision::Confusion());
+    const double vRange = std::max(vMax - vMin, Precision::Confusion());
+    const gp_Pnt2d uvCenter((uMin + uMax) * 0.5, (vMin + vMax) * 0.5);
+    const double uvScale = std::max(uRange, vRange);
+    const double duplicateTolerance = uvScale * 1.0e-3;
+    const std::vector<double> insetDistances = {
+        uvScale * 0.035,
+        uvScale * 0.060,
+        uvScale * 0.095,
+    };
+
+    std::vector<gp_Pnt2d> candidates;
+    for (TopExp_Explorer edgeExplorer(hostFace, TopAbs_EDGE);
+         edgeExplorer.More();
+         edgeExplorer.Next()) {
+        const TopoDS_Edge edge = TopoDS::Edge(edgeExplorer.Current());
+        Standard_Real first = 0.0;
+        Standard_Real last = 0.0;
+        Handle(Geom2d_Curve) curve = BRep_Tool::CurveOnSurface(edge, hostFace, first, last);
+        if (curve.IsNull() || !std::isfinite(first) || !std::isfinite(last) ||
+            std::abs(last - first) <= Precision::PConfusion()) {
+            continue;
+        }
+
+        const int perEdgeSamples = 4;
+        for (int i = 1; i <= perEdgeSamples; ++i) {
+            const double t = first + (last - first) * (static_cast<double>(i) / (perEdgeSamples + 1));
+            const gp_Pnt2d boundaryUv = curve->Value(t);
+            const double dirU = uvCenter.X() - boundaryUv.X();
+            const double dirV = uvCenter.Y() - boundaryUv.Y();
+            const double dirLength = std::hypot(dirU, dirV);
+            if (dirLength <= Precision::PConfusion()) {
+                continue;
+            }
+
+            for (const double inset : insetDistances) {
+                const double u = boundaryUv.X() + dirU / dirLength * inset;
+                const double v = boundaryUv.Y() + dirV / dirLength * inset;
+                if (u < uMin || u > uMax || v < vMin || v > vMax) {
+                    continue;
+                }
+                if (!IsUvInsideFace(hostFace, u, v)) {
+                    continue;
+                }
+                if (IsDuplicateUvSample(candidates, u, v, duplicateTolerance)) {
+                    continue;
+                }
+
+                candidates.emplace_back(u, v);
+                break;
+            }
+        }
+    }
+
+    if (static_cast<int>(candidates.size()) <= maxSamples) {
+        return candidates;
+    }
+
+    std::vector<gp_Pnt2d> selected;
+    selected.reserve(maxSamples);
+    for (int i = 0; i < maxSamples; ++i) {
+        const size_t index =
+            static_cast<size_t>((static_cast<double>(i) + 0.5) * candidates.size() / maxSamples);
+        selected.push_back(candidates[std::min(index, candidates.size() - 1)]);
+    }
+    return selected;
+}
+
+void AddPlacementIfValid(
+    int hostFaceId,
+    const TopoDS_Face& hostFace,
+    const gp_Pnt& shapeCenter,
+    double rivetRadius,
+    double rivetHeight,
+    double u,
+    double v,
+    int& instanceId,
+    std::vector<RivetPlacement>& placements
+) {
+    if (!IsUvInsideFace(hostFace, u, v)) {
+        return;
+    }
+
+    gp_Pnt point;
+    gp_Dir normal;
+    if (!EvaluateFacePointAndNormal(hostFace, u, v, point, normal)) {
+        return;
+    }
+    OrientNormalAwayFromCenter(point, shapeCenter, normal);
+
+    placements.push_back({
+        instanceId++,
+        hostFaceId,
+        u,
+        v,
+        rivetRadius,
+        rivetHeight,
+        point,
+        normal,
+    });
+}
+
 std::vector<RivetPlacement> BuildWingRivetPlacements(
     int hostFaceId,
     const TopoDS_Face& hostFace,
@@ -1011,31 +1180,40 @@ std::vector<RivetPlacement> BuildWingRivetPlacements(
 
     std::vector<RivetPlacement> placements;
     int instanceId = startingInstanceId;
+    const std::vector<gp_Pnt2d> trimInsetSamples =
+        BuildTrimInsetUvSamples(hostFace, uMin, uMax, vMin, vMax, 8);
+    for (const auto& sample : trimInsetSamples) {
+        AddPlacementIfValid(
+            hostFaceId,
+            hostFace,
+            shapeCenter,
+            rivetRadius,
+            rivetHeight,
+            sample.X(),
+            sample.Y(),
+            instanceId,
+            placements
+        );
+    }
+    if (!placements.empty()) {
+        return placements;
+    }
+
     for (const double vFraction : vFractions) {
         for (const double uFraction : uFractions) {
             const double u = uMin + (uMax - uMin) * uFraction;
             const double v = vMin + (vMax - vMin) * vFraction;
-            if (!IsUvInsideFace(hostFace, u, v)) {
-                continue;
-            }
-
-            gp_Pnt point;
-            gp_Dir normal;
-            if (!EvaluateFacePointAndNormal(hostFace, u, v, point, normal)) {
-                continue;
-            }
-            OrientNormalAwayFromCenter(point, shapeCenter, normal);
-
-            placements.push_back({
-                instanceId++,
+            AddPlacementIfValid(
                 hostFaceId,
-                u,
-                v,
+                hostFace,
+                shapeCenter,
                 rivetRadius,
                 rivetHeight,
-                point,
-                normal,
-            });
+                u,
+                v,
+                instanceId,
+                placements
+            );
         }
     }
 
@@ -1101,11 +1279,19 @@ std::string BuildRivetOnlyStepPath(const std::string& inputFile, const fs::path&
 }
 
 fs::path BuildWingRivetStepsDir(const std::string& inputFile) {
-    return fs::path(inputFile).parent_path() / "wing_rivet_steps";
+    fs::path parentPath = fs::path(inputFile).parent_path();
+    if (parentPath.filename() == "source") {
+        parentPath = parentPath.parent_path();
+    }
+    return parentPath / "step";
 }
 
 fs::path BuildWingRivetLabelsDir(const std::string& inputFile) {
-    return fs::path(inputFile).parent_path() / "wing_rivet_labels";
+    fs::path parentPath = fs::path(inputFile).parent_path();
+    if (parentPath.filename() == "source") {
+        parentPath = parentPath.parent_path();
+    }
+    return parentPath / "label";
 }
 
 void WriteLabelsJson(
@@ -1224,15 +1410,37 @@ int RunWingRivetInjectionImpl(
 
     std::cout << ">>> Injection target type=" << ShapeTypeName(currentShape.ShapeType())
               << " subshape_mode=" << (injectionTarget.isSubshapeMode ? "true" : "false")
+              << " per_solid_mode=" << (injectionTarget.isPerSolidMode ? "true" : "false")
               << " valid=" << (IsShapeValid(currentShape) ? "true" : "false")
               << " solids=" << CountSubShapes(currentShape, TopAbs_SOLID)
               << " shells=" << CountSubShapes(currentShape, TopAbs_SHELL)
               << " faces=" << CountSubShapes(currentShape, TopAbs_FACE)
               << std::endl;
 
+    std::map<int, TopoDS_Shape> workingSolidByIndex = injectionTarget.workingSolidByIndex;
     for (const auto& placement : placements) {
+        TopoDS_Shape* fuseTarget = &currentShape;
+        int ownerSolidIndex = -1;
+        if (injectionTarget.isPerSolidMode) {
+            const auto ownerIt = injectionTarget.solidIndexByHostFaceId.find(placement.hostFaceId);
+            if (ownerIt == injectionTarget.solidIndexByHostFaceId.end()) {
+                std::cout << ">>> Skipping rivet " << placement.instanceId
+                          << " because host face has no owning solid." << std::endl;
+                continue;
+            }
+
+            ownerSolidIndex = ownerIt->second;
+            auto workingSolidIt = workingSolidByIndex.find(ownerSolidIndex);
+            if (workingSolidIt == workingSolidByIndex.end() || workingSolidIt->second.IsNull()) {
+                std::cout << ">>> Skipping rivet " << placement.instanceId
+                          << " because owning solid is unavailable." << std::endl;
+                continue;
+            }
+            fuseTarget = &workingSolidIt->second;
+        }
+
         const TopoDS_Shape rivetSolid = MakeRivetSolid(placement);
-        BRepAlgoAPI_Fuse fuse(currentShape, rivetSolid);
+        BRepAlgoAPI_Fuse fuse(*fuseTarget, rivetSolid);
         fuse.SetFuzzyValue(1.0e-6);
         fuse.Build();
         if (!fuse.IsDone()) {
@@ -1248,11 +1456,12 @@ int RunWingRivetInjectionImpl(
                       << ", " << placement.normal.Y()
                       << ", " << placement.normal.Z() << ")"
                       << std::endl;
-            std::cout << ">>>   current_shape type=" << ShapeTypeName(currentShape.ShapeType())
-                      << " valid=" << (IsShapeValid(currentShape) ? "true" : "false")
-                      << " solids=" << CountSubShapes(currentShape, TopAbs_SOLID)
-                      << " shells=" << CountSubShapes(currentShape, TopAbs_SHELL)
-                      << " faces=" << CountSubShapes(currentShape, TopAbs_FACE)
+            std::cout << ">>>   current_shape type=" << ShapeTypeName(fuseTarget->ShapeType())
+                      << " valid=" << (IsShapeValid(*fuseTarget) ? "true" : "false")
+                      << " solids=" << CountSubShapes(*fuseTarget, TopAbs_SOLID)
+                      << " shells=" << CountSubShapes(*fuseTarget, TopAbs_SHELL)
+                      << " faces=" << CountSubShapes(*fuseTarget, TopAbs_FACE)
+                      << " owner_solid=" << ownerSolidIndex
                       << std::endl;
             std::cout << ">>>   rivet_shape type=" << ShapeTypeName(rivetSolid.ShapeType())
                       << " valid=" << (IsShapeValid(rivetSolid) ? "true" : "false")
@@ -1280,7 +1489,11 @@ int RunWingRivetInjectionImpl(
             continue;
         }
 
-        currentShape = candidateShape;
+        if (injectionTarget.isPerSolidMode) {
+            workingSolidByIndex[ownerSolidIndex] = candidateShape;
+        } else {
+            currentShape = candidateShape;
+        }
         acceptedRivetShapes.push_back(rivetSolid);
         acceptedPlacements.push_back(placement);
         rivetFacesByInstance.push_back({placement.instanceId, CollectGeneratedRivetFaces(fuse, rivetSolid)});
@@ -1293,13 +1506,26 @@ int RunWingRivetInjectionImpl(
         });
     }
 
+    if (injectionTarget.isPerSolidMode) {
+        currentShape = RebuildShapeWithSolidReplacements(
+            originalShape,
+            injectionTarget.originalSolidByIndex,
+            workingSolidByIndex
+        );
+        if (!IsShapeValid(currentShape)) {
+            std::cout << ">>> Failed to rebuild final assembly after per-solid rivet fusion."
+                      << std::endl;
+            return 1;
+        }
+    }
+
     if (labelInstances.empty()) {
         std::cout << ">>> No rivets were successfully fused into the model." << std::endl;
         return 1;
     }
 
     TopoDS_Shape finalOutputShape = currentShape;
-    if (injectionTarget.isSubshapeMode) {
+    if (injectionTarget.isSubshapeMode && !injectionTarget.isPerSolidMode) {
         finalOutputShape = RebuildShapeWithReplacement(
             originalShape,
             injectionTarget.originalSubshape,
@@ -1414,8 +1640,12 @@ int RunBatchWingRivetInjection(const std::string& inputDir) {
 
     std::cout << ">>> Batch injecting wing rivets in directory: " << inputDir << std::endl;
 
-    const fs::path outputStepDir = inputPath / "wing_rivet_steps";
-    const fs::path outputLabelsDir = inputPath / "wing_rivet_labels";
+    fs::path outputBaseDir = inputPath;
+    if (inputPath.filename() == "source") {
+        outputBaseDir = inputPath.parent_path();
+    }
+    const fs::path outputStepDir = outputBaseDir / "step";
+    const fs::path outputLabelsDir = outputBaseDir / "label";
     fs::create_directories(outputStepDir);
     fs::create_directories(outputLabelsDir);
 
@@ -1460,11 +1690,15 @@ int RunWingRivetDatasetValidation(const std::string& inputDir) {
         return 1;
     }
 
-    const fs::path outputStepDir = inputPath / "wing_rivet_steps";
-    const fs::path outputLabelsDir = inputPath / "wing_rivet_labels";
+    fs::path outputBaseDir = inputPath;
+    if (inputPath.filename() == "source") {
+        outputBaseDir = inputPath.parent_path();
+    }
+    const fs::path outputStepDir = outputBaseDir / "step";
+    const fs::path outputLabelsDir = outputBaseDir / "label";
     if (!fs::exists(outputStepDir) || !fs::is_directory(outputStepDir) ||
         !fs::exists(outputLabelsDir) || !fs::is_directory(outputLabelsDir)) {
-        std::cout << ">>> Missing wing_rivet_steps or wing_rivet_labels directory under: "
+        std::cout << ">>> Missing step or label directory for: "
                   << inputDir << std::endl;
         return 1;
     }

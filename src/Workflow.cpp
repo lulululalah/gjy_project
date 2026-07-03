@@ -455,18 +455,12 @@ void RunBatchTrainingExport(const std::string &inputDir, const std::string &outp
 int RunWingRivetTrainingExport(const std::string &inputDir, const std::string &outputCsv)
 {
     const fs::path inputPath(inputDir);
-    fs::path stepDir = inputPath / "step";
-    fs::path labelsDir = inputPath / "label";
+    const fs::path stepDir = inputPath / "step";
+    const fs::path labelsDir = inputPath / "label";
 
     if (!fs::exists(stepDir) || !fs::exists(labelsDir))
     {
-        stepDir = inputPath / "wing_rivet_steps";
-        labelsDir = inputPath / "wing_rivet_labels";
-    }
-
-    if (!fs::exists(stepDir) || !fs::exists(labelsDir))
-    {
-        std::cout << ">>> Missing step/label or wing_rivet_steps/wing_rivet_labels directory under: "
+        std::cout << ">>> Missing step or label directory under: "
                   << inputDir << std::endl;
         return 1;
     }
