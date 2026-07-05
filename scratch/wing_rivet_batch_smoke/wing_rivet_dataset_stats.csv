@@ -1,0 +1,2 @@
+model_name,step_path,labels_path,status,t1_face_id_stable,t2_injection_valid,t3_graph_stable,face_count,label_face_count,rivet_face_count,background_face_count,instance_count,shape_valid,duplicate_face_key_count,graph_mismatch_count,message
+"0",".\scratch\wing_rivet_batch_smoke\step\0_wing_rivets.step",".\scratch\wing_rivet_batch_smoke\label\0_wing_rivets.labels.json",PASS,PASS,PASS,PASS,45,45,20,25,8,true,0,0,"ok"

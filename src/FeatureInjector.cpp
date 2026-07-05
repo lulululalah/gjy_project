@@ -4,12 +4,15 @@
 
 #include <BRepAlgoAPI_Fuse.hxx>
 #include <BRepBndLib.hxx>
+#include <BRepBuilderAPI_MakeFace.hxx>
+#include <BRepBuilderAPI_MakePolygon.hxx>
 #include <BRep_Builder.hxx>
 #include <BRep_Tool.hxx>
 #include <BRepCheck_Analyzer.hxx>
 #include <BRepClass_FaceClassifier.hxx>
 #include <BRepLProp_SLProps.hxx>
 #include <BRepPrimAPI_MakeCylinder.hxx>
+#include <BRepPrimAPI_MakePrism.hxx>
 #include <BRepTools_ReShape.hxx>
 #include <BRepTools.hxx>
 #include <BRepAdaptor_Surface.hxx>
@@ -52,6 +55,11 @@ namespace fs = std::filesystem;
 
 namespace {
 
+enum class RivetFootprint {
+    Round,
+    Hexagon,
+};
+
 // Data containers used by the wing-rivet injection and validation pipeline.
 struct RivetPlacement {
     int instanceId = -1;
@@ -60,6 +68,7 @@ struct RivetPlacement {
     double v = 0.0;
     double radius = 0.0;
     double height = 0.0;
+    RivetFootprint footprint = RivetFootprint::Round;
     gp_Pnt basePoint;
     gp_Dir normal;
 };
@@ -133,6 +142,7 @@ struct DatasetValidationResult {
 };
 
 bool IsShapeValid(const TopoDS_Shape& shape);
+double ExpectedRivetTopArea(const RivetPlacement& placement);
 
 // Basic STEP, CSV, JSON, and face-feature helpers.
 std::string ShapeTypeName(TopAbs_ShapeEnum shapeType) {
@@ -493,6 +503,24 @@ bool IsRivetFaceByPlacementGeometry(
     const double radialSquared = std::max(0.0, squaredDistance - axial * axial);
     const double radial = std::sqrt(radialSquared);
 
+    if (placement.footprint == RivetFootprint::Hexagon) {
+        if (feature.surfaceType != GeomAbs_Plane) {
+            return false;
+        }
+
+        const double topArea = ExpectedRivetTopArea(placement);
+        const double sideArea = 6.0 * radius * std::max(height, 1.0e-9);
+        const double maxExpectedArea = std::max(topArea, sideArea);
+        const bool axialInRivetRange =
+            axial >= -radius * 0.75 &&
+            axial <= height + radius * 0.75;
+        const bool radialMatches = radial <= radius * 1.75;
+        const bool areaMatches =
+            feature.area > 0.0 &&
+            feature.area <= std::max(1.0e-4, maxExpectedArea * 3.0);
+        return axialInRivetRange && radialMatches && areaMatches;
+    }
+
     if (feature.surfaceType == GeomAbs_Cylinder) {
         const bool radiusMatches =
             feature.radius > 0.0 &&
@@ -507,7 +535,7 @@ bool IsRivetFaceByPlacementGeometry(
     }
 
     if (feature.surfaceType == GeomAbs_Plane) {
-        const double expectedTopArea = M_PI * radius * radius;
+        const double expectedTopArea = ExpectedRivetTopArea(placement);
         const bool nearTop =
             std::abs(axial - height) <= std::max(1.0e-4, radius * 0.35);
         const bool nearAxis = radial <= radius * 0.55;
@@ -534,11 +562,14 @@ bool IsRivetTopNeighborFace(
     }
 
     const double radius = std::max(placement.radius, 1.0e-9);
-    const double expectedTopArea = M_PI * radius * radius;
+    const double expectedTopArea = ExpectedRivetTopArea(placement);
     const bool areaMatches =
         std::abs(candidate.area - expectedTopArea) <=
         std::max(1.0e-4, expectedTopArea * 0.55);
-    const bool compactEnough = candidate.compactness > 0.0 && candidate.compactness <= 1.35;
+    const double maxCompactness =
+        placement.footprint == RivetFootprint::Hexagon ? 1.45 : 1.35;
+    const bool compactEnough =
+        candidate.compactness > 0.0 && candidate.compactness <= maxCompactness;
     return areaMatches && compactEnough;
 }
 
@@ -554,6 +585,10 @@ void AddNeighborTopFacesForMatchedRivet(
     }
 
     const auto existingFaceIds = matchedFaceIdsByInstance[placement.instanceId];
+    if (placement.footprint != RivetFootprint::Round) {
+        return;
+    }
+
     for (const int faceId : existingFaceIds) {
         const auto faceIt = featureById.find(faceId);
         if (faceIt == featureById.end() ||
@@ -1049,6 +1084,23 @@ bool IsDuplicateUvSample(
     return false;
 }
 
+const char* RivetFootprintName(RivetFootprint footprint) {
+    return footprint == RivetFootprint::Hexagon ? "hexagon" : "round";
+}
+
+RivetFootprint SelectRivetFootprint(int instanceId, int startingInstanceId) {
+    const int ordinal = instanceId - startingInstanceId;
+    return ordinal % 3 == 2 ? RivetFootprint::Hexagon : RivetFootprint::Round;
+}
+
+double ExpectedRivetTopArea(const RivetPlacement& placement) {
+    const double radius = std::max(placement.radius, 1.0e-9);
+    if (placement.footprint == RivetFootprint::Hexagon) {
+        return 3.0 * std::sqrt(3.0) * radius * radius / 2.0;
+    }
+    return M_PI * radius * radius;
+}
+
 std::vector<gp_Pnt2d> BuildTrimInsetUvSamples(
     const TopoDS_Face& hostFace,
     double uMin,
@@ -1131,6 +1183,7 @@ void AddPlacementIfValid(
     const gp_Pnt& shapeCenter,
     double rivetRadius,
     double rivetHeight,
+    RivetFootprint footprint,
     double u,
     double v,
     int& instanceId,
@@ -1154,6 +1207,7 @@ void AddPlacementIfValid(
         v,
         rivetRadius,
         rivetHeight,
+        footprint,
         point,
         normal,
     });
@@ -1183,12 +1237,14 @@ std::vector<RivetPlacement> BuildWingRivetPlacements(
     const std::vector<gp_Pnt2d> trimInsetSamples =
         BuildTrimInsetUvSamples(hostFace, uMin, uMax, vMin, vMax, 8);
     for (const auto& sample : trimInsetSamples) {
+        const RivetFootprint footprint = SelectRivetFootprint(instanceId, startingInstanceId);
         AddPlacementIfValid(
             hostFaceId,
             hostFace,
             shapeCenter,
             rivetRadius,
             rivetHeight,
+            footprint,
             sample.X(),
             sample.Y(),
             instanceId,
@@ -1203,12 +1259,14 @@ std::vector<RivetPlacement> BuildWingRivetPlacements(
         for (const double uFraction : uFractions) {
             const double u = uMin + (uMax - uMin) * uFraction;
             const double v = vMin + (vMax - vMin) * vFraction;
+            const RivetFootprint footprint = SelectRivetFootprint(instanceId, startingInstanceId);
             AddPlacementIfValid(
                 hostFaceId,
                 hostFace,
                 shapeCenter,
                 rivetRadius,
                 rivetHeight,
+                footprint,
                 u,
                 v,
                 instanceId,
@@ -1220,12 +1278,50 @@ std::vector<RivetPlacement> BuildWingRivetPlacements(
     return placements;
 }
 
-TopoDS_Shape MakeRivetSolid(const RivetPlacement& placement) {
+TopoDS_Shape MakeRoundRivetSolid(const RivetPlacement& placement) {
     const double embedDepth = std::max(placement.radius * 0.35, 0.01);
     gp_Vec normalVec(placement.normal);
     const gp_Pnt axisOrigin = placement.basePoint.Translated(-normalVec * embedDepth);
     gp_Ax2 axis(axisOrigin, placement.normal);
     return BRepPrimAPI_MakeCylinder(axis, placement.radius, placement.height + embedDepth).Shape();
+}
+
+TopoDS_Shape MakeHexagonRivetSolid(const RivetPlacement& placement) {
+    const double embedDepth = std::max(placement.radius * 0.35, 0.01);
+    const double prismHeight = placement.height + embedDepth;
+    const gp_Vec normalVec(placement.normal);
+    const gp_Pnt baseCenter = placement.basePoint.Translated(-normalVec * embedDepth);
+
+    gp_Vec reference(1.0, 0.0, 0.0);
+    gp_Vec tangentU = normalVec.Crossed(reference);
+    if (tangentU.SquareMagnitude() <= Precision::SquareConfusion()) {
+        reference = gp_Vec(0.0, 1.0, 0.0);
+        tangentU = normalVec.Crossed(reference);
+    }
+    tangentU.Normalize();
+    gp_Vec tangentV = normalVec.Crossed(tangentU);
+    tangentV.Normalize();
+
+    BRepBuilderAPI_MakePolygon polygon;
+    constexpr double kPi = 3.14159265358979323846;
+    for (int vertexIndex = 0; vertexIndex < 6; ++vertexIndex) {
+        const double angle = kPi / 6.0 + vertexIndex * 2.0 * kPi / 6.0;
+        gp_Vec offset =
+            tangentU * (std::cos(angle) * placement.radius) +
+            tangentV * (std::sin(angle) * placement.radius);
+        polygon.Add(baseCenter.Translated(offset));
+    }
+    polygon.Close();
+
+    TopoDS_Face baseFace = BRepBuilderAPI_MakeFace(polygon.Wire()).Face();
+    return BRepPrimAPI_MakePrism(baseFace, normalVec * prismHeight).Shape();
+}
+
+TopoDS_Shape MakeRivetSolid(const RivetPlacement& placement) {
+    if (placement.footprint == RivetFootprint::Hexagon) {
+        return MakeHexagonRivetSolid(placement);
+    }
+    return MakeRoundRivetSolid(placement);
 }
 
 std::vector<TopoDS_Shape> CollectGeneratedRivetFaces(
@@ -1447,6 +1543,7 @@ int RunWingRivetInjectionImpl(
             std::cout << ">>> Skipping rivet " << placement.instanceId
                       << " because fuse operation failed." << std::endl;
             std::cout << ">>>   host_face=" << placement.hostFaceId
+                      << " shape=" << RivetFootprintName(placement.footprint)
                       << " radius=" << placement.radius
                       << " height=" << placement.height
                       << " base=(" << placement.basePoint.X()
@@ -1485,6 +1582,7 @@ int RunWingRivetInjectionImpl(
         const TopoDS_Shape candidateShape = fuse.Shape();
         if (!IsShapeValid(candidateShape)) {
             std::cout << ">>> Skipping rivet " << placement.instanceId
+                      << " shape=" << RivetFootprintName(placement.footprint)
                       << " because fused model became invalid." << std::endl;
             continue;
         }
@@ -1616,6 +1714,17 @@ int RunWingRivetInjectionImpl(
     std::cout << ">>> Output STEP: " << outputStepFile << std::endl;
     std::cout << ">>> Output labels: " << outputLabelsFile << std::endl;
     std::cout << ">>> Injected rivet count: " << labelInstances.size() << std::endl;
+    int roundRivetCount = 0;
+    int hexagonRivetCount = 0;
+    for (const auto& placement : acceptedPlacements) {
+        if (placement.footprint == RivetFootprint::Hexagon) {
+            hexagonRivetCount++;
+        } else {
+            roundRivetCount++;
+        }
+    }
+    std::cout << ">>> Round rivets: " << roundRivetCount
+              << ", hexagon rivets: " << hexagonRivetCount << std::endl;
     return 0;
 }
 
