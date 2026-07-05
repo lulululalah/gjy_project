@@ -276,62 +276,16 @@ namespace
         dataFile << "\"," << feature.semanticTag << "\n";
     }
 
-    int ClassifyFaceForTraining(FaceFeature &feature)
-    {
-        const bool isSmallPrimaryFace = feature.area > 0.0 && feature.area <= 5.0;
-        const bool isSmallHoleSideFace =
-            isSmallPrimaryFace &&
-            (feature.surfaceType == GeomAbs_Cylinder ||
-             feature.surfaceType == GeomAbs_Cone ||
-             feature.surfaceType == GeomAbs_Torus) &&
-            feature.radius > 0.0 &&
-            feature.radius <= 0.5;
-        const bool isSmallHoleCapFace =
-            isSmallPrimaryFace &&
-            feature.surfaceType == GeomAbs_Plane &&
-            feature.numWires >= 2;
-        const bool isPlanarFaceWithSmallInnerHole =
-            feature.surfaceType == GeomAbs_Plane &&
-            feature.innerWireCount > 0 &&
-            feature.minInnerWireLength > 0.0 &&
-            feature.minInnerWireLength <= 8.0 &&
-            feature.area <= 100.0 &&
-            feature.relativeArea <= 0.02;
-
-        if (feature.area > 50.0)
-        {
-            feature.semanticTag = isPlanarFaceWithSmallInnerHole ? 2 : 0;
-        }
-        else if (isSmallHoleSideFace || isSmallHoleCapFace || isPlanarFaceWithSmallInnerHole)
-        {
-            feature.semanticTag = 2;
-        }
-        else
-        {
-            feature.semanticTag = 1;
-        }
-
-        return feature.semanticTag;
-    }
-
-    void ExportFaceFeaturesForShape(
+    void ExportFaceFeaturesForInference(
         std::ofstream &dataFile,
         const std::vector<FaceFeature> &features,
         int graphId,
-        const std::string &modelName,
-        bool assignTrainingLabels)
+        const std::string &modelName)
     {
         auto rows = features;
         for (auto &feature : rows)
         {
-            if (assignTrainingLabels)
-            {
-                ClassifyFaceForTraining(feature);
-            }
-            else
-            {
-                feature.semanticTag = 0;
-            }
+            feature.semanticTag = 0;
             WriteFaceRow(dataFile, graphId, modelName, feature);
         }
     }
@@ -419,37 +373,6 @@ namespace
         jsonFile << "  ]\n";
         jsonFile << "}\n";
     }
-}
-
-void RunBatchTrainingExport(const std::string &inputDir, const std::string &outputCsv)
-{
-    std::cout << ">>> Exporting batch training data..." << std::endl;
-
-    std::ofstream dataFile(outputCsv);
-    WriteFaceCsvHeader(dataFile);
-
-    int graphId = 0;
-    for (const auto &entry : fs::directory_iterator(inputDir))
-    {
-        if (!IsStepFile(entry.path()))
-        {
-            continue;
-        }
-
-        const auto features = ExtractFaceFeaturesFromStep(entry.path().string());
-        if (features.empty())
-        {
-            continue;
-        }
-
-        const std::string modelName = entry.path().filename().string();
-        ExportFaceFeaturesForShape(dataFile, features, graphId, modelName, true);
-
-        graphId++;
-        std::cout << "  - Processed: " << entry.path().filename() << std::endl;
-    }
-
-    std::cout << ">>> Export complete. Models processed: " << graphId << std::endl;
 }
 
 int RunWingRivetTrainingExport(const std::string &inputDir, const std::string &outputCsv)
@@ -546,7 +469,7 @@ void RunSingleInferenceExport(const std::string &inputFile, const std::string &o
     const std::string modelName = fs::path(inputFile).filename().string();
     std::ofstream dataFile(outputCsv);
     WriteFaceCsvHeader(dataFile);
-    ExportFaceFeaturesForShape(dataFile, features, 0, modelName, false);
+    ExportFaceFeaturesForInference(dataFile, features, 0, modelName);
 
     std::cout << ">>> Inference CSV ready." << std::endl;
 }

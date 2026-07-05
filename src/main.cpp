@@ -9,8 +9,7 @@ namespace
 {
     struct DetectorPaths
     {
-        std::filesystem::path trainingInputDir;
-        std::filesystem::path faceTrainingCsv;
+        std::filesystem::path wingRivetDatasetDir;
         std::filesystem::path wingRivetTrainingCsv;
         std::filesystem::path faceInferenceCsv;
         std::filesystem::path faceDumpJson;
@@ -20,8 +19,7 @@ namespace
     {
         const std::filesystem::path projectRoot = exePath.parent_path().parent_path().parent_path();
         return {
-            projectRoot / "data" / "dirty_training_set",
-            projectRoot / "data" / "full_training_set.csv",
+            projectRoot / "data" / "plane_model",
             projectRoot / "data" / "wing_rivet_training_set.csv",
             projectRoot / "data" / "current_inference.csv",
             projectRoot / "data" / "current_faces.json",
@@ -56,7 +54,7 @@ int main(int argc, char *argv[])
 
     if (mode == "--train")
     {
-        RunBatchTrainingExport(paths.trainingInputDir.string(), paths.faceTrainingCsv.string());
+        return RunWingRivetTrainingExport(paths.wingRivetDatasetDir.string(), paths.wingRivetTrainingCsv.string());
     }
     else if (mode == "--predict" && argc >= 3)
     {
