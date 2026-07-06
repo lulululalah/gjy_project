@@ -1,4 +1,4 @@
-import argparse
+﻿import argparse
 import csv
 import subprocess
 from pathlib import Path
@@ -6,11 +6,9 @@ from pathlib import Path
 
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
 DEFAULT_INFERENCE_CSV = PROJECT_ROOT / "data" / "current_inference.csv"
-DEFAULT_DETECTOR = PROJECT_ROOT / "build" / "Release" / "Detector.exe"
-DEFAULT_MODEL_PATH = PROJECT_ROOT / "rivet_gnn_plane_model_27_7.pth"
-DEFAULT_STATS_PATH = PROJECT_ROOT / "rivet_gnn_plane_model_27_7_stats.npz"
-
-
+DEFAULT_DETECTOR = PROJECT_ROOT / "build" / "Debug" / "Detector.exe"
+DEFAULT_MODEL_PATH = PROJECT_ROOT / "rivet_gnn_no_centerz_split20_5.pth"
+DEFAULT_STATS_PATH = PROJECT_ROOT / "rivet_gnn_no_centerz_split20_5_stats.npz"
 def load_truth_labels(labels_path):
     import json
 
@@ -303,3 +301,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+

@@ -18,7 +18,6 @@ FEATURE_COLS = [
     "nx",
     "ny",
     "nz",
-    "centerZ",
     "meanCurvature",
     "radius",
     "numWires",
@@ -48,9 +47,9 @@ EDGE_ATTR_COLS = [
 ]
 
 DEFAULT_CSV = Path("data/wing_rivet_training_set.csv")
-DEFAULT_MODEL_PATH = Path("rivet_gnn.pth")
-DEFAULT_STATS_PATH = Path("rivet_gnn_stats.npz")
-DEFAULT_EVAL_PATH = Path("rivet_gnn_eval.csv")
+DEFAULT_MODEL_PATH = Path("rivet_gnn_no_centerz_split20_5.pth")
+DEFAULT_STATS_PATH = Path("rivet_gnn_no_centerz_split20_5_stats.npz")
+DEFAULT_EVAL_PATH = Path("rivet_gnn_no_centerz_split20_5_eval.csv")
 
 
 def split_tokens(value):

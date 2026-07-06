@@ -573,6 +573,24 @@ bool IsRivetTopNeighborFace(
     return areaMatches && compactEnough;
 }
 
+bool IsRivetTopSplitFace(const FaceFeature& candidate) {
+    if (candidate.surfaceType != GeomAbs_Plane) {
+        return false;
+    }
+
+    const bool tinyCapPatch =
+        candidate.area > 0.0 &&
+        candidate.area <= 1.0e-3 &&
+        candidate.relativeArea > 0.0 &&
+        candidate.relativeArea <= 1.0e-5;
+    const bool capLike =
+        candidate.compactness > 0.0 &&
+        candidate.compactness <= 1.60 &&
+        candidate.numEdges >= 4 &&
+        candidate.numEdges <= 8;
+    return tinyCapPatch && capLike;
+}
+
 void AddNeighborTopFacesForMatchedRivet(
     const RivetPlacement& placement,
     const std::vector<FaceFeature>& reloadedFeatures,
@@ -612,6 +630,48 @@ void AddNeighborTopFacesForMatchedRivet(
     }
 }
 
+void AddEnclosedSplitTopFacesForMatchedRivet(
+    const RivetPlacement& placement,
+    const std::vector<FaceFeature>& reloadedFeatures,
+    std::map<int, std::set<int>>& matchedFaceIdsByInstance,
+    std::set<int>& usedFaceIds
+) {
+    std::map<int, const FaceFeature*> featureById;
+    for (const auto& feature : reloadedFeatures) {
+        featureById[feature.id] = &feature;
+    }
+
+    bool addedAny = true;
+    while (addedAny) {
+        addedAny = false;
+        const auto currentFaceIds = matchedFaceIdsByInstance[placement.instanceId];
+        for (const auto& feature : reloadedFeatures) {
+            if (currentFaceIds.find(feature.id) != currentFaceIds.end() ||
+                usedFaceIds.find(feature.id) != usedFaceIds.end()) {
+                continue;
+            }
+            if (!IsRivetTopSplitFace(feature) || feature.neighborIds.empty()) {
+                continue;
+            }
+
+            bool enclosedByInstance = true;
+            for (const int neighborId : feature.neighborIds) {
+                if (currentFaceIds.find(neighborId) == currentFaceIds.end()) {
+                    enclosedByInstance = false;
+                    break;
+                }
+            }
+            if (!enclosedByInstance) {
+                continue;
+            }
+
+            matchedFaceIdsByInstance[placement.instanceId].insert(feature.id);
+            usedFaceIds.insert(feature.id);
+            addedAny = true;
+        }
+    }
+}
+
 void AugmentRivetFaceMatchesFromPlacements(
     const std::vector<RivetPlacement>& placements,
     const std::vector<FaceFeature>& reloadedFeatures,
@@ -639,6 +699,12 @@ void AugmentRivetFaceMatchesFromPlacements(
         }
 
         AddNeighborTopFacesForMatchedRivet(
+            placement,
+            reloadedFeatures,
+            matchedFaceIdsByInstance,
+            usedFaceIds
+        );
+        AddEnclosedSplitTopFacesForMatchedRivet(
             placement,
             reloadedFeatures,
             matchedFaceIdsByInstance,
