@@ -11,10 +11,9 @@ from torch_geometric.loader import DataLoader
 from torch_geometric.nn import NNConv
 
 
-FEATURE_COLS = [
+BASE_FEATURE_COLS = [
     "relativeArea",
     "compactness",
-    "surfaceType",
     "nx",
     "ny",
     "nz",
@@ -51,6 +50,10 @@ DEFAULT_MODEL_PATH = Path("rivet_gnn_no_centerz_split20_5.pth")
 DEFAULT_STATS_PATH = Path("rivet_gnn_no_centerz_split20_5_stats.npz")
 DEFAULT_EVAL_PATH = Path("rivet_gnn_no_centerz_split20_5_eval.csv")
 
+RADIUS_COL = "radius"
+SURFACE_TYPE_COL = "surfaceType"
+HAS_RADIUS_COL = "has_radius"
+
 
 def split_tokens(value):
     if pd.isna(value):
@@ -62,9 +65,58 @@ def token_at(tokens, index, default="0"):
     return tokens[index] if index < len(tokens) else default
 
 
-def build_graph(group_df, feature_mean, feature_std, edge_mean=None, edge_std=None):
+def infer_feature_columns(df):
+    surface_types = sorted({int(value) for value in df[SURFACE_TYPE_COL].fillna(0).astype(int).tolist()})
+    feature_cols = []
+    for col in BASE_FEATURE_COLS:
+        if col == RADIUS_COL:
+            feature_cols.append(RADIUS_COL)
+            feature_cols.append(HAS_RADIUS_COL)
+        else:
+            feature_cols.append(col)
+    feature_cols.extend(f"{SURFACE_TYPE_COL}_{surface_type}" for surface_type in surface_types)
+    return feature_cols
+
+
+def build_feature_frame(df, feature_cols=None):
+    if feature_cols is None:
+        feature_cols = infer_feature_columns(df)
+    feature_cols = [str(col) for col in feature_cols]
+    if SURFACE_TYPE_COL in feature_cols or HAS_RADIUS_COL not in feature_cols:
+        raise ValueError(
+            "Legacy feature schema detected in stats/model files. "
+            "Please retrain to regenerate feature_cols with one-hot surfaceType and has_radius."
+        )
+
+    feature_df = pd.DataFrame(index=df.index)
+    numeric_df = df.apply(pd.to_numeric, errors="coerce")
+
+    for col in BASE_FEATURE_COLS:
+        if col == RADIUS_COL:
+            radius_values = numeric_df[RADIUS_COL].fillna(0.0).astype(float)
+            feature_df[RADIUS_COL] = radius_values
+            feature_df[HAS_RADIUS_COL] = (radius_values.abs() > 1e-9).astype(float)
+        else:
+            feature_df[col] = numeric_df[col].fillna(0.0).astype(float)
+
+    surface_type_values = numeric_df[SURFACE_TYPE_COL].fillna(0).astype(int)
+    for col in feature_cols:
+        if not col.startswith(f"{SURFACE_TYPE_COL}_"):
+            continue
+        surface_type = int(col.split("_")[-1])
+        feature_df[col] = (surface_type_values == surface_type).astype(float)
+
+    missing_cols = [col for col in feature_cols if col not in feature_df.columns]
+    for col in missing_cols:
+        feature_df[col] = 0.0
+
+    return feature_df[feature_cols].astype(float), feature_cols
+
+
+def build_graph(group_df, feature_mean, feature_std, edge_mean=None, edge_std=None, feature_cols=None):
     local_df = group_df.reset_index(drop=True).copy()
-    node_features = local_df[FEATURE_COLS].astype(float).to_numpy()
+    feature_frame, _ = build_feature_frame(local_df, feature_cols)
+    node_features = feature_frame.to_numpy()
     node_features = (node_features - feature_mean) / feature_std
 
     id_to_index = {int(row_id): idx for idx, row_id in enumerate(local_df["id"].tolist())}
@@ -220,12 +272,13 @@ def collect_edge_attr_matrix(df):
 def load_feature_stats(stats_path):
     stats_file = Path(stats_path)
     if not stats_file.exists():
-        return None, None, None, None
+        return None, None, None, None, None
 
     stats = np.load(stats_file, allow_pickle=True)
+    feature_cols = stats["feature_cols"].tolist() if "feature_cols" in stats.files else None
     edge_mean = stats["edge_mean"] if "edge_mean" in stats.files else None
     edge_std = stats["edge_std"] if "edge_std" in stats.files else None
-    return stats["mean"], stats["std"], edge_mean, edge_std
+    return stats["mean"], stats["std"], edge_mean, edge_std, feature_cols
 
 
 def load_cad_data(csv_path, stats_path=DEFAULT_STATS_PATH):
@@ -233,11 +286,14 @@ def load_cad_data(csv_path, stats_path=DEFAULT_STATS_PATH):
     if "graph_id" not in df.columns or "model_name" not in df.columns:
         raise ValueError("CSV is missing graph_id/model_name columns. Please re-export inference data.")
 
-    feature_mean, feature_std, edge_mean, edge_std = load_feature_stats(stats_path)
+    feature_mean, feature_std, edge_mean, edge_std, feature_cols = load_feature_stats(stats_path)
     if feature_mean is None or feature_std is None:
-        feature_matrix = df[FEATURE_COLS].astype(float).to_numpy()
+        feature_frame, feature_cols = build_feature_frame(df)
+        feature_matrix = feature_frame.to_numpy()
         feature_mean = feature_matrix.mean(axis=0)
         feature_std = feature_matrix.std(axis=0) + 1e-6
+    elif feature_cols is None:
+        feature_cols = infer_feature_columns(df)
     if edge_mean is None or edge_std is None:
         edge_matrix = collect_edge_attr_matrix(df)
         edge_mean = edge_matrix.mean(axis=0) if len(edge_matrix) else np.zeros(len(EDGE_ATTR_COLS))
@@ -245,16 +301,16 @@ def load_cad_data(csv_path, stats_path=DEFAULT_STATS_PATH):
 
     first_graph_id = df["graph_id"].iloc[0]
     group = df[df["graph_id"] == first_graph_id]
-    return build_graph(group, feature_mean, feature_std, edge_mean, edge_std)
+    return build_graph(group, feature_mean, feature_std, edge_mean, edge_std, feature_cols)
 
 
-def build_graphs_from_dataframe(df, feature_mean, feature_std, edge_mean=None, edge_std=None):
+def build_graphs_from_dataframe(df, feature_mean, feature_std, edge_mean=None, edge_std=None, feature_cols=None):
     if "graph_id" not in df.columns or "model_name" not in df.columns:
         raise ValueError("CSV is missing graph_id/model_name columns. Please re-export training data.")
 
     graphs = []
     for _, group in df.groupby("graph_id", sort=True):
-        graphs.append(build_graph(group, feature_mean, feature_std, edge_mean, edge_std))
+        graphs.append(build_graph(group, feature_mean, feature_std, edge_mean, edge_std, feature_cols))
     return graphs
 
 
@@ -269,17 +325,18 @@ def load_graph_dataset(csv_path, training_mode="full", window_hop=2, background_
     if "graph_id" not in df.columns or "model_name" not in df.columns:
         raise ValueError("CSV is missing graph_id/model_name columns. Please re-export training data.")
 
-    feature_matrix = df[FEATURE_COLS].astype(float).to_numpy()
+    feature_frame, feature_cols = build_feature_frame(df)
+    feature_matrix = feature_frame.to_numpy()
     feature_mean = feature_matrix.mean(axis=0)
     feature_std = feature_matrix.std(axis=0) + 1e-6
     edge_matrix = collect_edge_attr_matrix(df)
     edge_mean = edge_matrix.mean(axis=0) if len(edge_matrix) else np.zeros(len(EDGE_ATTR_COLS))
     edge_std = edge_matrix.std(axis=0) + 1e-6 if len(edge_matrix) else np.ones(len(EDGE_ATTR_COLS))
 
-    full_graphs = build_graphs_from_dataframe(df, feature_mean, feature_std, edge_mean, edge_std)
+    full_graphs = build_graphs_from_dataframe(df, feature_mean, feature_std, edge_mean, edge_std, feature_cols)
     graphs = prepare_graph_samples(full_graphs, training_mode, window_hop, background_ratio, seed)
 
-    return graphs, feature_mean, feature_std, edge_mean, edge_std
+    return graphs, feature_mean, feature_std, edge_mean, edge_std, feature_cols
 
 
 def load_explicit_train_val_datasets(
@@ -296,15 +353,16 @@ def load_explicit_train_val_datasets(
         if "graph_id" not in df.columns or "model_name" not in df.columns:
             raise ValueError(f"{name} CSV is missing graph_id/model_name columns. Please re-export training data.")
 
-    feature_matrix = train_df[FEATURE_COLS].astype(float).to_numpy()
+    train_feature_frame, feature_cols = build_feature_frame(train_df)
+    feature_matrix = train_feature_frame.to_numpy()
     feature_mean = feature_matrix.mean(axis=0)
     feature_std = feature_matrix.std(axis=0) + 1e-6
     edge_matrix = collect_edge_attr_matrix(train_df)
     edge_mean = edge_matrix.mean(axis=0) if len(edge_matrix) else np.zeros(len(EDGE_ATTR_COLS))
     edge_std = edge_matrix.std(axis=0) + 1e-6 if len(edge_matrix) else np.ones(len(EDGE_ATTR_COLS))
 
-    train_full_graphs = build_graphs_from_dataframe(train_df, feature_mean, feature_std, edge_mean, edge_std)
-    val_full_graphs = build_graphs_from_dataframe(val_df, feature_mean, feature_std, edge_mean, edge_std)
+    train_full_graphs = build_graphs_from_dataframe(train_df, feature_mean, feature_std, edge_mean, edge_std, feature_cols)
+    val_full_graphs = build_graphs_from_dataframe(val_df, feature_mean, feature_std, edge_mean, edge_std, feature_cols)
 
     train_graphs = prepare_graph_samples(
         train_full_graphs,
@@ -320,7 +378,7 @@ def load_explicit_train_val_datasets(
         background_ratio,
         seed + 1,
     )
-    return train_graphs, val_graphs, feature_mean, feature_std, edge_mean, edge_std
+    return train_graphs, val_graphs, feature_mean, feature_std, edge_mean, edge_std, feature_cols
 
 
 def split_dataset(graphs, train_ratio=0.8, seed=42):
@@ -511,7 +569,7 @@ def print_metric_table(metrics, summary):
 
 def train(args):
     if args.val_csv is not None:
-        train_graphs, val_graphs, feature_mean, feature_std, edge_mean, edge_std = load_explicit_train_val_datasets(
+        train_graphs, val_graphs, feature_mean, feature_std, edge_mean, edge_std, feature_cols = load_explicit_train_val_datasets(
             args.csv,
             args.val_csv,
             training_mode=args.training_mode,
@@ -522,7 +580,7 @@ def train(args):
         graphs = train_graphs + val_graphs
         split_description = f"explicit train={args.csv}, val={args.val_csv}"
     else:
-        graphs, feature_mean, feature_std, edge_mean, edge_std = load_graph_dataset(
+        graphs, feature_mean, feature_std, edge_mean, edge_std, feature_cols = load_graph_dataset(
             args.csv,
             training_mode=args.training_mode,
             window_hop=args.window_hop,
@@ -594,7 +652,7 @@ def train(args):
             torch.save(model.state_dict(), args.model_out)
             np.savez(
                 args.stats_out,
-                feature_cols=np.array(FEATURE_COLS, dtype=object),
+                feature_cols=np.array(feature_cols, dtype=object),
                 edge_attr_cols=np.array(EDGE_ATTR_COLS, dtype=object),
                 mean=feature_mean,
                 std=feature_std,

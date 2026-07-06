@@ -11,6 +11,7 @@
 #include <GProp_GProps.hxx>
 #include <TopTools_IndexedMapOfShape.hxx> 
 #include <BRep_Tool.hxx>
+#include <BRepClass_FaceClassifier.hxx>
 #include <BRepLProp_SLProps.hxx>
 #include <BRepAdaptor_Curve.hxx>
 #include <BRepAdaptor_Surface.hxx>
@@ -31,6 +32,93 @@
 #include <limits>
 #include <map>
 #include <sstream>
+
+namespace {
+
+struct SampledSurfaceProperties
+{
+    bool hasNormal = false;
+    bool hasCurvature = false;
+    gp_Dir normal;
+    double meanCurvature = 0.0;
+};
+
+bool IsUvInsideFace(const TopoDS_Face& face, double u, double v)
+{
+    BRepClass_FaceClassifier classifier;
+    classifier.Perform(face, gp_Pnt2d(u, v), Precision::Confusion());
+    const TopAbs_State state = classifier.State();
+    return state == TopAbs_IN || state == TopAbs_ON;
+}
+
+SampledSurfaceProperties SampleSurfacePropertiesInsideFace(
+    const TopoDS_Face& face,
+    BRepAdaptor_Surface& surfaceAdaptor,
+    double uMin,
+    double uMax,
+    double vMin,
+    double vMax
+)
+{
+    SampledSurfaceProperties sampled;
+    gp_Vec accumulatedNormal(0.0, 0.0, 0.0);
+    gp_Dir referenceNormal;
+    bool hasReferenceNormal = false;
+    double accumulatedCurvature = 0.0;
+    int curvatureSamples = 0;
+
+    constexpr int sampleCountU = 5;
+    constexpr int sampleCountV = 5;
+    for (int uIndex = 0; uIndex < sampleCountU; ++uIndex) {
+        const double uFraction = static_cast<double>(uIndex + 1) / static_cast<double>(sampleCountU + 1);
+        const double u = uMin + (uMax - uMin) * uFraction;
+        for (int vIndex = 0; vIndex < sampleCountV; ++vIndex) {
+            const double vFraction = static_cast<double>(vIndex + 1) / static_cast<double>(sampleCountV + 1);
+            const double v = vMin + (vMax - vMin) * vFraction;
+            if (!IsUvInsideFace(face, u, v)) {
+                continue;
+            }
+
+            BRepLProp_SLProps props(surfaceAdaptor, u, v, 2, Precision::Confusion());
+            if (props.IsNormalDefined()) {
+                gp_Dir normal = props.Normal();
+                if (face.Orientation() == TopAbs_REVERSED) {
+                    normal.Reverse();
+                }
+                if (!hasReferenceNormal) {
+                    referenceNormal = normal;
+                    hasReferenceNormal = true;
+                } else if (normal.Dot(referenceNormal) < 0.0) {
+                    normal.Reverse();
+                }
+                accumulatedNormal += gp_Vec(normal);
+                sampled.hasNormal = true;
+            }
+
+            if (props.IsCurvatureDefined()) {
+                accumulatedCurvature += props.MeanCurvature();
+                curvatureSamples++;
+                sampled.hasCurvature = true;
+            }
+        }
+    }
+
+    if (sampled.hasNormal && accumulatedNormal.SquareMagnitude() > Precision::SquareConfusion()) {
+        sampled.normal = gp_Dir(accumulatedNormal);
+    } else {
+        sampled.hasNormal = false;
+    }
+
+    if (sampled.hasCurvature && curvatureSamples > 0) {
+        sampled.meanCurvature = accumulatedCurvature / static_cast<double>(curvatureSamples);
+    } else {
+        sampled.hasCurvature = false;
+    }
+
+    return sampled;
+}
+
+}
 
 FeatureExtractor::FeatureExtractor(const TopoDS_Shape &shape) : myShape(shape) {}
 
@@ -97,15 +185,15 @@ std::string FeatureExtractor::BuildFaceKey(
 
 void FeatureExtractor::Extract()
 {
-    // 1. 先建立一个 Face 到 Index 的映射表，这样我们才能通过 Shape 反查 ID
-    // TopExp::MapShapes 会按照遍历顺序给每个 Face 编一个号 (1 到 Extent)
+    // 1. 鍏堝缓绔嬩竴涓?Face 鍒?Index 鐨勬槧灏勮〃锛岃繖鏍锋垜浠墠鑳介€氳繃 Shape 鍙嶆煡 ID
+    // TopExp::MapShapes 浼氭寜鐓ч亶鍘嗛『搴忕粰姣忎釜 Face 缂栦竴涓彿 (1 鍒?Extent)
     TopTools_IndexedMapOfShape faceMap;
     TopExp::MapShapes(myShape, TopAbs_FACE, faceMap);
 
-    // 2. 建立边到面的“倒查表”，通过边找邻居面
+    // 2. 寤虹珛杈瑰埌闈㈢殑鈥滃€掓煡琛ㄢ€濓紝閫氳繃杈规壘閭诲眳闈?
     TopExp::MapShapesAndAncestors(myShape, TopAbs_EDGE, TopAbs_FACE, myEdgeFaceMap);
 
-    // 3. 开始计算几何属性和邻居关系
+    // 3. 寮€濮嬭绠楀嚑浣曞睘鎬у拰閭诲眳鍏崇郴
     ComputeGeometricAttributes(faceMap);
 }
 
@@ -113,7 +201,7 @@ void FeatureExtractor::ComputeGeometricAttributes(const TopTools_IndexedMapOfSha
 {
     myResults.clear();
 
-    // 1. 第一遍遍历：计算总面积
+    // 1. 绗竴閬嶉亶鍘嗭細璁＄畻鎬婚潰绉?
     double totalArea = 0.0;
     for (int i = 1; i <= faceMap.Extent(); ++i)
     {
@@ -123,14 +211,14 @@ void FeatureExtractor::ComputeGeometricAttributes(const TopTools_IndexedMapOfSha
         totalArea += areaProps.Mass();
     }
 
-    // 2. 第二遍遍历：提取详细特征
+    // 2. 绗簩閬嶉亶鍘嗭細鎻愬彇璇︾粏鐗瑰緛
     for (int i = 1; i <= faceMap.Extent(); ++i)
     {
         TopoDS_Face face = TopoDS::Face(faceMap.FindKey(i));
         FaceFeature feat;
         feat.id = i;
 
-        // --- 几何特征提取 ---
+        // --- 鍑犱綍鐗瑰緛鎻愬彇 ---
         GProp_GProps areaProps, lineProps;
         BRepGProp::SurfaceProperties(face, areaProps);
         BRepGProp::LinearProperties(face, lineProps);
@@ -139,7 +227,7 @@ void FeatureExtractor::ComputeGeometricAttributes(const TopTools_IndexedMapOfSha
         feat.relativeArea = (totalArea > 1e-6) ? (feat.area / totalArea) : 0.0;
         feat.perimeter = lineProps.Mass();
 
-        // 计算紧致度
+        // 璁＄畻绱ц嚧搴?
         if (feat.area > 1e-6)
         {
             feat.compactness = (feat.perimeter * feat.perimeter) / (4.0 * M_PI * feat.area);
@@ -149,7 +237,7 @@ void FeatureExtractor::ComputeGeometricAttributes(const TopTools_IndexedMapOfSha
             feat.compactness = 999.0;
         }
 
-        // 提取表面类型和法向以及中心 Z
+        // 鎻愬彇琛ㄩ潰绫诲瀷鍜屾硶鍚戜互鍙婁腑蹇?Z
         GProp_GProps gprops;
         BRepGProp::SurfaceProperties(face, gprops);
         gp_Pnt center = gprops.CentreOfMass();
@@ -157,50 +245,45 @@ void FeatureExtractor::ComputeGeometricAttributes(const TopTools_IndexedMapOfSha
         feat.centerY = center.Y();
         feat.centerZ = center.Z();
 
-        // 获取面类型
+        // 鑾峰彇闈㈢被鍨?
         BRepAdaptor_Surface surf(face);
         feat.surfaceType = surf.GetType();
 
-        // 提取半径特征 (关键：用于识别圆角/倒角)
+        // 鎻愬彇鍗婂緞鐗瑰緛 (鍏抽敭锛氱敤浜庤瘑鍒渾瑙?鍊掕)
         feat.radius = 0.0;
         if (feat.surfaceType == GeomAbs_Cylinder) {
             feat.radius = surf.Cylinder().Radius();
         } else if (feat.surfaceType == GeomAbs_Torus) {
-            feat.radius = surf.Torus().MinorRadius(); // 圆环面的小半径通常对应圆角半径
+            feat.radius = surf.Torus().MinorRadius(); // 鍦嗙幆闈㈢殑灏忓崐寰勯€氬父瀵瑰簲鍦嗚鍗婂緞
         } else if (feat.surfaceType == GeomAbs_Sphere) {
             feat.radius = surf.Sphere().Radius();
         } else if (feat.surfaceType == GeomAbs_Cone) {
             feat.radius = surf.Cone().RefRadius();
         }
 
-        // 提取面中心法向
-        double u_min, u_max, v_min, v_max;
+        // 鎻愬彇闈腑蹇冩硶鍚?
+                double u_min, u_max, v_min, v_max;
         BRepTools::UVBounds(face, u_min, u_max, v_min, v_max);
-        gp_Pnt pMid;
-        gp_Vec nVec;
         BRepAdaptor_Surface sAtor(face);
-        sAtor.D1((u_min + u_max) / 2.0, (v_min + v_max) / 2.0, pMid, nVec, nVec); // 这里简化取中点法向
-        
-        // 重新计算精确法向
-        BRepLProp_SLProps props(sAtor, (u_min + u_max) / 2.0, (v_min + v_max) / 2.0, 1, Precision::Confusion());
-        if (props.IsNormalDefined()) {
-            gp_Dir normal = props.Normal();
-            if (face.Orientation() == TopAbs_REVERSED) normal.Reverse();
-            feat.normalX = normal.X();
-            feat.normalY = normal.Y();
-            feat.normalZ = normal.Z();
+        const SampledSurfaceProperties sampledProps =
+            SampleSurfacePropertiesInsideFace(face, sAtor, u_min, u_max, v_min, v_max);
+        if (sampledProps.hasNormal) {
+            feat.normalX = sampledProps.normal.X();
+            feat.normalY = sampledProps.normal.Y();
+            feat.normalZ = sampledProps.normal.Z();
         } else {
-            feat.normalX = 0; feat.normalY = 0; feat.normalZ = 1.0;
+            feat.normalX = 0;
+            feat.normalY = 0;
+            feat.normalZ = 1.0;
         }
 
-        // 提取曲率特征
-        if (props.IsCurvatureDefined()) {
-            feat.meanCurvature = props.MeanCurvature();
+        if (sampledProps.hasCurvature) {
+            feat.meanCurvature = sampledProps.meanCurvature;
         } else {
             feat.meanCurvature = 0.0;
         }
 
-        // 提取拓扑复杂度特征
+        // 鎻愬彇鎷撴墤澶嶆潅搴︾壒寰?
         int wireCount = 0;
         std::vector<double> wireLengths;
         TopExp_Explorer wireExp(face, TopAbs_WIRE);
@@ -262,7 +345,7 @@ void FeatureExtractor::ComputeGeometricAttributes(const TopTools_IndexedMapOfSha
         for (; edgeCountExp.More(); edgeCountExp.Next()) edgeCount++;
         feat.numEdges = edgeCount;
 
-        // 拓扑特征提取：寻找邻居 ID
+        // 鎷撴墤鐗瑰緛鎻愬彇锛氬鎵鹃偦灞?ID
         TopExp_Explorer edgeExp(face, TopAbs_EDGE);
         for (; edgeExp.More(); edgeExp.Next())
         {
@@ -283,7 +366,7 @@ void FeatureExtractor::ComputeGeometricAttributes(const TopTools_IndexedMapOfSha
 
                         int rawEdgeType = IdentifyEdgeType(face, neighborFace, sharedEdge);
                         
-                        // 映射为 ML 友好数值：Convex=1.0, Concave=-1.0, Smooth=0.0
+                        // 鏄犲皠涓?ML 鍙嬪ソ鏁板€硷細Convex=1.0, Concave=-1.0, Smooth=0.0
                         int mlEdgeType = 0;
                         if (rawEdgeType == CONVEX) mlEdgeType = 1;
                         else if (rawEdgeType == CONCAVE) mlEdgeType = -1;
@@ -396,28 +479,28 @@ void FeatureExtractor::ComputeGeometricAttributes(const TopTools_IndexedMapOfSha
 
 int FeatureExtractor::IdentifyEdgeType(const TopoDS_Face& f1, const TopoDS_Face& f2, const TopoDS_Edge& e)
 {
-    // 获取边上的中间参数
+    // 鑾峰彇杈逛笂鐨勪腑闂村弬鏁?
     Standard_Real first, last;
     BRepAdaptor_Curve cAtor(e);
     first = cAtor.FirstParameter();
     last = cAtor.LastParameter();
     Standard_Real mid = (first + last) / 2.0;
 
-    // 获取该点坐标
+    // 鑾峰彇璇ョ偣鍧愭爣
     gp_Pnt pMid;
     gp_Vec vTangent;
     cAtor.D1(mid, pMid, vTangent);
 
-    // 获取两个面的法向量
+    // 鑾峰彇涓や釜闈㈢殑娉曞悜閲?
     auto getNormalAndRefVec = [&](const TopoDS_Face& f, const TopoDS_Edge& edge, double param, gp_Dir& normal, gp_Vec& binormal) -> bool {
         BRepAdaptor_Surface sAtor(f);
         BRepAdaptor_Curve cAtor(edge);
         
-        // 投影点到面获取 UV (或者通过采样点获取)
+        // 鎶曞奖鐐瑰埌闈㈣幏鍙?UV (鎴栬€呴€氳繃閲囨牱鐐硅幏鍙?
         gp_Pnt p; gp_Vec tangent;
         cAtor.D1(param, p, tangent);
         
-        // 这里的逻辑需要处理 edge 在 face 中的参数
+        // 杩欓噷鐨勯€昏緫闇€瑕佸鐞?edge 鍦?face 涓殑鍙傛暟
         Standard_Real u, v;
         Handle(Geom2d_Curve) c2d = BRep_Tool::CurveOnSurface(edge, f, u, v);
         if (c2d.IsNull()) return false;
@@ -429,13 +512,13 @@ int FeatureExtractor::IdentifyEdgeType(const TopoDS_Face& f1, const TopoDS_Face&
         normal = props.Normal();
         if (f.Orientation() == TopAbs_REVERSED) normal.Reverse();
         
-        // 计算面内向量 (Binormal pointing INTO the face)
-        // 计算规则：R = Normal x Tangent
-        // 如果边在面中的 Orientation 是 REVERSED，则 Tangent 需要反向
+        // 璁＄畻闈㈠唴鍚戦噺 (Binormal pointing INTO the face)
+        // 璁＄畻瑙勫垯锛歊 = Normal x Tangent
+        // 濡傛灉杈瑰湪闈腑鐨?Orientation 鏄?REVERSED锛屽垯 Tangent 闇€瑕佸弽鍚?
         gp_Vec tVec = tangent;
         TopAbs_Orientation edgeOri = TopAbs_FORWARD;
         
-        // 寻找边在面中的实际 Orientation
+        // 瀵绘壘杈瑰湪闈腑鐨勫疄闄?Orientation
         TopExp_Explorer exp(f, TopAbs_EDGE);
         for (; exp.More(); exp.Next()) {
             if (exp.Current().IsSame(edge)) {
@@ -455,7 +538,7 @@ int FeatureExtractor::IdentifyEdgeType(const TopoDS_Face& f1, const TopoDS_Face&
     gp_Vec r1;
     if (!getNormalAndRefVec(f1, e, mid, n1, r1)) return OTHER;
     
-    // 获取 f2 的法向 n2
+    // 鑾峰彇 f2 鐨勬硶鍚?n2
     BRepAdaptor_Surface sAtor2(f2);
     Standard_Real u2, v2;
     Handle(Geom2d_Curve) c2d2 = BRep_Tool::CurveOnSurface(e, f2, u2, v2);
@@ -466,14 +549,14 @@ int FeatureExtractor::IdentifyEdgeType(const TopoDS_Face& f1, const TopoDS_Face&
     n2 = props2.Normal();
     if (f2.Orientation() == TopAbs_REVERSED) n2.Reverse();
 
-    // 计算二面角点积
+    // 璁＄畻浜岄潰瑙掔偣绉?
     double dot = n1.Dot(n2);
     if (dot > 0.999) return SMOOTH;
 
-    // 凹凸性核心判断：
-    // 如果面 f2 的法向 n2 与面 f1 的向内向量 r1 的点积为正
-    // 说明 f2 向 f1 的“内部”偏转 -> 凹 (Concave)
-    // 反之 -> 凸 (Convex)
+    // 鍑瑰嚫鎬ф牳蹇冨垽鏂細
+    // 濡傛灉闈?f2 鐨勬硶鍚?n2 涓庨潰 f1 鐨勫悜鍐呭悜閲?r1 鐨勭偣绉负姝?
+    // 璇存槑 f2 鍚?f1 鐨勨€滃唴閮ㄢ€濆亸杞?-> 鍑?(Concave)
+    // 鍙嶄箣 -> 鍑?(Convex)
     double check = n2.Dot(r1);
     
     if (check > 1e-6) return CONCAVE;

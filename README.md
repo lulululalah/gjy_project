@@ -26,6 +26,10 @@ cd D:\projects\gjy_byproject
 D:\Anaconda\envs\cad_graph_env\python.exe .\python\train_rivet_gcn.py --csv data\plane_model\plane_model_face_train.csv --val-csv data\plane_model\plane_model_face_val.csv --training-mode window --window-hop 2 --epochs 150 --model-out rivet_gnn_no_centerz_split20_5.pth --stats-out rivet_gnn_no_centerz_split20_5_stats.npz --eval-out rivet_gnn_no_centerz_split20_5_eval.csv
 ```
 
+当前仓库只保留这一对 20/5 分割文件：
+- `data/plane_model/plane_model_face_train.csv`
+- `data/plane_model/plane_model_face_val.csv`
+
 3. 导出单模型推理数据
 
 ```powershell

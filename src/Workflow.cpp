@@ -26,6 +26,7 @@ namespace
         "neighborPlaneCount,neighborCylinderCount,neighborCurvedCount,convexEdgeCount,concaveEdgeCount,"
         "smoothEdgeCount,convexEdgeRatio,concaveEdgeRatio,neighbors,edge_types,edge_area_ratios,"
         "edge_neighbor_surface_types,shared_edge_lengths,label\n";
+    constexpr double kMaxRivetRelativeArea = 1.0e-4;
 
     bool IsStepFile(const fs::path &filePath)
     {
@@ -140,6 +141,28 @@ namespace
         }
 
         return true;
+    }
+
+    bool HasOversizedRivetLabel(
+        const std::vector<FaceFeature> &features,
+        const std::vector<int> &faceLabels,
+        int &faceId,
+        double &relativeArea)
+    {
+        for (const auto &feature : features)
+        {
+            if (feature.id < 1 || feature.id >= static_cast<int>(faceLabels.size()))
+            {
+                continue;
+            }
+            if (faceLabels[feature.id] == 1 && feature.relativeArea > kMaxRivetRelativeArea)
+            {
+                faceId = feature.id;
+                relativeArea = feature.relativeArea;
+                return true;
+            }
+        }
+        return false;
     }
 
     std::string EscapeJson(const std::string
@@ -436,6 +459,18 @@ int RunWingRivetTrainingExport(const std::string &inputDir, const std::string &o
         if (!BuildFaceLabelMap(labels, static_cast<int>(features.size()), faceLabels))
         {
             std::cout << ">>> Skip " << modelStem << ": face_id/label count mismatch." << std::endl;
+            skipped++;
+            continue;
+        }
+
+        int oversizedFaceId = -1;
+        double oversizedRelativeArea = 0.0;
+        if (HasOversizedRivetLabel(features, faceLabels, oversizedFaceId, oversizedRelativeArea))
+        {
+            std::cout << ">>> Skip " << modelStem
+                      << ": oversized rivet label face_id=" << oversizedFaceId
+                      << " relativeArea=" << oversizedRelativeArea
+                      << " limit=" << kMaxRivetRelativeArea << std::endl;
             skipped++;
             continue;
         }
