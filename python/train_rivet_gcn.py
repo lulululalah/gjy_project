@@ -14,9 +14,6 @@ from torch_geometric.nn import NNConv
 BASE_FEATURE_COLS = [
     "relativeArea",
     "compactness",
-    "nx",
-    "ny",
-    "nz",
     "meanCurvature",
     "radius",
     "numWires",
@@ -38,6 +35,19 @@ BASE_FEATURE_COLS = [
     "concaveEdgeRatio",
 ]
 
+RELATIVE_NORMAL_FEATURE_COLS = [
+    "normalNeighborDotMean",
+    "normalNeighborDotMin",
+    "normalNeighborDotMax",
+]
+
+ABSOLUTE_POSE_FEATURE_COLS = {
+    "centerZ",
+    "nx",
+    "ny",
+    "nz",
+}
+
 EDGE_ATTR_COLS = [
     "edge_types",
     "edge_area_ratios",
@@ -46,9 +56,9 @@ EDGE_ATTR_COLS = [
 ]
 
 DEFAULT_CSV = Path("data/wing_rivet_training_set.csv")
-DEFAULT_MODEL_PATH = Path("rivet_gnn_no_centerz_split20_5.pth")
-DEFAULT_STATS_PATH = Path("rivet_gnn_no_centerz_split20_5_stats.npz")
-DEFAULT_EVAL_PATH = Path("rivet_gnn_no_centerz_split20_5_eval.csv")
+DEFAULT_MODEL_PATH = Path("rivet_gnn_no_centerz_split19_5.pth")
+DEFAULT_STATS_PATH = Path("rivet_gnn_no_centerz_split19_5_stats.npz")
+DEFAULT_EVAL_PATH = Path("rivet_gnn_no_centerz_split19_5_eval.csv")
 
 RADIUS_COL = "radius"
 SURFACE_TYPE_COL = "surfaceType"
@@ -74,6 +84,7 @@ def infer_feature_columns(df):
             feature_cols.append(HAS_RADIUS_COL)
         else:
             feature_cols.append(col)
+    feature_cols.extend(RELATIVE_NORMAL_FEATURE_COLS)
     feature_cols.extend(f"{SURFACE_TYPE_COL}_{surface_type}" for surface_type in surface_types)
     return feature_cols
 
@@ -82,10 +93,14 @@ def build_feature_frame(df, feature_cols=None):
     if feature_cols is None:
         feature_cols = infer_feature_columns(df)
     feature_cols = [str(col) for col in feature_cols]
-    if SURFACE_TYPE_COL in feature_cols or HAS_RADIUS_COL not in feature_cols:
+    if (
+        SURFACE_TYPE_COL in feature_cols or
+        HAS_RADIUS_COL not in feature_cols or
+        any(col in ABSOLUTE_POSE_FEATURE_COLS for col in feature_cols)
+    ):
         raise ValueError(
             "Legacy feature schema detected in stats/model files. "
-            "Please retrain to regenerate feature_cols with one-hot surfaceType and has_radius."
+            "Please retrain to regenerate feature_cols without absolute pose features."
         )
 
     feature_df = pd.DataFrame(index=df.index)
@@ -98,6 +113,9 @@ def build_feature_frame(df, feature_cols=None):
             feature_df[HAS_RADIUS_COL] = (radius_values.abs() > 1e-9).astype(float)
         else:
             feature_df[col] = numeric_df[col].fillna(0.0).astype(float)
+
+    for col in RELATIVE_NORMAL_FEATURE_COLS:
+        feature_df[col] = numeric_df[col].fillna(0.0).astype(float)
 
     surface_type_values = numeric_df[SURFACE_TYPE_COL].fillna(0).astype(int)
     for col in feature_cols:
@@ -381,24 +399,8 @@ def load_explicit_train_val_datasets(
     return train_graphs, val_graphs, feature_mean, feature_std, edge_mean, edge_std, feature_cols
 
 
-def split_dataset(graphs, train_ratio=0.8, seed=42):
-    if len(graphs) < 2:
-        return graphs, graphs
-
-    rng = np.random.default_rng(seed)
-    indices = np.arange(len(graphs))
-    rng.shuffle(indices)
-
-    split_index = max(1, int(len(indices) * train_ratio))
-    split_index = min(split_index, len(indices) - 1)
-
-    train_graphs = [graphs[idx] for idx in indices[:split_index]]
-    val_graphs = [graphs[idx] for idx in indices[split_index:]]
-    return train_graphs, val_graphs
-
-
 class RivetGNN(torch.nn.Module):
-    def __init__(self, node_features, edge_features, hidden_dim, num_classes=3):
+    def __init__(self, node_features, edge_features, hidden_dim, num_classes=2):
         super().__init__()
 
         def create_nn(in_f, out_f):
@@ -568,27 +570,19 @@ def print_metric_table(metrics, summary):
 
 
 def train(args):
-    if args.val_csv is not None:
-        train_graphs, val_graphs, feature_mean, feature_std, edge_mean, edge_std, feature_cols = load_explicit_train_val_datasets(
-            args.csv,
-            args.val_csv,
-            training_mode=args.training_mode,
-            window_hop=args.window_hop,
-            background_ratio=args.background_ratio,
-            seed=args.seed,
-        )
-        graphs = train_graphs + val_graphs
-        split_description = f"explicit train={args.csv}, val={args.val_csv}"
-    else:
-        graphs, feature_mean, feature_std, edge_mean, edge_std, feature_cols = load_graph_dataset(
-            args.csv,
-            training_mode=args.training_mode,
-            window_hop=args.window_hop,
-            background_ratio=args.background_ratio,
-            seed=args.seed,
-        )
-        train_graphs, val_graphs = split_dataset(graphs, train_ratio=args.train_ratio, seed=args.seed)
-        split_description = f"random split from {args.csv}"
+    if args.val_csv is None:
+        raise ValueError("Explicit --val-csv is required. Random graph splits are not part of the main protocol.")
+
+    train_graphs, val_graphs, feature_mean, feature_std, edge_mean, edge_std, feature_cols = load_explicit_train_val_datasets(
+        args.csv,
+        args.val_csv,
+        training_mode=args.training_mode,
+        window_hop=args.window_hop,
+        background_ratio=args.background_ratio,
+        seed=args.seed,
+    )
+    graphs = train_graphs + val_graphs
+    split_description = f"explicit train={args.csv}, val={args.val_csv}"
 
     if not train_graphs or not val_graphs:
         raise ValueError("Training and validation datasets must both contain at least one graph/sample.")
@@ -689,7 +683,7 @@ def train(args):
 def parse_args():
     parser = argparse.ArgumentParser(description="Train RivetGNN using one STEP model per graph.")
     parser.add_argument("--csv", type=Path, default=DEFAULT_CSV, help=f"Training CSV path. Default: {DEFAULT_CSV}")
-    parser.add_argument("--val-csv", type=Path, default=None, help="Optional explicit validation CSV path. When set, --csv is used only for training.")
+    parser.add_argument("--val-csv", type=Path, required=True, help="Explicit validation CSV path. Random graph splits are disabled.")
     parser.add_argument("--model-out", type=Path, default=DEFAULT_MODEL_PATH, help=f"Model output path. Default: {DEFAULT_MODEL_PATH}")
     parser.add_argument("--stats-out", type=Path, default=DEFAULT_STATS_PATH, help=f"Normalization stats output. Default: {DEFAULT_STATS_PATH}")
     parser.add_argument("--eval-out", type=Path, default=DEFAULT_EVAL_PATH, help=f"Evaluation CSV output. Default: {DEFAULT_EVAL_PATH}")
@@ -697,7 +691,6 @@ def parse_args():
     parser.add_argument("--batch-size", type=int, default=8, help="Graphs per batch. Default: 8")
     parser.add_argument("--hidden-dim", type=int, default=64, help="Hidden dimension. Default: 64")
     parser.add_argument("--lr", type=float, default=0.005, help="Learning rate. Default: 0.005")
-    parser.add_argument("--train-ratio", type=float, default=0.8, help="Train split ratio. Default: 0.8")
     parser.add_argument("--seed", type=int, default=42, help="Random seed. Default: 42")
     parser.add_argument("--training-mode", choices=["full", "window"], default="full", help="Use full-graph or k-hop window samples. Default: full")
     parser.add_argument("--window-hop", type=int, default=2, help="k-hop radius for window training. Default: 2")

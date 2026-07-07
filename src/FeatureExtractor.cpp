@@ -408,8 +408,13 @@ void FeatureExtractor::ComputeGeometricAttributes(const TopTools_IndexedMapOfSha
 
     for (auto& feature : myResults) {
         double neighborAreaSum = 0.0;
+        double normalDotSum = 0.0;
         int validNeighborCount = 0;
+        int validNormalDotCount = 0;
         feature.neighborAreaMax = 0.0;
+        feature.normalNeighborDotMean = 0.0;
+        feature.normalNeighborDotMin = 0.0;
+        feature.normalNeighborDotMax = 0.0;
         feature.neighborPlaneCount = 0;
         feature.neighborCylinderCount = 0;
         feature.neighborCurvedCount = 0;
@@ -423,6 +428,22 @@ void FeatureExtractor::ComputeGeometricAttributes(const TopTools_IndexedMapOfSha
             neighborAreaSum += neighbor.area;
             feature.neighborAreaMax = std::max(feature.neighborAreaMax, neighbor.area);
             validNeighborCount++;
+
+            const double normalDot = std::abs(
+                feature.normalX * neighbor.normalX +
+                feature.normalY * neighbor.normalY +
+                feature.normalZ * neighbor.normalZ
+            );
+            const double clampedNormalDot = std::clamp(normalDot, 0.0, 1.0);
+            normalDotSum += clampedNormalDot;
+            if (validNormalDotCount == 0) {
+                feature.normalNeighborDotMin = clampedNormalDot;
+                feature.normalNeighborDotMax = clampedNormalDot;
+            } else {
+                feature.normalNeighborDotMin = std::min(feature.normalNeighborDotMin, clampedNormalDot);
+                feature.normalNeighborDotMax = std::max(feature.normalNeighborDotMax, clampedNormalDot);
+            }
+            validNormalDotCount++;
 
             if (neighbor.surfaceType == GeomAbs_Plane) {
                 feature.neighborPlaneCount++;
@@ -440,6 +461,9 @@ void FeatureExtractor::ComputeGeometricAttributes(const TopTools_IndexedMapOfSha
                 feature.neighborAreaMean > 1.0e-12 ? feature.area / feature.neighborAreaMean : 0.0;
             feature.areaToNeighborMax =
                 feature.neighborAreaMax > 1.0e-12 ? feature.area / feature.neighborAreaMax : 0.0;
+        }
+        if (validNormalDotCount > 0) {
+            feature.normalNeighborDotMean = normalDotSum / static_cast<double>(validNormalDotCount);
         }
 
         const int typedEdgeCount = feature.convexEdgeCount + feature.concaveEdgeCount + feature.smoothEdgeCount;

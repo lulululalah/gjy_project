@@ -20,9 +20,10 @@ namespace fs = std::filesystem;
 namespace
 {
     constexpr const char *kFaceCsvHeader =
-        "graph_id,model_name,id,area,relativeArea,perimeter,compactness,surfaceType,nx,ny,nz,"
-        "centerZ,meanCurvature,radius,numWires,innerWireCount,minInnerWireLength,maxInnerWireLength,"
+        "graph_id,model_name,id,area,relativeArea,perimeter,compactness,surfaceType,"
+        "meanCurvature,radius,numWires,innerWireCount,minInnerWireLength,maxInnerWireLength,"
         "numEdges,neighborAreaMean,neighborAreaMax,areaToNeighborMean,areaToNeighborMax,"
+        "normalNeighborDotMean,normalNeighborDotMin,normalNeighborDotMax,"
         "neighborPlaneCount,neighborCylinderCount,neighborCurvedCount,convexEdgeCount,concaveEdgeCount,"
         "smoothEdgeCount,convexEdgeRatio,concaveEdgeRatio,neighbors,edge_types,edge_area_ratios,"
         "edge_neighbor_surface_types,shared_edge_lengths,label\n";
@@ -252,12 +253,13 @@ namespace
     {
         dataFile << graphId << ",\"" << modelName << "\"," << feature.id << "," << feature.area << ","
                  << feature.relativeArea << "," << feature.perimeter << "," << feature.compactness << ","
-                 << feature.surfaceType << "," << feature.normalX << "," << feature.normalY << ","
-                 << feature.normalZ << "," << feature.centerZ << "," << feature.meanCurvature << ","
+                 << feature.surfaceType << "," << feature.meanCurvature << ","
                  << feature.radius << "," << feature.numWires << "," << feature.innerWireCount << ","
                  << feature.minInnerWireLength << "," << feature.maxInnerWireLength << "," << feature.numEdges << ","
                  << feature.neighborAreaMean << "," << feature.neighborAreaMax << ","
                  << feature.areaToNeighborMean << "," << feature.areaToNeighborMax << ","
+                 << feature.normalNeighborDotMean << "," << feature.normalNeighborDotMin << ","
+                 << feature.normalNeighborDotMax << ","
                  << feature.neighborPlaneCount << "," << feature.neighborCylinderCount << ","
                  << feature.neighborCurvedCount << "," << feature.convexEdgeCount << ","
                  << feature.concaveEdgeCount << "," << feature.smoothEdgeCount << ","

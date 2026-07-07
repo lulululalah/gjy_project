@@ -7,8 +7,8 @@ from pathlib import Path
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
 DEFAULT_INFERENCE_CSV = PROJECT_ROOT / "data" / "current_inference.csv"
 DEFAULT_DETECTOR = PROJECT_ROOT / "build" / "Debug" / "Detector.exe"
-DEFAULT_MODEL_PATH = PROJECT_ROOT / "rivet_gnn_no_centerz_split20_5.pth"
-DEFAULT_STATS_PATH = PROJECT_ROOT / "rivet_gnn_no_centerz_split20_5_stats.npz"
+DEFAULT_MODEL_PATH = PROJECT_ROOT / "rivet_gnn_no_centerz_split19_5.pth"
+DEFAULT_STATS_PATH = PROJECT_ROOT / "rivet_gnn_no_centerz_split19_5_stats.npz"
 def load_truth_labels(labels_path):
     import json
 
@@ -56,7 +56,7 @@ def run_inference(csv_path, model_path, stats_path, hidden_dim, inference_mode="
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     state_dict = torch.load(model_path, map_location=device)
     classifier_weight = state_dict.get("classifier.weight")
-    num_classes = int(classifier_weight.shape[0]) if classifier_weight is not None else 3
+    num_classes = int(classifier_weight.shape[0]) if classifier_weight is not None else 2
     model = RivetGNN(
         node_features=data.num_node_features,
         edge_features=data.edge_attr.size(1),
@@ -104,32 +104,6 @@ def read_predictions_csv(prediction_path):
                 pred_labels.append(0)
             pred_labels[face_id - 1] = int(row["pred_label"])
     return pred_labels
-
-
-def suppress_large_positive_faces(csv_path, pred_labels, max_relative_area):
-    if max_relative_area is None or max_relative_area <= 0:
-        return pred_labels
-
-    filtered_labels = list(pred_labels)
-    suppressed_count = 0
-
-    with Path(csv_path).open("r", newline="", encoding="utf-8") as csv_file:
-        for row in csv.DictReader(csv_file):
-            face_idx = int(row["id"]) - 1
-            if face_idx < 0 or face_idx >= len(filtered_labels):
-                continue
-
-            if filtered_labels[face_idx] == 1 and float(row["relativeArea"]) > max_relative_area:
-                filtered_labels[face_idx] = 0
-                suppressed_count += 1
-
-    if suppressed_count:
-        print(
-            "Suppressed large positive faces: "
-            f"{suppressed_count} (relativeArea > {max_relative_area:g})"
-        )
-
-    return filtered_labels
 
 
 def visualize_cad_results(
@@ -260,7 +234,6 @@ def parse_args():
     parser.add_argument("--inference-mode", choices=["full", "window"], default="full", help="Run full-graph inference or per-face k-hop window inference. Default: full")
     parser.add_argument("--window-hop", type=int, default=2, help="k-hop radius for window inference. Default: 2")
     parser.add_argument("--inference-batch-size", type=int, default=128, help="Window inference batch size. Default: 128")
-    parser.add_argument("--max-rivet-relative-area", type=float, default=1e-4, help="Suppress predicted rivet faces larger than this relative area. Use <=0 to disable. Default: 1e-4")
     return parser.parse_args()
 
 
@@ -284,7 +257,6 @@ def main():
             inference_batch_size=args.inference_batch_size,
         )
         print("Inference finished.")
-        predicted_labels = suppress_large_positive_faces(args.csv, predicted_labels, args.max_rivet_relative_area)
 
     if args.pred_out:
         write_predictions_csv(args.pred_out, predicted_labels)

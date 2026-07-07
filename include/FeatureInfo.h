@@ -43,6 +43,9 @@ struct FaceFeature
     double neighborAreaMax = 0.0;
     double areaToNeighborMean = 0.0;
     double areaToNeighborMax = 0.0;
+    double normalNeighborDotMean = 0.0;
+    double normalNeighborDotMin = 0.0;
+    double normalNeighborDotMax = 0.0;
     int neighborPlaneCount = 0;
     int neighborCylinderCount = 0;
     int neighborCurvedCount = 0;
