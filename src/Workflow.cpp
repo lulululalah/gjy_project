@@ -104,7 +104,7 @@ namespace
 
     int SemanticToTrainingLabel(const std::string &semantic)
     {
-        if (semantic == "rivet")
+        if (semantic == "rivet" || semantic == "decal")
         {
             return 1;
         }

@@ -2,6 +2,7 @@
 #include "Workflow.h"
 
 #include <filesystem>
+#include <exception>
 #include <iostream>
 #include <string>
 
@@ -35,6 +36,7 @@ namespace
             << "  Detector.exe --dump-faces <file>\n"
             << "  Detector.exe --check-face-id <file>\n"
             << "  Detector.exe --inject-wing-rivets <file>\n"
+            << "  Detector.exe --inject-star-decals <after-rivet-file> [--host-face <id>]\n"
             << "  Detector.exe --inject-wing-rivets-batch <dir>\n"
             << "  Detector.exe --validate-wing-rivet-dataset <dir>\n"
             << "  Detector.exe --export-wing-rivet-training <dir>\n";
@@ -75,6 +77,23 @@ int main(int argc, char *argv[])
     {
         const std::string filePath = argv[2];
         return RunWingRivetInjection(filePath);
+    }
+    else if (mode == "--inject-star-decals" && argc >= 3)
+    {
+        const std::string filePath = argv[2];
+        if (argc == 3) {
+            return RunStarDecalInjection(filePath);
+        }
+        if (argc == 5 && std::string(argv[3]) == "--host-face") {
+            try {
+                return RunStarDecalInjection(filePath, std::stoi(argv[4]));
+            } catch (const std::exception&) {
+                std::cout << "Invalid host face ID: " << argv[4] << std::endl;
+                return 1;
+            }
+        }
+        std::cout << "Expected optional argument: --host-face <id>" << std::endl;
+        return 1;
     }
     else if (mode == "--inject-wing-rivets-batch" && argc >= 3)
     {

@@ -22,7 +22,7 @@ set(OCC_LIBS
     TKernel TKMath 
     TKG2d TKG3d TKBRep 
     TKGeomBase TKGeomAlgo 
-    TKTopAlgo TKPrim TKBO TKShHealing
+    TKTopAlgo TKPrim TKBO TKShHealing TKFeat
     TKSTEP TKSTEPBase TKSTEPAttr TKXSBase TKLCAF
 )
 

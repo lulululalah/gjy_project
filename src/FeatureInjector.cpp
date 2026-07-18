@@ -6,6 +6,7 @@
 #include <BRepBndLib.hxx>
 #include <BRepBuilderAPI_MakeFace.hxx>
 #include <BRepBuilderAPI_MakePolygon.hxx>
+#include <BRepFeat_SplitShape.hxx>
 #include <BRep_Builder.hxx>
 #include <BRep_Tool.hxx>
 #include <BRepCheck_Analyzer.hxx>
@@ -44,6 +45,7 @@
 #include <fstream>
 #include <iomanip>
 #include <iostream>
+#include <limits>
 #include <map>
 #include <regex>
 #include <set>
@@ -365,8 +367,10 @@ bool ValidateLabelFaceIds(const LabelsData& labels, int faceCount) {
 bool ValidateRivetLabels(const LabelsData& labels) {
     std::set<int> instanceIds;
     for (const auto& instance : labels.instances) {
-        if (instance.instanceId <= 0 || instance.type != "rivet" ||
-            instance.hostFaceId <= 0 || instance.radius <= 0.0 || instance.height <= 0.0) {
+        const bool isRivet = instance.type == "rivet" && instance.height > 0.0;
+        const bool isDecal = instance.type == "decal" && instance.height == 0.0;
+        if (instance.instanceId <= 0 || (!isRivet && !isDecal) ||
+            instance.hostFaceId <= 0 || instance.radius <= 0.0) {
             return false;
         }
         instanceIds.insert(instance.instanceId);
@@ -375,6 +379,11 @@ bool ValidateRivetLabels(const LabelsData& labels) {
     for (const auto& face : labels.faces) {
         if (face.semantic == "rivet") {
             if (face.instanceId <= 0 || face.operation != "remove_protrusion" ||
+                instanceIds.find(face.instanceId) == instanceIds.end()) {
+                return false;
+            }
+        } else if (face.semantic == "decal") {
+            if (face.instanceId <= 0 || face.operation != "remove_decal_boundary" ||
                 instanceIds.find(face.instanceId) == instanceIds.end()) {
                 return false;
             }
@@ -991,6 +1000,81 @@ TopoDS_Shape GetSolidByIndex(const TopoDS_Shape& shape, int solidIndex) {
     return solidMap.FindKey(solidIndex);
 }
 
+bool IsDecalHostSurface(const FaceFeature& feature) {
+    if (feature.area < 2.0) {
+        return false;
+    }
+    return feature.surfaceType == GeomAbs_BSplineSurface ||
+           feature.surfaceType == GeomAbs_Cylinder ||
+           feature.surfaceType == GeomAbs_Plane;
+}
+
+double ComputeDecalHostScore(const FaceFeature& feature) {
+    const double surfacePreference =
+        feature.surfaceType == GeomAbs_BSplineSurface ? 5.0 :
+        feature.surfaceType == GeomAbs_Cylinder ? 4.0 :
+        1.0;
+    const bool isTypicalWingSkin =
+        std::abs(feature.normalY) >= 0.75 && std::abs(feature.centerZ) >= 1.5;
+    const double nonWingPreference = isTypicalWingSkin ? 0.02 : 1.0;
+    return feature.area * surfacePreference * nonWingPreference;
+}
+
+std::vector<WingHostFace> SelectDecalHostFaces(const TopoDS_Shape& shape) {
+    const auto features = ExtractFeatures(shape);
+    std::vector<WingHostFace> hostFaces;
+    int smoothFaceCount = 0;
+    int solidOwnedFaceCount = 0;
+    for (const auto& feature : features) {
+        if (!IsDecalHostSurface(feature)) {
+            continue;
+        }
+        smoothFaceCount++;
+        const int solidIndex = FindOwningSolidIndex(shape, feature.id);
+        const TopoDS_Shape ownerSolid = GetSolidByIndex(shape, solidIndex);
+        if (ownerSolid.IsNull() || !IsShapeValid(ownerSolid)) {
+            continue;
+        }
+        solidOwnedFaceCount++;
+        hostFaces.push_back({feature.id, ComputeDecalHostScore(feature), feature});
+    }
+    std::sort(hostFaces.begin(), hostFaces.end(),
+              [](const WingHostFace& lhs, const WingHostFace& rhs) {
+                  return lhs.score > rhs.score;
+              });
+    if (hostFaces.size() > 12) {
+        hostFaces.resize(12);
+    }
+    std::cout << ">>> Decal host candidates: smooth=" << smoothFaceCount
+              << " solid_owned=" << solidOwnedFaceCount << std::endl;
+    return hostFaces;
+}
+
+bool BuildManualDecalHostFace(
+    const TopoDS_Shape& shape,
+    int faceId,
+    WingHostFace& hostFace
+) {
+    const auto features = ExtractFeatures(shape);
+    if (faceId <= 0 || faceId > static_cast<int>(features.size())) {
+        std::cout << ">>> Selected host face ID is outside the model range: " << faceId << std::endl;
+        return false;
+    }
+    const FaceFeature& feature = features[static_cast<size_t>(faceId - 1)];
+    if (!IsDecalHostSurface(feature)) {
+        std::cout << ">>> Selected host face is not a supported smooth surface: " << faceId << std::endl;
+        return false;
+    }
+    const int solidIndex = FindOwningSolidIndex(shape, faceId);
+    const TopoDS_Shape ownerSolid = GetSolidByIndex(shape, solidIndex);
+    if (ownerSolid.IsNull() || !IsShapeValid(ownerSolid)) {
+        std::cout << ">>> Selected host face is not owned by a valid solid: " << faceId << std::endl;
+        return false;
+    }
+    hostFace = {faceId, ComputeDecalHostScore(feature), feature};
+    return true;
+}
+
 InjectionTarget BuildInjectionTarget(
     const TopoDS_Shape& originalShape,
     const std::vector<WingHostFace>& hostFaces
@@ -1344,6 +1428,150 @@ std::vector<RivetPlacement> BuildWingRivetPlacements(
     return placements;
 }
 
+bool BuildStarDecalWire(
+    const TopoDS_Face& hostFace,
+    double centerU,
+    double centerV,
+    double outerRadius,
+    TopoDS_Wire& starWire
+) {
+    constexpr double kPi = 3.14159265358979323846;
+    BRepBuilderAPI_MakePolygon polygon;
+    for (int vertexIndex = 0; vertexIndex < 10; ++vertexIndex) {
+        const double radius = vertexIndex % 2 == 0 ? outerRadius : outerRadius * 0.42;
+        const double angle = kPi * 0.5 + vertexIndex * kPi / 5.0;
+        const double u = centerU + std::cos(angle) * radius;
+        const double v = centerV + std::sin(angle) * radius;
+        if (!IsUvInsideFace(hostFace, u, v)) {
+            return false;
+        }
+
+        gp_Pnt point;
+        gp_Dir normal;
+        if (!EvaluateFacePointAndNormal(hostFace, u, v, point, normal)) {
+            return false;
+        }
+        polygon.Add(point);
+    }
+    polygon.Close();
+    if (!polygon.IsDone()) {
+        return false;
+    }
+    starWire = polygon.Wire();
+    return !starWire.IsNull();
+}
+
+bool SplitFaceWithStarDecal(
+    const TopoDS_Shape& shape,
+    const TopoDS_Face& hostFace,
+    TopoDS_Shape& result,
+    TopoDS_Shape& decalFace
+) {
+    double uMin = 0.0;
+    double uMax = 0.0;
+    double vMin = 0.0;
+    double vMax = 0.0;
+    BRepTools::UVBounds(hostFace, uMin, uMax, vMin, vMax);
+    const double uvScale = std::min(uMax - uMin, vMax - vMin);
+    if (uvScale <= Precision::PConfusion()) {
+        return false;
+    }
+
+    const std::vector<gp_Pnt2d> centers = {
+        {uMin + (uMax - uMin) * 0.50, vMin + (vMax - vMin) * 0.50},
+        {uMin + (uMax - uMin) * 0.64, vMin + (vMax - vMin) * 0.40},
+        {uMin + (uMax - uMin) * 0.46, vMin + (vMax - vMin) * 0.58},
+        {uMin + (uMax - uMin) * 0.30, vMin + (vMax - vMin) * 0.42},
+    };
+    for (const double radiusScale : {0.440, 0.350, 0.300, 0.220, 0.160, 0.120, 0.085, 0.055, 0.025, 0.010}) {
+        for (const auto& center : centers) {
+            TopoDS_Wire starWire;
+            if (!BuildStarDecalWire(hostFace, center.X(), center.Y(), uvScale * radiusScale, starWire)) {
+                continue;
+            }
+
+            BRepFeat_SplitShape split(shape);
+            split.Add(starWire, hostFace);
+            split.Build();
+            if (!split.IsDone() || split.Shape().IsNull() || !IsShapeValid(split.Shape())) {
+                continue;
+            }
+            result = split.Shape();
+            const auto splitFeatures = ExtractFeatures(result);
+            TopTools_IndexedMapOfShape faceMap;
+            TopExp::MapShapes(result, TopAbs_FACE, faceMap);
+            double smallestArea = std::numeric_limits<double>::infinity();
+            for (TopTools_ListIteratorOfListOfShape it(split.Modified(hostFace)); it.More(); it.Next()) {
+                if (it.Value().ShapeType() != TopAbs_FACE) {
+                    continue;
+                }
+                const int faceId = faceMap.FindIndex(it.Value());
+                if (faceId <= 0 || faceId > static_cast<int>(splitFeatures.size())) {
+                    continue;
+                }
+                const double area = splitFeatures[static_cast<size_t>(faceId - 1)].area;
+                if (area < smallestArea) {
+                    smallestArea = area;
+                    decalFace = it.Value();
+                }
+            }
+            if (decalFace.IsNull()) {
+                continue;
+            }
+            std::cout << ">>> Star decal radius scale: " << radiusScale << std::endl;
+            return true;
+        }
+    }
+    return false;
+}
+
+bool AddStarDecalToFuselageOrTail(
+    TopoDS_Shape& shape,
+    int startingInstanceId,
+    std::vector<std::pair<int, std::vector<TopoDS_Shape>>>& decalFacesByInstance,
+    std::vector<LabelsInstanceEntry>& labelInstances,
+    int manualHostFaceId
+) {
+    std::vector<WingHostFace> hostFaces;
+    if (manualHostFaceId > 0) {
+        WingHostFace manualHost;
+        if (!BuildManualDecalHostFace(shape, manualHostFaceId, manualHost)) {
+            return false;
+        }
+        hostFaces.push_back(manualHost);
+        std::cout << ">>> Using manually selected star decal host face: " << manualHostFaceId << std::endl;
+    } else {
+        hostFaces = SelectDecalHostFaces(shape);
+    }
+    for (const auto& hostFaceInfo : hostFaces) {
+        const TopoDS_Face hostFace = GetFaceById(shape, hostFaceInfo.faceId);
+        if (hostFace.IsNull()) {
+            continue;
+        }
+
+        TopoDS_Shape splitShape;
+        TopoDS_Shape decalFace;
+        if (!SplitFaceWithStarDecal(shape, hostFace, splitShape, decalFace)) {
+            std::cout << ">>> Could not place a star decal on candidate face "
+                      << hostFaceInfo.faceId << std::endl;
+            continue;
+        }
+        shape = splitShape;
+        decalFacesByInstance.push_back({startingInstanceId, {decalFace}});
+        labelInstances.push_back({
+            startingInstanceId,
+            "decal",
+            hostFaceInfo.faceId,
+            1.0,
+            0.0,
+        });
+        std::cout << ">>> Star decal host face: " << hostFaceInfo.faceId
+                  << " (fuselage/tail candidate)" << std::endl;
+        return true;
+    }
+    return false;
+}
+
 TopoDS_Shape MakeRoundRivetSolid(const RivetPlacement& placement) {
     const double embedDepth = std::max(placement.radius * 0.35, 0.01);
     gp_Vec normalVec(placement.normal);
@@ -1490,7 +1718,9 @@ void WriteLabelsJson(
         jsonFile << "    {\"instance_id\": " << instance.instanceId
                  << ", \"type\": \"" << instance.type
                  << "\", \"host_face\": " << instance.hostFaceId
-                 << ", \"inverse_op\": {\"kind\": \"remove_protrusion\", \"radius\": "
+                 << ", \"inverse_op\": {\"kind\": \""
+                 << (instance.type == "decal" ? "remove_decal_boundary" : "remove_protrusion")
+                 << "\", \"radius\": "
                  << instance.radius << ", \"height\": " << instance.height << "}}";
         if (index + 1 != instances.size()) {
             jsonFile << ",";
@@ -1701,7 +1931,7 @@ int RunWingRivetInjectionImpl(
         }
     }
 
-    const auto rivetSignatures = BuildRivetFaceSignatures(finalOutputShape, rivetFacesByInstance);
+    auto rivetSignatures = BuildRivetFaceSignatures(finalOutputShape, rivetFacesByInstance);
     if (rivetSignatures.empty()) {
         std::cout << ">>> Failed to collect rivet face signatures before STEP export." << std::endl;
         return 1;
@@ -1755,9 +1985,16 @@ int RunWingRivetInjectionImpl(
     for (const auto& [instanceId, finalFaceIds] : matchedRivetFaceIdsByInstance) {
         for (const int finalFaceId : finalFaceIds) {
             auto& entry = faceEntries[static_cast<size_t>(finalFaceId - 1)];
-            entry.semantic = "rivet";
+            const auto instanceIt = std::find_if(
+                labelInstances.begin(), labelInstances.end(),
+                [instanceId](const LabelsInstanceEntry& instance) {
+                    return instance.instanceId == instanceId;
+                }
+            );
+            const bool isDecal = instanceIt != labelInstances.end() && instanceIt->type == "decal";
+            entry.semantic = isDecal ? "decal" : "rivet";
             entry.instanceId = instanceId;
-            entry.operation = "remove_protrusion";
+            entry.operation = isDecal ? "remove_decal_boundary" : "remove_protrusion";
         }
     }
 
@@ -1804,6 +2041,123 @@ int RunWingRivetInjection(const std::string& inputFile) {
         BuildOutputStepPath(inputFile, outputStepDir),
         BuildOutputLabelsPath(inputFile, outputLabelsDir)
     );
+}
+
+int RunStarDecalInjection(const std::string& inputFile, int hostFaceId) {
+    const fs::path inputPath = fs::absolute(fs::path(inputFile));
+    const fs::path planeModelDir = fs::current_path() / "data" / "plane_model";
+    const fs::path expectedInputDir = planeModelDir / "after_rivet";
+    const fs::path outputDir = planeModelDir / "after_two";
+    if (inputPath.parent_path().lexically_normal() != expectedInputDir.lexically_normal()) {
+        std::cout << ">>> Star decals only accept models from: " << expectedInputDir << std::endl;
+        return 1;
+    }
+
+    const fs::path inputLabelsFile = planeModelDir / "label" /
+        (inputPath.stem().string() + ".labels.json");
+    LabelsData inputLabels;
+    if (!ParseLabelsJson(inputLabelsFile, inputLabels) || !ValidateRivetLabels(inputLabels)) {
+        std::cout << ">>> Could not load valid rivet labels: " << inputLabelsFile << std::endl;
+        return 1;
+    }
+
+    TopoDS_Shape inputShape;
+    if (!LoadShapeFromStep(inputFile, inputShape)) {
+        std::cout << ">>> Failed to load rivet-injected STEP model." << std::endl;
+        return 1;
+    }
+    const auto inputFeatures = ExtractFeatures(inputShape);
+    if (!ValidateLabelFaceIds(inputLabels, static_cast<int>(inputFeatures.size()))) {
+        std::cout << ">>> Input STEP and label face IDs are inconsistent." << std::endl;
+        return 1;
+    }
+
+    std::vector<std::pair<int, std::vector<TopoDS_Shape>>> rivetFacesByInstance;
+    for (const auto& face : inputLabels.faces) {
+        if (face.semantic == "rivet") {
+            rivetFacesByInstance.push_back({face.instanceId, {GetFaceById(inputShape, face.faceId)}});
+        }
+    }
+    const auto rivetSignatures = BuildRivetFaceSignatures(inputShape, rivetFacesByInstance);
+    if (rivetSignatures.empty()) {
+        std::cout << ">>> Could not recover rivet faces from input labels." << std::endl;
+        return 1;
+    }
+
+    int nextInstanceId = 1;
+    for (const auto& instance : inputLabels.instances) {
+        nextInstanceId = std::max(nextInstanceId, instance.instanceId + 1);
+    }
+    TopoDS_Shape outputShape = inputShape;
+    std::vector<std::pair<int, std::vector<TopoDS_Shape>>> decalFacesByInstance;
+    std::vector<LabelsInstanceEntry> outputInstances = inputLabels.instances;
+    if (!AddStarDecalToFuselageOrTail(
+            outputShape,
+            nextInstanceId,
+            decalFacesByInstance,
+            outputInstances,
+            hostFaceId
+        )) {
+        std::cout << ">>> Failed to add star decals." << std::endl;
+        return 1;
+    }
+
+    const auto decalSignatures = BuildRivetFaceSignatures(outputShape, decalFacesByInstance);
+    if (decalSignatures.empty()) {
+        std::cout << ">>> Failed to recover star decal faces before STEP export." << std::endl;
+        return 1;
+    }
+
+    fs::create_directories(outputDir);
+    const std::string outputStem = inputPath.stem().string() + "_decals";
+    const fs::path outputStepFile = outputDir / (outputStem + ".step");
+    const fs::path outputLabelsFile = outputDir / (outputStem + ".labels.json");
+    if (!SaveShapeToStep(outputShape, outputStepFile.string())) {
+        std::cout << ">>> Failed to export STEP with star decals." << std::endl;
+        return 1;
+    }
+
+    TopoDS_Shape reloadedShape;
+    if (!LoadShapeFromStep(outputStepFile.string(), reloadedShape)) {
+        std::cout << ">>> Failed to reload STEP with star decals." << std::endl;
+        return 1;
+    }
+    const auto outputFeatures = ExtractFeatures(reloadedShape);
+    auto matchedFaces = MatchRivetFacesAfterReload(rivetSignatures, outputFeatures);
+    const auto matchedDecalFaces = MatchRivetFacesAfterReload(decalSignatures, outputFeatures);
+    for (const auto& [instanceId, faceIds] : matchedDecalFaces) {
+        matchedFaces[instanceId] = faceIds;
+    }
+
+    std::vector<LabelsFaceEntry> outputFaces;
+    outputFaces.reserve(outputFeatures.size());
+    for (const auto& feature : outputFeatures) {
+        outputFaces.push_back({feature.id, "background", -1, "keep"});
+    }
+    for (const auto& [instanceId, faceIds] : matchedFaces) {
+        const auto instanceIt = std::find_if(
+            outputInstances.begin(), outputInstances.end(),
+            [instanceId](const LabelsInstanceEntry& instance) { return instance.instanceId == instanceId; }
+        );
+        if (instanceIt == outputInstances.end() || faceIds.empty()) {
+            continue;
+        }
+        const bool isDecal = instanceIt->type == "decal";
+        for (const int faceId : faceIds) {
+            auto& face = outputFaces[static_cast<size_t>(faceId - 1)];
+            face.semantic = isDecal ? "decal" : "rivet";
+            face.instanceId = instanceId;
+            face.operation = isDecal ? "remove_decal_boundary" : "remove_protrusion";
+        }
+    }
+    if (!ValidateRivetLabels({outputFaces, outputInstances})) {
+        std::cout << ">>> Generated decal labels are invalid." << std::endl;
+        return 1;
+    }
+    WriteLabelsJson(inputFile, outputStepFile.string(), outputLabelsFile.string(), outputFaces, outputInstances);
+    std::cout << ">>> Output STEP: " << outputStepFile << std::endl;
+    std::cout << ">>> Output labels: " << outputLabelsFile << std::endl;
+    return 0;
 }
 
 int RunBatchWingRivetInjection(const std::string& inputDir) {
