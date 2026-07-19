@@ -1461,11 +1461,110 @@ bool BuildStarDecalWire(
     return !starWire.IsNull();
 }
 
+bool BuildDecalWireFromUvPolygon(
+    const TopoDS_Face& hostFace,
+    const std::vector<gp_Pnt2d>& uvPoints,
+    TopoDS_Wire& wire
+) {
+    BRepBuilderAPI_MakePolygon polygon;
+    for (const auto& uvPoint : uvPoints) {
+        if (!IsUvInsideFace(hostFace, uvPoint.X(), uvPoint.Y())) {
+            return false;
+        }
+        gp_Pnt point;
+        gp_Dir normal;
+        if (!EvaluateFacePointAndNormal(hostFace, uvPoint.X(), uvPoint.Y(), point, normal)) {
+            return false;
+        }
+        polygon.Add(point);
+    }
+    polygon.Close();
+    if (!polygon.IsDone()) {
+        return false;
+    }
+    wire = polygon.Wire();
+    return !wire.IsNull();
+}
+
+bool AddTextDecalBySplittingHost(
+    TopoDS_Shape& shape,
+    int startingInstanceId,
+    std::vector<std::pair<int, std::vector<TopoDS_Shape>>>& decalFacesByInstance,
+    std::vector<LabelsInstanceEntry>& labelInstances,
+    int manualHostFaceId,
+    int textStyle,
+    bool rotateText180
+) {
+    WingHostFace hostInfo;
+    if (manualHostFaceId <= 0 || !BuildManualDecalHostFace(shape, manualHostFaceId, hostInfo)) {
+        return false;
+    }
+    const TopoDS_Face hostFace = GetFaceById(shape, hostInfo.faceId);
+    double uMin = 0.0, uMax = 0.0, vMin = 0.0, vMax = 0.0;
+    BRepTools::UVBounds(hostFace, uMin, uMax, vMin, vMax);
+    const double scale = std::min(uMax - uMin, vMax - vMin) * 0.18;
+    const double baseU = (uMin + uMax) * 0.5 - scale * 1.45;
+    const double baseV = (vMin + vMax) * 0.5 - scale * 0.5;
+    const double textWidth = textStyle == 1 ? 2.38 : 1.82;
+    const auto point = [=](double x, double y) {
+        if (rotateText180) {
+            x = textWidth - x;
+            y = 1.0 - y;
+        }
+        return gp_Pnt2d(baseU + x * scale, baseV + y * scale);
+    };
+    std::vector<std::vector<gp_Pnt2d>> glyphs = {
+        {point(0.00, 1.00), point(0.18, 1.00), point(0.40, 0.25), point(0.62, 1.00), point(0.80, 1.00), point(0.40, 0.00)},
+        {point(1.00, 0.00), point(1.38, 0.00), point(1.38, 1.00), point(1.20, 1.00), point(0.98, 0.82), point(0.98, 0.63), point(1.16, 0.76), point(1.16, 0.18), point(1.00, 0.18)},
+        {point(1.58, 1.00), point(2.27, 1.00), point(2.38, 0.88), point(2.38, 0.60), point(2.23, 0.50), point(2.38, 0.40), point(2.38, 0.12), point(2.27, 0.00), point(1.58, 0.00), point(1.58, 0.18), point(2.17, 0.18), point(2.17, 0.39), point(1.98, 0.47), point(1.75, 0.47), point(1.75, 0.55), point(1.98, 0.55), point(2.17, 0.63), point(2.17, 0.82), point(1.58, 0.82)}
+    };
+    if (textStyle == 2) {
+        glyphs = {
+            glyphs[0],
+            {point(1.00, 1.00), point(1.70, 1.00), point(1.82, 0.88), point(1.82, 0.65), point(1.12, 0.18), point(1.82, 0.18), point(1.82, 0.00), point(0.92, 0.00), point(0.92, 0.18), point(1.62, 0.68), point(1.62, 0.82), point(1.00, 0.82)}
+        };
+    } else if (textStyle == 3) {
+        glyphs = {
+            glyphs[0],
+            {point(1.00, 1.00), point(1.69, 1.00), point(1.80, 0.88), point(1.80, 0.60), point(1.65, 0.50), point(1.80, 0.40), point(1.80, 0.12), point(1.69, 0.00), point(1.00, 0.00), point(1.00, 0.18), point(1.59, 0.18), point(1.59, 0.39), point(1.40, 0.47), point(1.17, 0.47), point(1.17, 0.55), point(1.40, 0.55), point(1.59, 0.63), point(1.59, 0.82), point(1.00, 0.82)}
+        };
+    }
+    BRepFeat_SplitShape split(shape);
+    for (const auto& glyph : glyphs) {
+        TopoDS_Wire wire;
+        if (!BuildDecalWireFromUvPolygon(hostFace, glyph, wire)) return false;
+        split.Add(wire, hostFace);
+    }
+    split.Build();
+    if (!split.IsDone() || split.Shape().IsNull() || !IsShapeValid(split.Shape())) return false;
+    const auto splitFeatures = ExtractFeatures(split.Shape());
+    TopTools_IndexedMapOfShape faceMap;
+    TopExp::MapShapes(split.Shape(), TopAbs_FACE, faceMap);
+    std::vector<std::pair<double, TopoDS_Shape>> pieces;
+    for (TopTools_ListIteratorOfListOfShape it(split.Modified(hostFace)); it.More(); it.Next()) {
+        const int faceId = faceMap.FindIndex(it.Value());
+        if (faceId > 0 && faceId <= static_cast<int>(splitFeatures.size())) pieces.push_back({splitFeatures[faceId - 1].area, it.Value()});
+    }
+    if (pieces.size() < glyphs.size()) return false;
+    std::sort(pieces.begin(), pieces.end(), [](const auto& left, const auto& right) { return left.first < right.first; });
+    std::vector<TopoDS_Shape> decalFaces;
+    for (size_t index = 0; index < glyphs.size(); ++index) {
+        decalFaces.push_back(pieces[index].second);
+    }
+    shape = split.Shape();
+    decalFacesByInstance.push_back({startingInstanceId, decalFaces});
+    labelInstances.push_back({startingInstanceId, "decal", hostInfo.faceId, 1.0, 0.0});
+    const char* decalText = textStyle == 2 ? "V2" : (textStyle == 3 ? "V3" : "V13");
+    std::cout << ">>> Added " << decalText << " decal by splitting original host face: " << hostInfo.faceId << std::endl;
+    return true;
+}
+
 bool SplitFaceWithStarDecal(
     const TopoDS_Shape& shape,
     const TopoDS_Face& hostFace,
     TopoDS_Shape& result,
-    TopoDS_Shape& decalFace
+    TopoDS_Shape& decalFace,
+    double maxRadiusScale
 ) {
     double uMin = 0.0;
     double uMax = 0.0;
@@ -1484,6 +1583,9 @@ bool SplitFaceWithStarDecal(
         {uMin + (uMax - uMin) * 0.30, vMin + (vMax - vMin) * 0.42},
     };
     for (const double radiusScale : {0.440, 0.350, 0.300, 0.220, 0.160, 0.120, 0.085, 0.055, 0.025, 0.010}) {
+        if (radiusScale > maxRadiusScale) {
+            continue;
+        }
         for (const auto& center : centers) {
             TopoDS_Wire starWire;
             if (!BuildStarDecalWire(hostFace, center.X(), center.Y(), uvScale * radiusScale, starWire)) {
@@ -1530,7 +1632,8 @@ bool AddStarDecalToFuselageOrTail(
     int startingInstanceId,
     std::vector<std::pair<int, std::vector<TopoDS_Shape>>>& decalFacesByInstance,
     std::vector<LabelsInstanceEntry>& labelInstances,
-    int manualHostFaceId
+    int manualHostFaceId,
+    double maxRadiusScale
 ) {
     std::vector<WingHostFace> hostFaces;
     if (manualHostFaceId > 0) {
@@ -1551,7 +1654,7 @@ bool AddStarDecalToFuselageOrTail(
 
         TopoDS_Shape splitShape;
         TopoDS_Shape decalFace;
-        if (!SplitFaceWithStarDecal(shape, hostFace, splitShape, decalFace)) {
+        if (!SplitFaceWithStarDecal(shape, hostFace, splitShape, decalFace, maxRadiusScale)) {
             std::cout << ">>> Could not place a star decal on candidate face "
                       << hostFaceInfo.faceId << std::endl;
             continue;
@@ -2043,7 +2146,11 @@ int RunWingRivetInjection(const std::string& inputFile) {
     );
 }
 
-int RunStarDecalInjection(const std::string& inputFile, int hostFaceId) {
+int RunStarDecalInjection(const std::string& inputFile, int hostFaceId, double maxStarRadiusScale, int textStyle, bool rotateText180) {
+    if (maxStarRadiusScale <= 0.0 || maxStarRadiusScale > 0.440) {
+        std::cout << ">>> Star decal maximum radius scale must be in (0, 0.440]." << std::endl;
+        return 1;
+    }
     const fs::path inputPath = fs::absolute(fs::path(inputFile));
     const fs::path planeModelDir = fs::current_path() / "data" / "plane_model";
     const fs::path expectedInputDir = planeModelDir / "after_rivet";
@@ -2091,14 +2198,18 @@ int RunStarDecalInjection(const std::string& inputFile, int hostFaceId) {
     TopoDS_Shape outputShape = inputShape;
     std::vector<std::pair<int, std::vector<TopoDS_Shape>>> decalFacesByInstance;
     std::vector<LabelsInstanceEntry> outputInstances = inputLabels.instances;
-    if (!AddStarDecalToFuselageOrTail(
+    const bool decalAdded = textStyle > 0
+        ? AddTextDecalBySplittingHost(outputShape, nextInstanceId, decalFacesByInstance, outputInstances, hostFaceId, textStyle, rotateText180)
+        : AddStarDecalToFuselageOrTail(
             outputShape,
             nextInstanceId,
             decalFacesByInstance,
             outputInstances,
-            hostFaceId
-        )) {
-        std::cout << ">>> Failed to add star decals." << std::endl;
+            hostFaceId,
+            maxStarRadiusScale
+        );
+    if (!decalAdded) {
+        std::cout << ">>> Failed to add decal." << std::endl;
         return 1;
     }
 

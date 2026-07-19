@@ -172,6 +172,10 @@ def parse_args():
     parser = argparse.ArgumentParser(description="Visualize and select a single star-decal host face.")
     parser.add_argument("step_model", type=Path, help="A *_wing_rivets.step model from data/plane_model/after_rivet.")
     parser.add_argument("--max-candidates", type=int, default=12, help="Maximum highlighted faces (default: 12).")
+    parser.add_argument(
+        "--face-ids",
+        help="Comma-separated eligible face IDs to browse instead of the top-ranked candidates.",
+    )
     parser.add_argument("--no-display", action="store_true", help="Only export the candidate CSV.")
     return parser.parse_args()
 
@@ -181,7 +185,25 @@ def main() -> int:
     if args.max_candidates <= 0:
         raise ValueError("--max-candidates must be positive")
     shape = load_shape(args.step_model)
-    candidates = candidate_faces(shape, args.max_candidates)
+    if args.face_ids:
+        requested_ids = [int(value.strip()) for value in args.face_ids.split(",") if value.strip()]
+        if not requested_ids:
+            raise ValueError("--face-ids must include at least one face ID")
+        eligible_by_id = {
+            face_id: (score, face, surface, area)
+            for score, face_id, face, surface, area in candidate_faces(shape, 1_000_000)
+        }
+        missing_ids = [face_id for face_id in requested_ids if face_id not in eligible_by_id]
+        if missing_ids:
+            missing_text = ", ".join(f"F{face_id}" for face_id in missing_ids)
+            raise ValueError(f"Requested face IDs are not eligible smooth solid faces: {missing_text}")
+        candidates = [
+            (score, face_id, face, surface, area)
+            for face_id in requested_ids
+            for score, face, surface, area in [eligible_by_id[face_id]]
+        ]
+    else:
+        candidates = candidate_faces(shape, args.max_candidates)
     if not candidates:
         raise RuntimeError("No eligible smooth faces belonging to solids were found.")
     candidates_path = args.step_model.with_suffix(".decal_face_candidates.csv")
