@@ -1,7 +1,6 @@
 model,host_face_id,surface,area,selected_at,selection_note
 109-ww1-standart-e-1-aircraft CATIA STP_standart-e1_wing_rivets.step,78,bspline,461817.372579,2026-07-18T09:52:00+08:00,
 116-TBF stp_TBM-1 Avenger v1_wing_rivets.step,833,bspline,94.832,2026-07-19T10:23:29+08:00,existing decal retained on F833; copied from after_rivet without adding a star decal
-136-Slimer 15 STP_Slimer 15_wing_rivets.step,82,plane,32558.195,2026-07-19T10:36:00+08:00,star decal added and labels exported
 144-P-80A Shooting Star STP STL_P-80A Shooting Star v1_wing_rivets.step,135,,,2026-07-19T10:46:47+08:00,existing decal retained on F135; copied from after_rivet without adding a star decal
 221-cessna-model-grand-caravan STP_cessn CARAVAN v13_wing_rivets.step,3775,bspline,4737.316972,2026-07-19T18:37:40+08:00,V13 text decal cut directly from original F3775 face and labels exported
 237-an-124 STP STL_Antonov An-124 Rusian v2_wing_rivets.step,207,,,2026-07-19T18:42:50+08:00,V2 text decal cut directly from original F207 face and labels exported

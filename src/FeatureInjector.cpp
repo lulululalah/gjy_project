@@ -7,6 +7,7 @@
 #include <BRepBuilderAPI_MakeFace.hxx>
 #include <BRepBuilderAPI_MakePolygon.hxx>
 #include <BRepFeat_SplitShape.hxx>
+#include <BRepGProp.hxx>
 #include <BRep_Builder.hxx>
 #include <BRep_Tool.hxx>
 #include <BRepCheck_Analyzer.hxx>
@@ -20,6 +21,7 @@
 #include <Bnd_Box.hxx>
 #include <Geom2d_Curve.hxx>
 #include <GeomAbs_SurfaceType.hxx>
+#include <GProp_GProps.hxx>
 #include <Precision.hxx>
 #include <STEPControl_Reader.hxx>
 #include <STEPControl_Writer.hxx>
@@ -896,7 +898,10 @@ double ComputeWingScore(const FaceFeature& feature) {
            surfacePreference;
 }
 
+int FindOwningSolidIndex(const TopoDS_Shape& shape, int faceId);
+
 std::vector<WingHostFace> SelectWingHostFaces(
+    const TopoDS_Shape& originalShape,
     const std::vector<FaceFeature>& features,
     bool usePrimaryCandidates
 ) {
@@ -909,6 +914,9 @@ std::vector<WingHostFace> SelectWingHostFaces(
             ? IsPrimaryWingSkinCandidate(feature)
             : IsFallbackWingCandidate(feature);
         if (!isCandidate) {
+            continue;
+        }
+        if (FindOwningSolidIndex(originalShape, feature.id) <= 0) {
             continue;
         }
 
@@ -1367,6 +1375,8 @@ std::vector<RivetPlacement> BuildWingRivetPlacements(
     int hostFaceId,
     const TopoDS_Face& hostFace,
     const FaceFeature& hostFeature,
+    const TopoDS_Shape& originalShape,
+    const std::vector<FaceFeature>& originalFeatures,
     const gp_Pnt& shapeCenter,
     int startingInstanceId
 ) {
@@ -1376,39 +1386,116 @@ std::vector<RivetPlacement> BuildWingRivetPlacements(
     double vMax = 0.0;
     BRepTools::UVBounds(hostFace, uMin, uMax, vMin, vMax);
 
-    const std::vector<double> uFractions = {0.22, 0.38, 0.54, 0.70};
-    const std::vector<double> vFractions = {0.38, 0.58};
     const double faceScale = std::sqrt(std::max(hostFeature.area, 1.0));
     const double rivetRadius = std::clamp(faceScale * 0.0012, 0.003, 0.16);
     const double rivetHeight = std::max(rivetRadius * 0.65, 0.002);
+    const double uvInsetScale = std::min(uMax - uMin, vMax - vMin);
+    if (uvInsetScale <= Precision::PConfusion()) {
+        return {};
+    }
+
+    TopTools_IndexedMapOfShape faceMap;
+    TopExp::MapShapes(originalShape, TopAbs_FACE, faceMap);
+    TopTools_IndexedDataMapOfShapeListOfShape edgeFaceMap;
+    TopExp::MapShapesAndAncestors(originalShape, TopAbs_EDGE, TopAbs_FACE, edgeFaceMap);
+
+    struct SeamEdge {
+        TopoDS_Edge edge;
+        double score = 0.0;
+    };
+    std::vector<SeamEdge> seamEdges;
+    const double minimumEdgeLength = std::max(faceScale * 0.10, rivetRadius * 12.0);
+    int hostEdgeCount = 0;
+    int boundaryEdgeCount = 0;
+    int complexTopologyEdgeCount = 0;
+    int invalidNeighborCount = 0;
+    int smallNeighborCount = 0;
+    int shortEdgeCount = 0;
+    for (TopExp_Explorer edgeExplorer(hostFace, TopAbs_EDGE);
+         edgeExplorer.More();
+         edgeExplorer.Next()) {
+        hostEdgeCount++;
+        const TopoDS_Edge edge = TopoDS::Edge(edgeExplorer.Current());
+        if (!edgeFaceMap.Contains(edge)) {
+            continue;
+        }
+        const TopTools_ListOfShape& adjacentFaces = edgeFaceMap.FindFromKey(edge);
+        if (adjacentFaces.Extent() > 2) {
+            complexTopologyEdgeCount++;
+            continue;
+        }
+        double edgeScoreMultiplier = 0.55;
+        int neighborFaceId = -1;
+        if (adjacentFaces.Extent() == 2) {
+            for (TopTools_ListIteratorOfListOfShape it(adjacentFaces); it.More(); it.Next()) {
+                const int faceId = faceMap.FindIndex(it.Value());
+                if (faceId > 0 && faceId != hostFaceId) {
+                    neighborFaceId = faceId;
+                    break;
+                }
+            }
+        }
+        if (neighborFaceId > 0 && neighborFaceId <= static_cast<int>(originalFeatures.size())) {
+            const FaceFeature& neighborFeature = originalFeatures[static_cast<size_t>(neighborFaceId - 1)];
+            if (neighborFeature.area < std::max(hostFeature.area * 0.005, 2.0)) {
+                smallNeighborCount++;
+                boundaryEdgeCount++;
+            } else {
+                const double areaBalance = std::min(hostFeature.area, neighborFeature.area) /
+                    std::max(hostFeature.area, neighborFeature.area);
+                edgeScoreMultiplier = 1.0 + areaBalance;
+            }
+        } else {
+            if (adjacentFaces.Extent() == 2) {
+                invalidNeighborCount++;
+            }
+            boundaryEdgeCount++;
+        }
+        GProp_GProps edgeProperties;
+        BRepGProp::LinearProperties(edge, edgeProperties);
+        const double edgeLength = edgeProperties.Mass();
+        if (edgeLength < minimumEdgeLength) {
+            shortEdgeCount++;
+            continue;
+        }
+        seamEdges.push_back({edge, edgeLength * edgeScoreMultiplier});
+    }
+
+    std::sort(seamEdges.begin(), seamEdges.end(),
+              [](const SeamEdge& left, const SeamEdge& right) { return left.score > right.score; });
+    if (seamEdges.size() > 2) {
+        seamEdges.resize(2);
+    }
+    std::cout << ">>> Seam candidates for host face " << hostFaceId
+              << ": edges=" << hostEdgeCount
+              << " usable=" << seamEdges.size()
+              << " boundary_candidates=" << boundaryEdgeCount
+              << " rejected_complex_topology=" << complexTopologyEdgeCount
+              << " rejected_invalid_neighbor=" << invalidNeighborCount
+              << " rejected_small_neighbor=" << smallNeighborCount
+              << " rejected_short=" << shortEdgeCount
+              << std::endl;
 
     std::vector<RivetPlacement> placements;
     int instanceId = startingInstanceId;
-    const std::vector<gp_Pnt2d> trimInsetSamples =
-        BuildTrimInsetUvSamples(hostFace, uMin, uMax, vMin, vMax, 8);
-    for (const auto& sample : trimInsetSamples) {
-        const RivetFootprint footprint = SelectRivetFootprint(instanceId, startingInstanceId);
-        AddPlacementIfValid(
-            hostFaceId,
-            hostFace,
-            shapeCenter,
-            rivetRadius,
-            rivetHeight,
-            footprint,
-            sample.X(),
-            sample.Y(),
-            instanceId,
-            placements
-        );
-    }
-    if (!placements.empty()) {
-        return placements;
-    }
-
-    for (const double vFraction : vFractions) {
-        for (const double uFraction : uFractions) {
-            const double u = uMin + (uMax - uMin) * uFraction;
-            const double v = vMin + (vMax - vMin) * vFraction;
+    for (const auto& seamEdge : seamEdges) {
+        Standard_Real first = 0.0;
+        Standard_Real last = 0.0;
+        Handle(Geom2d_Curve) curve = BRep_Tool::CurveOnSurface(seamEdge.edge, hostFace, first, last);
+        if (curve.IsNull() || std::abs(last - first) <= Precision::PConfusion()) {
+            continue;
+        }
+        const gp_Pnt2d uvCenter((uMin + uMax) * 0.5, (vMin + vMax) * 0.5);
+        for (const double fraction : {0.18, 0.36, 0.54, 0.72}) {
+            const gp_Pnt2d boundaryUv = curve->Value(first + (last - first) * fraction);
+            gp_Vec2d inward(boundaryUv, uvCenter);
+            if (inward.SquareMagnitude() <= Precision::SquareConfusion()) {
+                continue;
+            }
+            inward.Normalize();
+            const double inset = uvInsetScale * 0.015;
+            const double u = boundaryUv.X() + inward.X() * inset;
+            const double v = boundaryUv.Y() + inward.Y() * inset;
             const RivetFootprint footprint = SelectRivetFootprint(instanceId, startingInstanceId);
             AddPlacementIfValid(
                 hostFaceId,
@@ -1776,7 +1863,7 @@ fs::path BuildWingRivetStepsDir(const std::string& inputFile) {
     if (parentPath.filename() == "source") {
         parentPath = parentPath.parent_path();
     }
-    return parentPath / "step";
+    return parentPath / "new_data";
 }
 
 fs::path BuildWingRivetLabelsDir(const std::string& inputFile) {
@@ -1784,7 +1871,7 @@ fs::path BuildWingRivetLabelsDir(const std::string& inputFile) {
     if (parentPath.filename() == "source") {
         parentPath = parentPath.parent_path();
     }
-    return parentPath / "label";
+    return parentPath / "new_data";
 }
 
 void WriteLabelsJson(
@@ -1856,9 +1943,9 @@ int RunWingRivetInjectionImpl(
     }
     const gp_Pnt shapeCenter = ComputeShapeCenter(originalShape);
 
-    std::vector<WingHostFace> hostFaces = SelectWingHostFaces(originalFeatures, true);
+    std::vector<WingHostFace> hostFaces = SelectWingHostFaces(originalShape, originalFeatures, true);
     if (hostFaces.empty()) {
-        hostFaces = SelectWingHostFaces(originalFeatures, false);
+        hostFaces = SelectWingHostFaces(originalShape, originalFeatures, false);
     }
     if (hostFaces.empty()) {
         std::cout << ">>> Could not find suitable wing faces for rivet injection." << std::endl;
@@ -1877,6 +1964,8 @@ int RunWingRivetInjectionImpl(
             hostFaceInfo.faceId,
             hostFace,
             hostFaceInfo.feature,
+            originalShape,
+            originalFeatures,
             shapeCenter,
             nextInstanceId
         );
@@ -2284,8 +2373,8 @@ int RunBatchWingRivetInjection(const std::string& inputDir) {
     if (inputPath.filename() == "source") {
         outputBaseDir = inputPath.parent_path();
     }
-    const fs::path outputStepDir = outputBaseDir / "step";
-    const fs::path outputLabelsDir = outputBaseDir / "label";
+    const fs::path outputStepDir = outputBaseDir / "new_data";
+    const fs::path outputLabelsDir = outputBaseDir / "new_data";
     fs::create_directories(outputStepDir);
     fs::create_directories(outputLabelsDir);
 
