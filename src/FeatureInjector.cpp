@@ -2300,14 +2300,14 @@ int RunStarDecalInjection(const std::string& inputFile, int hostFaceId, double m
     }
     const fs::path inputPath = fs::absolute(fs::path(inputFile));
     const fs::path planeModelDir = fs::current_path() / "data" / "plane_model";
-    const fs::path expectedInputDir = planeModelDir / "after_rivet";
+    const fs::path expectedInputDir = planeModelDir / "new_data";
     const fs::path outputDir = planeModelDir / "after_two";
     if (inputPath.parent_path().lexically_normal() != expectedInputDir.lexically_normal()) {
         std::cout << ">>> Star decals only accept models from: " << expectedInputDir << std::endl;
         return 1;
     }
 
-    const fs::path inputLabelsFile = planeModelDir / "label" /
+    const fs::path inputLabelsFile = expectedInputDir /
         (inputPath.stem().string() + ".labels.json");
     LabelsData inputLabels;
     if (!ParseLabelsJson(inputLabelsFile, inputLabels) || !ValidateRivetLabels(inputLabels)) {

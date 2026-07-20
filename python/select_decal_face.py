@@ -170,7 +170,7 @@ def display_candidates(shape, candidates) -> None:
 
 def parse_args():
     parser = argparse.ArgumentParser(description="Visualize and select a single star-decal host face.")
-    parser.add_argument("step_model", type=Path, help="A *_wing_rivets.step model from data/plane_model/after_rivet.")
+    parser.add_argument("step_model", type=Path, help="A *_wing_rivets.step model from data/plane_model/new_data.")
     parser.add_argument("--max-candidates", type=int, default=12, help="Maximum highlighted faces (default: 12).")
     parser.add_argument(
         "--face-ids",
