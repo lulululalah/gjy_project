@@ -1926,7 +1926,8 @@ void WriteLabelsJson(
 int RunWingRivetInjectionImpl(
     const std::string& inputFile,
     const std::string& outputStepFile,
-    const std::string& outputLabelsFile
+    const std::string& outputLabelsFile,
+    const std::vector<int>& explicitHostFaceIds
 ) {
     std::cout << ">>> Injecting wing rivets into: " << inputFile << std::endl;
 
@@ -1943,9 +1944,24 @@ int RunWingRivetInjectionImpl(
     }
     const gp_Pnt shapeCenter = ComputeShapeCenter(originalShape);
 
-    std::vector<WingHostFace> hostFaces = SelectWingHostFaces(originalShape, originalFeatures, true);
-    if (hostFaces.empty()) {
-        hostFaces = SelectWingHostFaces(originalShape, originalFeatures, false);
+    std::vector<WingHostFace> hostFaces;
+    if (!explicitHostFaceIds.empty()) {
+        std::set<int> seenFaceIds;
+        for (const int faceId : explicitHostFaceIds) {
+            if (faceId <= 0 || faceId > static_cast<int>(originalFeatures.size()) ||
+                !seenFaceIds.insert(faceId).second ||
+                GetFaceById(originalShape, faceId).IsNull() ||
+                FindOwningSolidIndex(originalShape, faceId) <= 0) {
+                std::cout << ">>> Invalid explicit wing host face: " << faceId << std::endl;
+                return 1;
+            }
+            hostFaces.push_back({faceId, 0.0, originalFeatures[static_cast<size_t>(faceId - 1)]});
+        }
+    } else {
+        hostFaces = SelectWingHostFaces(originalShape, originalFeatures, true);
+        if (hostFaces.empty()) {
+            hostFaces = SelectWingHostFaces(originalShape, originalFeatures, false);
+        }
     }
     if (hostFaces.empty()) {
         std::cout << ">>> Could not find suitable wing faces for rivet injection." << std::endl;
@@ -2223,7 +2239,7 @@ int RunWingRivetInjectionImpl(
     return 0;
 }
 
-int RunWingRivetInjection(const std::string& inputFile) {
+int RunWingRivetInjection(const std::string& inputFile, const std::vector<int>& hostFaceIds) {
     const fs::path outputStepDir = BuildWingRivetStepsDir(inputFile);
     const fs::path outputLabelsDir = BuildWingRivetLabelsDir(inputFile);
     fs::create_directories(outputStepDir);
@@ -2231,8 +2247,50 @@ int RunWingRivetInjection(const std::string& inputFile) {
     return RunWingRivetInjectionImpl(
         inputFile,
         BuildOutputStepPath(inputFile, outputStepDir),
-        BuildOutputLabelsPath(inputFile, outputLabelsDir)
+        BuildOutputLabelsPath(inputFile, outputLabelsDir),
+        hostFaceIds
     );
+}
+
+int RunBooleanHostFaceExport(const std::string& inputFile) {
+    TopoDS_Shape shape;
+    if (!LoadShapeFromStep(inputFile, shape)) {
+        std::cout << ">>> Failed to load STEP model." << std::endl;
+        return 1;
+    }
+
+    const auto features = ExtractFeatures(shape);
+    if (features.empty()) {
+        std::cout << ">>> Failed to extract face features." << std::endl;
+        return 1;
+    }
+
+    const fs::path inputPath(inputFile);
+    const fs::path outputPath = inputPath.parent_path() /
+        (inputPath.stem().string() + ".boolean_host_faces.csv");
+    std::ofstream output(outputPath);
+    if (!output.is_open()) {
+        std::cout << ">>> Failed to open host-face CSV: " << outputPath << std::endl;
+        return 1;
+    }
+
+    output << "face_id,solid_index,surface_type,area,center_x,center_y,center_z,normal_x,normal_y,normal_z\n";
+    int exportedCount = 0;
+    output << std::fixed << std::setprecision(6);
+    for (const auto& feature : features) {
+        const int solidIndex = FindOwningSolidIndex(shape, feature.id);
+        if (solidIndex <= 0) {
+            continue;
+        }
+        output << feature.id << ',' << solidIndex << ',' << feature.surfaceType << ',' << feature.area << ','
+               << feature.centerX << ',' << feature.centerY << ',' << feature.centerZ << ','
+               << feature.normalX << ',' << feature.normalY << ',' << feature.normalZ << '\n';
+        exportedCount++;
+    }
+
+    std::cout << ">>> Boolean-fusable host faces: " << exportedCount << std::endl;
+    std::cout << ">>> Host-face CSV: " << outputPath << std::endl;
+    return exportedCount > 0 ? 0 : 2;
 }
 
 int RunStarDecalInjection(const std::string& inputFile, int hostFaceId, double maxStarRadiusScale, int textStyle, bool rotateText180) {
@@ -2392,7 +2450,8 @@ int RunBatchWingRivetInjection(const std::string& inputDir) {
         const int result = RunWingRivetInjectionImpl(
             entry.path().string(),
             BuildOutputStepPath(entry.path().string(), outputStepDir),
-            BuildOutputLabelsPath(entry.path().string(), outputLabelsDir)
+            BuildOutputLabelsPath(entry.path().string(), outputLabelsDir),
+            {}
         );
         if (result == 0) {
             successCount++;

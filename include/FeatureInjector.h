@@ -1,8 +1,13 @@
 #pragma once
 
 #include <string>
+#include <vector>
 
-int RunWingRivetInjection(const std::string& inputFile);
+int RunWingRivetInjection(
+    const std::string& inputFile,
+    const std::vector<int>& hostFaceIds = {}
+);
+int RunBooleanHostFaceExport(const std::string& inputFile);
 int RunStarDecalInjection(
     const std::string& inputFile,
     int hostFaceId = -1,

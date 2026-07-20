@@ -5,6 +5,7 @@
 #include <exception>
 #include <iostream>
 #include <string>
+#include <vector>
 
 namespace
 {
@@ -35,7 +36,8 @@ namespace
             << "  Detector.exe --predict <file>\n"
             << "  Detector.exe --dump-faces <file>\n"
             << "  Detector.exe --check-face-id <file>\n"
-            << "  Detector.exe --inject-wing-rivets <file>\n"
+            << "  Detector.exe --inject-wing-rivets <file> [--host-face <id> ...]\n"
+            << "  Detector.exe --dump-boolean-host-faces <file>\n"
             << "  Detector.exe --inject-star-decals <after-rivet-file> [--host-face <id>] [--max-radius-scale <0..0.440>]\n"
             << "  Detector.exe --inject-v13-decal <after-rivet-file> --host-face <id>\n"
             << "  Detector.exe --inject-v2-decal <after-rivet-file> --host-face <id>\n"
@@ -79,7 +81,24 @@ int main(int argc, char *argv[])
     else if (mode == "--inject-wing-rivets" && argc >= 3)
     {
         const std::string filePath = argv[2];
-        return RunWingRivetInjection(filePath);
+        std::vector<int> hostFaceIds;
+        for (int argumentIndex = 3; argumentIndex < argc; argumentIndex += 2) {
+            if (argumentIndex + 1 >= argc || std::string(argv[argumentIndex]) != "--host-face") {
+                std::cout << "Expected option: --host-face <id>" << std::endl;
+                return 1;
+            }
+            try {
+                hostFaceIds.push_back(std::stoi(argv[argumentIndex + 1]));
+            } catch (const std::exception&) {
+                std::cout << "Invalid host face ID: " << argv[argumentIndex + 1] << std::endl;
+                return 1;
+            }
+        }
+        return RunWingRivetInjection(filePath, hostFaceIds);
+    }
+    else if (mode == "--dump-boolean-host-faces" && argc == 3)
+    {
+        return RunBooleanHostFaceExport(argv[2]);
     }
     else if (mode == "--inject-star-decals" && argc >= 3)
     {
