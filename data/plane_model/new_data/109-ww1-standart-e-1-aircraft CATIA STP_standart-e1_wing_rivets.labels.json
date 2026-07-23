@@ -1,7 +1,7 @@
 {
-  "model_id": "109-ww1-standart-e-1-aircraft CATIA STP_standart-e1_wing_rivets_decals",
-  "base_model": "109-ww1-standart-e-1-aircraft CATIA STP_standart-e1_wing_rivets.step",
-  "output_step": "D:\\projects\\gjy_byproject\\data\\plane_model\\after_two\\109-ww1-standart-e-1-aircraft CATIA STP_standart-e1_wing_rivets_decals.step",
+  "model_id": "109-ww1-standart-e-1-aircraft CATIA STP_standart-e1_wing_rivets",
+  "base_model": "109-ww1-standart-e-1-aircraft CATIA STP_standart-e1.stp",
+  "output_step": ".\\data\\plane_model\\new_data\\109-ww1-standart-e-1-aircraft CATIA STP_standart-e1_wing_rivets.step",
   "faces": [
     {"face_id": 1, "semantic": "background", "instance_id": -1, "operation": "keep"},
     {"face_id": 2, "semantic": "background", "instance_id": -1, "operation": "keep"},
@@ -81,7 +81,7 @@
     {"face_id": 76, "semantic": "background", "instance_id": -1, "operation": "keep"},
     {"face_id": 77, "semantic": "background", "instance_id": -1, "operation": "keep"},
     {"face_id": 78, "semantic": "background", "instance_id": -1, "operation": "keep"},
-    {"face_id": 79, "semantic": "decal", "instance_id": 9, "operation": "remove_decal_boundary"},
+    {"face_id": 79, "semantic": "background", "instance_id": -1, "operation": "keep"},
     {"face_id": 80, "semantic": "background", "instance_id": -1, "operation": "keep"},
     {"face_id": 81, "semantic": "background", "instance_id": -1, "operation": "keep"},
     {"face_id": 82, "semantic": "background", "instance_id": -1, "operation": "keep"},
@@ -130,18 +130,18 @@
     {"face_id": 125, "semantic": "background", "instance_id": -1, "operation": "keep"},
     {"face_id": 126, "semantic": "background", "instance_id": -1, "operation": "keep"},
     {"face_id": 127, "semantic": "background", "instance_id": -1, "operation": "keep"},
-    {"face_id": 128, "semantic": "background", "instance_id": -1, "operation": "keep"},
-    {"face_id": 129, "semantic": "rivet", "instance_id": 1, "operation": "remove_protrusion"},
-    {"face_id": 130, "semantic": "rivet", "instance_id": 5, "operation": "remove_protrusion"},
+    {"face_id": 128, "semantic": "rivet", "instance_id": 1, "operation": "remove_protrusion"},
+    {"face_id": 129, "semantic": "rivet", "instance_id": 5, "operation": "remove_protrusion"},
+    {"face_id": 130, "semantic": "background", "instance_id": -1, "operation": "keep"},
     {"face_id": 131, "semantic": "background", "instance_id": -1, "operation": "keep"},
     {"face_id": 132, "semantic": "background", "instance_id": -1, "operation": "keep"},
     {"face_id": 133, "semantic": "background", "instance_id": -1, "operation": "keep"},
-    {"face_id": 134, "semantic": "background", "instance_id": -1, "operation": "keep"},
-    {"face_id": 135, "semantic": "rivet", "instance_id": 6, "operation": "remove_protrusion"},
-    {"face_id": 136, "semantic": "rivet", "instance_id": 7, "operation": "remove_protrusion"},
-    {"face_id": 137, "semantic": "rivet", "instance_id": 2, "operation": "remove_protrusion"},
-    {"face_id": 138, "semantic": "rivet", "instance_id": 3, "operation": "remove_protrusion"},
-    {"face_id": 139, "semantic": "rivet", "instance_id": 4, "operation": "remove_protrusion"},
+    {"face_id": 134, "semantic": "rivet", "instance_id": 6, "operation": "remove_protrusion"},
+    {"face_id": 135, "semantic": "rivet", "instance_id": 7, "operation": "remove_protrusion"},
+    {"face_id": 136, "semantic": "rivet", "instance_id": 2, "operation": "remove_protrusion"},
+    {"face_id": 137, "semantic": "rivet", "instance_id": 3, "operation": "remove_protrusion"},
+    {"face_id": 138, "semantic": "rivet", "instance_id": 4, "operation": "remove_protrusion"},
+    {"face_id": 139, "semantic": "background", "instance_id": -1, "operation": "keep"},
     {"face_id": 140, "semantic": "background", "instance_id": -1, "operation": "keep"},
     {"face_id": 141, "semantic": "background", "instance_id": -1, "operation": "keep"},
     {"face_id": 142, "semantic": "background", "instance_id": -1, "operation": "keep"},
@@ -1245,8 +1245,7 @@
     {"face_id": 1240, "semantic": "background", "instance_id": -1, "operation": "keep"},
     {"face_id": 1241, "semantic": "background", "instance_id": -1, "operation": "keep"},
     {"face_id": 1242, "semantic": "background", "instance_id": -1, "operation": "keep"},
-    {"face_id": 1243, "semantic": "background", "instance_id": -1, "operation": "keep"},
-    {"face_id": 1244, "semantic": "background", "instance_id": -1, "operation": "keep"}
+    {"face_id": 1243, "semantic": "background", "instance_id": -1, "operation": "keep"}
   ],
   "instances": [
     {"instance_id": 1, "type": "rivet", "host_face": 97, "inverse_op": {"kind": "remove_protrusion", "radius": 0.160000, "height": 0.104000}},
@@ -1256,7 +1255,6 @@
     {"instance_id": 5, "type": "rivet", "host_face": 97, "inverse_op": {"kind": "remove_protrusion", "radius": 0.160000, "height": 0.104000}},
     {"instance_id": 6, "type": "rivet", "host_face": 97, "inverse_op": {"kind": "remove_protrusion", "radius": 0.160000, "height": 0.104000}},
     {"instance_id": 7, "type": "rivet", "host_face": 97, "inverse_op": {"kind": "remove_protrusion", "radius": 0.160000, "height": 0.104000}},
-    {"instance_id": 8, "type": "rivet", "host_face": 97, "inverse_op": {"kind": "remove_protrusion", "radius": 0.160000, "height": 0.104000}},
-    {"instance_id": 9, "type": "decal", "host_face": 78, "inverse_op": {"kind": "remove_decal_boundary", "radius": 1.000000, "height": 0.000000}}
+    {"instance_id": 8, "type": "rivet", "host_face": 97, "inverse_op": {"kind": "remove_protrusion", "radius": 0.160000, "height": 0.104000}}
   ]
 }

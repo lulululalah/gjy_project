@@ -1589,7 +1589,8 @@ bool AddTextDecalBySplittingHost(
     const TopoDS_Face hostFace = GetFaceById(shape, hostInfo.faceId);
     double uMin = 0.0, uMax = 0.0, vMin = 0.0, vMax = 0.0;
     BRepTools::UVBounds(hostFace, uMin, uMax, vMin, vMax);
-    const double scale = std::min(uMax - uMin, vMax - vMin) * 0.18;
+    const double textScale = textStyle == 2 ? 0.19 : 0.18;
+    const double scale = std::min(uMax - uMin, vMax - vMin) * textScale;
     const double baseU = (uMin + uMax) * 0.5 - scale * 1.45;
     const double baseV = (vMin + vMax) * 0.5 - scale * 0.5;
     const double textWidth = textStyle == 1 ? 2.38 : 1.82;
