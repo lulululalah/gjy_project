@@ -1,0 +1,2 @@
+model_name,step_sha256,host_face_id,seed_face_ids,feature_type,wire_count,inner_loop_count,status,notes
+116-TBF stp_TBM-1 Avenger v1_wing_rivets.step,590BD649ACF1C4E26D7725D76C6CDA55681A3B77895151FD117D556A9A094A6A,833,F714 F757 F783 F784; F729 F741 F809 F825,decal,2,1,accepted_instances_17_18,F833 remains background. Mirrored side decals were labeled as separate instances 17 and 18 in data/plane_model/label and manually accepted.

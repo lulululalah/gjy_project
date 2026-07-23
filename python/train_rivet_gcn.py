@@ -241,7 +241,7 @@ def build_window_graph(full_graph, center_idx, hop_count):
 
 def sample_window_centers(full_graph, background_ratio, rng):
     labels = full_graph.y.cpu().numpy()
-    positive = np.flatnonzero(labels == 1)
+    positive = np.flatnonzero(labels > 0)
     negative = np.flatnonzero(labels == 0)
 
     if background_ratio is None or background_ratio <= 0 or len(positive) == 0:
