@@ -16,6 +16,16 @@ def main() -> int:
     parser.add_argument("step_model", type=Path)
     parser.add_argument("candidates_csv", type=Path)
     parser.add_argument("--candidate-ids", help="Optional comma-separated candidate IDs to review.")
+    parser.add_argument(
+        "--highlight-host",
+        action="store_true",
+        help="Highlight the inner-loop host face together with its surrounding candidate faces.",
+    )
+    parser.add_argument(
+        "--all",
+        action="store_true",
+        help="Highlight every selected candidate at once for a whole-aircraft recall check.",
+    )
     args = parser.parse_args()
 
     rows = list(csv.DictReader(args.candidates_csv.open(encoding="utf-8", newline="")))
@@ -43,13 +53,33 @@ def main() -> int:
     current = 0
     display, start_display, add_menu, add_function_to_menu = init_display(size=(1440, 960))
 
+    if args.all:
+        face_ids = {
+            face_id
+            for row in rows
+            for face_id in parse_face_ids(row["candidate_face_ids"])
+        }
+        if args.highlight_host:
+            face_ids.update(int(row["host_face_id"]) for row in rows)
+        display.DisplayShape(shape, color=Quantity_NOC_GRAY, transparency=0.88, update=False)
+        for face_id in sorted(face_ids):
+            display.DisplayShape(topods.Face(face_map.FindKey(face_id)), color=Quantity_NOC_ORANGE, update=False)
+        display.FitAll()
+        display.Repaint()
+        print(f"Highlighted {len(rows)} candidates and {len(face_ids)} faces.")
+        start_display()
+        return 0
+
     def show() -> None:
         row = rows[current]
         face_ids = parse_face_ids(row["candidate_face_ids"])
         host_face_id = int(row["host_face_id"])
         display.EraseAll()
         display.DisplayShape(shape, color=Quantity_NOC_GRAY, transparency=0.88, update=False)
-        display.DisplayShape(topods.Face(face_map.FindKey(host_face_id)), color=Quantity_NOC_GRAY, transparency=0.45, update=False)
+        if args.highlight_host:
+            display.DisplayShape(topods.Face(face_map.FindKey(host_face_id)), color=Quantity_NOC_ORANGE, update=False)
+        else:
+            display.DisplayShape(topods.Face(face_map.FindKey(host_face_id)), color=Quantity_NOC_GRAY, transparency=0.45, update=False)
         for face_id in face_ids:
             display.DisplayShape(topods.Face(face_map.FindKey(face_id)), color=Quantity_NOC_ORANGE, update=False)
         display.FitAll()

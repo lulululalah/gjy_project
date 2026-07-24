@@ -19,6 +19,11 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--max-relative-area", type=float, default=0.35)
     parser.add_argument("--max-single-relative-area", type=float, default=0.25)
     parser.add_argument("--max-candidates", type=int, default=60)
+    parser.add_argument(
+        "--seed-topology-mode",
+        action="store_true",
+        help="Keep all seed-like inner-loop window topologies instead of ranking only the top candidates.",
+    )
     return parser.parse_args()
 
 
@@ -98,6 +103,8 @@ def main() -> int:
             adjacent_areas = [face_area(face_id) for face_id in sorted(adjacent_face_ids)]
             adjacent_centers = [face_center(face_id) for face_id in sorted(adjacent_face_ids)]
             total_adjacent_area = sum(adjacent_areas)
+            relative_area = total_adjacent_area / host_area
+            max_single_relative_area = max(adjacent_areas) / host_area
             if (
                 edge_count > args.max_loop_edges
                 or len(adjacent_face_ids) > args.max_adjacent_faces
@@ -111,8 +118,21 @@ def main() -> int:
                 for face_id in sorted(adjacent_face_ids)
             ]
             # Openings with several small adjacent faces are more window-like than one large panel.
-            relative_area = total_adjacent_area / host_area
             score = edge_count * 2.0 + len(adjacent_face_ids) * 3.0 + (1.0 - relative_area) * 20.0
+            if args.seed_topology_mode:
+                # Approved 737 cabin windows have a four-edge inner loop with four
+                # tiny adjacent trim faces.  Front/rear cabin windows use the same
+                # topology but were previously lost by the global top-60 cutoff.
+                standard_window = (
+                    edge_count == 4
+                    and len(adjacent_face_ids) == 4
+                    and 20.0 <= host_area <= 70.0
+                    and relative_area <= 0.15
+                    and max_single_relative_area <= 0.05
+                )
+                if not standard_window:
+                    wire_explorer.Next()
+                    continue
             rows.append(
                 {
                     "model_name": args.step_model.name,
@@ -134,8 +154,11 @@ def main() -> int:
             )
             wire_explorer.Next()
 
-    rows.sort(key=lambda row: float(row["heuristic_score"]), reverse=True)
-    rows = rows[: args.max_candidates]
+    if args.seed_topology_mode:
+        rows.sort(key=lambda row: int(row["host_face_id"]))
+    else:
+        rows.sort(key=lambda row: float(row["heuristic_score"]), reverse=True)
+        rows = rows[: args.max_candidates]
     args.output.parent.mkdir(parents=True, exist_ok=True)
     fieldnames = [
         "model_name", "candidate_id", "host_face_id", "host_area", "host_center", "inner_loop_index",
