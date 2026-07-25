@@ -90,7 +90,7 @@ namespace
         }
 
         const std::regex faceRegex(
-            R"json(\{"face_id":\s*(-?\d+),\s*"semantic":\s*"([^"]+)",\s*"instance_id":\s*(-?\d+),\s*"operation":\s*"([^"]+)"\})json");
+            R"json(\{\s*"face_id":\s*(-?\d+),\s*"semantic":\s*"([^"]+)",\s*"instance_id":\s*(-?\d+),\s*"operation":\s*"([^"]+)"\s*\})json");
         for (std::sregex_iterator it(text.begin(), text.end(), faceRegex), end; it != end; ++it)
         {
             TrainingLabelEntry entry;
@@ -411,7 +411,7 @@ namespace
 int RunWingRivetTrainingExport(const std::string &inputDir, const std::string &outputCsv)
 {
     const fs::path inputPath(inputDir);
-    const fs::path stepDir = inputPath / "step";
+    const fs::path stepDir = inputPath / "after_two";
     const fs::path labelsDir = inputPath / "label";
 
     if (!fs::exists(stepDir) || !fs::exists(labelsDir))
@@ -433,7 +433,7 @@ int RunWingRivetTrainingExport(const std::string &inputDir, const std::string &o
             continue;
         }
 
-        const std::string suffix = "_wing_rivets.labels";
+        const std::string suffix = ".labels";
         const std::string stem = entry.path().stem().string();
         if (stem.size() <= suffix.size() || stem.rfind(suffix) != stem.size() - suffix.size())
         {
@@ -441,7 +441,7 @@ int RunWingRivetTrainingExport(const std::string &inputDir, const std::string &o
         }
 
         const std::string modelStem = stem.substr(0, stem.size() - suffix.size());
-        const fs::path stepPath = stepDir / (modelStem + "_wing_rivets.step");
+        const fs::path stepPath = stepDir / (modelStem + ".step");
         if (!fs::exists(stepPath))
         {
             std::cout << ">>> Skip " << modelStem << ": missing STEP " << stepPath << std::endl;
