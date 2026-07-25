@@ -38,7 +38,7 @@ namespace
             << "  Detector.exe --check-face-id <file>\n"
             << "  Detector.exe --inject-wing-rivets <file> [--host-face <id> ...]\n"
             << "  Detector.exe --dump-boolean-host-faces <file>\n"
-            << "  Detector.exe --inject-star-decals <new-data-file> [--host-face <id>] [--max-radius-scale <0..0.440>]\n"
+            << "  Detector.exe --inject-star-decals <new-data-file> [--host-face <id> ...] [--max-radius-scale <0..0.440>]\n"
             << "  Detector.exe --inject-v13-decal <new-data-file> --host-face <id>\n"
             << "  Detector.exe --inject-v2-decal <new-data-file> --host-face <id>\n"
             << "  Detector.exe --inject-v3-decal <new-data-file> --host-face <id> [--rotate-180]\n"
@@ -103,7 +103,7 @@ int main(int argc, char *argv[])
     else if (mode == "--inject-star-decals" && argc >= 3)
     {
         const std::string filePath = argv[2];
-        int hostFaceId = -1;
+        std::vector<int> hostFaceIds;
         double maxRadiusScale = 0.440;
         for (int argumentIndex = 3; argumentIndex < argc; argumentIndex += 2) {
             if (argumentIndex + 1 >= argc) {
@@ -113,7 +113,7 @@ int main(int argc, char *argv[])
             try {
                 const std::string option = argv[argumentIndex];
                 if (option == "--host-face") {
-                    hostFaceId = std::stoi(argv[argumentIndex + 1]);
+                    hostFaceIds.push_back(std::stoi(argv[argumentIndex + 1]));
                 } else if (option == "--max-radius-scale") {
                     maxRadiusScale = std::stod(argv[argumentIndex + 1]);
                 } else {
@@ -125,7 +125,7 @@ int main(int argc, char *argv[])
                 return 1;
             }
         }
-        return RunStarDecalInjection(filePath, hostFaceId, maxRadiusScale);
+        return RunStarDecalInjection(filePath, hostFaceIds, maxRadiusScale);
     }
     else if (mode == "--inject-v13-decal" && argc == 5 && std::string(argv[3]) == "--host-face")
     {

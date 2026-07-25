@@ -78,15 +78,19 @@ def main() -> int:
         if not selected_shapes:
             print(f"No face selected at ({x}, {y}); click directly on a visible surface.")
             return
+
+        def report_face_id(face_id: int) -> None:
+            print(f"Selected face: F{face_id}")
+
         for selected in selected_shapes:
             face_id = face_map.FindIndex(selected)
             if face_id:
-                print(f"Selected face: F{face_id}")
+                report_face_id(face_id)
                 continue
             for candidate_id in range(1, face_map.Size() + 1):
                 candidate = face_map.FindKey(candidate_id)
                 if selected.IsSame(candidate) or selected.IsEqual(candidate):
-                    print(f"Selected face: F{candidate_id}")
+                    report_face_id(candidate_id)
                     break
             else:
                 print("Selected shape did not match a face; click directly on a visible surface.")

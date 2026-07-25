@@ -14,7 +14,11 @@ def parse_args() -> argparse.Namespace:
         description="Reflect accepted window seed faces across the best model symmetry plane."
     )
     parser.add_argument("step_model", type=Path)
-    parser.add_argument("--labels-json", type=Path, required=True)
+    parser.add_argument("--labels-json", type=Path)
+    parser.add_argument(
+        "--seed-face-ids",
+        help="Optional comma-separated face IDs to mirror instead of semantic=window labels.",
+    )
     parser.add_argument("--output", type=Path, required=True)
     parser.add_argument("--max-normalized-distance", type=float, default=0.025)
     parser.add_argument("--min-area-ratio", type=float, default=0.70)
@@ -35,14 +39,19 @@ def main() -> int:
     from OCC.Core.TopoDS import topods
 
     args = parse_args()
-    label_data = json.loads(args.labels_json.read_text(encoding="utf-8"))
-    seed_ids = sorted(
-        int(face["face_id"])
-        for face in label_data.get("faces", [])
-        if face.get("semantic") == "window"
-    )
+    if args.seed_face_ids:
+        seed_ids = sorted({int(value.strip()) for value in args.seed_face_ids.split(",") if value.strip()})
+    elif args.labels_json:
+        label_data = json.loads(args.labels_json.read_text(encoding="utf-8"))
+        seed_ids = sorted(
+            int(face["face_id"])
+            for face in label_data.get("faces", [])
+            if face.get("semantic") == "window"
+        )
+    else:
+        raise RuntimeError("Provide --seed-face-ids or --labels-json")
     if not seed_ids:
-        raise RuntimeError(f"No semantic=window seed faces in {args.labels_json}")
+        raise RuntimeError("No seed face IDs were selected")
 
     reader = STEPControl_Reader()
     if reader.ReadFile(str(args.step_model)) != 1:

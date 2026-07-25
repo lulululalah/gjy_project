@@ -2294,7 +2294,13 @@ int RunBooleanHostFaceExport(const std::string& inputFile) {
     return exportedCount > 0 ? 0 : 2;
 }
 
-int RunStarDecalInjection(const std::string& inputFile, int hostFaceId, double maxStarRadiusScale, int textStyle, bool rotateText180) {
+int RunStarDecalInjection(
+    const std::string& inputFile,
+    const std::vector<int>& hostFaceIds,
+    double maxStarRadiusScale,
+    int textStyle,
+    bool rotateText180
+) {
     if (maxStarRadiusScale <= 0.0 || maxStarRadiusScale > 0.440) {
         std::cout << ">>> Star decal maximum radius scale must be in (0, 0.440]." << std::endl;
         return 1;
@@ -2346,19 +2352,51 @@ int RunStarDecalInjection(const std::string& inputFile, int hostFaceId, double m
     TopoDS_Shape outputShape = inputShape;
     std::vector<std::pair<int, std::vector<TopoDS_Shape>>> decalFacesByInstance;
     std::vector<LabelsInstanceEntry> outputInstances = inputLabels.instances;
-    const bool decalAdded = textStyle > 0
-        ? AddTextDecalBySplittingHost(outputShape, nextInstanceId, decalFacesByInstance, outputInstances, hostFaceId, textStyle, rotateText180)
-        : AddStarDecalToFuselageOrTail(
-            outputShape,
-            nextInstanceId,
-            decalFacesByInstance,
-            outputInstances,
-            hostFaceId,
-            maxStarRadiusScale
-        );
-    if (!decalAdded) {
-        std::cout << ">>> Failed to add decal." << std::endl;
-        return 1;
+    const std::vector<int> requestedHostFaceIds = hostFaceIds.empty()
+        ? std::vector<int>{-1}
+        : hostFaceIds;
+    std::vector<TopoDS_Face> originalHostFaces;
+    originalHostFaces.reserve(requestedHostFaceIds.size());
+    for (const int hostFaceId : requestedHostFaceIds) {
+        if (hostFaceId <= 0) {
+            originalHostFaces.emplace_back();
+            continue;
+        }
+        const TopoDS_Face hostFace = GetFaceById(inputShape, hostFaceId);
+        if (hostFace.IsNull()) {
+            std::cout << ">>> Requested decal host face is absent from the input STEP: "
+                      << hostFaceId << std::endl;
+            return 1;
+        }
+        originalHostFaces.push_back(hostFace);
+    }
+    for (size_t hostIndex = 0; hostIndex < requestedHostFaceIds.size(); ++hostIndex) {
+        int hostFaceId = requestedHostFaceIds[hostIndex];
+        if (!originalHostFaces[hostIndex].IsNull()) {
+            TopTools_IndexedMapOfShape currentFaceMap;
+            TopExp::MapShapes(outputShape, TopAbs_FACE, currentFaceMap);
+            hostFaceId = currentFaceMap.FindIndex(originalHostFaces[hostIndex]);
+            if (hostFaceId <= 0) {
+                std::cout << ">>> Requested decal host face no longer exists after an earlier split: "
+                          << requestedHostFaceIds[hostIndex] << std::endl;
+                return 1;
+            }
+        }
+        const bool decalAdded = textStyle > 0
+            ? AddTextDecalBySplittingHost(outputShape, nextInstanceId, decalFacesByInstance, outputInstances, hostFaceId, textStyle, rotateText180)
+            : AddStarDecalToFuselageOrTail(
+                outputShape,
+                nextInstanceId,
+                decalFacesByInstance,
+                outputInstances,
+                hostFaceId,
+                maxStarRadiusScale
+            );
+        if (!decalAdded) {
+            std::cout << ">>> Failed to add decal." << std::endl;
+            return 1;
+        }
+        ++nextInstanceId;
     }
 
     const auto decalSignatures = BuildRivetFaceSignatures(outputShape, decalFacesByInstance);
@@ -2417,6 +2455,22 @@ int RunStarDecalInjection(const std::string& inputFile, int hostFaceId, double m
     std::cout << ">>> Output STEP: " << outputStepFile << std::endl;
     std::cout << ">>> Output labels: " << outputLabelsFile << std::endl;
     return 0;
+}
+
+int RunStarDecalInjection(
+    const std::string& inputFile,
+    int hostFaceId,
+    double maxStarRadiusScale,
+    int textStyle,
+    bool rotateText180
+) {
+    return RunStarDecalInjection(
+        inputFile,
+        std::vector<int>{hostFaceId},
+        maxStarRadiusScale,
+        textStyle,
+        rotateText180
+    );
 }
 
 int RunBatchWingRivetInjection(const std::string& inputDir) {
