@@ -59,6 +59,8 @@ struct FaceFeature
     std::vector<double> neighborAreaRatios;
     std::vector<int> neighborSurfaceTypes;
     std::vector<double> sharedEdgeLengths;
+    std::vector<double> neighborDihedralMeans;
+    std::vector<double> neighborDihedralStds;
     int semanticTag = 0;
 };
 

@@ -3,18 +3,29 @@ import csv
 import subprocess
 from pathlib import Path
 
+import numpy as np
+
 
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
 DEFAULT_INFERENCE_CSV = PROJECT_ROOT / "data" / "current_inference.csv"
 DEFAULT_DETECTOR = PROJECT_ROOT / "build" / "Debug" / "Detector.exe"
 DEFAULT_MODEL_PATH = PROJECT_ROOT / "rivet_gnn_no_centerz_split19_5.pth"
 DEFAULT_STATS_PATH = PROJECT_ROOT / "rivet_gnn_no_centerz_split19_5_stats.npz"
+
+SEMANTIC_TO_LABEL = {
+    "background": 0,
+    "rivet": 1,
+    "decal": 2,
+    "window": 3,
+}
+
+
 def load_truth_labels(labels_path):
     import json
 
     truth = json.load(Path(labels_path).open("r", encoding="utf-8"))
     return {
-        int(row["face_id"]): (1 if row["semantic"] == "rivet" else 0)
+        int(row["face_id"]): SEMANTIC_TO_LABEL.get(row["semantic"], 0)
         for row in truth["faces"]
     }
 
@@ -55,6 +66,8 @@ def run_inference(csv_path, model_path, stats_path, hidden_dim, inference_mode="
 
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     state_dict = torch.load(model_path, map_location=device)
+    stats = np.load(stats_path, allow_pickle=True)
+    num_layers = int(stats["num_layers"]) if "num_layers" in stats.files else 3
     classifier_weight = state_dict.get("classifier.weight")
     num_classes = int(classifier_weight.shape[0]) if classifier_weight is not None else 2
     model = RivetGNN(
@@ -62,6 +75,7 @@ def run_inference(csv_path, model_path, stats_path, hidden_dim, inference_mode="
         edge_features=data.edge_attr.size(1),
         hidden_dim=hidden_dim,
         num_classes=num_classes,
+        num_layers=num_layers,
     ).to(device)
 
     model.load_state_dict(state_dict)
@@ -113,12 +127,7 @@ def visualize_cad_results(
     context_transparency=0.82,
     marker_radius=0.0,
 ):
-    from OCC.Core.Quantity import (
-        Quantity_NOC_GRAY,
-        Quantity_NOC_GREEN,
-        Quantity_NOC_RED,
-        Quantity_NOC_YELLOW,
-    )
+    from OCC.Core.Quantity import Quantity_Color, Quantity_NOC_GRAY, Quantity_NOC_RED, Quantity_NOC_YELLOW, Quantity_TOC_RGB
     from OCC.Core.Bnd import Bnd_Box
     from OCC.Core.BRepBndLib import brepbndlib
     from OCC.Core.BRepPrimAPI import BRepPrimAPI_MakeSphere
@@ -138,7 +147,13 @@ def visualize_cad_results(
     display, start_display, _, _ = init_display()
     truth_labels = load_truth_labels(labels_path)
     print(f"Displaying comparison: {step_path}")
-    print("green=TP, red=FP, yellow=FN, gray=TN")
+    correct_colors = {
+        1: Quantity_Color(0.0, 0.8, 0.0, Quantity_TOC_RGB),
+        2: Quantity_Color(0.1, 0.3, 1.0, Quantity_TOC_RGB),
+        3: Quantity_Color(0.0, 0.8, 0.8, Quantity_TOC_RGB),
+    }
+    print("green=correct rivet, blue=correct decal, cyan=correct window")
+    print("yellow=missed labeled face, red=wrong non-background prediction, gray=correct background")
     print(f"transparent gray=model context (transparency={context_transparency:g})")
     display.DisplayShape(
         shape,
@@ -172,27 +187,22 @@ def visualize_cad_results(
         label_counts[label] = label_counts.get(label, 0) + 1
     print(f"Label distribution: {label_counts}")
 
-    confusion = {"tp": 0, "fp": 0, "fn": 0, "tn": 0}
+    confusion = {}
     highlight_markers = []
     for i in range(1, num_faces + 1):
         face = topods.Face(face_map.FindKey(i))
         label = pred_labels[i - 1] if (i - 1) < len(pred_labels) else 0
 
         truth_label = truth_labels.get(i, 0)
-        if label == 1 and truth_label == 1:
-            color = Quantity_NOC_GREEN
-            confusion["tp"] += 1
-        elif label == 1 and truth_label == 0:
-            color = Quantity_NOC_RED
-            confusion["fp"] += 1
-        elif label == 0 and truth_label == 1:
+        confusion[(truth_label, label)] = confusion.get((truth_label, label), 0) + 1
+        if label == truth_label and label != 0:
+            color = correct_colors[label]
+        elif label == 0 and truth_label != 0:
             color = Quantity_NOC_YELLOW
-            confusion["fn"] += 1
         else:
-            color = Quantity_NOC_GRAY
-            confusion["tn"] += 1
+            color = Quantity_NOC_RED
 
-        if label == 0 and truth_label == 0:
+        if label == truth_label == 0:
             continue
         display.DisplayShape(face, color=color, update=False)
 
@@ -207,7 +217,9 @@ def visualize_cad_results(
             )
             highlight_markers.append((center, color))
 
-    print(f"Comparison stats: {confusion}")
+    print("Comparison counts (truth, prediction):")
+    for (truth_label, predicted_label), count in sorted(confusion.items()):
+        print(f"  ({truth_label}, {predicted_label}): {count}")
     for center, color in highlight_markers:
         marker = BRepPrimAPI_MakeSphere(center, marker_radius).Shape()
         display.DisplayShape(marker, color=color, update=False)

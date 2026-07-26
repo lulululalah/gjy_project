@@ -17,6 +17,13 @@ public:
 private:
     void ComputeGeometricAttributes(const TopTools_IndexedMapOfShape &faceMap);
     int IdentifyEdgeType(const TopoDS_Face& f1, const TopoDS_Face& f2, const TopoDS_Edge& e);
+    bool ComputeSampledDihedralStats(
+        const TopoDS_Face& f1,
+        const TopoDS_Face& f2,
+        const TopoDS_Edge& e,
+        double& meanAngle,
+        double& stdAngle
+    );
     std::string BuildFaceKey(const FaceFeature& feature, const std::vector<FaceFeature>& allFeatures) const;
 
     TopoDS_Shape myShape;

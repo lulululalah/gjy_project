@@ -20,13 +20,13 @@ namespace fs = std::filesystem;
 namespace
 {
     constexpr const char *kFaceCsvHeader =
-        "graph_id,model_name,id,area,relativeArea,perimeter,compactness,surfaceType,"
+        "graph_id,model_name,id,area,relativeArea,perimeter,compactness,surfaceType,centerX,centerY,centerZ,"
         "meanCurvature,radius,numWires,innerWireCount,minInnerWireLength,maxInnerWireLength,"
         "numEdges,neighborAreaMean,neighborAreaMax,areaToNeighborMean,areaToNeighborMax,"
         "normalNeighborDotMean,normalNeighborDotMin,normalNeighborDotMax,"
         "neighborPlaneCount,neighborCylinderCount,neighborCurvedCount,convexEdgeCount,concaveEdgeCount,"
         "smoothEdgeCount,convexEdgeRatio,concaveEdgeRatio,neighbors,edge_types,edge_area_ratios,"
-        "edge_neighbor_surface_types,shared_edge_lengths,label\n";
+        "edge_neighbor_surface_types,shared_edge_lengths,edge_dihedral_means,edge_dihedral_stds,label\n";
     constexpr double kMaxRivetRelativeArea = 1.0e-4;
 
     bool IsStepFile(const fs::path &filePath)
@@ -261,7 +261,8 @@ namespace
     {
         dataFile << graphId << ",\"" << modelName << "\"," << feature.id << "," << feature.area << ","
                  << feature.relativeArea << "," << feature.perimeter << "," << feature.compactness << ","
-                 << feature.surfaceType << "," << feature.meanCurvature << ","
+                 << feature.surfaceType << "," << feature.centerX << "," << feature.centerY << "," << feature.centerZ << ","
+                 << feature.meanCurvature << ","
                  << feature.radius << "," << feature.numWires << "," << feature.innerWireCount << ","
                  << feature.minInnerWireLength << "," << feature.maxInnerWireLength << "," << feature.numEdges << ","
                  << feature.neighborAreaMean << "," << feature.neighborAreaMax << ","
@@ -304,6 +305,20 @@ namespace
         {
             dataFile << feature.sharedEdgeLengths[j]
                      << (j + 1 == feature.sharedEdgeLengths.size() ? "" : " ");
+        }
+
+        dataFile << "\",\"";
+        for (size_t j = 0; j < feature.neighborDihedralMeans.size(); ++j)
+        {
+            dataFile << feature.neighborDihedralMeans[j]
+                     << (j + 1 == feature.neighborDihedralMeans.size() ? "" : " ");
+        }
+
+        dataFile << "\",\"";
+        for (size_t j = 0; j < feature.neighborDihedralStds.size(); ++j)
+        {
+            dataFile << feature.neighborDihedralStds[j]
+                     << (j + 1 == feature.neighborDihedralStds.size() ? "" : " ");
         }
 
         dataFile << "\"," << feature.semanticTag << "\n";
@@ -499,6 +514,58 @@ int RunWingRivetTrainingExport(const std::string &inputDir, const std::string &o
     std::cout << ">>> Wing-rivet training export complete. Models processed: " << graphId
               << ", skipped: " << skipped << std::endl;
     return graphId > 0 ? 0 : 2;
+}
+
+int RunSingleWingRivetTrainingExport(
+    const std::string &inputDir,
+    const std::string &modelStem,
+    const std::string &outputCsv)
+{
+    const fs::path inputPath(inputDir);
+    const fs::path stepPath = inputPath / "after_two" / (modelStem + ".step");
+    const fs::path labelPath = inputPath / "label" / (modelStem + ".labels.json");
+    if (!fs::exists(stepPath) || !fs::exists(labelPath))
+    {
+        std::cout << ">>> Missing STEP or label for: " << modelStem << std::endl;
+        return 1;
+    }
+
+    const auto features = ExtractFaceFeaturesFromStep(stepPath.string());
+    if (features.empty())
+    {
+        std::cout << ">>> Failed to extract features: " << modelStem << std::endl;
+        return 2;
+    }
+
+    std::vector<TrainingLabelEntry> labels;
+    if (!ParseWingRivetLabels(labelPath, labels))
+    {
+        std::cout << ">>> Failed to parse labels: " << modelStem << std::endl;
+        return 3;
+    }
+
+    std::vector<int> faceLabels;
+    if (!BuildFaceLabelMap(labels, static_cast<int>(features.size()), faceLabels))
+    {
+        std::cout << ">>> face_id/label count mismatch: " << modelStem << std::endl;
+        return 4;
+    }
+
+    int oversizedFaceId = -1;
+    double oversizedRelativeArea = 0.0;
+    if (HasOversizedRivetLabel(features, faceLabels, oversizedFaceId, oversizedRelativeArea))
+    {
+        std::cout << ">>> Oversized rivet label: " << modelStem
+                  << " face_id=" << oversizedFaceId
+                  << " relativeArea=" << oversizedRelativeArea << std::endl;
+        return 5;
+    }
+
+    std::ofstream dataFile(outputCsv);
+    WriteFaceCsvHeader(dataFile);
+    ExportFaceFeaturesWithTrueLabels(dataFile, features, faceLabels, 0, stepPath.filename().string());
+    std::cout << "  - Exported: " << stepPath.filename() << std::endl;
+    return 0;
 }
 
 void RunSingleInferenceExport(const std::string &inputFile, const std::string &outputCsv)

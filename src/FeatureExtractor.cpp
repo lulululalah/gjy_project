@@ -384,6 +384,16 @@ void FeatureExtractor::ComputeGeometricAttributes(const TopTools_IndexedMapOfSha
                             GProp_GProps sharedEdgeProps;
                             BRepGProp::LinearProperties(sharedEdge, sharedEdgeProps);
 
+                            double dihedralMean = 0.0;
+                            double dihedralStd = 0.0;
+                            ComputeSampledDihedralStats(
+                                face,
+                                neighborFace,
+                                sharedEdge,
+                                dihedralMean,
+                                dihedralStd
+                            );
+
                             feat.neighborIds.push_back(neighborId);
                             feat.neighborEdgeTypes.push_back(mlEdgeType);
                             feat.neighborAreaRatios.push_back(
@@ -391,6 +401,8 @@ void FeatureExtractor::ComputeGeometricAttributes(const TopTools_IndexedMapOfSha
                             );
                             feat.neighborSurfaceTypes.push_back(neighborSurface.GetType());
                             feat.sharedEdgeLengths.push_back(sharedEdgeProps.Mass());
+                            feat.neighborDihedralMeans.push_back(dihedralMean);
+                            feat.neighborDihedralStds.push_back(dihedralStd);
                             if (mlEdgeType > 0) {
                                 feat.convexEdgeCount++;
                             } else if (mlEdgeType < 0) {
@@ -587,4 +599,84 @@ int FeatureExtractor::IdentifyEdgeType(const TopoDS_Face& f1, const TopoDS_Face&
     if (check < -1e-6) return CONVEX;
     
     return SMOOTH;
+}
+
+bool FeatureExtractor::ComputeSampledDihedralStats(
+    const TopoDS_Face& f1,
+    const TopoDS_Face& f2,
+    const TopoDS_Edge& e,
+    double& meanAngle,
+    double& stdAngle)
+{
+    meanAngle = 0.0;
+    stdAngle = 0.0;
+
+    Standard_Real first = 0.0;
+    Standard_Real last = 0.0;
+    BRepAdaptor_Curve curveAdaptor(e);
+    first = curveAdaptor.FirstParameter();
+    last = curveAdaptor.LastParameter();
+    if (!std::isfinite(first) || !std::isfinite(last) || std::abs(last - first) <= Precision::Confusion()) {
+        return false;
+    }
+
+    Standard_Real u1 = 0.0;
+    Standard_Real v1 = 0.0;
+    Standard_Real u2 = 0.0;
+    Standard_Real v2 = 0.0;
+    Handle(Geom2d_Curve) curveOnFirstFace = BRep_Tool::CurveOnSurface(e, f1, u1, v1);
+    Handle(Geom2d_Curve) curveOnSecondFace = BRep_Tool::CurveOnSurface(e, f2, u2, v2);
+    if (curveOnFirstFace.IsNull() || curveOnSecondFace.IsNull()) {
+        return false;
+    }
+
+    BRepAdaptor_Surface firstSurface(f1);
+    BRepAdaptor_Surface secondSurface(f2);
+    std::vector<double> angles;
+    angles.reserve(10);
+    constexpr int kSampleCount = 10;
+    constexpr double kStartFraction = 0.05;
+    constexpr double kEndFraction = 0.95;
+
+    for (int sampleIndex = 0; sampleIndex < kSampleCount; ++sampleIndex) {
+        const double fraction = kStartFraction +
+            (kEndFraction - kStartFraction) * static_cast<double>(sampleIndex) /
+            static_cast<double>(kSampleCount - 1);
+        const Standard_Real parameter = first + (last - first) * fraction;
+        const gp_Pnt2d uv1 = curveOnFirstFace->Value(parameter);
+        const gp_Pnt2d uv2 = curveOnSecondFace->Value(parameter);
+        BRepLProp_SLProps firstProps(
+            firstSurface, uv1.X(), uv1.Y(), 1, Precision::Confusion());
+        BRepLProp_SLProps secondProps(
+            secondSurface, uv2.X(), uv2.Y(), 1, Precision::Confusion());
+        if (!firstProps.IsNormalDefined() || !secondProps.IsNormalDefined()) {
+            continue;
+        }
+
+        gp_Dir firstNormal = firstProps.Normal();
+        gp_Dir secondNormal = secondProps.Normal();
+        if (f1.Orientation() == TopAbs_REVERSED) {
+            firstNormal.Reverse();
+        }
+        if (f2.Orientation() == TopAbs_REVERSED) {
+            secondNormal.Reverse();
+        }
+        const double dot = std::clamp(firstNormal.Dot(secondNormal), -1.0, 1.0);
+        angles.push_back(std::acos(dot));
+    }
+
+    if (angles.size() < 3) {
+        return false;
+    }
+
+    for (const double angle : angles) {
+        meanAngle += angle;
+    }
+    meanAngle /= static_cast<double>(angles.size());
+    for (const double angle : angles) {
+        const double delta = angle - meanAngle;
+        stdAngle += delta * delta;
+    }
+    stdAngle = std::sqrt(stdAngle / static_cast<double>(angles.size()));
+    return true;
 }

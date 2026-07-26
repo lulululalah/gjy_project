@@ -8,7 +8,7 @@ import torch
 import torch.nn.functional as F
 from torch_geometric.data import Data
 from torch_geometric.loader import DataLoader
-from torch_geometric.nn import NNConv
+from torch_geometric.nn import NNConv, global_max_pool, global_mean_pool
 
 
 BASE_FEATURE_COLS = [
@@ -41,6 +41,11 @@ RELATIVE_NORMAL_FEATURE_COLS = [
     "normalNeighborDotMax",
 ]
 
+MODEL_RELATIVE_POSITION_FEATURE_COLS = [
+    "axisPositionAbs",
+    "radialDistance",
+]
+
 ABSOLUTE_POSE_FEATURE_COLS = {
     "centerZ",
     "nx",
@@ -53,6 +58,8 @@ EDGE_ATTR_COLS = [
     "edge_area_ratios",
     "edge_neighbor_surface_types",
     "shared_edge_lengths",
+    "edge_dihedral_means",
+    "edge_dihedral_stds",
 ]
 
 DEFAULT_CSV = Path("data/wing_rivet_training_set.csv")
@@ -85,6 +92,8 @@ def infer_feature_columns(df):
         else:
             feature_cols.append(col)
     feature_cols.extend(RELATIVE_NORMAL_FEATURE_COLS)
+    if {"centerX", "centerY", "centerZ"}.issubset(df.columns):
+        feature_cols.extend(MODEL_RELATIVE_POSITION_FEATURE_COLS)
     feature_cols.extend(f"{SURFACE_TYPE_COL}_{surface_type}" for surface_type in surface_types)
     return feature_cols
 
@@ -116,6 +125,22 @@ def build_feature_frame(df, feature_cols=None):
 
     for col in RELATIVE_NORMAL_FEATURE_COLS:
         feature_df[col] = numeric_df[col].fillna(0.0).astype(float)
+
+    if {"centerX", "centerY", "centerZ"}.issubset(df.columns):
+        positions = numeric_df[["centerX", "centerY", "centerZ"]].fillna(0.0).to_numpy(dtype=float)
+        relative_position = np.zeros((len(df), 2), dtype=float)
+        for _, indices in df.groupby("graph_id", sort=False).groups.items():
+            index_array = np.fromiter(indices, dtype=int)
+            coords = positions[index_array]
+            centered = coords - coords.mean(axis=0, keepdims=True)
+            axis_index = int(np.argmax(coords.max(axis=0) - coords.min(axis=0)))
+            axial = centered[:, axis_index]
+            radial = np.sqrt(np.sum(np.delete(centered, axis_index, axis=1) ** 2, axis=1))
+            scale = max(np.sqrt(np.sum(centered ** 2, axis=1)).max(), 1e-6)
+            relative_position[index_array, 0] = np.abs(axial) / scale
+            relative_position[index_array, 1] = radial / scale
+        feature_df["axisPositionAbs"] = relative_position[:, 0]
+        feature_df["radialDistance"] = relative_position[:, 1]
 
     surface_type_values = numeric_df[SURFACE_TYPE_COL].fillna(0).astype(int)
     for col in feature_cols:
@@ -268,6 +293,18 @@ def build_window_dataset(full_graphs, hop_count, background_ratio, seed):
     return windows
 
 
+def build_full_balanced_dataset(full_graphs, background_ratio, seed):
+    rng = np.random.default_rng(seed)
+    balanced_graphs = []
+    for full_graph in full_graphs:
+        graph = full_graph.clone()
+        selected_nodes = sample_window_centers(graph, background_ratio, rng)
+        graph.target_mask = torch.zeros(graph.num_nodes, dtype=torch.bool)
+        graph.target_mask[torch.tensor(selected_nodes, dtype=torch.long)] = True
+        balanced_graphs.append(graph)
+    return balanced_graphs
+
+
 def collect_edge_attr_matrix(df):
     rows = []
     for _, row in df.iterrows():
@@ -335,6 +372,8 @@ def build_graphs_from_dataframe(df, feature_mean, feature_std, edge_mean=None, e
 def prepare_graph_samples(full_graphs, training_mode="full", window_hop=2, background_ratio=5, seed=42):
     if training_mode == "window":
         return build_window_dataset(full_graphs, window_hop, background_ratio, seed)
+    if training_mode == "full-balanced":
+        return build_full_balanced_dataset(full_graphs, background_ratio, seed)
     return full_graphs
 
 
@@ -389,9 +428,10 @@ def load_explicit_train_val_datasets(
         background_ratio,
         seed,
     )
+    val_training_mode = "full" if training_mode == "full-balanced" else training_mode
     val_graphs = prepare_graph_samples(
         val_full_graphs,
-        training_mode,
+        val_training_mode,
         window_hop,
         background_ratio,
         seed + 1,
@@ -400,8 +440,11 @@ def load_explicit_train_val_datasets(
 
 
 class RivetGNN(torch.nn.Module):
-    def __init__(self, node_features, edge_features, hidden_dim, num_classes=2):
+    def __init__(self, node_features, edge_features, hidden_dim, num_classes=2, num_layers=3):
         super().__init__()
+        if num_layers < 3:
+            raise ValueError("num_layers must be at least 3")
+        self.num_layers = num_layers
 
         def create_nn(in_f, out_f):
             return torch.nn.Sequential(
@@ -410,32 +453,45 @@ class RivetGNN(torch.nn.Module):
                 torch.nn.Linear(16, in_f * out_f),
             )
 
-        self.conv1 = NNConv(node_features, hidden_dim, create_nn(node_features, hidden_dim))
-        self.bn1 = torch.nn.BatchNorm1d(hidden_dim)
-
-        self.conv2 = NNConv(hidden_dim, hidden_dim, create_nn(hidden_dim, hidden_dim))
-        self.bn2 = torch.nn.BatchNorm1d(hidden_dim)
-
-        self.conv3 = NNConv(hidden_dim, hidden_dim, create_nn(hidden_dim, hidden_dim))
-        self.bn3 = torch.nn.BatchNorm1d(hidden_dim)
-
-        self.classifier = torch.nn.Linear(hidden_dim, num_classes)
+        if num_layers == 3:
+            self.conv1 = NNConv(node_features, hidden_dim, create_nn(node_features, hidden_dim))
+            self.bn1 = torch.nn.BatchNorm1d(hidden_dim)
+            self.conv2 = NNConv(hidden_dim, hidden_dim, create_nn(hidden_dim, hidden_dim))
+            self.bn2 = torch.nn.BatchNorm1d(hidden_dim)
+            self.conv3 = NNConv(hidden_dim, hidden_dim, create_nn(hidden_dim, hidden_dim))
+            self.bn3 = torch.nn.BatchNorm1d(hidden_dim)
+            self.classifier = torch.nn.Linear(hidden_dim, num_classes)
+            return
+        self.convs = torch.nn.ModuleList()
+        self.batch_norms = torch.nn.ModuleList()
+        for layer_index in range(num_layers):
+            in_features = node_features if layer_index == 0 else hidden_dim
+            self.convs.append(NNConv(in_features, hidden_dim, create_nn(in_features, hidden_dim)))
+            self.batch_norms.append(torch.nn.BatchNorm1d(hidden_dim))
+        self.classifier = torch.nn.Linear(hidden_dim * 3, num_classes)
 
     def forward(self, data):
         x, edge_index, edge_attr = data.x, data.edge_index, data.edge_attr
 
-        x = F.relu(self.bn1(self.conv1(x, edge_index, edge_attr)))
-
-        identity = x
-        x = F.relu(self.bn2(self.conv2(x, edge_index, edge_attr)))
-        x = x + identity
-
-        x = F.relu(self.bn3(self.conv3(x, edge_index, edge_attr)))
-        x = self.classifier(x)
+        if self.num_layers == 3:
+            x = F.relu(self.bn1(self.conv1(x, edge_index, edge_attr)))
+            identity = x
+            x = F.relu(self.bn2(self.conv2(x, edge_index, edge_attr)))
+            x = x + identity
+            x = F.relu(self.bn3(self.conv3(x, edge_index, edge_attr)))
+            return F.log_softmax(self.classifier(x), dim=1)
+        for layer_index, (conv, batch_norm) in enumerate(zip(self.convs, self.batch_norms)):
+            updated = F.relu(batch_norm(conv(x, edge_index, edge_attr)))
+            x = updated if layer_index == 0 else updated + x
+        batch = getattr(data, "batch", None)
+        if batch is None:
+            batch = torch.zeros(x.size(0), dtype=torch.long, device=x.device)
+        global_features = torch.cat([global_mean_pool(x, batch), global_max_pool(x, batch)], dim=1)
+        x = self.classifier(torch.cat([x, global_features[batch]], dim=1))
         return F.log_softmax(x, dim=1)
 
 
-def compute_class_weights(graphs, num_classes=2):
+def compute_class_weights(graphs, num_classes=2, max_weight=5.0):
     labels = []
     for graph in graphs:
         target_mask = getattr(graph, "target_mask", torch.ones(graph.y.size(0), dtype=torch.bool))
@@ -447,8 +503,11 @@ def compute_class_weights(graphs, num_classes=2):
     all_labels = torch.cat(labels)
     counts = torch.bincount(all_labels, minlength=num_classes).float()
     counts = torch.clamp(counts, min=1.0)
-    weights = counts.sum() / (len(counts) * counts)
-    return weights
+    if max_weight <= 0.0:
+        raise ValueError("max_weight must be positive")
+    inverse_sqrt_weights = torch.sqrt(counts.sum() / (len(counts) * counts))
+    capped_weights = torch.clamp(inverse_sqrt_weights, max=max_weight)
+    return capped_weights / capped_weights.mean()
 
 
 def compute_metrics_from_confusion(confusion):
@@ -487,7 +546,13 @@ def summarize_metrics(metrics):
     }
 
 
-def evaluate(model, loader, device, num_classes, class_weights=None):
+def focal_nll_loss(log_probabilities, targets, class_weights=None, gamma=2.0):
+    target_log_probabilities = log_probabilities.gather(1, targets.unsqueeze(1)).squeeze(1)
+    weights = class_weights[targets] if class_weights is not None else 1.0
+    return ((1.0 - target_log_probabilities.exp()).pow(gamma) * -target_log_probabilities * weights).mean()
+
+
+def evaluate(model, loader, device, num_classes, class_weights=None, focal_gamma=2.0):
     model.eval()
     total_loss = 0.0
     total_correct = 0
@@ -499,7 +564,7 @@ def evaluate(model, loader, device, num_classes, class_weights=None):
             batch = batch.to(device)
             out = model(batch)
             target_mask = getattr(batch, "target_mask", torch.ones(batch.y.size(0), dtype=torch.bool, device=batch.y.device))
-            loss = F.nll_loss(out[target_mask], batch.y[target_mask], weight=class_weights)
+            loss = focal_nll_loss(out[target_mask], batch.y[target_mask], class_weights, focal_gamma)
 
             pred = out.argmax(dim=1)
             target_count = int(target_mask.sum().item())
@@ -598,21 +663,28 @@ def train(args):
         edge_features=train_graphs[0].edge_attr.size(1),
         hidden_dim=args.hidden_dim,
         num_classes=num_classes,
+        num_layers=args.num_layers,
     ).to(device)
 
     optimizer = torch.optim.Adam(model.parameters(), lr=args.lr)
-    class_weights = compute_class_weights(train_graphs, num_classes=num_classes).to(device)
+    class_weights = compute_class_weights(
+        train_graphs,
+        num_classes=num_classes,
+        max_weight=args.max_class_weight,
+    ).to(device)
 
     print(f"Loaded {len(graphs)} graph samples ({split_description})")
     print(f"Classes: {num_classes}")
     print(f"Training mode: {args.training_mode}")
     if args.training_mode == "window":
         print(f"Window hop: {args.window_hop}, background ratio: {args.background_ratio}")
+    elif args.training_mode == "full-balanced":
+        print(f"Full graph with balanced loss mask, background ratio: {args.background_ratio}")
     print(f"Train graphs: {len(train_graphs)}, Val graphs: {len(val_graphs)}")
     print(f"Training on: {device}")
     print(f"Class weights: {class_weights.cpu().tolist()}")
 
-    best_val_loss = float("inf")
+    best_miou = float("-inf")
 
     for epoch in range(1, args.epochs + 1):
         model.train()
@@ -624,7 +696,7 @@ def train(args):
             optimizer.zero_grad()
             out = model(batch)
             target_mask = getattr(batch, "target_mask", torch.ones(batch.y.size(0), dtype=torch.bool, device=batch.y.device))
-            loss = F.nll_loss(out[target_mask], batch.y[target_mask], weight=class_weights)
+            loss = focal_nll_loss(out[target_mask], batch.y[target_mask], class_weights, args.focal_gamma)
             loss.backward()
             optimizer.step()
 
@@ -639,10 +711,11 @@ def train(args):
             device,
             num_classes,
             class_weights=class_weights,
+            focal_gamma=args.focal_gamma,
         )
 
-        if val_loss < best_val_loss:
-            best_val_loss = val_loss
+        if val_summary["miou"] > best_miou:
+            best_miou = val_summary["miou"]
             torch.save(model.state_dict(), args.model_out)
             np.savez(
                 args.stats_out,
@@ -652,6 +725,7 @@ def train(args):
                 std=feature_std,
                 edge_mean=edge_mean,
                 edge_std=edge_std,
+                num_layers=np.array(args.num_layers),
             )
             write_eval_csv(args.eval_out, val_metrics, val_summary, val_loss, val_acc)
 
@@ -672,6 +746,7 @@ def train(args):
         device,
         num_classes,
         class_weights=class_weights,
+        focal_gamma=args.focal_gamma,
     )
     write_eval_csv(args.eval_out, final_metrics, final_summary, final_val_loss, final_val_acc)
     print_metric_table(final_metrics, final_summary)
@@ -690,9 +765,12 @@ def parse_args():
     parser.add_argument("--epochs", type=int, default=150, help="Training epochs. Default: 150")
     parser.add_argument("--batch-size", type=int, default=8, help="Graphs per batch. Default: 8")
     parser.add_argument("--hidden-dim", type=int, default=64, help="Hidden dimension. Default: 64")
+    parser.add_argument("--num-layers", type=int, default=6, help="Residual NNConv layers. Default: 6")
     parser.add_argument("--lr", type=float, default=0.005, help="Learning rate. Default: 0.005")
+    parser.add_argument("--focal-gamma", type=float, default=2.0, help="Focal-loss gamma. Default: 2.0")
+    parser.add_argument("--max-class-weight", type=float, default=5.0, help="Maximum inverse-sqrt class weight before normalization. Default: 5.0")
     parser.add_argument("--seed", type=int, default=42, help="Random seed. Default: 42")
-    parser.add_argument("--training-mode", choices=["full", "window"], default="full", help="Use full-graph or k-hop window samples. Default: full")
+    parser.add_argument("--training-mode", choices=["full", "full-balanced", "window"], default="full", help="Use full graphs, balanced-loss full graphs, or k-hop windows. Default: full")
     parser.add_argument("--window-hop", type=int, default=2, help="k-hop radius for window training. Default: 2")
     parser.add_argument("--background-ratio", type=int, default=5, help="Background center samples per positive center in window mode. Default: 5")
     return parser.parse_args()
