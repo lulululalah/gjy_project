@@ -1,0 +1,17 @@
+model_file,rivet_host_faces,native_windows,native_decals,screening_status,notes
+Bayraktar TB-2.STEP,F274,no,no,rivet_hosts_selected,F287 rejected as a tiny secondary candidate; user confirmed no built-in windows or decals
+bombardier jet v6f.step,F53;F104,yes,no,rivet_hosts_selected,User confirmed built-in windows only
+bombardier with gears v3.step,F82;F133,yes,no,rivet_hosts_selected,User confirmed built-in windows and no built-in decals
+c295 1 v14q.step,F659;F863,yes,no,rivet_hosts_selected,User selected symmetric wing-edge hosts; built-in windows and no built-in decals
+CHRISTOPHE FREIGHTER AIRCRAFT v3.step,F564;F1710,no,no,rivet_hosts_selected,User selected wing-edge hosts; no built-in windows or decals
+f 86 s v9.step,F115;F234,no,yes,rivet_hosts_selected,User selected symmetric wing-edge hosts; built-in decals and no windows
+md 11 a v4a v12.step,F2113;F2295,no,yes,rivet_hosts_selected,User selected symmetric wing-edge hosts; built-in decals and no windows
+Mig17asse.STEP,F282;F297,no,no,rivet_hosts_selected,User selected symmetric wing-edge hosts; no built-in windows or decals
+PFINAL.STEP,F41;F176,no,no,rivet_hosts_selected,User selected symmetric wing-edge hosts; no built-in windows or decals
+Slimer 15.step,F3438;F3474,no,no,rivet_hosts_selected,User selected symmetric wing-edge hosts; no built-in windows or decals
+Tomcat-assembly.STEP,F496;F508,no,no,rivet_hosts_selected,User selected symmetric wing-edge hosts; no built-in windows or decals
+Tu-134.step,F2591;F2767,yes,yes,rivet_hosts_selected,User selected symmetric wing-edge hosts; built-in windows and decals
+1.STEP,F4994;F5796,no,no,rivet_hosts_selected,User selected symmetric wing-edge hosts; no built-in windows or decals
+717 qantas livery v3.step,F2151;F2246,yes,yes,rivet_hosts_selected,F2246 confirmed as the geometric mirror of F2151; built-in windows and decals
+757 dhl boeing.step,F1072;F1533;F3446,no,yes,rivet_hosts_selected,User selected symmetric wing-edge pair plus F3446; built-in decals and no windows
+A220 v14.step,F1163;F1395,yes,yes,rivet_hosts_selected,User selected symmetric wing-edge hosts; built-in windows and decals
