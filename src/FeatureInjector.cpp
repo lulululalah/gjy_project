@@ -279,7 +279,7 @@ bool ParseLabelsJson(const fs::path& labelsPath, LabelsData& labels) {
     }
 
     const std::regex faceRegex(
-        R"json(\{"face_id":\s*(-?\d+),\s*"semantic":\s*"([^"]+)",\s*"instance_id":\s*(-?\d+),\s*"operation":\s*"([^"]+)"\})json"
+        R"json(\{\s*"face_id":\s*(-?\d+),\s*"semantic":\s*"([^"]+)",\s*"instance_id":\s*(-?\d+),\s*"operation":\s*"([^"]+)"\s*\})json"
     );
     for (std::sregex_iterator it(text.begin(), text.end(), faceRegex), end; it != end; ++it) {
         LabelsFaceEntry entry;
@@ -291,7 +291,7 @@ bool ParseLabelsJson(const fs::path& labelsPath, LabelsData& labels) {
     }
 
     const std::regex instanceRegex(
-        R"json(\{"instance_id":\s*(-?\d+),\s*"type":\s*"([^"]+)",\s*"host_face":\s*(-?\d+),\s*"inverse_op":\s*\{"kind":\s*"([^"]+)",\s*"radius":\s*([-+0-9.eE]+),\s*"height":\s*([-+0-9.eE]+)\}\})json"
+        R"json(\{\s*"instance_id":\s*(-?\d+),\s*"type":\s*"([^"]+)",\s*"host_face":\s*(-?\d+),\s*"inverse_op":\s*\{\s*"kind":\s*"([^"]+)",\s*"radius":\s*([-+0-9.eE]+),\s*"height":\s*([-+0-9.eE]+)\s*\}\s*\})json"
     );
     for (std::sregex_iterator it(text.begin(), text.end(), instanceRegex), end; it != end; ++it) {
         LabelsInstanceEntry entry;
@@ -1591,9 +1591,9 @@ bool AddTextDecalBySplittingHost(
     BRepTools::UVBounds(hostFace, uMin, uMax, vMin, vMax);
     const double textScale = textStyle == 2 ? 0.19 : 0.18;
     const double scale = std::min(uMax - uMin, vMax - vMin) * textScale;
-    const double baseU = (uMin + uMax) * 0.5 - scale * 1.45;
+    const double textWidth = textStyle == 5 ? 2.45 : ((textStyle == 1 || textStyle == 4) ? 2.38 : 1.82);
+    const double baseU = (uMin + uMax) * 0.5 - scale * textWidth * 0.5;
     const double baseV = (vMin + vMax) * 0.5 - scale * 0.5;
-    const double textWidth = textStyle == 1 ? 2.38 : 1.82;
     const auto point = [=](double x, double y) {
         if (rotateText180) {
             x = textWidth - x;
@@ -1615,6 +1615,30 @@ bool AddTextDecalBySplittingHost(
         glyphs = {
             glyphs[0],
             {point(1.00, 1.00), point(1.69, 1.00), point(1.80, 0.88), point(1.80, 0.60), point(1.65, 0.50), point(1.80, 0.40), point(1.80, 0.12), point(1.69, 0.00), point(1.00, 0.00), point(1.00, 0.18), point(1.59, 0.18), point(1.59, 0.39), point(1.40, 0.47), point(1.17, 0.47), point(1.17, 0.55), point(1.40, 0.55), point(1.59, 0.63), point(1.59, 0.82), point(1.00, 0.82)}
+        };
+    } else if (textStyle == 4) {
+        glyphs = {
+            glyphs[0],
+            glyphs[1],
+            {point(1.58, 1.00), point(1.80, 1.00), point(2.38, 0.42), point(2.38, 0.26), point(2.18, 0.26), point(2.18, 0.00), point(1.98, 0.00), point(1.98, 0.26), point(1.58, 0.26), point(1.58, 0.45), point(1.90, 0.45), point(1.90, 0.68)}
+        };
+    } else if (textStyle == 5) {
+        glyphs = {
+            {point(0.00, 1.00), point(0.65, 1.00), point(0.65, 0.82), point(0.18, 0.82), point(0.18, 0.58), point(0.55, 0.58), point(0.65, 0.48), point(0.65, 0.12), point(0.55, 0.00), point(0.00, 0.00), point(0.00, 0.18), point(0.48, 0.18), point(0.48, 0.40), point(0.10, 0.40), point(0.00, 0.50)},
+            {point(0.85, 1.00), point(1.03, 1.00), point(1.03, 0.18), point(1.43, 0.18), point(1.43, 0.00), point(0.85, 0.00)},
+            {point(1.63, 1.00), point(1.81, 1.00), point(1.81, 0.00), point(1.63, 0.00)},
+            {point(2.01, 0.00), point(2.01, 1.00), point(2.20, 1.00), point(2.41, 0.36), point(2.62, 1.00), point(2.81, 1.00), point(2.81, 0.00), point(2.62, 0.00), point(2.62, 0.62), point(2.45, 0.08), point(2.37, 0.08), point(2.20, 0.62), point(2.20, 0.00)},
+            {point(3.01, 1.00), point(3.65, 1.00), point(3.65, 0.82), point(3.19, 0.82), point(3.19, 0.60), point(3.57, 0.60), point(3.57, 0.42), point(3.19, 0.42), point(3.19, 0.18), point(3.65, 0.18), point(3.65, 0.00), point(3.01, 0.00)},
+            {point(3.85, 0.00), point(3.85, 1.00), point(4.42, 1.00), point(4.52, 0.90), point(4.52, 0.58), point(4.40, 0.47), point(4.58, 0.00), point(4.37, 0.00), point(4.21, 0.43), point(4.03, 0.43), point(4.03, 0.00), point(3.85, 0.00), point(4.03, 0.61), point(4.31, 0.61), point(4.34, 0.66), point(4.34, 0.82), point(4.30, 0.82), point(4.03, 0.82)},
+            {point(4.92, 1.00), point(5.10, 1.00), point(5.10, 0.00), point(4.92, 0.00)},
+            {point(5.35, 1.00), point(5.98, 1.00), point(5.98, 0.82), point(5.53, 0.82), point(5.53, 0.59), point(5.90, 0.59), point(6.00, 0.49), point(6.00, 0.12), point(5.90, 0.00), point(5.35, 0.00), point(5.35, 0.18), point(5.82, 0.18), point(5.82, 0.41), point(5.44, 0.41), point(5.35, 0.51)}
+        };
+    }
+    if (textStyle == 5) {
+        glyphs = {
+            {point(0.00, 1.00), point(0.65, 1.00), point(0.65, 0.82), point(0.18, 0.82), point(0.18, 0.58), point(0.55, 0.58), point(0.65, 0.48), point(0.65, 0.12), point(0.55, 0.00), point(0.00, 0.00), point(0.00, 0.18), point(0.48, 0.18), point(0.48, 0.40), point(0.10, 0.40), point(0.00, 0.50)},
+            {point(0.98, 1.00), point(1.16, 1.00), point(1.16, 0.00), point(0.98, 0.00)},
+            {point(1.48, 1.00), point(2.11, 1.00), point(2.11, 0.82), point(1.66, 0.82), point(1.66, 0.59), point(2.03, 0.59), point(2.13, 0.49), point(2.13, 0.12), point(2.03, 0.00), point(1.48, 0.00), point(1.48, 0.18), point(1.95, 0.18), point(1.95, 0.41), point(1.57, 0.41), point(1.48, 0.51)}
         };
     }
     BRepFeat_SplitShape split(shape);
@@ -1642,7 +1666,7 @@ bool AddTextDecalBySplittingHost(
     shape = split.Shape();
     decalFacesByInstance.push_back({startingInstanceId, decalFaces});
     labelInstances.push_back({startingInstanceId, "decal", hostInfo.faceId, 1.0, 0.0});
-    const char* decalText = textStyle == 2 ? "V2" : (textStyle == 3 ? "V3" : "V13");
+    const char* decalText = textStyle == 2 ? "V2" : (textStyle == 3 ? "V3" : (textStyle == 4 ? "V14" : (textStyle == 5 ? "S15" : "V13")));
     std::cout << ">>> Added " << decalText << " decal by splitting original host face: " << hostInfo.faceId << std::endl;
     return true;
 }
@@ -2308,13 +2332,11 @@ int RunStarDecalInjection(
     const fs::path inputPath = fs::absolute(fs::path(inputFile));
     const fs::path planeModelDir = fs::current_path() / "data" / "plane_model";
     const fs::path expectedInputDir = planeModelDir / "new_data";
-    const fs::path outputDir = planeModelDir / "after_two";
-    if (inputPath.parent_path().lexically_normal() != expectedInputDir.lexically_normal()) {
-        std::cout << ">>> Star decals only accept models from: " << expectedInputDir << std::endl;
-        return 1;
-    }
-
-    const fs::path inputLabelsFile = expectedInputDir /
+    const fs::path inputDir = inputPath.parent_path().lexically_normal();
+    const fs::path outputDir = inputDir == expectedInputDir.lexically_normal()
+        ? planeModelDir / "after_two"
+        : inputDir / "after_two";
+    const fs::path inputLabelsFile = inputDir /
         (inputPath.stem().string() + ".labels.json");
     LabelsData inputLabels;
     if (!ParseLabelsJson(inputLabelsFile, inputLabels) || !ValidateRivetLabels(inputLabels)) {

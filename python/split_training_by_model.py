@@ -48,8 +48,8 @@ def label_counts(frame):
 def main():
     args = parse_args()
     val_models = args.val_models or DEFAULT_VAL_MODELS
-    if len(val_models) != 3:
-        raise ValueError(f"Expected exactly 3 validation models, got {len(val_models)}.")
+    if not val_models:
+        raise ValueError("Provide at least one validation model.")
 
     df = pd.read_csv(args.input_csv)
     required_columns = {"graph_id", "model_name", "label"}
@@ -67,11 +67,8 @@ def main():
     train_models = set(train_df["model_name"].unique())
     actual_val_models = set(val_df["model_name"].unique())
 
-    if len(all_models) != 16 or len(train_models) != 13 or len(actual_val_models) != 3:
-        raise ValueError(
-            "Expected a 16-model source split into 13 train and 3 validation models; "
-            f"got {len(all_models)}, {len(train_models)}, {len(actual_val_models)}."
-        )
+    if len(train_models) + len(actual_val_models) != len(all_models):
+        raise ValueError("Train and validation model counts do not reconstruct the source models.")
     if train_models.intersection(actual_val_models):
         raise ValueError("Train and validation model sets overlap.")
     if set(train_df["graph_id"]).intersection(set(val_df["graph_id"])):
