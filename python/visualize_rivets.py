@@ -12,24 +12,6 @@ DEFAULT_DETECTOR = PROJECT_ROOT / "build" / "Debug" / "Detector.exe"
 DEFAULT_MODEL_PATH = PROJECT_ROOT / "rivet_gnn_no_centerz_split19_5.pth"
 DEFAULT_STATS_PATH = PROJECT_ROOT / "rivet_gnn_no_centerz_split19_5_stats.npz"
 
-SEMANTIC_TO_LABEL = {
-    "background": 0,
-    "rivet": 1,
-    "decal": 2,
-    "window": 3,
-}
-
-
-def load_truth_labels(labels_path):
-    import json
-
-    truth = json.load(Path(labels_path).open("r", encoding="utf-8"))
-    return {
-        int(row["face_id"]): SEMANTIC_TO_LABEL.get(row["semantic"], 0)
-        for row in truth["faces"]
-    }
-
-
 def export_inference_csv(step_path, detector_path, csv_path):
     if not detector_path.exists():
         raise FileNotFoundError(f"Detector executable not found: {detector_path}")
@@ -53,11 +35,20 @@ def export_inference_csv(step_path, detector_path, csv_path):
         raise FileNotFoundError(f"Inference CSV was not generated: {csv_path}")
 
 
-def run_inference(csv_path, model_path, stats_path, hidden_dim, inference_mode="full", window_hop=2, inference_batch_size=128):
+def run_inference(
+    csv_path,
+    model_path,
+    stats_path,
+    hidden_dim,
+    inference_mode="full",
+    window_hop=2,
+    inference_batch_size=1,
+):
     import torch
     from torch_geometric.loader import DataLoader
     from train_rivet_gcn import (
         RivetGNN,
+        build_window_cache,
         build_window_graph,
         load_cad_data,
     )
@@ -82,19 +73,24 @@ def run_inference(csv_path, model_path, stats_path, hidden_dim, inference_mode="
     model.eval()
 
     if inference_mode == "window":
-        windows = [build_window_graph(data.cpu(), center_idx, window_hop) for center_idx in range(data.num_nodes)]
+        data = data.cpu()
+        window_cache = build_window_cache(data)
+        windows = [
+            build_window_graph(data, center_idx, window_hop, window_cache)
+            for center_idx in range(data.num_nodes)
+        ]
         loader = DataLoader(windows, batch_size=inference_batch_size, shuffle=False)
         pred = []
         with torch.no_grad():
             for batch in loader:
                 batch = batch.to(device)
                 out = model(batch)
-                pred.extend(out.argmax(dim=1)[batch.target_mask].cpu().tolist())
+                target_log_probabilities = out[batch.target_mask]
+                pred.extend(target_log_probabilities.argmax(dim=1).cpu().tolist())
     else:
         with torch.no_grad():
             out = model(data.to(device))
             pred = out.argmax(dim=1).cpu().tolist()
-
     return pred, num_classes
 
 
@@ -123,11 +119,10 @@ def read_predictions_csv(prediction_path):
 def visualize_cad_results(
     step_path,
     pred_labels,
-    labels_path,
     context_transparency=0.82,
     marker_radius=0.0,
 ):
-    from OCC.Core.Quantity import Quantity_Color, Quantity_NOC_GRAY, Quantity_NOC_RED, Quantity_NOC_YELLOW, Quantity_TOC_RGB
+    from OCC.Core.Quantity import Quantity_Color, Quantity_NOC_GRAY, Quantity_TOC_RGB
     from OCC.Core.Bnd import Bnd_Box
     from OCC.Core.BRepBndLib import brepbndlib
     from OCC.Core.BRepPrimAPI import BRepPrimAPI_MakeSphere
@@ -145,15 +140,14 @@ def visualize_cad_results(
     shape = reader.OneShape()
 
     display, start_display, _, _ = init_display()
-    truth_labels = load_truth_labels(labels_path)
-    print(f"Displaying comparison: {step_path}")
-    correct_colors = {
+    prediction_colors = {
         1: Quantity_Color(0.0, 0.8, 0.0, Quantity_TOC_RGB),
         2: Quantity_Color(0.1, 0.3, 1.0, Quantity_TOC_RGB),
         3: Quantity_Color(0.0, 0.8, 0.8, Quantity_TOC_RGB),
     }
-    print("green=correct rivet, blue=correct decal, cyan=correct window")
-    print("yellow=missed labeled face, red=wrong non-background prediction, gray=correct background")
+    print(f"Displaying raw model predictions: {step_path}")
+    print("green=predicted rivet, blue=predicted decal, cyan=predicted window")
+    print("transparent gray=predicted background/model context")
     print(f"transparent gray=model context (transparency={context_transparency:g})")
     display.DisplayShape(
         shape,
@@ -187,23 +181,13 @@ def visualize_cad_results(
         label_counts[label] = label_counts.get(label, 0) + 1
     print(f"Label distribution: {label_counts}")
 
-    confusion = {}
     highlight_markers = []
     for i in range(1, num_faces + 1):
         face = topods.Face(face_map.FindKey(i))
         label = pred_labels[i - 1] if (i - 1) < len(pred_labels) else 0
-
-        truth_label = truth_labels.get(i, 0)
-        confusion[(truth_label, label)] = confusion.get((truth_label, label), 0) + 1
-        if label == truth_label and label != 0:
-            color = correct_colors[label]
-        elif label == 0 and truth_label != 0:
-            color = Quantity_NOC_YELLOW
-        else:
-            color = Quantity_NOC_RED
-
-        if label == truth_label == 0:
+        if label == 0:
             continue
+        color = prediction_colors.get(label, Quantity_NOC_GRAY)
         display.DisplayShape(face, color=color, update=False)
 
         if use_markers:
@@ -217,9 +201,6 @@ def visualize_cad_results(
             )
             highlight_markers.append((center, color))
 
-    print("Comparison counts (truth, prediction):")
-    for (truth_label, predicted_label), count in sorted(confusion.items()):
-        print(f"  ({truth_label}, {predicted_label}): {count}")
     for center, color in highlight_markers:
         marker = BRepPrimAPI_MakeSphere(center, marker_radius).Shape()
         display.DisplayShape(marker, color=color, update=False)
@@ -240,12 +221,11 @@ def parse_args():
     parser.add_argument("--hidden-dim", type=int, default=64, help="Hidden dimension used during training. Default: 64")
     parser.add_argument("--skip-export", action="store_true", help="Reuse an existing inference CSV instead of calling Detector.")
     parser.add_argument("--no-display", action="store_true", help="Only export predictions; do not open the OCC viewer.")
-    parser.add_argument("--compare-labels", type=Path, required=True, help="labels.json for true-vs-prediction comparison visualization.")
     parser.add_argument("--context-transparency", type=float, default=0.82, help="Transparency for the full-model context. Default: 0.82")
     parser.add_argument("--marker-radius", type=float, default=0.0, help="Overlay marker sphere radius. Use 0 to disable markers. Default: 0")
     parser.add_argument("--inference-mode", choices=["full", "window"], default="full", help="Run full-graph inference or per-face k-hop window inference. Default: full")
     parser.add_argument("--window-hop", type=int, default=2, help="k-hop radius for window inference. Default: 2")
-    parser.add_argument("--inference-batch-size", type=int, default=128, help="Window inference batch size. Default: 128")
+    parser.add_argument("--inference-batch-size", type=int, default=1, help="Window inference batch size. Keep 1 because batched global pooling changes window predictions. Default: 1")
     return parser.parse_args()
 
 
@@ -277,7 +257,6 @@ def main():
         visualize_cad_results(
             args.step_model,
             predicted_labels,
-            labels_path=args.compare_labels,
             context_transparency=args.context_transparency,
             marker_radius=args.marker_radius,
         )

@@ -203,17 +203,30 @@ def build_graph(group_df, feature_mean, feature_std, edge_mean=None, edge_std=No
         edge_index=edge_index,
         edge_attr=edge_attr,
         y=y,
+        face_id=torch.tensor(local_df["id"].astype(int).to_numpy(), dtype=torch.long),
         target_mask=torch.ones(y.size(0), dtype=torch.bool),
         graph_id=int(local_df["graph_id"].iloc[0]),
         model_name=str(local_df["model_name"].iloc[0]),
     )
 
 
-def khop_nodes(edge_index, center_idx, hop_count, num_nodes):
-    adjacency = [[] for _ in range(num_nodes)]
-    for src, dst in edge_index.t().tolist():
+def build_window_cache(full_graph):
+    adjacency = [[] for _ in range(full_graph.num_nodes)]
+    outgoing_edges = [[] for _ in range(full_graph.num_nodes)]
+    for edge_pos, (src, dst) in enumerate(full_graph.edge_index.t().tolist()):
+        edge_attributes = full_graph.edge_attr[edge_pos].tolist()
         adjacency[src].append(dst)
         adjacency[dst].append(src)
+        outgoing_edges[src].append((dst, edge_attributes))
+    return adjacency, outgoing_edges
+
+
+def khop_nodes(edge_index, center_idx, hop_count, num_nodes, adjacency=None):
+    if adjacency is None:
+        adjacency = [[] for _ in range(num_nodes)]
+        for src, dst in edge_index.t().tolist():
+            adjacency[src].append(dst)
+            adjacency[dst].append(src)
 
     visited = {center_idx}
     frontier = {center_idx}
@@ -231,16 +244,26 @@ def khop_nodes(edge_index, center_idx, hop_count, num_nodes):
     return sorted(visited)
 
 
-def build_window_graph(full_graph, center_idx, hop_count):
-    node_ids = khop_nodes(full_graph.edge_index, center_idx, hop_count, full_graph.num_nodes)
+def build_window_graph(full_graph, center_idx, hop_count, window_cache=None):
+    if window_cache is None:
+        window_cache = build_window_cache(full_graph)
+    adjacency, outgoing_edges = window_cache
+    node_ids = khop_nodes(
+        full_graph.edge_index,
+        center_idx,
+        hop_count,
+        full_graph.num_nodes,
+        adjacency,
+    )
     old_to_new = {old_idx: new_idx for new_idx, old_idx in enumerate(node_ids)}
 
     local_edges = []
     local_edge_attrs = []
-    for edge_pos, (src, dst) in enumerate(full_graph.edge_index.t().tolist()):
-        if src in old_to_new and dst in old_to_new:
-            local_edges.append([old_to_new[src], old_to_new[dst]])
-            local_edge_attrs.append(full_graph.edge_attr[edge_pos].tolist())
+    for src in node_ids:
+        for dst, edge_attributes in outgoing_edges[src]:
+            if dst in old_to_new:
+                local_edges.append([old_to_new[src], old_to_new[dst]])
+                local_edge_attrs.append(edge_attributes)
 
     if local_edges:
         edge_index = torch.tensor(local_edges, dtype=torch.long).t().contiguous()
@@ -257,14 +280,21 @@ def build_window_graph(full_graph, center_idx, hop_count):
         edge_index=edge_index,
         edge_attr=edge_attr,
         y=full_graph.y[node_ids],
+        face_id=full_graph.face_id[node_ids],
         target_mask=target_mask,
         graph_id=int(full_graph.graph_id),
         model_name=str(full_graph.model_name),
-        center_face_id=center_idx + 1,
+        center_face_id=int(full_graph.face_id[center_idx]),
     )
 
 
-def sample_window_centers(full_graph, background_ratio, rng):
+def sample_window_centers(
+    full_graph,
+    background_ratio,
+    rng,
+    hard_negative_face_ids=None,
+    hard_negative_fraction=0.1,
+):
     labels = full_graph.y.cpu().numpy()
     positive = np.flatnonzero(labels > 0)
     negative = np.flatnonzero(labels == 0)
@@ -278,18 +308,65 @@ def sample_window_centers(full_graph, background_ratio, rng):
         rng.shuffle(centers)
         return centers
 
-    random_negative = rng.choice(negative, size=max_negative, replace=False)
-    centers = np.concatenate([positive, random_negative]).astype(int)
+    if not 0.0 <= hard_negative_fraction <= 1.0:
+        raise ValueError("hard_negative_fraction must be between 0 and 1.")
+
+    hard_negative = np.empty(0, dtype=int)
+    if hard_negative_face_ids:
+        face_to_index = {
+            int(face_id): idx
+            for idx, face_id in enumerate(full_graph.face_id.cpu().tolist())
+        }
+        selected = []
+        seen = set()
+        hard_negative_limit = min(
+            max_negative,
+            max(1, int(np.floor(max_negative * hard_negative_fraction))),
+        ) if hard_negative_fraction > 0 else 0
+        for face_id in hard_negative_face_ids:
+            center_idx = face_to_index.get(int(face_id))
+            if center_idx is None or center_idx in seen or labels[center_idx] != 0:
+                continue
+            selected.append(center_idx)
+            seen.add(center_idx)
+            if len(selected) == hard_negative_limit:
+                break
+        hard_negative = np.asarray(selected, dtype=int)
+
+    remaining_negative = np.setdiff1d(negative, hard_negative, assume_unique=False)
+    random_count = max_negative - len(hard_negative)
+    random_negative = (
+        rng.choice(remaining_negative, size=random_count, replace=False)
+        if random_count > 0
+        else np.empty(0, dtype=int)
+    )
+    centers = np.concatenate([positive, hard_negative, random_negative]).astype(int)
     rng.shuffle(centers)
     return centers
 
 
-def build_window_dataset(full_graphs, hop_count, background_ratio, seed):
+def build_window_dataset(
+    full_graphs,
+    hop_count,
+    background_ratio,
+    seed,
+    hard_negative_centers=None,
+    hard_negative_fraction=0.1,
+):
     rng = np.random.default_rng(seed)
     windows = []
     for full_graph in full_graphs:
-        for center_idx in sample_window_centers(full_graph, background_ratio, rng):
-            windows.append(build_window_graph(full_graph, int(center_idx), hop_count))
+        window_cache = build_window_cache(full_graph)
+        graph_key = (int(full_graph.graph_id), str(full_graph.model_name))
+        hard_negative_face_ids = (hard_negative_centers or {}).get(graph_key, [])
+        for center_idx in sample_window_centers(
+            full_graph,
+            background_ratio,
+            rng,
+            hard_negative_face_ids,
+            hard_negative_fraction,
+        ):
+            windows.append(build_window_graph(full_graph, int(center_idx), hop_count, window_cache))
     return windows
 
 
@@ -369,12 +446,75 @@ def build_graphs_from_dataframe(df, feature_mean, feature_std, edge_mean=None, e
     return graphs
 
 
-def prepare_graph_samples(full_graphs, training_mode="full", window_hop=2, background_ratio=5, seed=42):
+def prepare_graph_samples(
+    full_graphs,
+    training_mode="full",
+    window_hop=2,
+    background_ratio=5,
+    seed=42,
+    hard_negative_centers=None,
+    hard_negative_fraction=0.1,
+):
     if training_mode == "window":
-        return build_window_dataset(full_graphs, window_hop, background_ratio, seed)
+        return build_window_dataset(
+            full_graphs,
+            window_hop,
+            background_ratio,
+            seed,
+            hard_negative_centers,
+            hard_negative_fraction,
+        )
     if training_mode == "full-balanced":
         return build_full_balanced_dataset(full_graphs, background_ratio, seed)
     return full_graphs
+
+
+def load_hard_negative_centers(hard_negative_csv, train_df, val_df):
+    if hard_negative_csv is None:
+        return {}, 0
+
+    manifest_path = Path(hard_negative_csv)
+    if not manifest_path.exists():
+        raise FileNotFoundError(f"Hard-negative CSV does not exist: {manifest_path}")
+
+    manifest = pd.read_csv(manifest_path)
+    required_columns = {"graph_id", "model_name", "face_id", "pred_label"}
+    missing_columns = required_columns.difference(manifest.columns)
+    if missing_columns:
+        raise ValueError(
+            f"Hard-negative CSV is missing required columns: {sorted(missing_columns)}"
+        )
+    if not set(manifest["pred_label"].astype(int).unique()).issubset({2, 3}):
+        raise ValueError("Hard-negative CSV may only contain predicted decal/window labels (2 or 3).")
+
+    train_keys = train_df[["graph_id", "model_name", "id", "label"]].copy()
+    train_keys["graph_id"] = train_keys["graph_id"].astype(int)
+    train_keys["model_name"] = train_keys["model_name"].astype(str)
+    train_keys["id"] = train_keys["id"].astype(int)
+    train_keys["label"] = train_keys["label"].astype(int)
+    val_models = set(val_df["model_name"].astype(str))
+    if val_models.intersection(set(manifest["model_name"].astype(str))):
+        raise ValueError("Hard-negative CSV contains validation-model rows; only training models are allowed.")
+
+    train_lookup = {
+        (int(row.graph_id), str(row.model_name), int(row.id)): int(row.label)
+        for row in train_keys.itertuples(index=False)
+    }
+    if "pred_confidence" in manifest.columns:
+        manifest = manifest.sort_values("pred_confidence", ascending=False, kind="stable")
+    selected = {}
+    seen = set()
+    for row in manifest.itertuples(index=False):
+        key = (int(row.graph_id), str(row.model_name), int(row.face_id))
+        if key in seen:
+            continue
+        if key not in train_lookup:
+            raise ValueError(f"Hard-negative row is not in the training CSV: {key}")
+        if train_lookup[key] != 0:
+            raise ValueError(f"Hard-negative row is not a background face: {key}")
+        selected.setdefault(key[:2], []).append(key[2])
+        seen.add(key)
+    return selected, len(seen)
 
 
 def load_graph_dataset(csv_path, training_mode="full", window_hop=2, background_ratio=5, seed=42):
@@ -403,6 +543,8 @@ def load_explicit_train_val_datasets(
     window_hop=2,
     background_ratio=5,
     seed=42,
+    hard_negative_csv=None,
+    hard_negative_fraction=0.1,
 ):
     train_df = pd.read_csv(train_csv_path)
     val_df = pd.read_csv(val_csv_path)
@@ -420,6 +562,11 @@ def load_explicit_train_val_datasets(
 
     train_full_graphs = build_graphs_from_dataframe(train_df, feature_mean, feature_std, edge_mean, edge_std, feature_cols)
     val_full_graphs = build_graphs_from_dataframe(val_df, feature_mean, feature_std, edge_mean, edge_std, feature_cols)
+    hard_negative_centers, hard_negative_count = load_hard_negative_centers(
+        hard_negative_csv,
+        train_df,
+        val_df,
+    )
 
     train_graphs = prepare_graph_samples(
         train_full_graphs,
@@ -427,6 +574,8 @@ def load_explicit_train_val_datasets(
         window_hop,
         background_ratio,
         seed,
+        hard_negative_centers,
+        hard_negative_fraction,
     )
     val_training_mode = "full" if training_mode == "full-balanced" else training_mode
     val_graphs = prepare_graph_samples(
@@ -436,7 +585,16 @@ def load_explicit_train_val_datasets(
         background_ratio,
         seed + 1,
     )
-    return train_graphs, val_graphs, feature_mean, feature_std, edge_mean, edge_std, feature_cols
+    return (
+        train_graphs,
+        val_graphs,
+        feature_mean,
+        feature_std,
+        edge_mean,
+        edge_std,
+        feature_cols,
+        hard_negative_count,
+    )
 
 
 class RivetGNN(torch.nn.Module):
@@ -634,17 +792,43 @@ def print_metric_table(metrics, summary):
     )
 
 
+def checkpoint_score(metrics, summary, selection_metric):
+    if selection_metric == "miou":
+        return summary["miou"]
+    if selection_metric == "decal-f1":
+        if len(metrics) <= 2:
+            raise ValueError("decal-f1 checkpoint selection requires decal class 2.")
+        return metrics[2]["f1"]
+    raise ValueError(f"Unsupported checkpoint selection metric: {selection_metric}")
+
+
 def train(args):
     if args.val_csv is None:
         raise ValueError("Explicit --val-csv is required. Random graph splits are not part of the main protocol.")
 
-    train_graphs, val_graphs, feature_mean, feature_std, edge_mean, edge_std, feature_cols = load_explicit_train_val_datasets(
+    np.random.seed(args.seed)
+    torch.manual_seed(args.seed)
+    if torch.cuda.is_available():
+        torch.cuda.manual_seed_all(args.seed)
+
+    (
+        train_graphs,
+        val_graphs,
+        feature_mean,
+        feature_std,
+        edge_mean,
+        edge_std,
+        feature_cols,
+        hard_negative_count,
+    ) = load_explicit_train_val_datasets(
         args.csv,
         args.val_csv,
         training_mode=args.training_mode,
         window_hop=args.window_hop,
         background_ratio=args.background_ratio,
         seed=args.seed,
+        hard_negative_csv=args.hard_negative_csv,
+        hard_negative_fraction=args.hard_negative_fraction,
     )
     graphs = train_graphs + val_graphs
     split_description = f"explicit train={args.csv}, val={args.val_csv}"
@@ -672,19 +856,28 @@ def train(args):
         num_classes=num_classes,
         max_weight=args.max_class_weight,
     ).to(device)
+    if args.decal_class_weight_scale <= 0.0:
+        raise ValueError("decal_class_weight_scale must be positive.")
+    if num_classes > 2:
+        class_weights[2] *= args.decal_class_weight_scale
 
     print(f"Loaded {len(graphs)} graph samples ({split_description})")
     print(f"Classes: {num_classes}")
     print(f"Training mode: {args.training_mode}")
+    print(f"Checkpoint selection metric: {args.selection_metric}")
     if args.training_mode == "window":
         print(f"Window hop: {args.window_hop}, background ratio: {args.background_ratio}")
+        print(
+            f"Training hard negatives requested: {hard_negative_count}, "
+            f"background quota fraction: {args.hard_negative_fraction:g}"
+        )
     elif args.training_mode == "full-balanced":
         print(f"Full graph with balanced loss mask, background ratio: {args.background_ratio}")
     print(f"Train graphs: {len(train_graphs)}, Val graphs: {len(val_graphs)}")
     print(f"Training on: {device}")
     print(f"Class weights: {class_weights.cpu().tolist()}")
 
-    best_miou = float("-inf")
+    best_score = float("-inf")
 
     for epoch in range(1, args.epochs + 1):
         model.train()
@@ -714,8 +907,9 @@ def train(args):
             focal_gamma=args.focal_gamma,
         )
 
-        if val_summary["miou"] > best_miou:
-            best_miou = val_summary["miou"]
+        current_score = checkpoint_score(val_metrics, val_summary, args.selection_metric)
+        if current_score > best_score:
+            best_score = current_score
             torch.save(model.state_dict(), args.model_out)
             np.savez(
                 args.stats_out,
@@ -735,7 +929,8 @@ def train(args):
                 f"train_loss={train_loss:.4f} | "
                 f"val_loss={val_loss:.4f} | "
                 f"val_acc={val_acc:.4f} | "
-                f"miou={val_summary['miou']:.4f}"
+                f"miou={val_summary['miou']:.4f} | "
+                f"checkpoint_score={current_score:.4f}"
             )
 
     best_state = torch.load(args.model_out, map_location=device)
@@ -768,11 +963,34 @@ def parse_args():
     parser.add_argument("--num-layers", type=int, default=6, help="Residual NNConv layers. Default: 6")
     parser.add_argument("--lr", type=float, default=0.005, help="Learning rate. Default: 0.005")
     parser.add_argument("--focal-gamma", type=float, default=2.0, help="Focal-loss gamma. Default: 2.0")
+    parser.add_argument(
+        "--selection-metric",
+        choices=["miou", "decal-f1"],
+        default="miou",
+        help="Validation metric used to retain the checkpoint. Default: miou",
+    )
     parser.add_argument("--max-class-weight", type=float, default=5.0, help="Maximum inverse-sqrt class weight before normalization. Default: 5.0")
+    parser.add_argument(
+        "--decal-class-weight-scale",
+        type=float,
+        default=1.0,
+        help="Multiplier for the decal (class 2) loss weight. Default: 1.0",
+    )
     parser.add_argument("--seed", type=int, default=42, help="Random seed. Default: 42")
     parser.add_argument("--training-mode", choices=["full", "full-balanced", "window"], default="full", help="Use full graphs, balanced-loss full graphs, or k-hop windows. Default: full")
     parser.add_argument("--window-hop", type=int, default=2, help="k-hop radius for window training. Default: 2")
     parser.add_argument("--background-ratio", type=int, default=5, help="Background center samples per positive center in window mode. Default: 5")
+    parser.add_argument(
+        "--hard-negative-csv",
+        type=Path,
+        help="Training-only decal/window false-positive manifest to prioritize in window sampling.",
+    )
+    parser.add_argument(
+        "--hard-negative-fraction",
+        type=float,
+        default=0.1,
+        help="Maximum fraction of each model's background window quota filled by hard negatives. Default: 0.1",
+    )
     return parser.parse_args()
 
 
