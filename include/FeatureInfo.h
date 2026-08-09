@@ -31,6 +31,10 @@ struct FaceFeature
     double centerX = 0.0;
     double centerY = 0.0;
     double centerZ = 0.0;
+    double normalizationCenterX = 0.0;
+    double normalizationCenterY = 0.0;
+    double normalizationCenterZ = 0.0;
+    double normalizationScale = 1.0;
     double meanCurvature = 0.0;
     double radius = 0.0;
     int numWires = 0;

@@ -8,6 +8,8 @@
 #include <TopoDS_Wire.hxx>
 #include <TopoDS_Vertex.hxx>
 #include <BRepGProp.hxx>
+#include <BRepBndLib.hxx>
+#include <Bnd_Box.hxx>
 #include <GProp_GProps.hxx>
 #include <TopTools_IndexedMapOfShape.hxx> 
 #include <BRep_Tool.hxx>
@@ -195,6 +197,31 @@ void FeatureExtractor::Extract()
 
     // 3. 寮€濮嬭绠楀嚑浣曞睘鎬у拰閭诲眳鍏崇郴
     ComputeGeometricAttributes(faceMap);
+
+    Bnd_Box modelBox;
+    BRepBndLib::Add(myShape, modelBox);
+    if (!modelBox.IsVoid()) {
+        Standard_Real xMin = 0.0;
+        Standard_Real yMin = 0.0;
+        Standard_Real zMin = 0.0;
+        Standard_Real xMax = 0.0;
+        Standard_Real yMax = 0.0;
+        Standard_Real zMax = 0.0;
+        modelBox.Get(xMin, yMin, zMin, xMax, yMax, zMax);
+        const double longestExtent = std::max({xMax - xMin, yMax - yMin, zMax - zMin});
+        const double normalizationScale = longestExtent > Precision::Confusion()
+            ? 2.0 / longestExtent
+            : 1.0;
+        const double centerX = (xMin + xMax) * 0.5;
+        const double centerY = (yMin + yMax) * 0.5;
+        const double centerZ = (zMin + zMax) * 0.5;
+        for (auto& feature : myResults) {
+            feature.normalizationCenterX = centerX;
+            feature.normalizationCenterY = centerY;
+            feature.normalizationCenterZ = centerZ;
+            feature.normalizationScale = normalizationScale;
+        }
+    }
 }
 
 void FeatureExtractor::ComputeGeometricAttributes(const TopTools_IndexedMapOfShape &faceMap)
@@ -208,7 +235,7 @@ void FeatureExtractor::ComputeGeometricAttributes(const TopTools_IndexedMapOfSha
         TopoDS_Face face = TopoDS::Face(faceMap.FindKey(i));
         GProp_GProps areaProps;
         BRepGProp::SurfaceProperties(face, areaProps);
-        totalArea += areaProps.Mass();
+        totalArea += std::abs(areaProps.Mass());
     }
 
     // 2. 绗簩閬嶉亶鍘嗭細鎻愬彇璇︾粏鐗瑰緛
@@ -223,7 +250,7 @@ void FeatureExtractor::ComputeGeometricAttributes(const TopTools_IndexedMapOfSha
         BRepGProp::SurfaceProperties(face, areaProps);
         BRepGProp::LinearProperties(face, lineProps);
 
-        feat.area = areaProps.Mass();
+        feat.area = std::abs(areaProps.Mass());
         feat.relativeArea = (totalArea > 1e-6) ? (feat.area / totalArea) : 0.0;
         feat.perimeter = lineProps.Mass();
 
@@ -377,7 +404,7 @@ void FeatureExtractor::ComputeGeometricAttributes(const TopTools_IndexedMapOfSha
                         {
                             GProp_GProps neighborAreaProps;
                             BRepGProp::SurfaceProperties(neighborFace, neighborAreaProps);
-                            const double neighborArea = neighborAreaProps.Mass();
+                            const double neighborArea = std::abs(neighborAreaProps.Mass());
 
                             BRepAdaptor_Surface neighborSurface(neighborFace);
 

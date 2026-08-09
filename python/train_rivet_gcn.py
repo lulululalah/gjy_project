@@ -11,7 +11,7 @@ from torch_geometric.loader import DataLoader
 from torch_geometric.nn import NNConv, global_max_pool, global_mean_pool
 
 
-BASE_FEATURE_COLS = [
+LEGACY_BASE_FEATURE_COLS = [
     "relativeArea",
     "compactness",
     "meanCurvature",
@@ -23,6 +23,51 @@ BASE_FEATURE_COLS = [
     "numEdges",
     "neighborAreaMean",
     "neighborAreaMax",
+    "areaToNeighborMean",
+    "areaToNeighborMax",
+    "neighborPlaneCount",
+    "neighborCylinderCount",
+    "neighborCurvedCount",
+    "convexEdgeCount",
+    "concaveEdgeCount",
+    "smoothEdgeCount",
+    "convexEdgeRatio",
+    "concaveEdgeRatio",
+]
+
+NORMALIZED_TRIMMED_AREA_COL = "normalizedTrimmedArea"
+NORMALIZATION_SCALE_COL = "normalizationScale"
+NORMALIZATION_CENTER_COLS = [
+    "normalizationCenterX",
+    "normalizationCenterY",
+    "normalizationCenterZ",
+]
+NORMALIZED_GEOMETRY_FEATURE_COLS = [
+    NORMALIZED_TRIMMED_AREA_COL,
+    "normalizedPerimeter",
+    "normalizedMeanCurvature",
+    "normalizedRadius",
+    "normalizedMinInnerWireLength",
+    "normalizedMaxInnerWireLength",
+    "normalizedNeighborAreaMean",
+    "normalizedNeighborAreaMax",
+]
+
+BASE_FEATURE_COLS = [
+    "relativeArea",
+    NORMALIZED_TRIMMED_AREA_COL,
+    "normalizedPerimeter",
+    "compactness",
+    "normalizedMeanCurvature",
+    "normalizedRadius",
+    "has_radius",
+    "numWires",
+    "innerWireCount",
+    "normalizedMinInnerWireLength",
+    "normalizedMaxInnerWireLength",
+    "numEdges",
+    "normalizedNeighborAreaMean",
+    "normalizedNeighborAreaMax",
     "areaToNeighborMean",
     "areaToNeighborMax",
     "neighborPlaneCount",
@@ -83,14 +128,26 @@ def token_at(tokens, index, default="0"):
 
 
 def infer_feature_columns(df):
+    required_normalization_columns = {
+        "area",
+        "perimeter",
+        "meanCurvature",
+        "radius",
+        "minInnerWireLength",
+        "maxInnerWireLength",
+        "neighborAreaMean",
+        "neighborAreaMax",
+        NORMALIZATION_SCALE_COL,
+        *NORMALIZATION_CENTER_COLS,
+    }
+    missing_normalization_columns = required_normalization_columns.difference(df.columns)
+    if missing_normalization_columns:
+        raise ValueError(
+            "CSV is missing model-normalization columns. Re-export it with the updated Detector: "
+            f"{sorted(missing_normalization_columns)}"
+        )
     surface_types = sorted({int(value) for value in df[SURFACE_TYPE_COL].fillna(0).astype(int).tolist()})
-    feature_cols = []
-    for col in BASE_FEATURE_COLS:
-        if col == RADIUS_COL:
-            feature_cols.append(RADIUS_COL)
-            feature_cols.append(HAS_RADIUS_COL)
-        else:
-            feature_cols.append(col)
+    feature_cols = list(BASE_FEATURE_COLS)
     feature_cols.extend(RELATIVE_NORMAL_FEATURE_COLS)
     if {"centerX", "centerY", "centerZ"}.issubset(df.columns):
         feature_cols.extend(MODEL_RELATIVE_POSITION_FEATURE_COLS)
@@ -115,13 +172,55 @@ def build_feature_frame(df, feature_cols=None):
     feature_df = pd.DataFrame(index=df.index)
     numeric_df = df.apply(pd.to_numeric, errors="coerce")
 
-    for col in BASE_FEATURE_COLS:
+    for col in LEGACY_BASE_FEATURE_COLS:
+        if col not in feature_cols and not (col == RADIUS_COL and HAS_RADIUS_COL in feature_cols):
+            continue
         if col == RADIUS_COL:
             radius_values = numeric_df[RADIUS_COL].fillna(0.0).astype(float)
             feature_df[RADIUS_COL] = radius_values
             feature_df[HAS_RADIUS_COL] = (radius_values.abs() > 1e-9).astype(float)
         else:
             feature_df[col] = numeric_df[col].fillna(0.0).astype(float)
+
+    uses_normalized_geometry = NORMALIZED_TRIMMED_AREA_COL in feature_cols
+    if uses_normalized_geometry:
+        required_columns = {
+            "area",
+            "perimeter",
+            "meanCurvature",
+            "radius",
+            "minInnerWireLength",
+            "maxInnerWireLength",
+            "neighborAreaMean",
+            "neighborAreaMax",
+            NORMALIZATION_SCALE_COL,
+            *NORMALIZATION_CENTER_COLS,
+        }
+        missing_columns = required_columns.difference(numeric_df.columns)
+        if missing_columns:
+            raise ValueError(
+                "Normalized feature schema requires re-exported geometry columns: "
+                f"{sorted(missing_columns)}"
+            )
+        scale = numeric_df[NORMALIZATION_SCALE_COL].fillna(0.0).astype(float)
+        if (scale <= 0.0).any():
+            raise ValueError("normalizationScale must be positive for every face.")
+        scale_squared = scale * scale
+        radius_values = numeric_df[RADIUS_COL].fillna(0.0).astype(float)
+        normalized_values = {
+            NORMALIZED_TRIMMED_AREA_COL: numeric_df["area"].fillna(0.0).astype(float).abs() * scale_squared,
+            "normalizedPerimeter": numeric_df["perimeter"].fillna(0.0).astype(float) * scale,
+            "normalizedMeanCurvature": numeric_df["meanCurvature"].fillna(0.0).astype(float) / scale,
+            "normalizedRadius": radius_values * scale,
+            "normalizedMinInnerWireLength": numeric_df["minInnerWireLength"].fillna(0.0).astype(float) * scale,
+            "normalizedMaxInnerWireLength": numeric_df["maxInnerWireLength"].fillna(0.0).astype(float) * scale,
+            "normalizedNeighborAreaMean": numeric_df["neighborAreaMean"].fillna(0.0).astype(float).abs() * scale_squared,
+            "normalizedNeighborAreaMax": numeric_df["neighborAreaMax"].fillna(0.0).astype(float).abs() * scale_squared,
+        }
+        for col, values in normalized_values.items():
+            if col in feature_cols:
+                feature_df[col] = values
+        feature_df[HAS_RADIUS_COL] = (radius_values.abs() > 1e-9).astype(float)
 
     for col in RELATIVE_NORMAL_FEATURE_COLS:
         feature_df[col] = numeric_df[col].fillna(0.0).astype(float)
@@ -132,13 +231,23 @@ def build_feature_frame(df, feature_cols=None):
         for _, indices in df.groupby("graph_id", sort=False).groups.items():
             index_array = np.fromiter(indices, dtype=int)
             coords = positions[index_array]
-            centered = coords - coords.mean(axis=0, keepdims=True)
-            axis_index = int(np.argmax(coords.max(axis=0) - coords.min(axis=0)))
-            axial = centered[:, axis_index]
-            radial = np.sqrt(np.sum(np.delete(centered, axis_index, axis=1) ** 2, axis=1))
-            scale = max(np.sqrt(np.sum(centered ** 2, axis=1)).max(), 1e-6)
-            relative_position[index_array, 0] = np.abs(axial) / scale
-            relative_position[index_array, 1] = radial / scale
+            if uses_normalized_geometry:
+                centers = numeric_df.loc[index_array, NORMALIZATION_CENTER_COLS].to_numpy(dtype=float)
+                scales = numeric_df.loc[index_array, NORMALIZATION_SCALE_COL].to_numpy(dtype=float)
+                normalized_coords = (coords - centers) * scales[:, None]
+                axis_index = int(np.argmax(normalized_coords.max(axis=0) - normalized_coords.min(axis=0)))
+                axial = normalized_coords[:, axis_index]
+                radial = np.sqrt(np.sum(np.delete(normalized_coords, axis_index, axis=1) ** 2, axis=1))
+                relative_position[index_array, 0] = np.abs(axial)
+                relative_position[index_array, 1] = radial
+            else:
+                centered = coords - coords.mean(axis=0, keepdims=True)
+                axis_index = int(np.argmax(coords.max(axis=0) - coords.min(axis=0)))
+                axial = centered[:, axis_index]
+                radial = np.sqrt(np.sum(np.delete(centered, axis_index, axis=1) ** 2, axis=1))
+                position_scale = max(np.sqrt(np.sum(centered ** 2, axis=1)).max(), 1e-6)
+                relative_position[index_array, 0] = np.abs(axial) / position_scale
+                relative_position[index_array, 1] = radial / position_scale
         feature_df["axisPositionAbs"] = relative_position[:, 0]
         feature_df["radialDistance"] = relative_position[:, 1]
 
@@ -158,13 +267,14 @@ def build_feature_frame(df, feature_cols=None):
 
 def build_graph(group_df, feature_mean, feature_std, edge_mean=None, edge_std=None, feature_cols=None):
     local_df = group_df.reset_index(drop=True).copy()
-    feature_frame, _ = build_feature_frame(local_df, feature_cols)
+    feature_frame, feature_cols = build_feature_frame(local_df, feature_cols)
     node_features = feature_frame.to_numpy()
     node_features = (node_features - feature_mean) / feature_std
 
     id_to_index = {int(row_id): idx for idx, row_id in enumerate(local_df["id"].tolist())}
     edge_index = []
     edge_attr = []
+    uses_normalized_geometry = NORMALIZED_TRIMMED_AREA_COL in feature_cols
 
     for node_idx, row in local_df.iterrows():
         neighbor_ids = split_tokens(row["neighbors"])
@@ -179,10 +289,13 @@ def build_graph(group_df, feature_mean, feature_std, edge_mean=None, edge_std=No
                 continue
 
             edge_index.append([node_idx, id_to_index[neighbor_id]])
-            edge_attr.append([
-                float(token_at(edge_attr_tokens[col], edge_pos))
-                for col in EDGE_ATTR_COLS
-            ])
+            values = []
+            for col in EDGE_ATTR_COLS:
+                value = float(token_at(edge_attr_tokens[col], edge_pos))
+                if uses_normalized_geometry and col == "shared_edge_lengths":
+                    value *= float(row[NORMALIZATION_SCALE_COL])
+                values.append(value)
+            edge_attr.append(values)
 
     if edge_index:
         edge_index = torch.tensor(edge_index, dtype=torch.long).t().contiguous()
@@ -382,7 +495,8 @@ def build_full_balanced_dataset(full_graphs, background_ratio, seed):
     return balanced_graphs
 
 
-def collect_edge_attr_matrix(df):
+def collect_edge_attr_matrix(df, feature_cols=None):
+    uses_normalized_geometry = bool(feature_cols) and NORMALIZED_TRIMMED_AREA_COL in feature_cols
     rows = []
     for _, row in df.iterrows():
         neighbor_ids = split_tokens(row["neighbors"])
@@ -391,10 +505,13 @@ def collect_edge_attr_matrix(df):
             for col in EDGE_ATTR_COLS
         }
         for edge_pos in range(len(neighbor_ids)):
-            rows.append([
-                float(token_at(edge_attr_tokens[col], edge_pos))
-                for col in EDGE_ATTR_COLS
-            ])
+            values = []
+            for col in EDGE_ATTR_COLS:
+                value = float(token_at(edge_attr_tokens[col], edge_pos))
+                if uses_normalized_geometry and col == "shared_edge_lengths":
+                    value *= float(row[NORMALIZATION_SCALE_COL])
+                values.append(value)
+            rows.append(values)
 
     if not rows:
         return np.empty((0, len(EDGE_ATTR_COLS)), dtype=float)
@@ -427,7 +544,7 @@ def load_cad_data(csv_path, stats_path=DEFAULT_STATS_PATH):
     elif feature_cols is None:
         feature_cols = infer_feature_columns(df)
     if edge_mean is None or edge_std is None:
-        edge_matrix = collect_edge_attr_matrix(df)
+        edge_matrix = collect_edge_attr_matrix(df, feature_cols)
         edge_mean = edge_matrix.mean(axis=0) if len(edge_matrix) else np.zeros(len(EDGE_ATTR_COLS))
         edge_std = edge_matrix.std(axis=0) + 1e-6 if len(edge_matrix) else np.ones(len(EDGE_ATTR_COLS))
 
@@ -526,7 +643,7 @@ def load_graph_dataset(csv_path, training_mode="full", window_hop=2, background_
     feature_matrix = feature_frame.to_numpy()
     feature_mean = feature_matrix.mean(axis=0)
     feature_std = feature_matrix.std(axis=0) + 1e-6
-    edge_matrix = collect_edge_attr_matrix(df)
+    edge_matrix = collect_edge_attr_matrix(df, feature_cols)
     edge_mean = edge_matrix.mean(axis=0) if len(edge_matrix) else np.zeros(len(EDGE_ATTR_COLS))
     edge_std = edge_matrix.std(axis=0) + 1e-6 if len(edge_matrix) else np.ones(len(EDGE_ATTR_COLS))
 
@@ -556,7 +673,7 @@ def load_explicit_train_val_datasets(
     feature_matrix = train_feature_frame.to_numpy()
     feature_mean = feature_matrix.mean(axis=0)
     feature_std = feature_matrix.std(axis=0) + 1e-6
-    edge_matrix = collect_edge_attr_matrix(train_df)
+    edge_matrix = collect_edge_attr_matrix(train_df, feature_cols)
     edge_mean = edge_matrix.mean(axis=0) if len(edge_matrix) else np.zeros(len(EDGE_ATTR_COLS))
     edge_std = edge_matrix.std(axis=0) + 1e-6 if len(edge_matrix) else np.ones(len(EDGE_ATTR_COLS))
 
@@ -920,6 +1037,9 @@ def train(args):
                 edge_mean=edge_mean,
                 edge_std=edge_std,
                 num_layers=np.array(args.num_layers),
+                feature_schema_version=np.array(
+                    2 if NORMALIZED_TRIMMED_AREA_COL in feature_cols else 1
+                ),
             )
             write_eval_csv(args.eval_out, val_metrics, val_summary, val_loss, val_acc)
 

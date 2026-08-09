@@ -47,7 +47,7 @@ namespace
             << "  Detector.exe --inject-v3-decal <new-data-file> --host-face <id> [--rotate-180]\n"
             << "  Detector.exe --inject-wing-rivets-batch <dir>\n"
             << "  Detector.exe --validate-wing-rivet-dataset <dir>\n"
-            << "  Detector.exe --export-wing-rivet-training <dir>\n"
+            << "  Detector.exe --export-wing-rivet-training <dir> [output-csv]\n"
             << "  Detector.exe --export-wing-rivet-training-model <dir> <model-stem> <output-csv>\n";
     }
 }
@@ -200,10 +200,13 @@ int main(int argc, char *argv[])
         const std::string dirPath = argv[2];
         return RunWingRivetDatasetValidation(dirPath);
     }
-    else if (mode == "--export-wing-rivet-training" && argc >= 3)
+    else if (mode == "--export-wing-rivet-training" && (argc == 3 || argc == 4))
     {
         const std::string dirPath = argv[2];
-        return RunWingRivetTrainingExport(dirPath, paths.wingRivetTrainingCsv.string());
+        const std::string outputCsv = argc == 4
+            ? argv[3]
+            : paths.wingRivetTrainingCsv.string();
+        return RunWingRivetTrainingExport(dirPath, outputCsv);
     }
     else if (mode == "--export-wing-rivet-training-model" && argc == 5)
     {

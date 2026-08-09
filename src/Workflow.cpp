@@ -21,6 +21,7 @@ namespace
 {
     constexpr const char *kFaceCsvHeader =
         "graph_id,model_name,id,area,relativeArea,perimeter,compactness,surfaceType,centerX,centerY,centerZ,"
+        "normalizationCenterX,normalizationCenterY,normalizationCenterZ,normalizationScale,"
         "meanCurvature,radius,numWires,innerWireCount,minInnerWireLength,maxInnerWireLength,"
         "numEdges,neighborAreaMean,neighborAreaMax,areaToNeighborMean,areaToNeighborMax,"
         "normalNeighborDotMean,normalNeighborDotMin,normalNeighborDotMax,"
@@ -262,6 +263,8 @@ namespace
         dataFile << graphId << ",\"" << modelName << "\"," << feature.id << "," << feature.area << ","
                  << feature.relativeArea << "," << feature.perimeter << "," << feature.compactness << ","
                  << feature.surfaceType << "," << feature.centerX << "," << feature.centerY << "," << feature.centerZ << ","
+                 << feature.normalizationCenterX << "," << feature.normalizationCenterY << ","
+                 << feature.normalizationCenterZ << "," << feature.normalizationScale << ","
                  << feature.meanCurvature << ","
                  << feature.radius << "," << feature.numWires << "," << feature.innerWireCount << ","
                  << feature.minInnerWireLength << "," << feature.maxInnerWireLength << "," << feature.numEdges << ","
