@@ -109,13 +109,9 @@ namespace
         {
             return 1;
         }
-        if (semantic == "decal")
+        if (semantic == "decal" || semantic == "window")
         {
             return 2;
-        }
-        if (semantic == "window")
-        {
-            return 3;
         }
         return 0;
     }

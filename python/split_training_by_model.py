@@ -42,7 +42,7 @@ def parse_args():
 
 
 def label_counts(frame):
-    return {label: int((frame["label"] == label).sum()) for label in range(4)}
+    return {label: int((frame["label"] == label).sum()) for label in range(3)}
 
 
 def main():
@@ -75,8 +75,10 @@ def main():
         raise ValueError("Train and validation graph IDs overlap.")
     if len(train_df) + len(val_df) != len(df):
         raise ValueError("Split rows do not reconstruct the source CSV.")
-    if any(label_counts(val_df)[label] == 0 for label in range(4)):
-        raise ValueError("Validation split must contain background, rivet, decal, and window labels.")
+    if not set(df["label"].astype(int).unique()).issubset({0, 1, 2}):
+        raise ValueError("Input CSV must use background=0, rivet=1, surface_feature=2.")
+    if any(label_counts(val_df)[label] == 0 for label in range(3)):
+        raise ValueError("Validation split must contain background, rivet, and surface_feature labels.")
 
     args.train_csv.parent.mkdir(parents=True, exist_ok=True)
     args.val_csv.parent.mkdir(parents=True, exist_ok=True)

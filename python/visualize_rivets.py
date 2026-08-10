@@ -50,6 +50,7 @@ def run_inference(
         RivetGNN,
         build_window_cache,
         build_window_graph,
+        label_names_from_stats,
         load_cad_data,
     )
 
@@ -61,6 +62,7 @@ def run_inference(
     num_layers = int(stats["num_layers"]) if "num_layers" in stats.files else 3
     classifier_weight = state_dict.get("classifier.weight")
     num_classes = int(classifier_weight.shape[0]) if classifier_weight is not None else 2
+    label_names = label_names_from_stats(stats, num_classes)
     model = RivetGNN(
         node_features=data.num_node_features,
         edge_features=data.edge_attr.size(1),
@@ -91,7 +93,7 @@ def run_inference(
         with torch.no_grad():
             out = model(data.to(device))
             pred = out.argmax(dim=1).cpu().tolist()
-    return pred, num_classes
+    return pred, label_names
 
 
 def write_predictions_csv(prediction_path, pred_labels):
@@ -119,6 +121,7 @@ def read_predictions_csv(prediction_path):
 def visualize_cad_results(
     step_path,
     pred_labels,
+    label_names=None,
     context_transparency=0.82,
     marker_radius=0.0,
 ):
@@ -143,10 +146,11 @@ def visualize_cad_results(
     prediction_colors = {
         1: Quantity_Color(0.0, 0.8, 0.0, Quantity_TOC_RGB),
         2: Quantity_Color(0.1, 0.3, 1.0, Quantity_TOC_RGB),
-        3: Quantity_Color(0.0, 0.8, 0.8, Quantity_TOC_RGB),
     }
+    if label_names != ["background", "rivet", "surface_feature"]:
+        raise ValueError(f"Unsupported label schema for visualization: {label_names}")
     print(f"Displaying raw model predictions: {step_path}")
-    print("green=predicted rivet, blue=predicted decal, cyan=predicted window")
+    print("green=predicted rivet, blue=predicted surface feature")
     print("transparent gray=predicted background/model context")
     print(f"transparent gray=model context (transparency={context_transparency:g})")
     display.DisplayShape(
@@ -234,12 +238,16 @@ def main():
 
     if args.pred_in:
         predicted_labels = read_predictions_csv(args.pred_in)
+        stats = np.load(args.stats, allow_pickle=True)
+        if "label_names" not in stats.files:
+            raise ValueError("Stats file is missing the required three-class label_names metadata.")
+        label_names = [str(value) for value in stats["label_names"].tolist()]
         print(f"Loaded predictions: {args.pred_in}")
     else:
         if not args.skip_export:
             export_inference_csv(args.step_model, args.detector, args.csv)
 
-        predicted_labels, _ = run_inference(
+        predicted_labels, label_names = run_inference(
             args.csv,
             args.model,
             args.stats,
@@ -257,6 +265,7 @@ def main():
         visualize_cad_results(
             args.step_model,
             predicted_labels,
+            label_names=label_names,
             context_transparency=args.context_transparency,
             marker_radius=args.marker_radius,
         )

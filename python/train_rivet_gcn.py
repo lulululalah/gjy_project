@@ -107,10 +107,12 @@ EDGE_ATTR_COLS = [
     "edge_dihedral_stds",
 ]
 
-DEFAULT_CSV = Path("data/wing_rivet_training_set.csv")
+DEFAULT_CSV = Path("data/wing_rivet_training_set_normalized_v2.csv")
 DEFAULT_MODEL_PATH = Path("rivet_gnn_no_centerz_split19_5.pth")
 DEFAULT_STATS_PATH = Path("rivet_gnn_no_centerz_split19_5_stats.npz")
 DEFAULT_EVAL_PATH = Path("rivet_gnn_no_centerz_split19_5_eval.csv")
+
+LABEL_NAMES = ["background", "rivet", "surface_feature"]
 
 RADIUS_COL = "radius"
 SURFACE_TYPE_COL = "surfaceType"
@@ -121,6 +123,18 @@ def split_tokens(value):
     if pd.isna(value):
         return []
     return str(value).split()
+
+
+def label_names_from_stats(stats, num_classes):
+    if "label_names" not in stats.files:
+        raise ValueError("Stats file is missing the required three-class label_names metadata.")
+    label_names = [str(value) for value in stats["label_names"].tolist()]
+    if label_names != LABEL_NAMES or num_classes != len(LABEL_NAMES):
+        raise ValueError(
+            "Only the three-class background/rivet/surface_feature schema is supported: "
+            f"classes={num_classes}, label_names={label_names}"
+        )
+    return label_names
 
 
 def token_at(tokens, index, default="0"):
@@ -601,8 +615,8 @@ def load_hard_negative_centers(hard_negative_csv, train_df, val_df):
         raise ValueError(
             f"Hard-negative CSV is missing required columns: {sorted(missing_columns)}"
         )
-    if not set(manifest["pred_label"].astype(int).unique()).issubset({2, 3}):
-        raise ValueError("Hard-negative CSV may only contain predicted decal/window labels (2 or 3).")
+    if not set(manifest["pred_label"].astype(int).unique()).issubset({2}):
+        raise ValueError("Hard-negative CSV may only contain predicted surface_feature labels (2).")
 
     train_keys = train_df[["graph_id", "model_name", "id", "label"]].copy()
     train_keys["graph_id"] = train_keys["graph_id"].astype(int)
@@ -668,6 +682,16 @@ def load_explicit_train_val_datasets(
     for name, df in [("train", train_df), ("val", val_df)]:
         if "graph_id" not in df.columns or "model_name" not in df.columns:
             raise ValueError(f"{name} CSV is missing graph_id/model_name columns. Please re-export training data.")
+        if "label" not in df.columns:
+            raise ValueError(f"{name} CSV is missing the label column.")
+
+    for name, df in [("train", train_df), ("val", val_df)]:
+        labels = set(df["label"].astype(int).unique())
+        if not labels.issubset({0, 1, 2}):
+            raise ValueError(
+                f"{name} CSV must use background=0, rivet=1, surface_feature=2; "
+                f"found labels={sorted(labels)}"
+            )
 
     train_feature_frame, feature_cols = build_feature_frame(train_df)
     feature_matrix = train_feature_frame.to_numpy()
@@ -695,11 +719,12 @@ def load_explicit_train_val_datasets(
         hard_negative_fraction,
     )
     val_training_mode = "full" if training_mode == "full-balanced" else training_mode
+    val_background_ratio = 0 if training_mode == "window" else background_ratio
     val_graphs = prepare_graph_samples(
         val_full_graphs,
         val_training_mode,
         window_hop,
-        background_ratio,
+        val_background_ratio,
         seed + 1,
     )
     return (
@@ -715,11 +740,14 @@ def load_explicit_train_val_datasets(
 
 
 class RivetGNN(torch.nn.Module):
-    def __init__(self, node_features, edge_features, hidden_dim, num_classes=2, num_layers=3):
+    def __init__(self, node_features, edge_features, hidden_dim, num_classes=2, num_layers=3, dropout=0.0):
         super().__init__()
         if num_layers < 3:
             raise ValueError("num_layers must be at least 3")
+        if not 0.0 <= dropout < 1.0:
+            raise ValueError("dropout must be in [0.0, 1.0)")
         self.num_layers = num_layers
+        self.dropout = torch.nn.Dropout(dropout)
 
         def create_nn(in_f, out_f):
             return torch.nn.Sequential(
@@ -750,13 +778,17 @@ class RivetGNN(torch.nn.Module):
 
         if self.num_layers == 3:
             x = F.relu(self.bn1(self.conv1(x, edge_index, edge_attr)))
+            x = self.dropout(x)
             identity = x
             x = F.relu(self.bn2(self.conv2(x, edge_index, edge_attr)))
+            x = self.dropout(x)
             x = x + identity
             x = F.relu(self.bn3(self.conv3(x, edge_index, edge_attr)))
+            x = self.dropout(x)
             return F.log_softmax(self.classifier(x), dim=1)
         for layer_index, (conv, batch_norm) in enumerate(zip(self.convs, self.batch_norms)):
             updated = F.relu(batch_norm(conv(x, edge_index, edge_attr)))
+            updated = self.dropout(updated)
             x = updated if layer_index == 0 else updated + x
         batch = getattr(data, "batch", None)
         if batch is None:
@@ -812,12 +844,27 @@ def compute_metrics_from_confusion(confusion):
 
 def summarize_metrics(metrics):
     if not metrics:
-        return {"macro_precision": 0.0, "macro_recall": 0.0, "macro_f1": 0.0, "miou": 0.0}
+        return {
+            "macro_precision": 0.0,
+            "macro_recall": 0.0,
+            "macro_f1": 0.0,
+            "miou": 0.0,
+            "foreground_macro_f1": 0.0,
+            "class_2_f1": 0.0,
+            "background_fp": 0,
+        }
+    foreground_metrics = metrics[1:]
     return {
         "macro_precision": float(np.mean([item["precision"] for item in metrics])),
         "macro_recall": float(np.mean([item["recall"] for item in metrics])),
         "macro_f1": float(np.mean([item["f1"] for item in metrics])),
         "miou": float(np.mean([item["iou"] for item in metrics])),
+        "foreground_macro_f1": float(np.mean([item["f1"] for item in foreground_metrics]))
+        if foreground_metrics
+        else 0.0,
+        "class_2_f1": float(metrics[2]["f1"]) if len(metrics) > 2 else 0.0,
+        # Here "background FP" means background faces predicted as any foreground class.
+        "background_fp": int(metrics[0]["fn"]),
     }
 
 
@@ -857,11 +904,12 @@ def evaluate(model, loader, device, num_classes, class_weights=None, focal_gamma
     return total_loss / total_nodes, total_correct / total_nodes, metrics, summarize_metrics(metrics)
 
 
-def write_eval_csv(output_path, metrics, summary, val_loss, val_acc):
+def write_eval_csv(output_path, metrics, summary, val_loss, val_acc, label_names=None):
     output_path = Path(output_path)
     with output_path.open("w", newline="", encoding="utf-8") as csv_file:
         fieldnames = [
             "class_id",
+            "class_name",
             "support",
             "tp",
             "fp",
@@ -876,12 +924,18 @@ def write_eval_csv(output_path, metrics, summary, val_loss, val_acc):
             "macro_recall",
             "macro_f1",
             "miou",
+            "foreground_macro_f1",
+            "class_2_f1",
+            "background_fp",
         ]
         writer = csv.DictWriter(csv_file, fieldnames=fieldnames)
         writer.writeheader()
         for item in metrics:
             writer.writerow({
                 **item,
+                "class_name": label_names[item["class_id"]]
+                if label_names and item["class_id"] < len(label_names)
+                else f"class_{item['class_id']}",
                 "val_loss": val_loss,
                 "val_acc": val_acc,
                 **summary,
@@ -905,23 +959,71 @@ def print_metric_table(metrics, summary):
         f"precision={summary['macro_precision']:.4f} | "
         f"recall={summary['macro_recall']:.4f} | "
         f"f1={summary['macro_f1']:.4f} | "
-        f"mIoU={summary['miou']:.4f}"
+        f"mIoU={summary['miou']:.4f} | "
+        f"foreground_f1={summary['foreground_macro_f1']:.4f} | "
+        f"surface_feature_f1={summary['class_2_f1']:.4f} | "
+        f"background_fp={summary['background_fp']}"
     )
 
 
-def checkpoint_score(metrics, summary, selection_metric):
-    if selection_metric == "miou":
-        return summary["miou"]
-    if selection_metric == "decal-f1":
-        if len(metrics) <= 2:
-            raise ValueError("decal-f1 checkpoint selection requires decal class 2.")
-        return metrics[2]["f1"]
-    raise ValueError(f"Unsupported checkpoint selection metric: {selection_metric}")
+def derive_surface_output_path(path):
+    path = Path(path)
+    return path.with_name(f"{path.stem}_best_surface_feature_f1{path.suffix}")
+
+
+def save_checkpoint_bundle(
+    model,
+    model_out,
+    stats_out,
+    eval_out,
+    feature_cols,
+    feature_mean,
+    feature_std,
+    edge_mean,
+    edge_std,
+    num_layers,
+    metrics,
+    summary,
+    val_loss,
+    val_acc,
+):
+    for output_path in (model_out, stats_out, eval_out):
+        Path(output_path).parent.mkdir(parents=True, exist_ok=True)
+    torch.save(model.state_dict(), model_out)
+    np.savez(
+        stats_out,
+        feature_cols=np.array(feature_cols, dtype=object),
+        edge_attr_cols=np.array(EDGE_ATTR_COLS, dtype=object),
+        mean=feature_mean,
+        std=feature_std,
+        edge_mean=edge_mean,
+        edge_std=edge_std,
+        num_layers=np.array(num_layers),
+        feature_schema_version=np.array(
+            2 if NORMALIZED_TRIMMED_AREA_COL in feature_cols else 1
+        ),
+        label_names=np.array(LABEL_NAMES, dtype=object),
+        classification_schema=np.array("three_class_surface_feature_v1"),
+    )
+    write_eval_csv(
+        eval_out,
+        metrics,
+        summary,
+        val_loss,
+        val_acc,
+        label_names=LABEL_NAMES,
+    )
 
 
 def train(args):
     if args.val_csv is None:
         raise ValueError("Explicit --val-csv is required. Random graph splits are not part of the main protocol.")
+    if args.validation_interval <= 0:
+        raise ValueError("validation_interval must be positive.")
+    if not 0.0 <= args.dropout < 1.0:
+        raise ValueError("dropout must be in [0.0, 1.0).")
+    if args.weight_decay < 0.0:
+        raise ValueError("weight_decay must be non-negative.")
 
     np.random.seed(args.seed)
     torch.manual_seed(args.seed)
@@ -954,6 +1056,11 @@ def train(args):
         raise ValueError("Training and validation datasets must both contain at least one graph/sample.")
 
     num_classes = max(int(graph.y.max().item()) for graph in graphs) + 1
+    if num_classes != len(LABEL_NAMES):
+        raise ValueError(
+            "Training labels do not match the required three-class schema: "
+            f"classes={num_classes}, label_names={LABEL_NAMES}"
+        )
 
     train_loader = DataLoader(train_graphs, batch_size=args.batch_size, shuffle=True)
     val_loader = DataLoader(val_graphs, batch_size=args.batch_size, shuffle=False)
@@ -965,23 +1072,30 @@ def train(args):
         hidden_dim=args.hidden_dim,
         num_classes=num_classes,
         num_layers=args.num_layers,
+        dropout=args.dropout,
     ).to(device)
 
-    optimizer = torch.optim.Adam(model.parameters(), lr=args.lr)
+    optimizer = torch.optim.AdamW(
+        model.parameters(), lr=args.lr, weight_decay=args.weight_decay
+    )
     class_weights = compute_class_weights(
         train_graphs,
         num_classes=num_classes,
         max_weight=args.max_class_weight,
     ).to(device)
-    if args.decal_class_weight_scale <= 0.0:
-        raise ValueError("decal_class_weight_scale must be positive.")
-    if num_classes > 2:
-        class_weights[2] *= args.decal_class_weight_scale
+    if args.surface_feature_weight_scale <= 0.0:
+        raise ValueError("surface_feature_weight_scale must be positive.")
+    class_weights[2] *= args.surface_feature_weight_scale
 
     print(f"Loaded {len(graphs)} graph samples ({split_description})")
     print(f"Classes: {num_classes}")
+    print(f"Label names: {LABEL_NAMES}")
     print(f"Training mode: {args.training_mode}")
-    print(f"Checkpoint selection metric: {args.selection_metric}")
+    print(f"Optimizer: AdamW | dropout={args.dropout:.3f} | weight_decay={args.weight_decay:.6f}")
+    print(
+        "Checkpoint selection: best mIoU and best eligible surface_feature F1 "
+        f"(validation every {args.validation_interval} epochs)"
+    )
     if args.training_mode == "window":
         print(f"Window hop: {args.window_hop}, background ratio: {args.background_ratio}")
         print(
@@ -994,7 +1108,13 @@ def train(args):
     print(f"Training on: {device}")
     print(f"Class weights: {class_weights.cpu().tolist()}")
 
-    best_score = float("-inf")
+    surface_model_out = args.surface_model_out or derive_surface_output_path(args.model_out)
+    surface_stats_out = args.surface_stats_out or derive_surface_output_path(args.stats_out)
+    surface_eval_out = args.surface_eval_out or derive_surface_output_path(args.eval_out)
+    best_miou = float("-inf")
+    best_surface_f1 = float("-inf")
+    best_miou_epoch = None
+    best_surface_epoch = None
 
     for epoch in range(1, args.epochs + 1):
         model.train()
@@ -1015,6 +1135,12 @@ def train(args):
             total_nodes += target_count
 
         train_loss = total_loss / max(total_nodes, 1)
+        validation_due = epoch % args.validation_interval == 0 or epoch == args.epochs
+        if not validation_due:
+            if epoch == 1 or epoch % 10 == 0:
+                print(f"Epoch {epoch:03d} | train_loss={train_loss:.4f} | validation=skipped")
+            continue
+
         val_loss, val_acc, val_metrics, val_summary = evaluate(
             model,
             val_loader,
@@ -1024,50 +1150,76 @@ def train(args):
             focal_gamma=args.focal_gamma,
         )
 
-        current_score = checkpoint_score(val_metrics, val_summary, args.selection_metric)
-        if current_score > best_score:
-            best_score = current_score
-            torch.save(model.state_dict(), args.model_out)
-            np.savez(
+        if val_summary["miou"] > best_miou:
+            best_miou = val_summary["miou"]
+            best_miou_epoch = epoch
+            save_checkpoint_bundle(
+                model,
+                args.model_out,
                 args.stats_out,
-                feature_cols=np.array(feature_cols, dtype=object),
-                edge_attr_cols=np.array(EDGE_ATTR_COLS, dtype=object),
-                mean=feature_mean,
-                std=feature_std,
-                edge_mean=edge_mean,
-                edge_std=edge_std,
-                num_layers=np.array(args.num_layers),
-                feature_schema_version=np.array(
-                    2 if NORMALIZED_TRIMMED_AREA_COL in feature_cols else 1
-                ),
-            )
-            write_eval_csv(args.eval_out, val_metrics, val_summary, val_loss, val_acc)
-
-        if epoch == 1 or epoch % 10 == 0 or epoch == args.epochs:
-            print(
-                f"Epoch {epoch:03d} | "
-                f"train_loss={train_loss:.4f} | "
-                f"val_loss={val_loss:.4f} | "
-                f"val_acc={val_acc:.4f} | "
-                f"miou={val_summary['miou']:.4f} | "
-                f"checkpoint_score={current_score:.4f}"
+                args.eval_out,
+                feature_cols,
+                feature_mean,
+                feature_std,
+                edge_mean,
+                edge_std,
+                args.num_layers,
+                val_metrics,
+                val_summary,
+                val_loss,
+                val_acc,
             )
 
-    best_state = torch.load(args.model_out, map_location=device)
-    model.load_state_dict(best_state)
-    final_val_loss, final_val_acc, final_metrics, final_summary = evaluate(
-        model,
-        val_loader,
-        device,
-        num_classes,
-        class_weights=class_weights,
-        focal_gamma=args.focal_gamma,
-    )
-    write_eval_csv(args.eval_out, final_metrics, final_summary, final_val_loss, final_val_acc)
-    print_metric_table(final_metrics, final_summary)
-    print(f"Best model saved to: {args.model_out}")
-    print(f"Feature stats saved to: {args.stats_out}")
-    print(f"Evaluation metrics saved to: {args.eval_out}")
+        surface_eligible = val_metrics[1]["tp"] > 0 and val_metrics[2]["tp"] > 0
+        if surface_eligible and val_summary["class_2_f1"] > best_surface_f1:
+            best_surface_f1 = val_summary["class_2_f1"]
+            best_surface_epoch = epoch
+            save_checkpoint_bundle(
+                model,
+                surface_model_out,
+                surface_stats_out,
+                surface_eval_out,
+                feature_cols,
+                feature_mean,
+                feature_std,
+                edge_mean,
+                edge_std,
+                args.num_layers,
+                val_metrics,
+                val_summary,
+                val_loss,
+                val_acc,
+            )
+
+        print(
+            f"Epoch {epoch:03d} | "
+            f"train_loss={train_loss:.4f} | "
+            f"val_loss={val_loss:.4f} | "
+            f"val_acc={val_acc:.4f} | "
+            f"miou={val_summary['miou']:.4f} | "
+            f"foreground_f1={val_summary['foreground_macro_f1']:.4f} | "
+            f"surface_feature_f1={val_summary['class_2_f1']:.4f} | "
+            f"background_fp={val_summary['background_fp']} | "
+            f"surface_eligible={surface_eligible}"
+        )
+
+    if best_miou_epoch is None:
+        raise RuntimeError("No validation pass produced a best-mIoU checkpoint.")
+
+    print(f"Best mIoU checkpoint: epoch={best_miou_epoch}, score={best_miou:.4f}")
+    print(f"  model: {args.model_out}")
+    print(f"  stats: {args.stats_out}")
+    print(f"  eval:  {args.eval_out}")
+    if best_surface_epoch is None:
+        print("No surface-feature checkpoint was saved because rivet or surface_feature had zero true positives at every validation pass.")
+    else:
+        print(
+            "Best surface-feature checkpoint: "
+            f"epoch={best_surface_epoch}, score={best_surface_f1:.4f}"
+        )
+        print(f"  model: {surface_model_out}")
+        print(f"  stats: {surface_stats_out}")
+        print(f"  eval:  {surface_eval_out}")
 
 
 def parse_args():
@@ -1077,24 +1229,24 @@ def parse_args():
     parser.add_argument("--model-out", type=Path, default=DEFAULT_MODEL_PATH, help=f"Model output path. Default: {DEFAULT_MODEL_PATH}")
     parser.add_argument("--stats-out", type=Path, default=DEFAULT_STATS_PATH, help=f"Normalization stats output. Default: {DEFAULT_STATS_PATH}")
     parser.add_argument("--eval-out", type=Path, default=DEFAULT_EVAL_PATH, help=f"Evaluation CSV output. Default: {DEFAULT_EVAL_PATH}")
+    parser.add_argument("--surface-model-out", type=Path, help="Best eligible surface-feature-F1 model output. Derived from --model-out by default.")
+    parser.add_argument("--surface-stats-out", type=Path, help="Stats paired with --surface-model-out. Derived from --stats-out by default.")
+    parser.add_argument("--surface-eval-out", type=Path, help="Evaluation CSV for the best surface-feature checkpoint. Derived from --eval-out by default.")
     parser.add_argument("--epochs", type=int, default=150, help="Training epochs. Default: 150")
+    parser.add_argument("--validation-interval", type=int, default=5, help="Run full validation every N epochs, plus the final epoch. Default: 5")
     parser.add_argument("--batch-size", type=int, default=8, help="Graphs per batch. Default: 8")
     parser.add_argument("--hidden-dim", type=int, default=64, help="Hidden dimension. Default: 64")
     parser.add_argument("--num-layers", type=int, default=6, help="Residual NNConv layers. Default: 6")
     parser.add_argument("--lr", type=float, default=0.005, help="Learning rate. Default: 0.005")
+    parser.add_argument("--dropout", type=float, default=0.2, help="Dropout after each GNN layer. Default: 0.2")
+    parser.add_argument("--weight-decay", type=float, default=0.0001, help="AdamW weight decay. Default: 0.0001")
     parser.add_argument("--focal-gamma", type=float, default=2.0, help="Focal-loss gamma. Default: 2.0")
-    parser.add_argument(
-        "--selection-metric",
-        choices=["miou", "decal-f1"],
-        default="miou",
-        help="Validation metric used to retain the checkpoint. Default: miou",
-    )
     parser.add_argument("--max-class-weight", type=float, default=5.0, help="Maximum inverse-sqrt class weight before normalization. Default: 5.0")
     parser.add_argument(
-        "--decal-class-weight-scale",
+        "--surface-feature-weight-scale",
         type=float,
         default=1.0,
-        help="Multiplier for the decal (class 2) loss weight. Default: 1.0",
+        help="Multiplier for the surface_feature (class 2) loss weight. Default: 1.0",
     )
     parser.add_argument("--seed", type=int, default=42, help="Random seed. Default: 42")
     parser.add_argument("--training-mode", choices=["full", "full-balanced", "window"], default="full", help="Use full graphs, balanced-loss full graphs, or k-hop windows. Default: full")
@@ -1103,7 +1255,7 @@ def parse_args():
     parser.add_argument(
         "--hard-negative-csv",
         type=Path,
-        help="Training-only decal/window false-positive manifest to prioritize in window sampling.",
+        help="Training-only surface-feature false-positive manifest to prioritize in window sampling.",
     )
     parser.add_argument(
         "--hard-negative-fraction",

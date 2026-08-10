@@ -12,20 +12,13 @@ from train_rivet_gcn import (
     build_graphs_from_dataframe,
     build_window_cache,
     build_window_graph,
+    label_names_from_stats,
 )
 
 
-CLASS_NAMES = {
-    0: "background",
-    1: "rivet",
-    2: "decal",
-    3: "window",
-}
-
-
-def error_type(truth_label, pred_label):
-    truth_name = CLASS_NAMES.get(truth_label, f"class_{truth_label}")
-    pred_name = CLASS_NAMES.get(pred_label, f"class_{pred_label}")
+def error_type(truth_label, pred_label, class_names):
+    truth_name = class_names.get(truth_label, f"class_{truth_label}")
+    pred_name = class_names.get(pred_label, f"class_{pred_label}")
     return f"{truth_name}_to_{pred_name}"
 
 
@@ -68,6 +61,12 @@ def main():
     edge_mean = stats["edge_mean"]
     edge_std = stats["edge_std"]
     num_layers = int(stats["num_layers"]) if "num_layers" in stats.files else 3
+    labels = set(source_df["label"].astype(int).unique())
+    if not labels.issubset({0, 1, 2}):
+        raise ValueError(
+            "Audit CSV must use background=0, rivet=1, surface_feature=2; "
+            f"found labels={sorted(labels)}"
+        )
 
     full_graphs = build_graphs_from_dataframe(
         source_df,
@@ -84,6 +83,8 @@ def main():
     if classifier_weight is None:
         raise ValueError("Checkpoint is missing classifier.weight.")
     num_classes = int(classifier_weight.shape[0])
+    label_names = label_names_from_stats(stats, num_classes)
+    class_names = dict(enumerate(label_names))
     model = RivetGNN(
         node_features=full_graphs[0].num_node_features,
         edge_features=full_graphs[0].edge_attr.size(1),
@@ -124,14 +125,14 @@ def main():
                     "model_name": str(graph.model_name),
                     "face_id": face_id,
                     "truth_label": truth_label,
-                    "truth_name": CLASS_NAMES.get(truth_label, f"class_{truth_label}"),
+                    "truth_name": class_names.get(truth_label, f"class_{truth_label}"),
                     "pred_label": pred_label,
-                    "pred_name": CLASS_NAMES.get(pred_label, f"class_{pred_label}"),
+                    "pred_name": class_names.get(pred_label, f"class_{pred_label}"),
                     "pred_confidence": float(probabilities[pred_label]),
-                    "error_type": error_type(truth_label, pred_label),
+                    "error_type": error_type(truth_label, pred_label, class_names),
                 }
                 for class_id in range(num_classes):
-                    row[f"prob_{CLASS_NAMES.get(class_id, f'class_{class_id}')}"] = float(probabilities[class_id])
+                    row[f"prob_{class_names.get(class_id, f'class_{class_id}')}"] = float(probabilities[class_id])
                 error_rows.append(row)
                 model_errors += 1
 
@@ -146,7 +147,7 @@ def main():
         )
 
     error_rows.sort(key=lambda row: (-row["pred_confidence"], row["model_name"], row["face_id"]))
-    probability_fields = [f"prob_{CLASS_NAMES.get(class_id, f'class_{class_id}')}" for class_id in range(num_classes)]
+    probability_fields = [f"prob_{class_names.get(class_id, f'class_{class_id}')}" for class_id in range(num_classes)]
     review_fields = [
         "graph_id",
         "model_name",
