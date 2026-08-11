@@ -1397,7 +1397,7 @@
     },
     {
       "face_id": 233,
-      "semantic": "background",
+      "semantic": "decal",
       "instance_id": -1,
       "operation": "keep"
     },
@@ -1529,7 +1529,7 @@
     },
     {
       "face_id": 255,
-      "semantic": "background",
+      "semantic": "decal",
       "instance_id": -1,
       "operation": "keep"
     },
@@ -1607,7 +1607,7 @@
     },
     {
       "face_id": 268,
-      "semantic": "background",
+      "semantic": "decal",
       "instance_id": -1,
       "operation": "keep"
     },
@@ -1787,7 +1787,7 @@
     },
     {
       "face_id": 298,
-      "semantic": "background",
+      "semantic": "decal",
       "instance_id": -1,
       "operation": "keep"
     },
@@ -1919,7 +1919,7 @@
     },
     {
       "face_id": 320,
-      "semantic": "background",
+      "semantic": "decal",
       "instance_id": -1,
       "operation": "keep"
     },
@@ -1997,7 +1997,7 @@
     },
     {
       "face_id": 333,
-      "semantic": "background",
+      "semantic": "decal",
       "instance_id": -1,
       "operation": "keep"
     },

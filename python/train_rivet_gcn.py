@@ -609,7 +609,13 @@ def load_hard_negative_centers(hard_negative_csv, train_df, val_df):
         raise FileNotFoundError(f"Hard-negative CSV does not exist: {manifest_path}")
 
     manifest = pd.read_csv(manifest_path)
-    required_columns = {"graph_id", "model_name", "face_id", "pred_label"}
+    required_columns = {
+        "graph_id",
+        "model_name",
+        "face_id",
+        "pred_label",
+        "review_status",
+    }
     missing_columns = required_columns.difference(manifest.columns)
     if missing_columns:
         raise ValueError(
@@ -617,6 +623,12 @@ def load_hard_negative_centers(hard_negative_csv, train_df, val_df):
         )
     if not set(manifest["pred_label"].astype(int).unique()).issubset({2}):
         raise ValueError("Hard-negative CSV may only contain predicted surface_feature labels (2).")
+    review_status = manifest["review_status"].astype(str).str.strip().str.lower()
+    if review_status.empty or not review_status.eq("approved").all():
+        raise ValueError(
+            "Hard-negative CSV must contain only manually approved rows "
+            "(review_status=approved)."
+        )
 
     train_keys = train_df[["graph_id", "model_name", "id", "label"]].copy()
     train_keys["graph_id"] = train_keys["graph_id"].astype(int)
@@ -676,6 +688,7 @@ def load_explicit_train_val_datasets(
     seed=42,
     hard_negative_csv=None,
     hard_negative_fraction=0.1,
+    label_names=LABEL_NAMES,
 ):
     train_df = pd.read_csv(train_csv_path)
     val_df = pd.read_csv(val_csv_path)
@@ -687,9 +700,9 @@ def load_explicit_train_val_datasets(
 
     for name, df in [("train", train_df), ("val", val_df)]:
         labels = set(df["label"].astype(int).unique())
-        if not labels.issubset({0, 1, 2}):
+        if not labels.issubset(set(range(len(label_names)))):
             raise ValueError(
-                f"{name} CSV must use background=0, rivet=1, surface_feature=2; "
+                f"{name} CSV labels do not match {label_names}; "
                 f"found labels={sorted(labels)}"
             )
 
@@ -942,8 +955,8 @@ def write_eval_csv(output_path, metrics, summary, val_loss, val_acc, label_names
             })
 
 
-def print_metric_table(metrics, summary):
-    print("Validation class metrics:")
+def print_metric_table(metrics, summary, split_name="Validation"):
+    print(f"{split_name} class metrics:")
     print("class | support | precision | recall | f1 | iou")
     for item in metrics:
         print(
@@ -986,6 +999,8 @@ def save_checkpoint_bundle(
     summary,
     val_loss,
     val_acc,
+    label_names=LABEL_NAMES,
+    classification_schema="three_class_surface_feature_v1",
 ):
     for output_path in (model_out, stats_out, eval_out):
         Path(output_path).parent.mkdir(parents=True, exist_ok=True)
@@ -1002,8 +1017,8 @@ def save_checkpoint_bundle(
         feature_schema_version=np.array(
             2 if NORMALIZED_TRIMMED_AREA_COL in feature_cols else 1
         ),
-        label_names=np.array(LABEL_NAMES, dtype=object),
-        classification_schema=np.array("three_class_surface_feature_v1"),
+        label_names=np.array(label_names, dtype=object),
+        classification_schema=np.array(classification_schema),
     )
     write_eval_csv(
         eval_out,
@@ -1011,13 +1026,15 @@ def save_checkpoint_bundle(
         summary,
         val_loss,
         val_acc,
-        label_names=LABEL_NAMES,
+        label_names=label_names,
     )
 
 
 def train(args):
-    if args.val_csv is None:
-        raise ValueError("Explicit --val-csv is required. Random graph splits are not part of the main protocol.")
+    if args.val_csv is None and args.test_csv is None:
+        raise ValueError("Provide --val-csv for validation training, or --test-csv for one final test-only evaluation.")
+    if args.val_csv is not None and args.test_csv is not None:
+        raise ValueError("Use either --val-csv or --test-csv, never both in one run.")
     if args.validation_interval <= 0:
         raise ValueError("validation_interval must be positive.")
     if not 0.0 <= args.dropout < 1.0:
@@ -1030,6 +1047,11 @@ def train(args):
     if torch.cuda.is_available():
         torch.cuda.manual_seed_all(args.seed)
 
+    label_names = LABEL_NAMES
+    test_only = args.test_csv is not None
+    if test_only and args.hard_negative_csv:
+        raise ValueError("Train/test-only runs cannot use hard-negative tuning; keep test evaluation strictly final.")
+
     (
         train_graphs,
         val_graphs,
@@ -1041,25 +1063,30 @@ def train(args):
         hard_negative_count,
     ) = load_explicit_train_val_datasets(
         args.csv,
-        args.val_csv,
+        args.test_csv if test_only else args.val_csv,
         training_mode=args.training_mode,
         window_hop=args.window_hop,
         background_ratio=args.background_ratio,
         seed=args.seed,
         hard_negative_csv=args.hard_negative_csv,
         hard_negative_fraction=args.hard_negative_fraction,
+        label_names=label_names,
     )
     graphs = train_graphs + val_graphs
-    split_description = f"explicit train={args.csv}, val={args.val_csv}"
+    split_description = (
+        f"explicit train={args.csv}, final_test={args.test_csv}"
+        if test_only
+        else f"explicit train={args.csv}, val={args.val_csv}"
+    )
 
     if not train_graphs or not val_graphs:
         raise ValueError("Training and validation datasets must both contain at least one graph/sample.")
 
     num_classes = max(int(graph.y.max().item()) for graph in graphs) + 1
-    if num_classes != len(LABEL_NAMES):
+    if num_classes != len(label_names):
         raise ValueError(
-            "Training labels do not match the required three-class schema: "
-            f"classes={num_classes}, label_names={LABEL_NAMES}"
+            "Training labels do not match the selected schema: "
+            f"classes={num_classes}, label_names={label_names}"
         )
 
     train_loader = DataLoader(train_graphs, batch_size=args.batch_size, shuffle=True)
@@ -1089,13 +1116,16 @@ def train(args):
 
     print(f"Loaded {len(graphs)} graph samples ({split_description})")
     print(f"Classes: {num_classes}")
-    print(f"Label names: {LABEL_NAMES}")
+    print(f"Label names: {label_names}")
     print(f"Training mode: {args.training_mode}")
     print(f"Optimizer: AdamW | dropout={args.dropout:.3f} | weight_decay={args.weight_decay:.6f}")
-    print(
-        "Checkpoint selection: best mIoU and best eligible surface_feature F1 "
-        f"(validation every {args.validation_interval} epochs)"
-    )
+    if test_only:
+        print(f"Final-test-only mode: fixed {args.epochs} epochs; test metrics are computed once after training.")
+    else:
+        print(
+            f"Checkpoint selection: best mIoU and best eligible {label_names[2]} F1 "
+            f"(validation every {args.validation_interval} epochs)"
+        )
     if args.training_mode == "window":
         print(f"Window hop: {args.window_hop}, background ratio: {args.background_ratio}")
         print(
@@ -1135,6 +1165,11 @@ def train(args):
             total_nodes += target_count
 
         train_loss = total_loss / max(total_nodes, 1)
+        if test_only:
+            if epoch == 1 or epoch % 10 == 0 or epoch == args.epochs:
+                print(f"Epoch {epoch:03d} | train_loss={train_loss:.4f} | final_test=pending")
+            continue
+
         validation_due = epoch % args.validation_interval == 0 or epoch == args.epochs
         if not validation_due:
             if epoch == 1 or epoch % 10 == 0:
@@ -1168,6 +1203,8 @@ def train(args):
                 val_summary,
                 val_loss,
                 val_acc,
+                label_names=label_names,
+                classification_schema="three_class_surface_feature_v1",
             )
 
         surface_eligible = val_metrics[1]["tp"] > 0 and val_metrics[2]["tp"] > 0
@@ -1189,6 +1226,8 @@ def train(args):
                 val_summary,
                 val_loss,
                 val_acc,
+                label_names=label_names,
+                classification_schema="three_class_surface_feature_v1",
             )
 
         print(
@@ -1198,10 +1237,44 @@ def train(args):
             f"val_acc={val_acc:.4f} | "
             f"miou={val_summary['miou']:.4f} | "
             f"foreground_f1={val_summary['foreground_macro_f1']:.4f} | "
-            f"surface_feature_f1={val_summary['class_2_f1']:.4f} | "
+            f"{label_names[2]}_f1={val_summary['class_2_f1']:.4f} | "
             f"background_fp={val_summary['background_fp']} | "
             f"surface_eligible={surface_eligible}"
         )
+
+    if test_only:
+        test_loss, test_acc, test_metrics, test_summary = evaluate(
+            model,
+            val_loader,
+            device,
+            num_classes,
+            class_weights=class_weights,
+            focal_gamma=args.focal_gamma,
+        )
+        save_checkpoint_bundle(
+            model,
+            args.model_out,
+            args.stats_out,
+            args.eval_out,
+            feature_cols,
+            feature_mean,
+            feature_std,
+            edge_mean,
+            edge_std,
+            args.num_layers,
+            test_metrics,
+            test_summary,
+            test_loss,
+            test_acc,
+            label_names=label_names,
+            classification_schema="three_class_surface_feature_v1",
+        )
+        print_metric_table(test_metrics, test_summary, split_name="Final test")
+        print(f"Final test checkpoint after epoch={args.epochs}")
+        print(f"  model: {args.model_out}")
+        print(f"  stats: {args.stats_out}")
+        print(f"  eval:  {args.eval_out}")
+        return
 
     if best_miou_epoch is None:
         raise RuntimeError("No validation pass produced a best-mIoU checkpoint.")
@@ -1211,10 +1284,10 @@ def train(args):
     print(f"  stats: {args.stats_out}")
     print(f"  eval:  {args.eval_out}")
     if best_surface_epoch is None:
-        print("No surface-feature checkpoint was saved because rivet or surface_feature had zero true positives at every validation pass.")
+        print(f"No {label_names[2]} checkpoint was saved because rivet or {label_names[2]} had zero true positives at every validation pass.")
     else:
         print(
-            "Best surface-feature checkpoint: "
+            f"Best {label_names[2]} checkpoint: "
             f"epoch={best_surface_epoch}, score={best_surface_f1:.4f}"
         )
         print(f"  model: {surface_model_out}")
@@ -1225,7 +1298,8 @@ def train(args):
 def parse_args():
     parser = argparse.ArgumentParser(description="Train RivetGNN using one STEP model per graph.")
     parser.add_argument("--csv", type=Path, default=DEFAULT_CSV, help=f"Training CSV path. Default: {DEFAULT_CSV}")
-    parser.add_argument("--val-csv", type=Path, required=True, help="Explicit validation CSV path. Random graph splits are disabled.")
+    parser.add_argument("--val-csv", type=Path, help="Explicit validation CSV path. Random graph splits are disabled.")
+    parser.add_argument("--test-csv", type=Path, help="Final test CSV for one post-training evaluation. Cannot be combined with --val-csv.")
     parser.add_argument("--model-out", type=Path, default=DEFAULT_MODEL_PATH, help=f"Model output path. Default: {DEFAULT_MODEL_PATH}")
     parser.add_argument("--stats-out", type=Path, default=DEFAULT_STATS_PATH, help=f"Normalization stats output. Default: {DEFAULT_STATS_PATH}")
     parser.add_argument("--eval-out", type=Path, default=DEFAULT_EVAL_PATH, help=f"Evaluation CSV output. Default: {DEFAULT_EVAL_PATH}")
