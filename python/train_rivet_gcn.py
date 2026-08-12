@@ -53,6 +53,17 @@ NORMALIZED_GEOMETRY_FEATURE_COLS = [
     "normalizedNeighborAreaMax",
 ]
 
+INNER_LOOP_FEATURE_COLS = [
+    "minInnerLoopBoundaryDihedralMax",
+    "minInnerLoopBoundaryRightAngleDeviation",
+    "hasValidInnerLoopBoundaryDihedral",
+    "innerLoopAllDihedralBelowThreshold",
+    "hasInnerLoopInteriorBfsDepthAtMost2",
+    "hasSmallFlatInnerLoop",
+    "hasSmallRightAngleInnerLoop",
+]
+USE_INNER_LOOP_FEATURES = False
+
 BASE_FEATURE_COLS = [
     "relativeArea",
     NORMALIZED_TRIMMED_AREA_COL,
@@ -65,6 +76,13 @@ BASE_FEATURE_COLS = [
     "innerWireCount",
     "normalizedMinInnerWireLength",
     "normalizedMaxInnerWireLength",
+    "minInnerLoopBoundaryDihedralMax",
+    "minInnerLoopBoundaryRightAngleDeviation",
+    "hasValidInnerLoopBoundaryDihedral",
+    "innerLoopAllDihedralBelowThreshold",
+    "hasInnerLoopInteriorBfsDepthAtMost2",
+    "hasSmallFlatInnerLoop",
+    "hasSmallRightAngleInnerLoop",
     "numEdges",
     "normalizedNeighborAreaMean",
     "normalizedNeighborAreaMax",
@@ -162,6 +180,8 @@ def infer_feature_columns(df):
         )
     surface_types = sorted({int(value) for value in df[SURFACE_TYPE_COL].fillna(0).astype(int).tolist()})
     feature_cols = list(BASE_FEATURE_COLS)
+    if not USE_INNER_LOOP_FEATURES:
+        feature_cols = [column for column in feature_cols if column not in INNER_LOOP_FEATURE_COLS]
     feature_cols.extend(RELATIVE_NORMAL_FEATURE_COLS)
     if {"centerX", "centerY", "centerZ"}.issubset(df.columns):
         feature_cols.extend(MODEL_RELATIVE_POSITION_FEATURE_COLS)
@@ -235,6 +255,16 @@ def build_feature_frame(df, feature_cols=None):
             if col in feature_cols:
                 feature_df[col] = values
         feature_df[HAS_RADIUS_COL] = (radius_values.abs() > 1e-9).astype(float)
+
+    missing_inner_loop_columns = set(INNER_LOOP_FEATURE_COLS).intersection(feature_cols).difference(numeric_df.columns)
+    if missing_inner_loop_columns:
+        raise ValueError(
+            "CSV is missing inner-loop features. Re-export it with the updated Detector: "
+            f"{sorted(missing_inner_loop_columns)}"
+        )
+    for col in INNER_LOOP_FEATURE_COLS:
+        if col in feature_cols:
+            feature_df[col] = numeric_df[col].fillna(0.0).astype(float)
 
     for col in RELATIVE_NORMAL_FEATURE_COLS:
         feature_df[col] = numeric_df[col].fillna(0.0).astype(float)
@@ -1031,6 +1061,8 @@ def save_checkpoint_bundle(
 
 
 def train(args):
+    global USE_INNER_LOOP_FEATURES
+    USE_INNER_LOOP_FEATURES = args.use_inner_loop_features
     if args.val_csv is None and args.test_csv is None:
         raise ValueError("Provide --val-csv for validation training, or --test-csv for one final test-only evaluation.")
     if args.val_csv is not None and args.test_csv is not None:
@@ -1326,6 +1358,11 @@ def parse_args():
     parser.add_argument("--training-mode", choices=["full", "full-balanced", "window"], default="full", help="Use full graphs, balanced-loss full graphs, or k-hop windows. Default: full")
     parser.add_argument("--window-hop", type=int, default=2, help="k-hop radius for window training. Default: 2")
     parser.add_argument("--background-ratio", type=int, default=5, help="Background center samples per positive center in window mode. Default: 5")
+    parser.add_argument(
+        "--use-inner-loop-features",
+        action="store_true",
+        help="Include the re-exported inner-loop topology and dihedral features.",
+    )
     parser.add_argument(
         "--hard-negative-csv",
         type=Path,

@@ -22,7 +22,9 @@ private:
         const TopoDS_Face& f2,
         const TopoDS_Edge& e,
         double& meanAngle,
-        double& stdAngle
+        double& stdAngle,
+        double* maxAngle = nullptr,
+        double* maxRightAngleDeviation = nullptr
     );
     std::string BuildFaceKey(const FaceFeature& feature, const std::vector<FaceFeature>& allFeatures) const;
 

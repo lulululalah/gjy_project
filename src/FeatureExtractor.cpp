@@ -33,9 +33,16 @@
 #include <iomanip>
 #include <limits>
 #include <map>
+#include <queue>
 #include <sstream>
+#include <set>
 
 namespace {
+
+constexpr double kFlatInnerLoopDihedralThresholdRadians = 15.0 * 3.14159265358979323846 / 180.0;
+constexpr double kRightAngleInnerLoopToleranceRadians = 15.0 * 3.14159265358979323846 / 180.0;
+constexpr double kHalfPi = 3.14159265358979323846 * 0.5;
+constexpr int kMaxInnerLoopInteriorBfsDepth = 2;
 
 struct SampledSurfaceProperties
 {
@@ -51,6 +58,73 @@ bool IsUvInsideFace(const TopoDS_Face& face, double u, double v)
     classifier.Perform(face, gp_Pnt2d(u, v), Precision::Confusion());
     const TopAbs_State state = classifier.State();
     return state == TopAbs_IN || state == TopAbs_ON;
+}
+
+bool HasInteriorBfsDepthAtMostTwo(
+    const TopoDS_Face& hostFace,
+    const TopoDS_Wire& innerWire,
+    const TopTools_IndexedDataMapOfShapeListOfShape& edgeFaceMap,
+    const TopTools_IndexedMapOfShape& faceMap
+)
+{
+    TopTools_IndexedMapOfShape boundaryEdges;
+    std::queue<std::pair<int, int>> frontier;
+    std::set<int> visitedFaceIds;
+
+    TopExp_Explorer boundaryEdgeExp(innerWire, TopAbs_EDGE);
+    for (; boundaryEdgeExp.More(); boundaryEdgeExp.Next()) {
+        const TopoDS_Edge boundaryEdge = TopoDS::Edge(boundaryEdgeExp.Current());
+        boundaryEdges.Add(boundaryEdge);
+        if (!edgeFaceMap.Contains(boundaryEdge)) {
+            return false;
+        }
+        const TopTools_ListOfShape& adjacentFaces = edgeFaceMap.FindFromKey(boundaryEdge);
+        TopTools_ListIteratorOfListOfShape adjacentFaceIt(adjacentFaces);
+        for (; adjacentFaceIt.More(); adjacentFaceIt.Next()) {
+            const TopoDS_Shape& adjacentShape = adjacentFaceIt.Value();
+            if (adjacentShape.IsSame(hostFace)) {
+                continue;
+            }
+            const int adjacentFaceId = faceMap.FindIndex(adjacentShape);
+            if (adjacentFaceId > 0 && visitedFaceIds.insert(adjacentFaceId).second) {
+                frontier.push({adjacentFaceId, 1});
+            }
+        }
+    }
+
+    if (frontier.empty()) {
+        return false;
+    }
+
+    while (!frontier.empty()) {
+        const auto [faceId, depth] = frontier.front();
+        frontier.pop();
+        if (depth > kMaxInnerLoopInteriorBfsDepth) {
+            return false;
+        }
+
+        const TopoDS_Face currentFace = TopoDS::Face(faceMap.FindKey(faceId));
+        TopExp_Explorer edgeExp(currentFace, TopAbs_EDGE);
+        for (; edgeExp.More(); edgeExp.Next()) {
+            const TopoDS_Edge edge = TopoDS::Edge(edgeExp.Current());
+            if (boundaryEdges.Contains(edge) || !edgeFaceMap.Contains(edge)) {
+                continue;
+            }
+            const TopTools_ListOfShape& adjacentFaces = edgeFaceMap.FindFromKey(edge);
+            TopTools_ListIteratorOfListOfShape adjacentFaceIt(adjacentFaces);
+            for (; adjacentFaceIt.More(); adjacentFaceIt.Next()) {
+                const TopoDS_Shape& adjacentShape = adjacentFaceIt.Value();
+                if (adjacentShape.IsSame(currentFace) || adjacentShape.IsSame(hostFace)) {
+                    continue;
+                }
+                const int adjacentFaceId = faceMap.FindIndex(adjacentShape);
+                if (adjacentFaceId > 0 && visitedFaceIds.insert(adjacentFaceId).second) {
+                    frontier.push({adjacentFaceId, depth + 1});
+                }
+            }
+        }
+    }
+    return true;
 }
 
 SampledSurfaceProperties SampleSurfacePropertiesInsideFace(
@@ -331,6 +405,7 @@ void FeatureExtractor::ComputeGeometricAttributes(const TopTools_IndexedMapOfSha
         if (wireLengths.size() > 1) {
             struct InnerWireRecord {
                 double length;
+                TopoDS_Wire wire;
             };
 
             std::vector<InnerWireRecord> innerWireRecords;
@@ -343,6 +418,7 @@ void FeatureExtractor::ComputeGeometricAttributes(const TopTools_IndexedMapOfSha
                 BRepGProp::LinearProperties(wire, wireProps);
                 innerWireRecords.push_back({
                     wireProps.Mass(),
+                    wire,
                 });
             }
 
@@ -361,6 +437,84 @@ void FeatureExtractor::ComputeGeometricAttributes(const TopTools_IndexedMapOfSha
                 minInnerWireLength = std::min(minInnerWireLength, innerWireRecords[wireIdx].length);
                 maxInnerWireLength = std::max(maxInnerWireLength, innerWireRecords[wireIdx].length);
                 feat.innerWireLengths.push_back(innerWireRecords[wireIdx].length);
+
+                bool hasBoundaryEdge = false;
+                bool hasCompleteBoundarySampling = true;
+                bool allSampledDihedralsBelowThreshold = true;
+                const bool interiorBfsDepthAtMostTwo = HasInteriorBfsDepthAtMostTwo(
+                    face,
+                    innerWireRecords[wireIdx].wire,
+                    myEdgeFaceMap,
+                    faceMap
+                );
+                double loopBoundaryDihedralMax = 0.0;
+                double loopBoundaryRightAngleDeviationMax = 0.0;
+                TopExp_Explorer innerEdgeExp(innerWireRecords[wireIdx].wire, TopAbs_EDGE);
+                for (; innerEdgeExp.More(); innerEdgeExp.Next()) {
+                    const TopoDS_Edge innerEdge = TopoDS::Edge(innerEdgeExp.Current());
+                    if (!myEdgeFaceMap.Contains(innerEdge)) {
+                        hasCompleteBoundarySampling = false;
+                        allSampledDihedralsBelowThreshold = false;
+                        continue;
+                    }
+                    const TopTools_ListOfShape& adjacentFaces = myEdgeFaceMap.FindFromKey(innerEdge);
+                    TopTools_ListIteratorOfListOfShape adjacentFaceIt(adjacentFaces);
+                    for (; adjacentFaceIt.More(); adjacentFaceIt.Next()) {
+                        const TopoDS_Shape& adjacentShape = adjacentFaceIt.Value();
+                        if (adjacentShape.IsSame(face)) {
+                            continue;
+                        }
+                        hasBoundaryEdge = true;
+                        double dihedralMean = 0.0;
+                        double dihedralStd = 0.0;
+                        double dihedralMax = 0.0;
+                        double rightAngleDeviationMax = 0.0;
+                        if (!ComputeSampledDihedralStats(
+                                face,
+                                TopoDS::Face(adjacentShape),
+                                innerEdge,
+                                dihedralMean,
+                                dihedralStd,
+                                &dihedralMax,
+                                &rightAngleDeviationMax
+                            )) {
+                            hasCompleteBoundarySampling = false;
+                            allSampledDihedralsBelowThreshold = false;
+                            continue;
+                        }
+                        loopBoundaryDihedralMax = std::max(loopBoundaryDihedralMax, dihedralMax);
+                        loopBoundaryRightAngleDeviationMax = std::max(loopBoundaryRightAngleDeviationMax, rightAngleDeviationMax);
+                        if (dihedralMax >= kFlatInnerLoopDihedralThresholdRadians) {
+                            allSampledDihedralsBelowThreshold = false;
+                        }
+                    }
+                }
+
+                if (hasBoundaryEdge && hasCompleteBoundarySampling) {
+                    feat.hasValidInnerLoopBoundaryDihedral = 1;
+                    feat.minInnerLoopBoundaryDihedralMax = feat.minInnerLoopBoundaryDihedralMax < 0.0
+                        ? loopBoundaryDihedralMax
+                        : std::min(feat.minInnerLoopBoundaryDihedralMax, loopBoundaryDihedralMax);
+                    feat.minInnerLoopBoundaryRightAngleDeviation =
+                        feat.minInnerLoopBoundaryRightAngleDeviation < 0.0
+                        ? loopBoundaryRightAngleDeviationMax
+                        : std::min(feat.minInnerLoopBoundaryRightAngleDeviation, loopBoundaryRightAngleDeviationMax);
+                }
+                if (hasBoundaryEdge && allSampledDihedralsBelowThreshold) {
+                    feat.innerLoopAllDihedralBelowThreshold = 1;
+                }
+                if (interiorBfsDepthAtMostTwo) {
+                    feat.hasInnerLoopInteriorBfsDepthAtMost2 = 1;
+                }
+                if (interiorBfsDepthAtMostTwo && hasBoundaryEdge && allSampledDihedralsBelowThreshold) {
+                    feat.hasSmallFlatInnerLoop = 1;
+                }
+                if (
+                    interiorBfsDepthAtMostTwo && hasBoundaryEdge && hasCompleteBoundarySampling &&
+                    loopBoundaryRightAngleDeviationMax < kRightAngleInnerLoopToleranceRadians
+                ) {
+                    feat.hasSmallRightAngleInnerLoop = 1;
+                }
             }
 
             feat.minInnerWireLength = minInnerWireLength;
@@ -633,10 +787,18 @@ bool FeatureExtractor::ComputeSampledDihedralStats(
     const TopoDS_Face& f2,
     const TopoDS_Edge& e,
     double& meanAngle,
-    double& stdAngle)
+    double& stdAngle,
+    double* maxAngle,
+    double* maxRightAngleDeviation)
 {
     meanAngle = 0.0;
     stdAngle = 0.0;
+    if (maxAngle != nullptr) {
+        *maxAngle = 0.0;
+    }
+    if (maxRightAngleDeviation != nullptr) {
+        *maxRightAngleDeviation = 0.0;
+    }
 
     Standard_Real first = 0.0;
     Standard_Real last = 0.0;
@@ -700,6 +862,14 @@ bool FeatureExtractor::ComputeSampledDihedralStats(
         meanAngle += angle;
     }
     meanAngle /= static_cast<double>(angles.size());
+    if (maxAngle != nullptr) {
+        *maxAngle = *std::max_element(angles.begin(), angles.end());
+    }
+    if (maxRightAngleDeviation != nullptr) {
+        for (const double angle : angles) {
+            *maxRightAngleDeviation = std::max(*maxRightAngleDeviation, std::abs(angle - kHalfPi));
+        }
+    }
     for (const double angle : angles) {
         const double delta = angle - meanAngle;
         stdAngle += delta * delta;
