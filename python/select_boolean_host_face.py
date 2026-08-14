@@ -53,7 +53,7 @@ def face_map(shape):
 
 def read_candidates(csv_path: Path, mapped_faces, max_candidates: int):
     candidates = []
-    with csv_path.open(newline="", encoding="utf-8") as input_file:
+    with csv_path.open(newline="", encoding="utf-8-sig") as input_file:
         for row in csv.DictReader(input_file):
             face_id = int(row["face_id"])
             if face_id <= 0 or face_id > mapped_faces.Size():

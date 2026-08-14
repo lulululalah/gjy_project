@@ -3,15 +3,17 @@
 from __future__ import annotations
 
 import argparse
+import json
 from pathlib import Path
 
 
 def main() -> int:
     parser = argparse.ArgumentParser(description="Click a STEP face to print its F-number.")
     parser.add_argument("step_model", type=Path)
+    parser.add_argument("--labels-json", type=Path, help="Optional labels JSON to color confirmed faces.")
     args = parser.parse_args()
 
-    from OCC.Core.Quantity import Quantity_NOC_GRAY
+    from OCC.Core.Quantity import Quantity_Color, Quantity_NOC_GRAY, Quantity_TOC_RGB
     from OCC.Core.BRep import BRep_Builder
     from OCC.Core.BRepBndLib import brepbndlib
     from OCC.Core.Bnd import Bnd_Box
@@ -19,7 +21,7 @@ def main() -> int:
     from OCC.Core.TopAbs import TopAbs_FACE
     from OCC.Core.TopExp import topexp
     from OCC.Core.TopTools import TopTools_IndexedMapOfShape
-    from OCC.Core.TopoDS import TopoDS_Compound
+    from OCC.Core.TopoDS import TopoDS_Compound, topods
     import tkinter as tk
     from OCC.Display.tkDisplay import tkViewer3d
 
@@ -31,13 +33,40 @@ def main() -> int:
     face_map = TopTools_IndexedMapOfShape()
     topexp.MapShapes(shape, TopAbs_FACE, face_map)
 
+    labels_by_id: dict[int, str] = {}
+    if args.labels_json:
+        payload = json.loads(args.labels_json.read_text(encoding="utf-8"))
+        labels_by_id = {
+            int(face["face_id"]): str(face["semantic"])
+            for face in payload.get("faces", [])
+            if str(face.get("semantic", "background")) != "background"
+        }
+        invalid_ids = sorted(face_id for face_id in labels_by_id if not 1 <= face_id <= face_map.Size())
+        if invalid_ids:
+            raise ValueError(f"Label face IDs outside STEP range 1..{face_map.Size()}: {invalid_ids[:10]}")
+    semantic_colors = {
+        "rivet": Quantity_Color(0.95, 0.05, 0.05, Quantity_TOC_RGB),
+        "window": Quantity_Color(0.15, 0.90, 0.15, Quantity_TOC_RGB),
+        "decal": Quantity_Color(1.00, 0.55, 0.00, Quantity_TOC_RGB),
+    }
+
     root = tk.Tk()
     root.title("STEP face picker: right-click a face")
     canvas = tkViewer3d(root)
     canvas.pack(fill=tk.BOTH, expand=True)
     canvas.wait_visibility()
     display = canvas._display
-    display.DisplayShape(shape, color=Quantity_NOC_GRAY, transparency=0.25, update=True)
+
+    def draw_model_with_labels() -> None:
+        display.DisplayShape(shape, color=Quantity_NOC_GRAY, transparency=0.25, update=False)
+        for face_id, semantic in labels_by_id.items():
+            color = semantic_colors.get(semantic)
+            if color is None:
+                raise ValueError(f"Unsupported semantic in labels JSON: {semantic}")
+            display.DisplayShape(topods.Face(face_map.FindKey(face_id)), color=color, update=False)
+
+    draw_model_with_labels()
+    display.Repaint()
     display.SetSelectionModeFace()
 
     model_box = Bnd_Box()
@@ -69,7 +98,7 @@ def main() -> int:
 
     def show_full_model(event=None) -> None:
         display.EraseAll()
-        display.DisplayShape(shape, color=Quantity_NOC_GRAY, transparency=0.25, update=False)
+        draw_model_with_labels()
         display.FitAll()
         display.Repaint()
         print("View: full model")

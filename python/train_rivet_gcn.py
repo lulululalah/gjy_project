@@ -354,12 +354,18 @@ def build_graph(group_df, feature_mean, feature_std, edge_mean=None, edge_std=No
 
     x = torch.tensor(node_features, dtype=torch.float)
     y = torch.tensor(local_df["label"].astype(int).to_numpy(), dtype=torch.long)
+    normalized_area = torch.tensor(
+        local_df["area"].astype(float).abs().to_numpy()
+        * local_df[NORMALIZATION_SCALE_COL].astype(float).to_numpy() ** 2,
+        dtype=torch.float,
+    )
 
     return Data(
         x=x,
         edge_index=edge_index,
         edge_attr=edge_attr,
         y=y,
+        normalized_area=normalized_area,
         face_id=torch.tensor(local_df["id"].astype(int).to_numpy(), dtype=torch.long),
         target_mask=torch.ones(y.size(0), dtype=torch.bool),
         graph_id=int(local_df["graph_id"].iloc[0]),
@@ -437,6 +443,7 @@ def build_window_graph(full_graph, center_idx, hop_count, window_cache=None):
         edge_index=edge_index,
         edge_attr=edge_attr,
         y=full_graph.y[node_ids],
+        normalized_area=full_graph.normalized_area[node_ids],
         face_id=full_graph.face_id[node_ids],
         target_mask=target_mask,
         graph_id=int(full_graph.graph_id),
@@ -451,6 +458,7 @@ def sample_window_centers(
     rng,
     hard_negative_face_ids=None,
     hard_negative_fraction=0.1,
+    large_background_fraction=0.0,
 ):
     labels = full_graph.y.cpu().numpy()
     positive = np.flatnonzero(labels > 0)
@@ -467,6 +475,8 @@ def sample_window_centers(
 
     if not 0.0 <= hard_negative_fraction <= 1.0:
         raise ValueError("hard_negative_fraction must be between 0 and 1.")
+    if not 0.0 <= large_background_fraction <= 1.0:
+        raise ValueError("large_background_fraction must be between 0 and 1.")
 
     hard_negative = np.empty(0, dtype=int)
     if hard_negative_face_ids:
@@ -492,12 +502,31 @@ def sample_window_centers(
 
     remaining_negative = np.setdiff1d(negative, hard_negative, assume_unique=False)
     random_count = max_negative - len(hard_negative)
+    large_negative = np.empty(0, dtype=int)
+    if random_count > 0 and large_background_fraction > 0.0 and len(remaining_negative) > 0:
+        large_count = min(
+            random_count,
+            max(1, int(np.floor(max_negative * large_background_fraction))),
+        )
+        normalized_areas = full_graph.normalized_area.cpu().numpy()
+        top_quartile_count = max(1, int(np.ceil(len(remaining_negative) * 0.25)))
+        top_quartile = remaining_negative[
+            np.argsort(normalized_areas[remaining_negative])[-top_quartile_count:]
+        ]
+        large_negative = rng.choice(
+            top_quartile,
+            size=min(large_count, len(top_quartile)),
+            replace=False,
+        )
+
+    remaining_after_large = np.setdiff1d(remaining_negative, large_negative, assume_unique=False)
+    random_count -= len(large_negative)
     random_negative = (
-        rng.choice(remaining_negative, size=random_count, replace=False)
+        rng.choice(remaining_after_large, size=random_count, replace=False)
         if random_count > 0
         else np.empty(0, dtype=int)
     )
-    centers = np.concatenate([positive, hard_negative, random_negative]).astype(int)
+    centers = np.concatenate([positive, hard_negative, large_negative, random_negative]).astype(int)
     rng.shuffle(centers)
     return centers
 
@@ -509,6 +538,7 @@ def build_window_dataset(
     seed,
     hard_negative_centers=None,
     hard_negative_fraction=0.1,
+    large_background_fraction=0.0,
 ):
     rng = np.random.default_rng(seed)
     windows = []
@@ -522,6 +552,7 @@ def build_window_dataset(
             rng,
             hard_negative_face_ids,
             hard_negative_fraction,
+            large_background_fraction,
         ):
             windows.append(build_window_graph(full_graph, int(center_idx), hop_count, window_cache))
     return windows
@@ -615,6 +646,7 @@ def prepare_graph_samples(
     seed=42,
     hard_negative_centers=None,
     hard_negative_fraction=0.1,
+    large_background_fraction=0.0,
 ):
     if training_mode == "window":
         return build_window_dataset(
@@ -624,6 +656,7 @@ def prepare_graph_samples(
             seed,
             hard_negative_centers,
             hard_negative_fraction,
+            large_background_fraction,
         )
     if training_mode == "full-balanced":
         return build_full_balanced_dataset(full_graphs, background_ratio, seed)
@@ -718,6 +751,7 @@ def load_explicit_train_val_datasets(
     seed=42,
     hard_negative_csv=None,
     hard_negative_fraction=0.1,
+    large_background_fraction=0.0,
     label_names=LABEL_NAMES,
 ):
     train_df = pd.read_csv(train_csv_path)
@@ -760,6 +794,7 @@ def load_explicit_train_val_datasets(
         seed,
         hard_negative_centers,
         hard_negative_fraction,
+        large_background_fraction,
     )
     val_training_mode = "full" if training_mode == "full-balanced" else training_mode
     val_background_ratio = 0 if training_mode == "window" else background_ratio
@@ -917,7 +952,14 @@ def focal_nll_loss(log_probabilities, targets, class_weights=None, gamma=2.0):
     return ((1.0 - target_log_probabilities.exp()).pow(gamma) * -target_log_probabilities * weights).mean()
 
 
-def evaluate(model, loader, device, num_classes, class_weights=None, focal_gamma=2.0):
+def evaluate(
+    model,
+    loader,
+    device,
+    num_classes,
+    class_weights=None,
+    focal_gamma=2.0,
+):
     model.eval()
     total_loss = 0.0
     total_correct = 0
@@ -1102,6 +1144,7 @@ def train(args):
         seed=args.seed,
         hard_negative_csv=args.hard_negative_csv,
         hard_negative_fraction=args.hard_negative_fraction,
+        large_background_fraction=args.large_background_fraction,
         label_names=label_names,
     )
     graphs = train_graphs + val_graphs
@@ -1163,6 +1206,10 @@ def train(args):
         print(
             f"Training hard negatives requested: {hard_negative_count}, "
             f"background quota fraction: {args.hard_negative_fraction:g}"
+        )
+        print(
+            "Large-background sampling fraction: "
+            f"{args.large_background_fraction:g} from each model's largest-area quartile"
         )
     elif args.training_mode == "full-balanced":
         print(f"Full graph with balanced loss mask, background ratio: {args.background_ratio}")
@@ -1358,6 +1405,12 @@ def parse_args():
     parser.add_argument("--training-mode", choices=["full", "full-balanced", "window"], default="full", help="Use full graphs, balanced-loss full graphs, or k-hop windows. Default: full")
     parser.add_argument("--window-hop", type=int, default=2, help="k-hop radius for window training. Default: 2")
     parser.add_argument("--background-ratio", type=int, default=5, help="Background center samples per positive center in window mode. Default: 5")
+    parser.add_argument(
+        "--large-background-fraction",
+        type=float,
+        default=0.0,
+        help="Fraction of each training model's background window quota sampled from its largest-area quartile. Default: 0.",
+    )
     parser.add_argument(
         "--use-inner-loop-features",
         action="store_true",

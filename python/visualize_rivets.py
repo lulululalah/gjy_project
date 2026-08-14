@@ -118,10 +118,28 @@ def read_predictions_csv(prediction_path):
     return pred_labels
 
 
+def read_truth_csv(truth_path, model_name):
+    """Read ordered training labels for one complete STEP model."""
+    labels_by_id = {}
+    with Path(truth_path).open("r", newline="", encoding="utf-8") as csv_file:
+        for row in csv.DictReader(csv_file):
+            if str(row.get("model_name")) != model_name:
+                continue
+            labels_by_id[int(row["id"])] = int(row["label"])
+    if not labels_by_id:
+        raise ValueError(f"No rows for {model_name!r} in truth CSV: {truth_path}")
+    max_id = max(labels_by_id)
+    missing = [face_id for face_id in range(1, max_id + 1) if face_id not in labels_by_id]
+    if missing:
+        raise ValueError(f"Truth CSV is missing face IDs for {model_name}: {missing[:10]}")
+    return [labels_by_id[face_id] for face_id in range(1, max_id + 1)]
+
+
 def visualize_cad_results(
     step_path,
     pred_labels,
     label_names=None,
+    truth_labels=None,
     context_transparency=0.82,
     marker_radius=0.0,
 ):
@@ -147,10 +165,24 @@ def visualize_cad_results(
         1: Quantity_Color(0.0, 0.8, 0.0, Quantity_TOC_RGB),
         2: Quantity_Color(0.1, 0.3, 1.0, Quantity_TOC_RGB),
     }
+    error_colors = {
+        (0, 1): Quantity_Color(0.75, 0.1, 0.85, Quantity_TOC_RGB),
+        (0, 2): Quantity_Color(1.0, 0.05, 0.05, Quantity_TOC_RGB),
+        (1, 0): Quantity_Color(0.75, 0.1, 0.85, Quantity_TOC_RGB),
+        (2, 0): Quantity_Color(1.0, 0.9, 0.05, Quantity_TOC_RGB),
+        (1, 2): Quantity_Color(0.75, 0.1, 0.85, Quantity_TOC_RGB),
+        (2, 1): Quantity_Color(1.0, 0.9, 0.05, Quantity_TOC_RGB),
+    }
     if label_names != ["background", "rivet", "surface_feature"]:
         raise ValueError(f"Unsupported label schema for visualization: {label_names}")
-    print(f"Displaying raw model predictions: {step_path}")
-    print("green=predicted rivet, blue=predicted surface feature")
+    if truth_labels is None:
+        print(f"Displaying raw model predictions: {step_path}")
+        print("green=predicted rivet, blue=predicted surface feature")
+    else:
+        print(f"Displaying prediction/truth comparison: {step_path}")
+        print("green=correct rivet, blue=correct surface feature")
+        print("purple=false-positive rivet, red=false-positive surface feature")
+        print("purple=missed/wrong rivet, yellow=missed/wrong surface feature")
     print("transparent gray=predicted background/model context")
     print(f"transparent gray=model context (transparency={context_transparency:g})")
     display.DisplayShape(
@@ -168,6 +200,8 @@ def visualize_cad_results(
 
     num_faces = face_map.Size()
     print(f"Model faces: {num_faces}, Predicted labels: {len(pred_labels)}")
+    if truth_labels is not None and len(truth_labels) != num_faces:
+        raise ValueError(f"Truth labels ({len(truth_labels)}) do not match STEP faces ({num_faces})")
 
     model_box = Bnd_Box()
     brepbndlib.Add(shape, model_box)
@@ -185,13 +219,26 @@ def visualize_cad_results(
         label_counts[label] = label_counts.get(label, 0) + 1
     print(f"Label distribution: {label_counts}")
 
+    error_counts = {}
     highlight_markers = []
     for i in range(1, num_faces + 1):
         face = topods.Face(face_map.FindKey(i))
-        label = pred_labels[i - 1] if (i - 1) < len(pred_labels) else 0
-        if label == 0:
+        predicted = pred_labels[i - 1] if (i - 1) < len(pred_labels) else 0
+        truth = truth_labels[i - 1] if truth_labels is not None else None
+        if truth_labels is None:
+            if predicted == 0:
+                continue
+            color = prediction_colors.get(predicted, Quantity_NOC_GRAY)
+        elif predicted == truth:
+            if predicted == 0:
+                continue
+            color = prediction_colors.get(predicted, Quantity_NOC_GRAY)
+        else:
+            color = error_colors[(truth, predicted)]
+            error_counts[(truth, predicted)] = error_counts.get((truth, predicted), 0) + 1
+
+        if color is None:
             continue
-        color = prediction_colors.get(label, Quantity_NOC_GRAY)
         display.DisplayShape(face, color=color, update=False)
 
         if use_markers:
@@ -209,6 +256,9 @@ def visualize_cad_results(
         marker = BRepPrimAPI_MakeSphere(center, marker_radius).Shape()
         display.DisplayShape(marker, color=color, update=False)
 
+    if truth_labels is not None:
+        print(f"Error counts by truth->prediction: {error_counts}")
+
     display.FitAll()
     start_display()
 
@@ -222,6 +272,8 @@ def parse_args():
     parser.add_argument("--stats", type=Path, default=DEFAULT_STATS_PATH, help=f"Normalization stats path. Default: {DEFAULT_STATS_PATH}")
     parser.add_argument("--pred-in", type=Path, help="Read an existing prediction CSV instead of running model inference.")
     parser.add_argument("--pred-out", type=Path, help="Optional prediction CSV output path.")
+    parser.add_argument("--truth-csv", type=Path, help="Optional labeled CSV used to color correct predictions and errors.")
+    parser.add_argument("--truth-model-name", help="Exact model_name in --truth-csv. Required with --truth-csv.")
     parser.add_argument("--hidden-dim", type=int, default=64, help="Hidden dimension used during training. Default: 64")
     parser.add_argument("--skip-export", action="store_true", help="Reuse an existing inference CSV instead of calling Detector.")
     parser.add_argument("--no-display", action="store_true", help="Only export predictions; do not open the OCC viewer.")
@@ -235,13 +287,13 @@ def parse_args():
 
 def main():
     args = parse_args()
+    stats = np.load(args.stats, allow_pickle=True)
+    if "label_names" not in stats.files:
+        raise ValueError("Stats file is missing the required three-class label_names metadata.")
+    label_names = [str(value) for value in stats["label_names"].tolist()]
 
     if args.pred_in:
         predicted_labels = read_predictions_csv(args.pred_in)
-        stats = np.load(args.stats, allow_pickle=True)
-        if "label_names" not in stats.files:
-            raise ValueError("Stats file is missing the required three-class label_names metadata.")
-        label_names = [str(value) for value in stats["label_names"].tolist()]
         print(f"Loaded predictions: {args.pred_in}")
     else:
         if not args.skip_export:
@@ -258,6 +310,12 @@ def main():
         )
         print("Inference finished.")
 
+    if (args.truth_csv is None) != (args.truth_model_name is None):
+        raise ValueError("Use --truth-csv and --truth-model-name together.")
+    truth_labels = None
+    if args.truth_csv is not None:
+        truth_labels = read_truth_csv(args.truth_csv, args.truth_model_name)
+
     if args.pred_out:
         write_predictions_csv(args.pred_out, predicted_labels)
 
@@ -266,6 +324,7 @@ def main():
             args.step_model,
             predicted_labels,
             label_names=label_names,
+            truth_labels=truth_labels,
             context_transparency=args.context_transparency,
             marker_radius=args.marker_radius,
         )
