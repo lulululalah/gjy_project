@@ -1,0 +1,667 @@
+\documentclass[12pt,a4paper]{article}
+
+% Language setting
+\usepackage[british]{babel}
+
+% Set page size and margins
+\usepackage[a4paper,top=2cm,bottom=2cm,left=2.5cm,right=2.5cm,marginparwidth=1.75cm]{geometry}
+
+%----------- APA style references & citations (starting) ---
+% Useful packages
+%\usepackage[natbibapa]{apacite} % APA-style citations.
+
+\usepackage[style=apa, backend=biber]{biblatex} % APA 7th edition style citations using biblatex
+\addbibresource{references.bib} % Your .bib file
+
+% Formatting DOI in APA-7 style
+%\renewcommand{\doiprefix}{https://doi.org/}
+
+% Add additional APA 7th edition requirements
+\DeclareLanguageMapping{british}{british-apa} % Set language mapping
+\DeclareFieldFormat[article]{volume}{\apanum{#1}} % Format volume number
+
+% Modify 'and' to '&' in the bibliography
+\renewcommand*{\finalnamedelim}{%
+  \ifnumgreater{\value{liststop}}{2}{\finalandcomma}{}%
+  \addspace\&\space}
+  
+%----------- APA style references & citations (ending) ---
+
+
+\usepackage{amsmath}
+\usepackage{graphicx}
+\usepackage[colorlinks=true, allcolors=blue]{hyperref}
+\usepackage{hyperref}
+%\usepackage{orcidlink}
+\usepackage[title]{appendix}
+\usepackage{mathrsfs}
+\usepackage{amsfonts}
+\usepackage{booktabs} % For \toprule, \midrule, \botrule
+\usepackage{threeparttable} % For table footnotes
+\usepackage{algorithm}
+\usepackage{algorithmicx}
+\usepackage{algpseudocode}
+\usepackage{listings}
+\usepackage{enumitem}
+\usepackage{chngcntr}
+\usepackage{booktabs}
+\usepackage{lipsum}
+\usepackage{subcaption}
+\usepackage{authblk}
+\usepackage[T1]{fontenc}    % Font encoding
+\usepackage{csquotes}       % Include csquotes
+\usepackage{diagbox}
+\usepackage{comment}
+\usepackage{url}
+
+%\usepackage[justification=raggedright, singlelinecheck=false]{caption}
+\usepackage{helvet}  % Load Helvetica (Arial-like)
+\usepackage{lmodern}  % Ensures default LaTeX font is available
+
+% label format: capital, centering, and parens
+\renewcommand{\thesubfigure}{\Alph{subfigure}}
+
+% Customize line spacing
+\usepackage{setspace}
+\onehalfspacing % 1.5 line spacing
+
+% Redefine section and subsection numbering format
+\usepackage{titlesec}
+\titleformat{\section} % Redefine section numbering format
+  {\normalfont\Large\bfseries}{\thesection.}{1em}{}
+  
+% Customize line numbering format to right-align line numbers
+%\usepackage{lineno} % Add the lineno package
+%\renewcommand\linenumberfont{\normalfont\scriptsize\sffamily\color{blue}}
+%\rightlinenumbers % Right-align line numbers
+
+%\linenumbers % Enable line numbering
+
+% Define a new command for the fourth-level title.
+\newcommand{\subsubsubsection}[1]{%
+  \vspace{\baselineskip}% Add some space
+  \noindent\textbf{#1\\}\quad% Adjust formatting as needed
+}
+% Change the position of the table caption above the table
+\usepackage{float}   % for customizing caption position
+\usepackage{caption}
+\captionsetup[table]{position=top} % caption position for tables
+\captionsetup[table]{labelfont=bf} % caption label
+\captionsetup[figure]{labelfont=bf} % caption label
+
+% Define the unnumbered list
+\makeatletter
+\newenvironment{unlist}{%
+  \begin{list}{}{%
+    \setlength{\labelwidth}{0pt}%
+    \setlength{\labelsep}{0pt}%
+    \setlength{\leftmargin}{2em}%
+    \setlength{\itemindent}{-2em}%
+    \setlength{\topsep}{\medskipamount}%
+    \setlength{\itemsep}{3pt}%
+  }%
+}{%
+  \end{list}%
+}
+\makeatother
+
+% Suppress the warning about \@parboxrestore
+\pdfsuppresswarningpagegroup=1
+
+\date{}  % Remove date
+
+
+\begin{document}
+
+
+%----------
+
+
+\begin{center}
+{\Huge Article title article title article title}
+\\[5ex]
+
+{\large First Author} \\
+{\small
+Department, University, Street, City, State ZIP, Country \\
+first.author@univ.edu \\
+\url{https://orcid.org/0000-0002-1010-2288}
+} \\[1.2em]
+
+{\large Second MidName Author} \\
+{\small
+Department, Company, Street, City, State ZIP, Country \\
+second.author@company.com
+} \\[1.2em]
+
+{\large Third Author} \\
+{\small
+Department, Organization, Street, City, State ZIP, Country \\
+Department, University, Street, City, State ZIP, Country \\
+third.author@org.org \\
+\url{https://orcid.org/0000-0001-1015-3377}
+} \\[1.2em]
+
+{\large Fourth Author} \\
+{\small
+Department, Institute, Street, City, State ZIP, Country \\
+fourth.author@inst.edu
+} \\[1.2em]
+
+{\large Fifth Author \small(Corresponding Author)} \\
+{\small
+Department, University, Street, City, State ZIP, Country \\
+user\_id@univ.edu \\
+\url{https://orcid.org/0000-0003-1025-5678}
+}
+\end{center}
+
+\begin{abstract}
+Abstracts must be able to stand alone and so cannot contain citations to the paper’s references, equations, etc. An abstract must consist of a single paragraph and be concise. Because of online formatting, abstracts must appear as plain as possible. Three to six keywords must be included. Each keyword should not exceed three words. %\lipsum[1]
+\end{abstract}
+
+\textbf{Keywords}: keyword1, keyword2, keyword3, keyword4, keyword5, keyword6.  
+
+%-------------------------------------------
+% Paper Body
+%-------------------------------------------
+%--- Section ---%
+\section*{Nomenclature}
+
+\begin{tabbing}
+$T$\qquad \= Temperature (K)\\
+$u_i$ \> Velocity in the x-direction (m/s)\\
+$\tau_{ij}$ \> Shear stress (N/m2)\\
+$\omega$ \> Specific turbulent dissipation rate (1/s)\\
+$Y_\omega$ \> Dissipation of $\omega$
+\end{tabbing}
+
+
+
+%--- Section ---%
+\section{Introduction}
+
+Your introduction goes here! Simply start writing your document and use the Recompile button to view the updated PDF preview. Examples of commonly used commands and features are listed below to help you get started.
+\lipsum[2]
+
+Once familiar with the editor, you can find various project settings in the Overleaf menu, accessed via the button at the top left of the editor. To view tutorials, user guides, and further documentation, please visit our \href{https://www.overleaf.com/learn}{help library}, or head to our plans page to \href{https://www.overleaf.com/user/subscription/plans}{choose your plan}. 
+
+This is an example of a new paragraph with a numbered footnote\footnote{\url{https://data.gov.uk/}} and a second footnote marker.\footnote{Example of footnote text.}
+
+
+%--- Section ---%
+\section{Example of first level head - section head}\label{sec2}
+
+\lipsum[4]
+
+\lipsum[4]
+
+
+\subsection{How to create sections and subsections}
+Simply use the section and subsection commands, as in this example document! With Overleaf, all the formatting and numbering is handled automatically according to the template you've chosen. If you're using the Visual Editor, you can also create new sections and subsections via the buttons in the editor toolbar.
+
+\subsection{This is an example of second level head - subsection head}\label{subsec1}
+\lipsum[5]
+
+\subsubsection{This is an example of third level head - subsubsection head}\label{subsubsec1}
+\lipsum[6]
+
+\subsubsubsection{This is an example of fourth level head - paragraph head}
+\lipsum[7]
+
+
+%--- Section ---%
+\section{Example of first level head}\label{sec3}
+
+\subsection{This is an example of second level head - subsection head}\label{subsec2}
+
+\subsubsection{This is an example of third level head - subsubsection head}\label{subsubsec2}
+\lipsum[8]
+
+\subsubsubsection{This is an example of fourth level head - paragraph head}
+\lipsum[9]
+
+
+%--- Section ---%
+\section{How to include equations}\label{sec4}
+
+Equations in \LaTeX{} can either be inline or set as display equations. For
+inline equations use the \verb+$...$+ commands. Eg: the equation
+$H\psi = E \psi$ is written via the command \verb+$H \psi = E \psi$+.
+
+For display equations (with auto generated equation numbers)
+one can use the equation or eqnarray environments:
+\begin{equation}
+\|\tilde{X}(k)\|^2 \leq\frac{\sum\limits_{i=1}^{p}\left\|\tilde{Y}_i(k)\right\|^2+\sum\limits_{j=1}^{q}\left\|\tilde{Z}_j(k)\right\|^2 }{p+q},
+\label{eq1}
+\end{equation}
+where
+\begin{align}
+D_\mu &=  \partial_\mu - ig \frac{\lambda^a}{2} A^a_\mu \nonumber \\
+F^a_{\mu\nu} &= \partial_\mu A^a_\nu - \partial_\nu A^a_\mu + g f^{abc} A^b_\mu A^a_\nu
+\label{eq2}
+\end{align}
+Notice the use of \verb+\nonumber+ in the align environment at the end
+of each line, except the last, so as not to produce equation numbers on
+lines where no equation numbers are required. The \verb+\label{}+ command
+should only be used at the last line of an align environment where
+\verb+\nonumber+ is not used.
+\begin{equation}
+Y_\infty = \left( \frac{m}{\textrm{GeV}} \right)^{-3}
+    \left[ 1 + \frac{3 \ln(m/\textrm{GeV})}{15}
+    + \frac{\ln(c_2/5)}{15} \right]
+\label{eq3}
+\end{equation}
+The class file also supports the use of \verb+\mathbb{}+, \verb+\mathscr{}+ and
+\verb+\mathcal{}+ commands. As such \verb+\mathbb{R}+, \verb+\mathscr{R}+
+and \verb+\mathcal{R}+ produces $\mathbb{R}$, $\mathscr{R}$ and $\mathcal{R}$
+respectively 
+%(refer Subsubsection~\ref{subsubsec3}).
+
+Equations must be provided as editable text, either in a Word or LaTeX source file. They should be numbered consecutively through the manuscript as shown in Equations \ref{eq1}, \ref{eq2} and \ref{eq3}. In APA style, when discussing numbered equations in the text, write out the word “Equation” and give the number. For example, you would write “see Equation \ref{eq1}.”
+Use no punctuation after the equation if it appears at the end of a sentence; however, it is permissible (and may even be necessary) to place some form of punctuation after it (a comma or semi-colon, for example) if it appears in the middle of the sentence and is followed by text. In any case, maintain the coherence of all sentences with equations in them.
+
+
+%--- Section ---%
+\section{How to include tables}\label{sec5}
+
+Use the table and tabular environments for basic tables --- see Tables~\ref{tab1} and \ref{tab2}, for example. Table \ref{tab1} is an sample figure including table footnotes. For more information, please see this help article on \href{https://www.overleaf.com/learn/latex/tables}{tables}. 
+
+\begin{table}[!ht]
+\caption{Sample table with footnotes\label{tab1}}
+\begin{threeparttable}
+\begin{tabular*}{\columnwidth}{@{\extracolsep\fill}llll@{\extracolsep\fill}}
+\toprule
+column 1 & column 2 & column 3 & column 4\\
+\midrule
+row 1 & data 1 & data 2 & data 3 \\
+row 2 & data 4 & data 5\tnote{1} & data 6 \\
+row 3 & data 7 & data 8 & data 9\tnote{2} \\
+\bottomrule
+\end{tabular*}
+\begin{tablenotes}
+\item Source: This is an example of table footnote. This is an example of table footnote. This is an example of table footnote. This is an example of table footnote. This is an example of table footnote.
+\item[1] Example of a first table footnote.
+\item[2] Example of a second table footnote.
+\end{tablenotes}
+\end{threeparttable}
+\end{table}
+
+\begin{table*}[!ht]
+\caption{Example of a lengthy table which is set to full textwidth.\label{tab2}}
+\tabcolsep=0pt
+\begin{threeparttable}
+\begin{tabular*}{\textwidth}{@{\extracolsep{\fill}}lcccccc@{\extracolsep{\fill}}}
+\toprule
+& \multicolumn{3}{c}{Element 1\tnote{1}} & \multicolumn{3}{c}{Element 2\tnote{2}} \\
+\cmidrule(lr){2-4}\cmidrule(lr){5-7}
+Project & Energy & $\sigma_{\mathrm{calc}}$ & $\sigma_{\mathrm{expt}}$ & Energy & $\sigma_{\mathrm{calc}}$ & $\sigma_{\mathrm{expt}}$ \\
+\midrule
+Element 3 & 990 A & 1168 & $1547\pm12$ & 780 A & 1166 & $1239\pm100$ \\
+Element 4 & 500 A & 961 & $922\pm10$ & 900 A & 1268 & $1092\pm40$ \\
+\bottomrule
+\end{tabular*}
+\begin{tablenotes}
+\item Note: This is an example of table footnote this is an example of table footnote this is an example of table footnote this is an example of~table footnote this is an example of table footnote.
+\item[1] Example of a first table footnote.
+\item[2] Example of a second table footnote.
+\end{tablenotes}
+\end{threeparttable}
+\end{table*}
+
+
+%--- Section ---%
+\section{How to include figures}\label{sec6}
+
+\subsection{Figures}
+
+Figures must be inserted directly into the main text of the manuscript and should not be placed collectively at the end. All figures must be cited in the main text in numerical order, and each figure should be placed immediately after the paragraph in which it is first mentioned.
+
+All figures must be presented in a size and format that ensure clear readability. Each figure must be accompanied by an appropriate caption or legend. Figures should be numbered consecutively throughout the manuscript using Arabic numerals (for example, Figure 1, Figure 2, and Figure 3). For figures appearing in an appendix, the numbering should be prefixed with the appendix letter (for example, Figure A1 and Figure B1).
+
+Authors are strongly encouraged to use two-dimensional (2D) graphics rather than three-dimensional (3D) graphics unless a 3D representation is essential, as 2D graphics are generally clearer, more accurate, and easier to interpret. Border lines around figures should be removed. Authors should also avoid the use of white text and background colors in figures, as these may reduce legibility.
+
+When referring to figures in the manuscript text and in figure captions, authors must use the full term “Figure” rather than the abbreviation “Fig.”
+
+Note that your figure will automatically be placed in the most appropriate place for it, given the surrounding text and taking into account other figures or tables that may be close by. You can find out more about adding images to your documents in this help article on \href{https://www.overleaf.com/learn/how-to/Including_images_on_Overleaf}{including images on Overleaf}.
+
+
+
+\begin{figure}[!ht]
+\centering
+\includegraphics[width=0.5\linewidth]{figures/cat_momo_1.png}
+\caption{\label{fig:cat1}This cat picture is located at the 'figures' folder.}
+\end{figure}
+
+
+If a figure consists of multiple subfigures as shown in Figure 2, each subfigure should be identified by a capital letter, such as (A), (B), (C), and so forth, centered below the corresponding subfigure. Authors should follow the style illustrated in Figure 2 of the manuscript template. Subfigure labels must not be embedded within the image itself.
+
+When citing a figure that contains multiple subfigures in the main text, authors should use the format Figure 2A, Figure 2B, and so on. In the figure caption, the corresponding descriptions should be given using the format (A), (B), (C), etc.
+
+When multiple images are combined into a single figure using a grid arrangement, authors should ensure that the layout does not compromise visibility. In particular, placing too many images in a single horizontal row may reduce the size of each image and make textual or graphical details difficult to read. Where necessary, authors should reduce the number of images arranged horizontally. For example, if a 2 × 4 layout results in images that are too small, a 4 × 2 layout may provide better visibility.
+
+
+\begin{figure}[!ht]
+    \centering
+    \begin{subfigure}{0.45\textwidth}
+        \includegraphics[width=\linewidth]{figures/fig_a.png}
+        \caption{}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}{0.45\textwidth}
+        \includegraphics[width=\linewidth]{figures/fig_b.png}
+        \caption{}
+    \end{subfigure}
+    \vskip\baselineskip
+    \begin{subfigure}{0.45\textwidth}
+        \includegraphics[width=\linewidth]{figures/fig_c.png}
+        \caption{}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}{0.45\textwidth}
+        \includegraphics[width=\linewidth]{figures/fig_a.png} % 첫 번째 그림 다시 사용
+        \caption{}
+    \end{subfigure}
+    \caption{Overall caption for the four figures. (A) Caption for figure A. (B) Caption for figure B. (C) Caption for figure C. (D) Caption for figure D.}
+    \label{fig:multi_figs}
+\end{figure}
+
+\subsection{Alt text}
+
+Incorporating alt text (alternative text) when submitting your paper helps to foster inclusivity and accessibility. Well-written alt text enables readers with visual impairments, including those using screen readers, to understand the content and context of your figures. The purpose of alt text is to provide concise, informative descriptions of the essential information conveyed by each figure so that all readers have equitable access to the same information and can engage with the visual elements integral to scholarly content. Including alt text demonstrates a commitment to accessibility and can enhance the overall impact and reach of your work. Although some journals include alt text below each figure caption, as shown in Figure \ref{fig:alt_text}, for administrative convenience we ask authors to submit a separate MS Word file containing a list of all alt texts once the manuscript has been accepted.
+Please note the following points regarding alt text:
+\begin{itemize}
+\item Alt text applies to all images, figures, illustrations, and photographs.
+\item Alt text is primarily accessed via assistive technologies (e.g., screen readers) and may not appear in the typeset article.
+\item Once the manuscript has been accepted, please submit alt text in a separate MS Word file.
+\item \href{https://static.primary.prod.gcms.the-infra.com/static/site/journals/document/alt-text-figure-accessibility.pdf?node=1329505d4d63d87a12ed}{Detailed guidance on how to draft and submit alt text.}
+\end{itemize}
+
+
+\begin{figure}[!ht]
+\centering
+\includegraphics[width=0.7\linewidth]{figures/alt_text_example.png}
+\caption{\label{fig:alt_text}Completely confined, partially deconfined, and completely deconfined phases correspond to uniform, nonuniform but jointed, and disjointed distributions of Polyakov line phases, respectively.\\
+\textbf{Alt Text:} Graphical representation of three phases—completely confined, partially deconfined, and completely deconfined—depicting Polyakov line phases with corresponding transition profiles.
+}
+\end{figure}
+
+%--- Section ---%
+\section{How to include algorithms, program codes, and listings}\label{sec8}
+Packages \verb+algorithm+, \verb+algorithmicx+, and \verb+algpseudocode+ are used for setting algorithms in latex.
+For this, one has to use the below format:
+
+\begin{verbatim}
+\begin{algorithm}
+\caption{<alg-caption>}\label{<alg-label>}
+\begin{algorithmic}[1]
+. . .
+\end{algorithmic}
+\end{algorithm}
+\end{verbatim}
+
+You may need to refer to the above-listed package documentation for more details before setting an \verb+algorithm+ environment.
+To set program codes, one has to use the \verb+program+ package. We need to use the \verb+\begin{program}+ \verb+...+
+\verb+\end{program}+ environment to set program codes.
+
+\begin{algorithm}[!ht]
+\caption{Calculate $y = x^n$}\label{algo1}
+\begin{algorithmic}[1]
+\Require $n \geq 0 \vee x \neq 0$
+\Ensure $y = x^n$
+\State $y \Leftarrow 1$
+\If{$n < 0$}
+        \State $X \Leftarrow 1 / x$
+        \State $N \Leftarrow -n$
+\Else
+        \State $X \Leftarrow x$
+        \State $N \Leftarrow n$
+\EndIf
+\While{$N \neq 0$}
+        \If{$N$ is even}
+            \State $X \Leftarrow X \times X$
+            \State $N \Leftarrow N / 2$
+        \Else[$N$ is odd]
+            \State $y \Leftarrow y \times X$
+            \State $N \Leftarrow N - 1$
+        \EndIf
+\EndWhile
+\end{algorithmic}
+\end{algorithm}
+
+Similarly, for \verb+listings+, one has to use the \verb+listings+ package. To set environments similar to the \verb+verbatim+ environment, the \verb+\begin{lstlisting}+ \verb+... + \verb+\end{lstlisting}+ environment is used . Refer to the \verb+lstlisting+ package documentation for more details on this.
+
+\begin{minipage}{\hsize}%
+\lstset{language=Pascal}% Set your language (you can change the language for each code-block optionally)
+\begin{lstlisting}[frame=single,framexleftmargin=-1pt,framexrightmargin=-17pt,framesep=12pt,linewidth=0.95\textwidth]
+for i:=maxint to 0 do
+begin
+{ do nothing }
+end;
+Write('Case insensitive ');
+Write('Pascal keywords.');
+\end{lstlisting}
+\end{minipage}
+
+
+%--- Section ---%
+\section{How to include lists}\label{sec7}
+
+List in \LaTeX{} can be of three types: numbered, bulleted, and unnumbered. The ``enumerate'' environment produces a numbered list, the 
+``itemize'' environment produces a bulleted list, and the ``unlist''
+environment produces an unnumbered list.
+In each environment, a new entry is added via the \verb+\item+ command.
+
+\begin{enumerate}[label=\arabic*.]
+\item This is the 1st item
+\item Enumerate creates numbered lists, itemize creates bulleted lists, and unnumerate creates unnumbered lists.
+
+\begin{enumerate}[label=\alph*.]
+\item Second level numbered list. Enumerate creates numbered lists, itemize creates bulleted lists, and description creates unnumbered lists.
+\item Second level numbered list. Enumerate creates numbered lists, itemize creates bulleted lists, and description creates unnumbered lists.
+
+\begin{enumerate}[label=(\roman*)]
+\item Third level numbered list. Enumerate creates numbered lists, itemize creates bulleted lists, and description creates unnumbered lists.
+\item Third level numbered list. Enumerate creates numbered lists.
+\end{enumerate}
+
+\item Second level numbered list. Enumerate creates numbered lists, itemize creates bulleted lists, and description creates unnumbered lists.
+\end{enumerate}
+
+\item Numbered lists continue.
+\end{enumerate}
+Lists in \LaTeX{} can be of three types: enumerate, itemize, and description.
+In each environment, a new entry is added via the \verb+\item+ command.
+
+\begin{itemize}
+\item First level bulleted list. This is the 1st item
+\item First level bulleted list. Itemize creates bulleted lists, and description creates unnumbered lists.
+
+\begin{itemize}
+\item Second level dashed list. Itemize creates bulleted lists, and description creates unnumbered lists.
+\item Second level dashed list. Itemize creates bulleted lists, and description creates unnumbered lists.
+\end{itemize}
+
+\item First level bulleted list. Bullet lists continue.
+\end{itemize}
+
+\noindent
+Example of unnumbered list items:
+
+\begin{unlist}
+\item Sample unnumberd list text. Sample unnumberd list text. Sample unnumberd list text. Sample unnumberd list text. Sample unnumberd list text.
+
+\item Sample unnumberd list text. Sample unnumberd list text. Sample unnumberd list text.
+
+\item Sample unnumberd list text. Sample unnumberd list text. Sample unnumberd list text. Sample unnumberd list text. 
+\end{unlist}
+
+
+%--- Section ---%
+\section{How to add citations and a references list}
+
+You can simply upload a \verb|.bib| file containing your BibTeX entries, created with a tool such as JabRef. You can then cite entries from it, like this: \textcite{greenwade93}. Just remember to specify a bibliography style, as well as the filename of the \verb|.bib|. You can find a \href{https://www.overleaf.com/help/97-how-to-include-a-bibliography-using-bibtex}{video tutorial here} to learn more about BibTeX.
+
+Here is an example citation when you want an author name like \textcite{collins2011a} to appear in the text. And here's how to do a parenthetic citation, when you want to mention a reference at the end of a sentence or part of a sentence \parencite{collins2013}. It is possible to cite multiple references at the same time \parencite{collins2011b,collins2016,lunn2007a,lunn2007b,ross2006,shannon1948}.
+
+If you have an \href{https://www.overleaf.com/user/subscription/plans}{upgraded account}, you can also import your Mendeley or Zotero library directly as a \verb|.bib| file, via the upload menu in the file-tree.
+
+\subsection{Citation in text}
+Please ensure that every reference cited in the text is also present in the reference list (and vice versa). Citations in the text should follow the referencing style used by the American Psychological Association. You are referred to the Publication Manual of the American Psychological Association (APA), Seventh Edition, ISBN 978-1-4338-3215-4, copies of which may be ordered online. References in the Abstract should be avoided, but if essential, then cite the author(s) and year(s). Unpublished results and personal communications are not recommended in the reference list but may be mentioned in the text. If these references are included in the reference list, they should follow the standard reference style of the journal and should include a substitution of the publication date with either ‘Unpublished results’ or ‘Personal communication’. The citation of a reference as ‘in press’ implies that the item has been accepted for publication. 
+
+An APA in-text citation includes only three items: the last name(s) of the author(s), the year the source was published, and sometimes the page or location of the information. More than one reference from the same author(s) in the same year must be identified by the letters ‘a’, ‘b’, ‘c’, etc., placed after the year of publication. The following paragraph shows examples of APA style of citations.
+
+Here is an example citation when you want an author name like \textcite{collins2011a} to appear in the text. And here's how to do a parenthetic citation when you want to mention a reference at the end of a sentence or part of a sentence \parencite{collins2013}. It is possible to cite multiple references at the same time \parencite{collins2011b,collins2016,lunn2007a,lunn2007b,ross2006,shannon1948}.
+
+The followings are examples of \verb+\textcite{...}+: \textcite{rahman2019centroidb}, \textcite{krizhevsky2012imagenet, horvath2018dna}, and \textcite{lecun2015deep, zhang2018fine, ravi2016deep}. Another example of \verb+\parencite{...}+: \parencite{bahdanau2014neural,imboden2018cardiorespiratory,motiian2017unified,murphy2012machine,ji20123d}.
+
+\subsection{References}
+The Reference Section, also called the Reference List or Cited Works List, is a list of the full-text details of the in-text citations that have been used in the main text. It includes information such as the name of the author(s), the year the source was published, the full title of the source, and the URL or page range. The Reference Section allows the reader to find the text easily and can be considered as the long-hand format of the in-text citation. It is found at the end of the piece of writing. The works in a reference section should be arranged first alphabetically and then further sorted chronologically if necessary.
+
+\subsubsection{Web references}
+As a minimum, the full URL and the date when the reference was last accessed should be given. Any further information, if known (DOI, author names, dates, reference to a source publication, etc.), should also be given. Web references can be listed separately (e.g., after the reference list) under a different heading if desired or can be included in the reference list. With standard numerical .bst files, only numerical citations are possible. With an author-year .bst file, both numerical and author-year citations are possible. 
+
+\subsubsection{Examples of reference style}
+You can find information about the examples of APA-style references to various sources at the following site:\\
+\url{https://apastyle.apa.org/style-grammar-guidelines/references/examples}.
+
+
+%--- Section ---%
+\section{Conclusions}
+Some conclusions here.
+
+%-------------------------------------------
+% Acknowledgement Sections
+%-------------------------------------------
+
+%--- Mandatory Section ---%
+\section*{Conflicts of interest} 
+The authors must declare conflicts of interest or state “The authors declare no conflict of interest.” Authors must identify and declare any personal circumstances or interests that may be perceived as inappropriately influencing the representation or interpretation of reported research results. A detailed definition of conflicts of interest is available at the following site: \url{https://academic.oup.com/journals/pages/authors/preparing_your_manuscript/ethics#conflict}.
+
+%--- Mandatory Section ---%
+\section*{Author contributions}
+The authors must specify the individual contributions of all authors, identified by full names, according to NISO CrediT (Contributer Roles Taxonomy) described at the following site: \url{https://credit.niso.org/}. An example statement is as follows:
+
+\noindent\textbf{Kunwoo Lee}: Conceptualization, Methodology, Software. \textbf{Shuming Gao}: Data curation, Writing—original draft. \textbf{Sang Hun Lee}: Visualization, Investigation. \textbf{Jami J. Shah}: Supervision. \textbf{Hiromasa Suzuki}: Software, Validation. \textbf{Myung-Il Roh}: Writing—review \& editing.
+
+%--- Section ---%
+\section*{Funding}
+Cite all funding for your research, providing the grant number and the funder name. An example statement is as follows: This work is supported in part by funds from the National Science Foundation (NSF: \# 1636933 and \# 1920920). 
+
+If the funder is listed in the Crossref funder registry (\url{https://www.crossref.org/services/funder-registry/}), the funder name should appear exactly as it does in that database. Where grants were received by specific members of the author group, they should be identified by initials. 
+
+More information on funding agency requirements is available at  \url{https://academic.oup.com/pages/open-research/open-access/complying-with-funder-policies}.
+
+%--- Section ---%
+\section*{Data availability}
+The data availability statement should provide information on where and under what conditions the data directly supporting the publication can be accessed. Sample data availability statements are available at the following site: \url{https://academic.oup.com/pages/open-research/research-data#Data%20Availability%20Statements}.
+
+%--- Section ---%
+\section*{Acknowledgments}
+The authors thank those people or institutions that have helped you in the preparation of the manuscript. 
+
+
+%-------------------------------------------
+% References
+%-------------------------------------------
+
+% Print bibliography
+\printbibliography
+
+
+
+
+%-------------------------------------------
+% Appendix
+%-------------------------------------------
+% Activate the appendix in the doc
+% from here on sections are numerated with capital letters 
+%\appendix
+
+% Change equation numbering format to be sequential within sections in the appendix
+\renewcommand\theequation{\Alph{section}\arabic{equation}} % Redefine equation numbering format
+\counterwithin*{equation}{section} % Number equations within sections
+\renewcommand\thefigure{\Alph{section}\arabic{figure}} % Redefine equation numbering format
+\counterwithin*{figure}{section} % Number equations within sections
+\renewcommand\thetable{\Alph{section}\arabic{table}} % Redefine equation numbering format
+\counterwithin*{table}{section} % Number equations within sections
+
+
+
+\begin{appendices}
+
+
+%--- For single section ---%
+%\section*{Appendix}
+
+%--- For multiple sections ---%
+% Appendix formatting
+\renewcommand{\thesection}{Appendix \Alph{section}}
+\renewcommand{\thesubsection}{\Alph{section}.\arabic{subsection}}
+
+%--- Section ---%
+\section{Section title of first appendix}
+Appendices are used for supplementary material that is relevant to the main text but not essential for inclusion in the text itself—for example, questionnaires, interview transcripts, extended data tables, or equipment descriptions.
+\begin{itemize}
+\item If there is only one appendix, label it as “Appendix”; if there are multiple appendices, label them as “Appendix A,” “Appendix B,” and so on, arranging them in the order they appear in the paper. 
+\item All appendices must be referenced in the main text, and only items that enhance the reader’s understanding or support your argument should be included.
+\item Tables and figures in an appendix should be labeled separately (e.g., Table \ref{tab_a1}, Figure \ref{fig:cat2}).
+\end{itemize}
+
+%--- Subsection ---%
+\subsection{Fist subsection title of first appendix}
+As shown in Equation \ref{eq_a1}, the section number is inserted in the equation number.
+\lipsum[11]
+
+\begin{equation}
+Y_\infty = \left( \frac{m}{\textrm{GeV}} \right)^{-3}
+    \left[ 1 + \frac{3 \ln(m/\textrm{GeV})}{15}
+    + \frac{\ln(c_2/5)}{15} \right]
+\label{eq_a1}
+\end{equation}
+
+%--- Subsection ---%
+\subsection{Second subsection title of first appendix}
+As shown in Table \ref{tab_a1}, the section number is inserted in the table number.
+
+\begin{table}[!ht]
+\caption{Sample table with three parts and five columns\label{tab_a1}}
+\begin{threeparttable}
+\begin{tabular*}{\columnwidth}{@{\extracolsep\fill}lllll@{\extracolsep\fill}}
+\toprule
+column 1 & column 2 & column 3 & column 4 & column 5\\
+\midrule
+row 1 & data 0 & data 1 & data 2 & data 3 \\
+row 2 & data 4 & data 5 & data 6 & data 7 \\
+row 3 & data 8 & data 9 & data 10 & data 11\\
+\bottomrule
+\end{tabular*}
+\end{threeparttable}
+\end{table}
+
+%--- Subsubsection ---%
+\subsubsection {Subsubsection title of first appendix}
+\lipsum[12]
+
+
+%--- Section ---%
+\section{Section title of second appendix}
+
+As shown in Figure \ref{fig:cat2}, the section number is inserted in the figure number.
+\lipsum[13]
+
+% figure b1
+\begin{figure}[!htbp]
+\centering
+\includegraphics[width=0.8\linewidth]{figures/cat_momo_2.jpg}
+\caption{\label{fig:cat2}This cat picture is located at the 'figures' folder.}
+\end{figure}
+
+\lipsum[14]
+
+\subsection{Appendix subsection title here}
+\lipsum[15]
+
+\end{appendices}
+
+\end{document}
