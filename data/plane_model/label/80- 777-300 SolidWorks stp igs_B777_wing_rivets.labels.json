@@ -4805,9 +4805,9 @@
     },
     {
       "face_id": 801,
-      "semantic": "background",
-      "instance_id": -1,
-      "operation": "keep"
+      "semantic": "window",
+      "instance_id": 1801,
+      "operation": "manual_external_feature_review"
     },
     {
       "face_id": 802,

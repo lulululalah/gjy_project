@@ -2207,9 +2207,9 @@
     },
     {
       "face_id": 368,
-      "semantic": "background",
+      "semantic": "window",
       "instance_id": -1,
-      "operation": "keep"
+      "operation": "manual_external_feature_review"
     },
     {
       "face_id": 369,
@@ -2267,9 +2267,9 @@
     },
     {
       "face_id": 378,
-      "semantic": "background",
+      "semantic": "window",
       "instance_id": -1,
-      "operation": "keep"
+      "operation": "manual_external_feature_review"
     },
     {
       "face_id": 379,
@@ -3647,9 +3647,9 @@
     },
     {
       "face_id": 608,
-      "semantic": "background",
+      "semantic": "window",
       "instance_id": -1,
-      "operation": "keep"
+      "operation": "manual_external_feature_review"
     },
     {
       "face_id": 609,
@@ -3707,9 +3707,9 @@
     },
     {
       "face_id": 618,
-      "semantic": "background",
+      "semantic": "window",
       "instance_id": -1,
-      "operation": "keep"
+      "operation": "manual_external_feature_review"
     },
     {
       "face_id": 619,
@@ -4169,9 +4169,9 @@
     },
     {
       "face_id": 695,
-      "semantic": "background",
+      "semantic": "window",
       "instance_id": -1,
-      "operation": "keep"
+      "operation": "manual_external_feature_review"
     },
     {
       "face_id": 696,
@@ -4205,9 +4205,9 @@
     },
     {
       "face_id": 701,
-      "semantic": "background",
+      "semantic": "window",
       "instance_id": -1,
-      "operation": "keep"
+      "operation": "manual_external_feature_review"
     },
     {
       "face_id": 702,
@@ -4241,9 +4241,9 @@
     },
     {
       "face_id": 707,
-      "semantic": "background",
+      "semantic": "window",
       "instance_id": -1,
-      "operation": "keep"
+      "operation": "manual_external_feature_review"
     },
     {
       "face_id": 708,
@@ -5009,7 +5009,7 @@
     },
     {
       "face_id": 835,
-      "semantic": "background",
+      "semantic": "decal",
       "instance_id": -1,
       "operation": "keep"
     },
@@ -5609,7 +5609,7 @@
     },
     {
       "face_id": 935,
-      "semantic": "background",
+      "semantic": "decal",
       "instance_id": -1,
       "operation": "keep"
     },

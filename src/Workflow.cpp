@@ -39,6 +39,19 @@ namespace
         return extension == ".stp" || extension == ".step";
     }
 
+    fs::path ResolveFinalStepPath(const fs::path &stepDirectory, const std::string &modelStem)
+    {
+        for (const char *extension : {".step", ".stp"})
+        {
+            const fs::path candidate = stepDirectory / (modelStem + extension);
+            if (fs::exists(candidate))
+            {
+                return candidate;
+            }
+        }
+        return stepDirectory / (modelStem + ".step");
+    }
+
     bool LoadShapeFromStep(const std::string &inputFile, TopoDS_Shape &shape)
     {
         STEPControl_Reader reader;
@@ -466,7 +479,7 @@ int RunWingRivetTrainingExport(const std::string &inputDir, const std::string &o
         }
 
         const std::string modelStem = stem.substr(0, stem.size() - suffix.size());
-        const fs::path stepPath = stepDir / (modelStem + ".step");
+        const fs::path stepPath = ResolveFinalStepPath(stepDir, modelStem);
         if (!fs::exists(stepPath))
         {
             std::cout << ">>> Skip " << modelStem << ": missing STEP " << stepPath << std::endl;
@@ -532,7 +545,7 @@ int RunSingleWingRivetTrainingExport(
     const std::string &outputCsv)
 {
     const fs::path inputPath(inputDir);
-    const fs::path stepPath = inputPath / "after_two" / (modelStem + ".step");
+    const fs::path stepPath = ResolveFinalStepPath(inputPath / "after_two", modelStem);
     const fs::path labelPath = inputPath / "label" / (modelStem + ".labels.json");
     if (!fs::exists(stepPath) || !fs::exists(labelPath))
     {
@@ -573,7 +586,12 @@ int RunSingleWingRivetTrainingExport(
 
     std::ofstream dataFile(outputCsv);
     WriteFaceCsvHeader(dataFile);
-    ExportFaceFeaturesWithTrueLabels(dataFile, features, faceLabels, 0, stepPath.filename().string());
+    ExportFaceFeaturesWithTrueLabels(
+        dataFile,
+        features,
+        faceLabels,
+        0,
+        stepPath.filename().string());
     std::cout << "  - Exported: " << stepPath.filename() << std::endl;
     return 0;
 }

@@ -5825,15 +5825,15 @@
     },
     {
       "face_id": 971,
-      "semantic": "background",
+      "semantic": "window",
       "instance_id": -1,
-      "operation": "keep"
+      "operation": "manual_external_feature_review"
     },
     {
       "face_id": 972,
-      "semantic": "background",
+      "semantic": "window",
       "instance_id": -1,
-      "operation": "keep"
+      "operation": "manual_external_feature_review"
     },
     {
       "face_id": 973,
@@ -5843,15 +5843,15 @@
     },
     {
       "face_id": 974,
-      "semantic": "background",
+      "semantic": "window",
       "instance_id": -1,
-      "operation": "keep"
+      "operation": "manual_external_feature_review"
     },
     {
       "face_id": 975,
-      "semantic": "background",
+      "semantic": "window",
       "instance_id": -1,
-      "operation": "keep"
+      "operation": "manual_external_feature_review"
     },
     {
       "face_id": 976,
@@ -5915,9 +5915,9 @@
     },
     {
       "face_id": 986,
-      "semantic": "background",
+      "semantic": "window",
       "instance_id": -1,
-      "operation": "keep"
+      "operation": "manual_external_feature_review"
     },
     {
       "face_id": 987,
@@ -5951,15 +5951,15 @@
     },
     {
       "face_id": 992,
-      "semantic": "background",
+      "semantic": "window",
       "instance_id": -1,
-      "operation": "keep"
+      "operation": "manual_external_feature_review"
     },
     {
       "face_id": 993,
-      "semantic": "background",
+      "semantic": "window",
       "instance_id": -1,
-      "operation": "keep"
+      "operation": "manual_external_feature_review"
     },
     {
       "face_id": 994,
@@ -6563,7 +6563,7 @@
     },
     {
       "face_id": 1094,
-      "semantic": "background",
+      "semantic": "decal",
       "instance_id": -1,
       "operation": "keep"
     },
@@ -6893,7 +6893,7 @@
     },
     {
       "face_id": 1149,
-      "semantic": "background",
+      "semantic": "decal",
       "instance_id": -1,
       "operation": "keep"
     },

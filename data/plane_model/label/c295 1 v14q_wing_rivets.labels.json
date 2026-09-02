@@ -77,9 +77,9 @@
     },
     {
       "face_id": 13,
-      "semantic": "background",
+      "semantic": "window",
       "instance_id": -1,
-      "operation": "keep"
+      "operation": "manual_external_feature_review"
     },
     {
       "face_id": 14,
@@ -95,9 +95,9 @@
     },
     {
       "face_id": 16,
-      "semantic": "background",
+      "semantic": "window",
       "instance_id": -1,
-      "operation": "keep"
+      "operation": "manual_external_feature_review"
     },
     {
       "face_id": 17,
@@ -191,9 +191,9 @@
     },
     {
       "face_id": 32,
-      "semantic": "background",
+      "semantic": "window",
       "instance_id": -1,
-      "operation": "keep"
+      "operation": "manual_external_feature_review"
     },
     {
       "face_id": 33,
@@ -539,21 +539,21 @@
     },
     {
       "face_id": 90,
-      "semantic": "background",
+      "semantic": "window",
       "instance_id": -1,
-      "operation": "keep"
+      "operation": "manual_external_feature_review"
     },
     {
       "face_id": 91,
-      "semantic": "background",
+      "semantic": "window",
       "instance_id": -1,
-      "operation": "keep"
+      "operation": "manual_external_feature_review"
     },
     {
       "face_id": 92,
-      "semantic": "background",
+      "semantic": "window",
       "instance_id": -1,
-      "operation": "keep"
+      "operation": "manual_external_feature_review"
     },
     {
       "face_id": 93,
@@ -671,15 +671,15 @@
     },
     {
       "face_id": 112,
-      "semantic": "background",
+      "semantic": "window",
       "instance_id": -1,
-      "operation": "keep"
+      "operation": "manual_external_feature_review"
     },
     {
       "face_id": 113,
-      "semantic": "background",
+      "semantic": "window",
       "instance_id": -1,
-      "operation": "keep"
+      "operation": "manual_external_feature_review"
     },
     {
       "face_id": 114,
@@ -737,21 +737,21 @@
     },
     {
       "face_id": 123,
-      "semantic": "background",
+      "semantic": "window",
       "instance_id": -1,
-      "operation": "keep"
+      "operation": "manual_external_feature_review"
     },
     {
       "face_id": 124,
-      "semantic": "background",
+      "semantic": "window",
       "instance_id": -1,
-      "operation": "keep"
+      "operation": "manual_external_feature_review"
     },
     {
       "face_id": 125,
-      "semantic": "background",
+      "semantic": "window",
       "instance_id": -1,
-      "operation": "keep"
+      "operation": "manual_external_feature_review"
     },
     {
       "face_id": 126,
@@ -767,9 +767,9 @@
     },
     {
       "face_id": 128,
-      "semantic": "background",
+      "semantic": "window",
       "instance_id": -1,
-      "operation": "keep"
+      "operation": "manual_external_feature_review"
     },
     {
       "face_id": 129,
@@ -6107,9 +6107,9 @@
     },
     {
       "face_id": 1018,
-      "semantic": "background",
+      "semantic": "window",
       "instance_id": -1,
-      "operation": "keep"
+      "operation": "manual_external_feature_review"
     },
     {
       "face_id": 1019,
@@ -6281,9 +6281,9 @@
     },
     {
       "face_id": 1047,
-      "semantic": "background",
+      "semantic": "window",
       "instance_id": -1,
-      "operation": "keep"
+      "operation": "manual_external_feature_review"
     },
     {
       "face_id": 1048,
@@ -15665,9 +15665,9 @@
     },
     {
       "face_id": 2611,
-      "semantic": "background",
+      "semantic": "window",
       "instance_id": -1,
-      "operation": "keep"
+      "operation": "manual_external_feature_review"
     },
     {
       "face_id": 2612,
@@ -15899,9 +15899,9 @@
     },
     {
       "face_id": 2650,
-      "semantic": "background",
+      "semantic": "window",
       "instance_id": -1,
-      "operation": "keep"
+      "operation": "manual_external_feature_review"
     },
     {
       "face_id": 2651,
@@ -17165,9 +17165,9 @@
     },
     {
       "face_id": 2861,
-      "semantic": "background",
+      "semantic": "window",
       "instance_id": -1,
-      "operation": "keep"
+      "operation": "manual_external_feature_review"
     },
     {
       "face_id": 2862,
@@ -17183,9 +17183,9 @@
     },
     {
       "face_id": 2864,
-      "semantic": "background",
+      "semantic": "window",
       "instance_id": -1,
-      "operation": "keep"
+      "operation": "manual_external_feature_review"
     },
     {
       "face_id": 2865,
@@ -17207,9 +17207,9 @@
     },
     {
       "face_id": 2868,
-      "semantic": "background",
+      "semantic": "window",
       "instance_id": -1,
-      "operation": "keep"
+      "operation": "manual_external_feature_review"
     },
     {
       "face_id": 2869,
@@ -17237,9 +17237,9 @@
     },
     {
       "face_id": 2873,
-      "semantic": "background",
+      "semantic": "window",
       "instance_id": -1,
-      "operation": "keep"
+      "operation": "manual_external_feature_review"
     },
     {
       "face_id": 2874,

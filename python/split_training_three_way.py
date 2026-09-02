@@ -1,4 +1,4 @@
-"""Create explicit model-isolated train, validation, and test CSV splits."""
+"""Create explicit model-isolated train/test splits, with an optional validation split."""
 
 from __future__ import annotations
 
@@ -9,10 +9,10 @@ import pandas as pd
 
 
 def parse_args() -> argparse.Namespace:
-    parser = argparse.ArgumentParser(description="Split a CAD face CSV by complete model name into three sets.")
+    parser = argparse.ArgumentParser(description="Split a CAD face CSV by complete model name.")
     parser.add_argument("--input-csv", type=Path, required=True)
     parser.add_argument("--train-csv", type=Path, required=True)
-    parser.add_argument("--val-csv", type=Path, required=True)
+    parser.add_argument("--val-csv", type=Path, help="Optional validation output CSV.")
     parser.add_argument("--test-csv", type=Path, required=True)
     parser.add_argument("--val-model", action="append", default=[], help="Exact validation model_name; repeat.")
     parser.add_argument("--test-model", action="append", default=[], help="Exact test model_name; repeat.")
@@ -37,8 +37,10 @@ def validate_split(name: str, frame: pd.DataFrame, source_models: set[str]) -> N
 
 def main() -> int:
     args = parse_args()
-    if not args.val_model or not args.test_model:
-        raise ValueError("Provide at least one --val-model and one --test-model")
+    if not args.test_model:
+        raise ValueError("Provide at least one --test-model")
+    if bool(args.val_csv) != bool(args.val_model):
+        raise ValueError("Provide both --val-csv and at least one --val-model, or neither")
 
     df = pd.read_csv(args.input_csv)
     required = {"graph_id", "model_name", "label"}
@@ -57,29 +59,41 @@ def main() -> int:
     if unknown:
         raise ValueError(f"Requested models absent from input CSV: {unknown}")
 
-    val = df[df["model_name"].isin(val_models)].copy()
+    val = df[df["model_name"].isin(val_models)].copy() if args.val_csv else None
     test = df[df["model_name"].isin(test_models)].copy()
     train = df[~df["model_name"].isin(val_models | test_models)].copy()
-    split_models = [set(frame["model_name"].astype(str).unique()) for frame in (train, val, test)]
-    if any(split_models[i].intersection(split_models[j]) for i in range(3) for j in range(i + 1, 3)):
+    split_frames = [("train", train), ("test", test)]
+    if val is not None:
+        split_frames.insert(1, ("val", val))
+    split_models = [set(frame["model_name"].astype(str).unique()) for _, frame in split_frames]
+    if any(
+        split_models[i].intersection(split_models[j])
+        for i in range(len(split_models))
+        for j in range(i + 1, len(split_models))
+    ):
         raise ValueError("Model leakage across splits")
     if set().union(*split_models) != all_models:
         raise ValueError("Splits do not reconstruct source model membership")
-    if len(train) + len(val) + len(test) != len(df):
+    if sum(len(frame) for _, frame in split_frames) != len(df):
         raise ValueError("Splits do not reconstruct source row count")
-    if any(set(train["graph_id"]).intersection(other["graph_id"]) for other in (val, test)) or set(val["graph_id"]).intersection(test["graph_id"]):
-        raise ValueError("Graph ID leakage across splits")
+    for index, (_, left) in enumerate(split_frames):
+        for _, right in split_frames[index + 1:]:
+            if set(left["graph_id"]).intersection(right["graph_id"]):
+                raise ValueError("Graph ID leakage across splits")
 
-    for name, frame in (("train", train), ("val", val), ("test", test)):
+    for name, frame in split_frames:
         validate_split(name, frame, all_models)
-    for output, frame in ((args.train_csv, train), (args.val_csv, val), (args.test_csv, test)):
+    output_frames = [(args.train_csv, train), (args.test_csv, test)]
+    if val is not None:
+        output_frames.insert(1, (args.val_csv, val))
+    for output, frame in output_frames:
         if output.exists():
             raise FileExistsError(f"Refusing to overwrite existing split: {output}")
         output.parent.mkdir(parents=True, exist_ok=True)
         frame.to_csv(output, index=False)
 
     print(f"source: models={len(all_models)}, faces={len(df)}, labels={label_counts(df)}")
-    for name, frame in (("train", train), ("val", val), ("test", test)):
+    for name, frame in split_frames:
         print(f"{name}: models={frame['model_name'].nunique()}, faces={len(frame)}, labels={label_counts(frame)}")
         for model_name in sorted(frame["model_name"].astype(str).unique()):
             print(f"  - {model_name}")

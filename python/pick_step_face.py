@@ -52,6 +52,9 @@ def main() -> int:
 
     root = tk.Tk()
     root.title("STEP face picker: right-click a face")
+    selected_face_text = tk.StringVar(value="Right-click a face to show its F-number here.")
+    status = tk.Label(root, textvariable=selected_face_text, anchor="w", padx=8)
+    status.pack(side=tk.BOTTOM, fill=tk.X)
     canvas = tkViewer3d(root)
     canvas.pack(fill=tk.BOTH, expand=True)
     canvas.wait_visibility()
@@ -109,7 +112,9 @@ def main() -> int:
             return
 
         def report_face_id(face_id: int) -> None:
-            print(f"Selected face: F{face_id}")
+            message = f"Selected face: F{face_id}"
+            selected_face_text.set(message)
+            print(message)
 
         for selected in selected_shapes:
             face_id = face_map.FindIndex(selected)
