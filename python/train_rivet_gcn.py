@@ -1,5 +1,6 @@
 import argparse
 import csv
+import shutil
 from pathlib import Path
 
 import numpy as np
@@ -15,6 +16,9 @@ LEGACY_BASE_FEATURE_COLS = [
     "relativeArea",
     "compactness",
     "meanCurvature",
+    "uvInsideFraction",
+    "normalVariation",
+    "curvatureVariation",
     "radius",
     "numWires",
     "innerWireCount",
@@ -62,7 +66,23 @@ INNER_LOOP_FEATURE_COLS = [
     "hasSmallFlatInnerLoop",
     "hasSmallRightAngleInnerLoop",
 ]
-USE_INNER_LOOP_FEATURES = False
+
+ATTACHED_SURFACE_FEATURE_COLS = [
+    "logNormalizedTrimmedArea",
+    "logNormalizedPerimeter",
+    "logAreaToNeighborMean",
+    "logAreaToNeighborMax",
+    "sameSurfaceNeighborRatio",
+    "smoothSameSurfaceNeighborRatio",
+    "smoothSameSurfaceBoundaryRatio",
+    "smoothSameSurfaceAreaContrast",
+    "hasLargerSmoothSameSurfaceNeighbor",
+    "uniqueNeighborToEdgeRatio",
+    "sharedBoundaryRatio",
+    "logSmoothComponentNormalizedArea",
+    "smoothComponentFaceCount",
+    "smoothComponentFaceAreaRatio",
+]
 
 BASE_FEATURE_COLS = [
     "relativeArea",
@@ -125,12 +145,13 @@ EDGE_ATTR_COLS = [
     "edge_dihedral_stds",
 ]
 
-DEFAULT_CSV = Path("data/wing_rivet_training_set_normalized_v2.csv")
-DEFAULT_MODEL_PATH = Path("rivet_gnn_no_centerz_split19_5.pth")
-DEFAULT_STATS_PATH = Path("rivet_gnn_no_centerz_split19_5_stats.npz")
-DEFAULT_EVAL_PATH = Path("rivet_gnn_no_centerz_split19_5_eval.csv")
+DEFAULT_CSV = Path("work/uv_train17_xian20_simpletest_train.csv")
+DEFAULT_MODEL_PATH = Path("work/rivet_gnn_xian20_train_simpletest_50ep.pth")
+DEFAULT_STATS_PATH = Path("work/rivet_gnn_xian20_train_simpletest_50ep_stats.npz")
+DEFAULT_EVAL_PATH = Path("work/rivet_gnn_xian20_train_simpletest_50ep_eval.csv")
 
 LABEL_NAMES = ["background", "rivet", "surface_feature"]
+
 
 RADIUS_COL = "radius"
 SURFACE_TYPE_COL = "surfaceType"
@@ -180,13 +201,143 @@ def infer_feature_columns(df):
         )
     surface_types = sorted({int(value) for value in df[SURFACE_TYPE_COL].fillna(0).astype(int).tolist()})
     feature_cols = list(BASE_FEATURE_COLS)
-    if not USE_INNER_LOOP_FEATURES:
-        feature_cols = [column for column in feature_cols if column not in INNER_LOOP_FEATURE_COLS]
+    feature_cols = [column for column in feature_cols if column not in INNER_LOOP_FEATURE_COLS]
+    feature_cols.extend(ATTACHED_SURFACE_FEATURE_COLS)
     feature_cols.extend(RELATIVE_NORMAL_FEATURE_COLS)
     if {"centerX", "centerY", "centerZ"}.issubset(df.columns):
         feature_cols.extend(MODEL_RELATIVE_POSITION_FEATURE_COLS)
     feature_cols.extend(f"{SURFACE_TYPE_COL}_{surface_type}" for surface_type in surface_types)
     return feature_cols
+
+
+def compute_attached_surface_feature_frame(df):
+    """Derive local attachment and smooth-component geometry features.
+
+    A decal is normally a small, separate face attached to a host.  In
+    contrast, a fuselage shell can be represented by one or a few huge faces
+    joined by smooth, tangent edges.  Build those tangent components here so
+    the classifier and loss can distinguish the two cases without an absolute
+    face-area cutoff.
+    """
+    local_df = df.reset_index(drop=True)
+    face_ids = (
+        local_df["id"].astype(int).tolist()
+        if "id" in local_df.columns
+        else list(range(1, len(local_df) + 1))
+    )
+    id_to_index = {face_id: index for index, face_id in enumerate(face_ids)}
+    parent = list(range(len(local_df)))
+
+    def find(node):
+        while parent[node] != node:
+            parent[node] = parent[parent[node]]
+            node = parent[node]
+        return node
+
+    def union(left, right):
+        left_root, right_root = find(left), find(right)
+        if left_root != right_root:
+            parent[right_root] = left_root
+
+    for node_idx, row in local_df.iterrows():
+        neighbor_ids = split_tokens(row.get("neighbors"))
+        edge_types = [int(value) for value in split_tokens(row.get("edge_types"))]
+        neighbor_types = [
+            int(value) for value in split_tokens(row.get("edge_neighbor_surface_types"))
+        ]
+        dihedral_means = [float(value) for value in split_tokens(row.get("edge_dihedral_means"))]
+        surface_type = int(float(row.get(SURFACE_TYPE_COL, 0)))
+        edge_count = min(len(neighbor_ids), len(edge_types), len(neighbor_types))
+        for edge_index in range(edge_count):
+            neighbor_idx = id_to_index.get(int(neighbor_ids[edge_index]))
+            if neighbor_idx is None:
+                continue
+            if (
+                edge_types[edge_index] == 0
+                and neighbor_types[edge_index] == surface_type
+                and abs(float(token_at(dihedral_means, edge_index))) <= 0.05
+            ):
+                union(node_idx, neighbor_idx)
+
+    normalized_areas = (
+        local_df["area"].astype(float).abs().to_numpy()
+        * local_df[NORMALIZATION_SCALE_COL].astype(float).to_numpy() ** 2
+    )
+    component_areas = {}
+    component_counts = {}
+    for node_idx, area in enumerate(normalized_areas):
+        root = find(node_idx)
+        component_areas[root] = component_areas.get(root, 0.0) + float(area)
+        component_counts[root] = component_counts.get(root, 0) + 1
+
+    rows = []
+    for node_idx, row in local_df.iterrows():
+        edge_types = [int(value) for value in split_tokens(row.get("edge_types"))]
+        neighbor_types = [
+            int(value) for value in split_tokens(row.get("edge_neighbor_surface_types"))
+        ]
+        shared_lengths = [float(value) for value in split_tokens(row.get("shared_edge_lengths"))]
+        area_ratios = [float(value) for value in split_tokens(row.get("edge_area_ratios"))]
+        dihedral_means = [float(value) for value in split_tokens(row.get("edge_dihedral_means"))]
+        edge_count = min(
+            len(edge_types),
+            len(neighbor_types),
+            len(shared_lengths),
+            len(area_ratios),
+        )
+        current_surface_type = int(float(row.get(SURFACE_TYPE_COL, 0)))
+        same_surface = [
+            edge_index
+            for edge_index in range(edge_count)
+            if neighbor_types[edge_index] == current_surface_type
+        ]
+        smooth_same_surface = [
+            edge_index
+            for edge_index in same_surface
+            if edge_types[edge_index] == 0
+            and abs(float(token_at(dihedral_means, edge_index))) <= 0.05
+        ]
+        perimeter = max(abs(float(row.get("perimeter", 0.0))), 1e-12)
+        smooth_boundary_ratio = min(
+            sum(abs(shared_lengths[index]) for index in smooth_same_surface) / perimeter,
+            1.0,
+        )
+        smooth_area_ratios = [
+            max(abs(area_ratios[index]), 1e-12)
+            for index in smooth_same_surface
+        ]
+        min_smooth_area_ratio = min(smooth_area_ratios, default=1.0)
+        normalization_scale = max(float(row.get(NORMALIZATION_SCALE_COL, 0.0)), 1e-12)
+        normalized_area = abs(float(row.get("area", 0.0))) * normalization_scale ** 2
+        normalized_perimeter = abs(float(row.get("perimeter", 0.0))) * normalization_scale
+        unique_neighbor_count = len(set(split_tokens(row.get("neighbors"))))
+        num_edges = max(int(float(row.get("numEdges", 0))), 1)
+        shared_boundary_ratio = min(
+            sum(abs(length) for length in shared_lengths) / perimeter,
+            1.0,
+        )
+        component_root = find(node_idx)
+        component_area = component_areas[component_root]
+        component_count = component_counts[component_root]
+        rows.append({
+            "logNormalizedTrimmedArea": np.log(max(normalized_area, 1e-12)),
+            "logNormalizedPerimeter": np.log(max(normalized_perimeter, 1e-12)),
+            "logAreaToNeighborMean": np.log1p(max(float(row.get("areaToNeighborMean", 0.0)), 0.0)),
+            "logAreaToNeighborMax": np.log1p(max(float(row.get("areaToNeighborMax", 0.0)), 0.0)),
+            "sameSurfaceNeighborRatio": len(same_surface) / max(edge_count, 1),
+            "smoothSameSurfaceNeighborRatio": len(smooth_same_surface) / max(edge_count, 1),
+            "smoothSameSurfaceBoundaryRatio": smooth_boundary_ratio,
+            "smoothSameSurfaceAreaContrast": float(
+                np.clip(-np.log(min_smooth_area_ratio), -12.0, 12.0)
+            ),
+            "hasLargerSmoothSameSurfaceNeighbor": float(min_smooth_area_ratio < 1.0),
+            "uniqueNeighborToEdgeRatio": unique_neighbor_count / num_edges,
+            "sharedBoundaryRatio": shared_boundary_ratio,
+            "logSmoothComponentNormalizedArea": np.log(max(component_area, 1e-12)),
+            "smoothComponentFaceCount": float(component_count),
+            "smoothComponentFaceAreaRatio": float(normalized_area / max(component_area, 1e-12)),
+        })
+    return pd.DataFrame(rows, index=df.index, columns=ATTACHED_SURFACE_FEATURE_COLS)
 
 
 def build_feature_frame(df, feature_cols=None):
@@ -205,6 +356,12 @@ def build_feature_frame(df, feature_cols=None):
 
     feature_df = pd.DataFrame(index=df.index)
     numeric_df = df.apply(pd.to_numeric, errors="coerce")
+
+    requested_attached_features = set(ATTACHED_SURFACE_FEATURE_COLS).intersection(feature_cols)
+    if requested_attached_features:
+        attached_features = compute_attached_surface_feature_frame(df)
+        for col in requested_attached_features:
+            feature_df[col] = attached_features[col]
 
     for col in LEGACY_BASE_FEATURE_COLS:
         if col not in feature_cols and not (col == RADIUS_COL and HAS_RADIUS_COL in feature_cols):
@@ -354,18 +511,34 @@ def build_graph(group_df, feature_mean, feature_std, edge_mean=None, edge_std=No
 
     x = torch.tensor(node_features, dtype=torch.float)
     y = torch.tensor(local_df["label"].astype(int).to_numpy(), dtype=torch.long)
+    attached_features = compute_attached_surface_feature_frame(local_df)
     normalized_area = torch.tensor(
         local_df["area"].astype(float).abs().to_numpy()
         * local_df[NORMALIZATION_SCALE_COL].astype(float).to_numpy() ** 2,
         dtype=torch.float,
     )
-
     return Data(
         x=x,
         edge_index=edge_index,
         edge_attr=edge_attr,
         y=y,
         normalized_area=normalized_area,
+        shared_boundary_ratio=torch.tensor(
+            attached_features["sharedBoundaryRatio"].to_numpy(),
+            dtype=torch.float,
+        ),
+        smooth_component_normalized_area=torch.tensor(
+            np.exp(attached_features["logSmoothComponentNormalizedArea"].to_numpy()),
+            dtype=torch.float,
+        ),
+        smooth_component_face_count=torch.tensor(
+            attached_features["smoothComponentFaceCount"].to_numpy(),
+            dtype=torch.float,
+        ),
+        smooth_component_face_area_ratio=torch.tensor(
+            attached_features["smoothComponentFaceAreaRatio"].to_numpy(),
+            dtype=torch.float,
+        ),
         face_id=torch.tensor(local_df["id"].astype(int).to_numpy(), dtype=torch.long),
         target_mask=torch.ones(y.size(0), dtype=torch.bool),
         graph_id=int(local_df["graph_id"].iloc[0]),
@@ -444,6 +617,10 @@ def build_window_graph(full_graph, center_idx, hop_count, window_cache=None):
         edge_attr=edge_attr,
         y=full_graph.y[node_ids],
         normalized_area=full_graph.normalized_area[node_ids],
+        shared_boundary_ratio=full_graph.shared_boundary_ratio[node_ids],
+        smooth_component_normalized_area=full_graph.smooth_component_normalized_area[node_ids],
+        smooth_component_face_count=full_graph.smooth_component_face_count[node_ids],
+        smooth_component_face_area_ratio=full_graph.smooth_component_face_area_ratio[node_ids],
         face_id=full_graph.face_id[node_ids],
         target_mask=target_mask,
         graph_id=int(full_graph.graph_id),
@@ -456,9 +633,9 @@ def sample_window_centers(
     full_graph,
     background_ratio,
     rng,
-    hard_negative_face_ids=None,
-    hard_negative_fraction=0.1,
     large_background_fraction=0.0,
+    min_background_centers=0,
+    background_coverage_fraction=0.0,
 ):
     labels = full_graph.y.cpu().numpy()
     positive = np.flatnonzero(labels > 0)
@@ -467,41 +644,24 @@ def sample_window_centers(
     if background_ratio is None or background_ratio <= 0 or len(positive) == 0:
         return np.arange(full_graph.num_nodes)
 
-    max_negative = min(len(negative), len(positive) * background_ratio)
+    if min_background_centers < 0:
+        raise ValueError("min_background_centers must be non-negative.")
+    if not 0.0 <= background_coverage_fraction <= 1.0:
+        raise ValueError("background_coverage_fraction must be between 0 and 1.")
+    coverage_quota = int(np.ceil(len(negative) * background_coverage_fraction))
+    max_negative = min(
+        len(negative),
+        max(len(positive) * background_ratio, min_background_centers, coverage_quota),
+    )
     if max_negative <= 0:
         centers = positive.astype(int)
         rng.shuffle(centers)
         return centers
 
-    if not 0.0 <= hard_negative_fraction <= 1.0:
-        raise ValueError("hard_negative_fraction must be between 0 and 1.")
     if not 0.0 <= large_background_fraction <= 1.0:
         raise ValueError("large_background_fraction must be between 0 and 1.")
-
-    hard_negative = np.empty(0, dtype=int)
-    if hard_negative_face_ids:
-        face_to_index = {
-            int(face_id): idx
-            for idx, face_id in enumerate(full_graph.face_id.cpu().tolist())
-        }
-        selected = []
-        seen = set()
-        hard_negative_limit = min(
-            max_negative,
-            max(1, int(np.floor(max_negative * hard_negative_fraction))),
-        ) if hard_negative_fraction > 0 else 0
-        for face_id in hard_negative_face_ids:
-            center_idx = face_to_index.get(int(face_id))
-            if center_idx is None or center_idx in seen or labels[center_idx] != 0:
-                continue
-            selected.append(center_idx)
-            seen.add(center_idx)
-            if len(selected) == hard_negative_limit:
-                break
-        hard_negative = np.asarray(selected, dtype=int)
-
-    remaining_negative = np.setdiff1d(negative, hard_negative, assume_unique=False)
-    random_count = max_negative - len(hard_negative)
+    remaining_negative = negative
+    random_count = max_negative
     large_negative = np.empty(0, dtype=int)
     if random_count > 0 and large_background_fraction > 0.0 and len(remaining_negative) > 0:
         large_count = min(
@@ -526,7 +686,7 @@ def sample_window_centers(
         if random_count > 0
         else np.empty(0, dtype=int)
     )
-    centers = np.concatenate([positive, hard_negative, large_negative, random_negative]).astype(int)
+    centers = np.concatenate([positive, large_negative, random_negative]).astype(int)
     rng.shuffle(centers)
     return centers
 
@@ -536,23 +696,21 @@ def build_window_dataset(
     hop_count,
     background_ratio,
     seed,
-    hard_negative_centers=None,
-    hard_negative_fraction=0.1,
     large_background_fraction=0.0,
+    min_background_centers=0,
+    background_coverage_fraction=0.0,
 ):
     rng = np.random.default_rng(seed)
     windows = []
     for full_graph in full_graphs:
         window_cache = build_window_cache(full_graph)
-        graph_key = (int(full_graph.graph_id), str(full_graph.model_name))
-        hard_negative_face_ids = (hard_negative_centers or {}).get(graph_key, [])
         for center_idx in sample_window_centers(
             full_graph,
             background_ratio,
             rng,
-            hard_negative_face_ids,
-            hard_negative_fraction,
             large_background_fraction,
+            min_background_centers,
+            background_coverage_fraction,
         ):
             windows.append(build_window_graph(full_graph, int(center_idx), hop_count, window_cache))
     return windows
@@ -605,17 +763,16 @@ def load_feature_stats(stats_path):
     return stats["mean"], stats["std"], edge_mean, edge_std, feature_cols
 
 
-def load_cad_data(csv_path, stats_path=DEFAULT_STATS_PATH):
+def load_cad_data(csv_path, stats_path):
     df = pd.read_csv(csv_path)
     if "graph_id" not in df.columns or "model_name" not in df.columns:
         raise ValueError("CSV is missing graph_id/model_name columns. Please re-export inference data.")
 
     feature_mean, feature_std, edge_mean, edge_std, feature_cols = load_feature_stats(stats_path)
     if feature_mean is None or feature_std is None:
-        feature_frame, feature_cols = build_feature_frame(df)
-        feature_matrix = feature_frame.to_numpy()
-        feature_mean = feature_matrix.mean(axis=0)
-        feature_std = feature_matrix.std(axis=0) + 1e-6
+        raise FileNotFoundError(
+            f"Checkpoint normalization stats are required for inference: {stats_path}"
+        )
     elif feature_cols is None:
         feature_cols = infer_feature_columns(df)
     if edge_mean is None or edge_std is None:
@@ -644,9 +801,9 @@ def prepare_graph_samples(
     window_hop=2,
     background_ratio=5,
     seed=42,
-    hard_negative_centers=None,
-    hard_negative_fraction=0.1,
     large_background_fraction=0.0,
+    min_background_centers=0,
+    background_coverage_fraction=0.0,
 ):
     if training_mode == "window":
         return build_window_dataset(
@@ -654,73 +811,13 @@ def prepare_graph_samples(
             window_hop,
             background_ratio,
             seed,
-            hard_negative_centers,
-            hard_negative_fraction,
             large_background_fraction,
+            min_background_centers,
+            background_coverage_fraction,
         )
     if training_mode == "full-balanced":
         return build_full_balanced_dataset(full_graphs, background_ratio, seed)
     return full_graphs
-
-
-def load_hard_negative_centers(hard_negative_csv, train_df, val_df):
-    if hard_negative_csv is None:
-        return {}, 0
-
-    manifest_path = Path(hard_negative_csv)
-    if not manifest_path.exists():
-        raise FileNotFoundError(f"Hard-negative CSV does not exist: {manifest_path}")
-
-    manifest = pd.read_csv(manifest_path)
-    required_columns = {
-        "graph_id",
-        "model_name",
-        "face_id",
-        "pred_label",
-        "review_status",
-    }
-    missing_columns = required_columns.difference(manifest.columns)
-    if missing_columns:
-        raise ValueError(
-            f"Hard-negative CSV is missing required columns: {sorted(missing_columns)}"
-        )
-    if not set(manifest["pred_label"].astype(int).unique()).issubset({2}):
-        raise ValueError("Hard-negative CSV may only contain predicted surface_feature labels (2).")
-    review_status = manifest["review_status"].astype(str).str.strip().str.lower()
-    if review_status.empty or not review_status.eq("approved").all():
-        raise ValueError(
-            "Hard-negative CSV must contain only manually approved rows "
-            "(review_status=approved)."
-        )
-
-    train_keys = train_df[["graph_id", "model_name", "id", "label"]].copy()
-    train_keys["graph_id"] = train_keys["graph_id"].astype(int)
-    train_keys["model_name"] = train_keys["model_name"].astype(str)
-    train_keys["id"] = train_keys["id"].astype(int)
-    train_keys["label"] = train_keys["label"].astype(int)
-    val_models = set(val_df["model_name"].astype(str))
-    if val_models.intersection(set(manifest["model_name"].astype(str))):
-        raise ValueError("Hard-negative CSV contains validation-model rows; only training models are allowed.")
-
-    train_lookup = {
-        (int(row.graph_id), str(row.model_name), int(row.id)): int(row.label)
-        for row in train_keys.itertuples(index=False)
-    }
-    if "pred_confidence" in manifest.columns:
-        manifest = manifest.sort_values("pred_confidence", ascending=False, kind="stable")
-    selected = {}
-    seen = set()
-    for row in manifest.itertuples(index=False):
-        key = (int(row.graph_id), str(row.model_name), int(row.face_id))
-        if key in seen:
-            continue
-        if key not in train_lookup:
-            raise ValueError(f"Hard-negative row is not in the training CSV: {key}")
-        if train_lookup[key] != 0:
-            raise ValueError(f"Hard-negative row is not a background face: {key}")
-        selected.setdefault(key[:2], []).append(key[2])
-        seen.add(key)
-    return selected, len(seen)
 
 
 def load_graph_dataset(csv_path, training_mode="full", window_hop=2, background_ratio=5, seed=42):
@@ -749,9 +846,9 @@ def load_explicit_train_val_datasets(
     window_hop=2,
     background_ratio=5,
     seed=42,
-    hard_negative_csv=None,
-    hard_negative_fraction=0.1,
     large_background_fraction=0.0,
+    min_background_centers=0,
+    background_coverage_fraction=0.0,
     label_names=LABEL_NAMES,
 ):
     train_df = pd.read_csv(train_csv_path)
@@ -780,21 +877,15 @@ def load_explicit_train_val_datasets(
 
     train_full_graphs = build_graphs_from_dataframe(train_df, feature_mean, feature_std, edge_mean, edge_std, feature_cols)
     val_full_graphs = build_graphs_from_dataframe(val_df, feature_mean, feature_std, edge_mean, edge_std, feature_cols)
-    hard_negative_centers, hard_negative_count = load_hard_negative_centers(
-        hard_negative_csv,
-        train_df,
-        val_df,
-    )
-
     train_graphs = prepare_graph_samples(
         train_full_graphs,
         training_mode,
         window_hop,
         background_ratio,
         seed,
-        hard_negative_centers,
-        hard_negative_fraction,
         large_background_fraction,
+        min_background_centers,
+        background_coverage_fraction,
     )
     val_training_mode = "full" if training_mode == "full-balanced" else training_mode
     val_background_ratio = 0 if training_mode == "window" else background_ratio
@@ -813,12 +904,20 @@ def load_explicit_train_val_datasets(
         edge_mean,
         edge_std,
         feature_cols,
-        hard_negative_count,
+        train_full_graphs,
     )
 
 
 class RivetGNN(torch.nn.Module):
-    def __init__(self, node_features, edge_features, hidden_dim, num_classes=2, num_layers=3, dropout=0.0):
+    def __init__(
+        self,
+        node_features,
+        edge_features,
+        hidden_dim,
+        num_classes=2,
+        num_layers=3,
+        dropout=0.0,
+    ):
         super().__init__()
         if num_layers < 3:
             raise ValueError("num_layers must be at least 3")
@@ -826,6 +925,18 @@ class RivetGNN(torch.nn.Module):
             raise ValueError("dropout must be in [0.0, 1.0)")
         self.num_layers = num_layers
         self.dropout = torch.nn.Dropout(dropout)
+        # AAGNet-style separate encoders for face and adjacency attributes.
+        # Keeping the output widths unchanged preserves the NNConv interface.
+        self.node_input_encoder = torch.nn.Sequential(
+            torch.nn.Linear(node_features, node_features),
+            torch.nn.LayerNorm(node_features),
+            torch.nn.ReLU(),
+        )
+        self.edge_input_encoder = torch.nn.Sequential(
+            torch.nn.Linear(edge_features, edge_features),
+            torch.nn.LayerNorm(edge_features),
+            torch.nn.ReLU(),
+        )
 
         def create_nn(in_f, out_f):
             return torch.nn.Sequential(
@@ -836,11 +947,11 @@ class RivetGNN(torch.nn.Module):
 
         if num_layers == 3:
             self.conv1 = NNConv(node_features, hidden_dim, create_nn(node_features, hidden_dim))
-            self.bn1 = torch.nn.BatchNorm1d(hidden_dim)
+            self.bn1 = torch.nn.LayerNorm(hidden_dim)
             self.conv2 = NNConv(hidden_dim, hidden_dim, create_nn(hidden_dim, hidden_dim))
-            self.bn2 = torch.nn.BatchNorm1d(hidden_dim)
+            self.bn2 = torch.nn.LayerNorm(hidden_dim)
             self.conv3 = NNConv(hidden_dim, hidden_dim, create_nn(hidden_dim, hidden_dim))
-            self.bn3 = torch.nn.BatchNorm1d(hidden_dim)
+            self.bn3 = torch.nn.LayerNorm(hidden_dim)
             self.classifier = torch.nn.Linear(hidden_dim, num_classes)
             return
         self.convs = torch.nn.ModuleList()
@@ -848,11 +959,13 @@ class RivetGNN(torch.nn.Module):
         for layer_index in range(num_layers):
             in_features = node_features if layer_index == 0 else hidden_dim
             self.convs.append(NNConv(in_features, hidden_dim, create_nn(in_features, hidden_dim)))
-            self.batch_norms.append(torch.nn.BatchNorm1d(hidden_dim))
+            self.batch_norms.append(torch.nn.LayerNorm(hidden_dim))
         self.classifier = torch.nn.Linear(hidden_dim * 3, num_classes)
 
-    def forward(self, data):
+    def encode(self, data):
         x, edge_index, edge_attr = data.x, data.edge_index, data.edge_attr
+        x = self.node_input_encoder(x)
+        edge_attr = self.edge_input_encoder(edge_attr)
 
         if self.num_layers == 3:
             x = F.relu(self.bn1(self.conv1(x, edge_index, edge_attr)))
@@ -863,7 +976,7 @@ class RivetGNN(torch.nn.Module):
             x = x + identity
             x = F.relu(self.bn3(self.conv3(x, edge_index, edge_attr)))
             x = self.dropout(x)
-            return F.log_softmax(self.classifier(x), dim=1)
+            return x
         for layer_index, (conv, batch_norm) in enumerate(zip(self.convs, self.batch_norms)):
             updated = F.relu(batch_norm(conv(x, edge_index, edge_attr)))
             updated = self.dropout(updated)
@@ -872,8 +985,86 @@ class RivetGNN(torch.nn.Module):
         if batch is None:
             batch = torch.zeros(x.size(0), dtype=torch.long, device=x.device)
         global_features = torch.cat([global_mean_pool(x, batch), global_max_pool(x, batch)], dim=1)
-        x = self.classifier(torch.cat([x, global_features[batch]], dim=1))
-        return F.log_softmax(x, dim=1)
+        return torch.cat([x, global_features[batch]], dim=1)
+
+    def forward(self, data):
+        return F.log_softmax(self.classifier(self.encode(data)), dim=1)
+
+
+class DualHeadRivetGNN(torch.nn.Module):
+    def __init__(
+        self,
+        node_features,
+        edge_features,
+        hidden_dim,
+        num_layers=3,
+        dropout=0.0,
+    ):
+        super().__init__()
+        # These are deliberately separate encoders.  The rivet and surface
+        # objectives must not alter the same message-passing representation.
+        self.rivet_encoder = RivetGNN(
+            node_features, edge_features, hidden_dim, 3, num_layers, dropout
+        )
+        self.surface_encoder = RivetGNN(
+            node_features,
+            edge_features,
+            hidden_dim,
+            3,
+            num_layers,
+            dropout,
+        )
+        classifier_input = hidden_dim if num_layers == 3 else hidden_dim * 3
+        adapter_dim = max(hidden_dim, classifier_input // 2)
+        self.rivet_adapter = torch.nn.Sequential(
+            torch.nn.Linear(classifier_input, adapter_dim),
+            torch.nn.LayerNorm(adapter_dim),
+            torch.nn.ReLU(),
+            torch.nn.Dropout(dropout),
+        )
+        self.surface_adapter = torch.nn.Sequential(
+            torch.nn.Linear(classifier_input, adapter_dim),
+            torch.nn.LayerNorm(adapter_dim),
+            torch.nn.ReLU(),
+            torch.nn.Dropout(dropout),
+        )
+        self.rivet_classifier = torch.nn.Linear(adapter_dim, 1)
+        self.surface_classifier = torch.nn.Linear(adapter_dim, 1)
+
+    def forward(self, data):
+        rivet_encoded = self.rivet_encoder.encode(data)
+        surface_encoded = self.surface_encoder.encode(data)
+        return torch.cat(
+            [
+                self.rivet_classifier(self.rivet_adapter(rivet_encoded)),
+                self.surface_classifier(self.surface_adapter(surface_encoded)),
+            ],
+            dim=1,
+        )
+
+
+def dual_head_probabilities(logits):
+    if logits.ndim != 2 or logits.shape[1] != 2:
+        raise ValueError(f"Dual-head logits must have shape [N, 2], got {tuple(logits.shape)}")
+    return torch.sigmoid(logits)
+
+
+def dual_head_decision(logits, rivet_threshold=0.5, surface_threshold=0.5):
+    if not 0.0 < rivet_threshold < 1.0:
+        raise ValueError("rivet_threshold must be between 0 and 1.")
+    if not 0.0 < surface_threshold < 1.0:
+        raise ValueError("surface_threshold must be between 0 and 1.")
+    probabilities = dual_head_probabilities(logits)
+    rivet_score = probabilities[:, 0]
+    surface_score = probabilities[:, 1]
+    predictions = torch.zeros(logits.shape[0], dtype=torch.long, device=logits.device)
+    # Rivet precision is the hard safety constraint.  Once a face clears the
+    # rivet threshold, surface evidence must not overwrite that decision.
+    rivet_selected = rivet_score >= rivet_threshold
+    surface_selected = (~rivet_selected) & (surface_score >= surface_threshold)
+    predictions[rivet_selected] = 1
+    predictions[surface_selected] = 2
+    return predictions, probabilities
 
 
 def compute_class_weights(graphs, num_classes=2, max_weight=5.0):
@@ -929,6 +1120,8 @@ def summarize_metrics(metrics):
             "miou": 0.0,
             "foreground_macro_f1": 0.0,
             "class_2_f1": 0.0,
+            "rivet_fp": 0,
+            "surface_fp": 0,
             "background_fp": 0,
         }
     foreground_metrics = metrics[1:]
@@ -941,15 +1134,215 @@ def summarize_metrics(metrics):
         if foreground_metrics
         else 0.0,
         "class_2_f1": float(metrics[2]["f1"]) if len(metrics) > 2 else 0.0,
+        "rivet_fp": int(metrics[1]["fp"]) if len(metrics) > 1 else 0,
+        "surface_fp": int(metrics[2]["fp"]) if len(metrics) > 2 else 0,
         # Here "background FP" means background faces predicted as any foreground class.
         "background_fp": int(metrics[0]["fn"]),
     }
 
 
-def focal_nll_loss(log_probabilities, targets, class_weights=None, gamma=2.0):
+def focal_nll_loss(
+    log_probabilities,
+    targets,
+    class_weights=None,
+    gamma=2.0,
+    sample_weights=None,
+):
     target_log_probabilities = log_probabilities.gather(1, targets.unsqueeze(1)).squeeze(1)
     weights = class_weights[targets] if class_weights is not None else 1.0
+    if sample_weights is not None:
+        weights = weights * sample_weights
     return ((1.0 - target_log_probabilities.exp()).pow(gamma) * -target_log_probabilities * weights).mean()
+
+
+def compute_dual_head_positive_weights(
+    graphs,
+    max_weight=5.0,
+    rivet_scale=1.0,
+    surface_scale=1.0,
+):
+    if max_weight <= 0.0 or rivet_scale <= 0.0 or surface_scale <= 0.0:
+        raise ValueError("Dual-head positive-weight parameters must be positive.")
+    labels = []
+    for graph in graphs:
+        target_mask = getattr(graph, "target_mask", torch.ones(graph.y.size(0), dtype=torch.bool))
+        labels.append(graph.y[target_mask].cpu())
+    all_labels = torch.cat(labels)
+    weights = []
+    for class_id, scale in ((1, rivet_scale), (2, surface_scale)):
+        positives = max(int((all_labels == class_id).sum()), 1)
+        negatives = max(int((all_labels != class_id).sum()), 1)
+        weights.append(min(np.sqrt(negatives / positives), max_weight) * scale)
+    return torch.tensor(weights, dtype=torch.float)
+
+
+def dual_head_focal_loss(
+    logits,
+    labels,
+    positive_weights,
+    gamma=2.0,
+    sample_weights=None,
+    head_sample_weights=None,
+    negative_weights=None,
+):
+    targets = torch.stack([(labels == 1), (labels == 2)], dim=1).to(logits.dtype)
+    base_loss = F.binary_cross_entropy_with_logits(
+        logits,
+        targets,
+        reduction="none",
+        pos_weight=positive_weights,
+    )
+    if negative_weights is not None:
+        if negative_weights.shape != (2,):
+            raise ValueError("negative_weights must have shape [2].")
+        base_loss = base_loss * torch.where(
+            targets > 0.5,
+            torch.ones_like(base_loss),
+            negative_weights.view(1, 2),
+        )
+    probabilities = torch.sigmoid(logits)
+    target_probabilities = torch.where(targets > 0.5, probabilities, 1.0 - probabilities)
+    loss = base_loss * (1.0 - target_probabilities).pow(gamma)
+    if sample_weights is not None:
+        loss = loss * sample_weights.unsqueeze(1)
+    if head_sample_weights is not None:
+        if head_sample_weights.shape != loss.shape:
+            raise ValueError(
+                f"head_sample_weights must match loss shape {tuple(loss.shape)}, "
+                f"got {tuple(head_sample_weights.shape)}"
+            )
+        loss = loss * head_sample_weights
+    return loss.mean()
+
+
+def apply_large_background_surface_head_weight(
+    head_weights,
+    targets,
+    normalized_areas,
+    area_threshold,
+    loss_weight,
+):
+    if loss_weight <= 0.0:
+        raise ValueError("large_background_loss_weight must be positive.")
+    if head_weights.shape != (targets.numel(), 2):
+        raise ValueError("Dual-head sample weights must have shape [N, 2].")
+    result = head_weights.clone()
+    large_background = (targets == 0) & (normalized_areas >= area_threshold)
+    result[large_background, 1] *= loss_weight
+    return result
+
+
+def apply_host_background_surface_head_weight(
+    head_weights,
+    targets,
+    normalized_areas,
+    shared_boundary_ratios,
+    minimum_area,
+    maximum_shared_boundary_ratio,
+    loss_weight,
+):
+    if loss_weight <= 0.0:
+        raise ValueError("host_background_loss_weight must be positive.")
+    if minimum_area < 0.0:
+        raise ValueError("host_background_min_area must be non-negative.")
+    if not 0.0 <= maximum_shared_boundary_ratio <= 1.0:
+        raise ValueError("host_background_max_shared_boundary_ratio must be between 0 and 1.")
+    if head_weights.shape != (targets.numel(), 2):
+        raise ValueError("Dual-head sample weights must have shape [N, 2].")
+    result = head_weights.clone()
+    host_background = (
+        (targets == 0)
+        & (normalized_areas >= minimum_area)
+        & (shared_boundary_ratios <= maximum_shared_boundary_ratio)
+    )
+    result[host_background, 1] *= loss_weight
+    return result
+
+
+def apply_smooth_component_background_surface_head_weight(
+    head_weights,
+    targets,
+    component_normalized_areas,
+    component_face_counts,
+    minimum_component_area,
+    loss_weight,
+):
+    """Prioritize background shells represented by large tangent components."""
+    if loss_weight <= 0.0:
+        raise ValueError("smooth_component_background_loss_weight must be positive.")
+    if minimum_component_area < 0.0:
+        raise ValueError("smooth_component_background_min_area must be non-negative.")
+    if head_weights.shape != (targets.numel(), 2):
+        raise ValueError("Dual-head sample weights must have shape [N, 2].")
+    result = head_weights.clone()
+    shell_background = (
+        (targets == 0)
+        & (component_normalized_areas >= minimum_component_area)
+        & (component_face_counts >= 2)
+    )
+    result[shell_background, 1] *= loss_weight
+    return result
+
+
+def apply_smooth_shell_surface_guard(
+    predictions,
+    component_normalized_areas,
+    component_face_counts,
+    component_face_area_ratios,
+    minimum_component_area=0.25,
+    minimum_face_area_ratio=0.4,
+    dense_component_min_face_count=100,
+    dense_component_min_face_area_ratio=0.03,
+):
+    """Reject a surface prediction only for a dominant face of a large shell.
+
+    This is a topology-aware safeguard, not a global area threshold: a large
+    decal remains eligible unless it is itself a dominant member of a smooth,
+    same-surface tangent shell component, or an unusually large member of a
+    dense shell component.
+    """
+    result = predictions.clone()
+    large_component = component_normalized_areas >= minimum_component_area
+    dominant_two_face_shell = (
+        (component_face_counts >= 2)
+        & (component_face_area_ratios >= minimum_face_area_ratio)
+    )
+    dominant_dense_shell = (
+        (component_face_counts >= dense_component_min_face_count)
+        & (component_face_area_ratios >= dense_component_min_face_area_ratio)
+    )
+    shell_face = (result == 2) & large_component & (
+        dominant_two_face_shell | dominant_dense_shell
+    )
+    result[shell_face] = 0
+    return result
+
+
+def background_area_threshold(full_graphs, quantile):
+    if not 0.0 <= quantile <= 1.0:
+        raise ValueError("large_background_loss_quantile must be between 0 and 1.")
+    background_areas = [
+        graph.normalized_area[graph.y == 0].detach().cpu()
+        for graph in full_graphs
+        if bool((graph.y == 0).any())
+    ]
+    if not background_areas:
+        raise ValueError("Training data contains no background faces.")
+    return float(torch.quantile(torch.cat(background_areas), quantile).item())
+
+
+def large_background_sample_weights(
+    targets,
+    normalized_areas,
+    area_threshold,
+    loss_weight,
+):
+    if loss_weight <= 0.0:
+        raise ValueError("large_background_loss_weight must be positive.")
+    weights = torch.ones_like(normalized_areas, dtype=torch.float)
+    large_background = (targets == 0) & (normalized_areas >= area_threshold)
+    weights[large_background] = loss_weight
+    return weights
 
 
 def evaluate(
@@ -958,7 +1351,15 @@ def evaluate(
     device,
     num_classes,
     class_weights=None,
+    dual_head_positive_weights=None,
+    dual_head_negative_weights=None,
     focal_gamma=2.0,
+    model_architecture="three-class",
+    rivet_threshold=0.5,
+    surface_threshold=0.5,
+    smooth_shell_guard=False,
+    smooth_shell_guard_min_component_area=0.25,
+    smooth_shell_guard_min_face_area_ratio=0.4,
 ):
     model.eval()
     total_loss = 0.0
@@ -969,11 +1370,38 @@ def evaluate(
     with torch.no_grad():
         for batch in loader:
             batch = batch.to(device)
-            out = model(batch)
+            output = model(batch)
             target_mask = getattr(batch, "target_mask", torch.ones(batch.y.size(0), dtype=torch.bool, device=batch.y.device))
-            loss = focal_nll_loss(out[target_mask], batch.y[target_mask], class_weights, focal_gamma)
-
-            pred = out.argmax(dim=1)
+            if model_architecture == "dual-head":
+                loss = dual_head_focal_loss(
+                    output[target_mask],
+                    batch.y[target_mask],
+                    dual_head_positive_weights,
+                    focal_gamma,
+                    negative_weights=dual_head_negative_weights,
+                )
+                pred, _ = dual_head_decision(
+                    output,
+                    rivet_threshold=rivet_threshold,
+                    surface_threshold=surface_threshold,
+                )
+                if smooth_shell_guard:
+                    pred = apply_smooth_shell_surface_guard(
+                        pred,
+                        batch.smooth_component_normalized_area,
+                        batch.smooth_component_face_count,
+                        batch.smooth_component_face_area_ratio,
+                        smooth_shell_guard_min_component_area,
+                        smooth_shell_guard_min_face_area_ratio,
+                    )
+            else:
+                loss = focal_nll_loss(
+                    output[target_mask],
+                    batch.y[target_mask],
+                    class_weights,
+                    focal_gamma,
+                )
+                pred = output.argmax(dim=1)
             target_count = int(target_mask.sum().item())
             total_loss += loss.item() * target_count
             total_correct += int((pred[target_mask] == batch.y[target_mask]).sum().item())
@@ -1011,6 +1439,8 @@ def write_eval_csv(output_path, metrics, summary, val_loss, val_acc, label_names
             "miou",
             "foreground_macro_f1",
             "class_2_f1",
+            "rivet_fp",
+            "surface_fp",
             "background_fp",
         ]
         writer = csv.DictWriter(csv_file, fieldnames=fieldnames)
@@ -1073,25 +1503,79 @@ def save_checkpoint_bundle(
     val_acc,
     label_names=LABEL_NAMES,
     classification_schema="three_class_surface_feature_v1",
+    hidden_dim=None,
+    training_mode=None,
+    window_hop=None,
+    training_seed=None,
+    training_epochs=None,
+    resample_window_centers=None,
+    min_background_centers=None,
+    background_coverage_fraction=None,
+    large_background_loss_weight=None,
+    large_background_loss_quantile=None,
+    large_background_area_threshold=None,
+    host_background_loss_weight=None,
+    host_background_min_area=None,
+    host_background_max_shared_boundary_ratio=None,
+    model_architecture=None,
+    rivet_threshold=None,
+    surface_threshold=None,
 ):
     for output_path in (model_out, stats_out, eval_out):
         Path(output_path).parent.mkdir(parents=True, exist_ok=True)
     torch.save(model.state_dict(), model_out)
-    np.savez(
-        stats_out,
-        feature_cols=np.array(feature_cols, dtype=object),
-        edge_attr_cols=np.array(EDGE_ATTR_COLS, dtype=object),
-        mean=feature_mean,
-        std=feature_std,
-        edge_mean=edge_mean,
-        edge_std=edge_std,
-        num_layers=np.array(num_layers),
-        feature_schema_version=np.array(
-            2 if NORMALIZED_TRIMMED_AREA_COL in feature_cols else 1
+    checkpoint_metadata = {
+        "feature_cols": np.array(feature_cols, dtype=object),
+        "edge_attr_cols": np.array(EDGE_ATTR_COLS, dtype=object),
+        "mean": feature_mean,
+        "std": feature_std,
+        "edge_mean": edge_mean,
+        "edge_std": edge_std,
+        "num_layers": np.array(num_layers),
+        "feature_schema_version": np.array(
+            3 if set(ATTACHED_SURFACE_FEATURE_COLS).intersection(feature_cols)
+            else 2 if NORMALIZED_TRIMMED_AREA_COL in feature_cols
+            else 1
         ),
-        label_names=np.array(label_names, dtype=object),
-        classification_schema=np.array(classification_schema),
-    )
+        "label_names": np.array(label_names, dtype=object),
+        "classification_schema": np.array(classification_schema),
+    }
+    optional_metadata = {
+        "hidden_dim": hidden_dim,
+        "training_mode": training_mode,
+        "inference_mode": (
+            None if training_mode is None
+            else "window" if training_mode == "window"
+            else "full"
+        ),
+        "window_hop": window_hop,
+        "training_seed": training_seed,
+        "training_epochs": training_epochs,
+        "resample_window_centers": resample_window_centers,
+        "min_background_centers": min_background_centers,
+        "background_coverage_fraction": background_coverage_fraction,
+        "large_background_loss_weight": large_background_loss_weight,
+        "large_background_loss_quantile": large_background_loss_quantile,
+        "large_background_area_threshold": large_background_area_threshold,
+        "host_background_loss_weight": host_background_loss_weight,
+        "host_background_min_area": host_background_min_area,
+        "host_background_max_shared_boundary_ratio": host_background_max_shared_boundary_ratio,
+        "model_architecture": model_architecture,
+        "independent_specialist_encoders": (
+            model_architecture == "dual-head"
+            if model_architecture is not None
+            else None
+        ),
+        "aagnet_style_input_encoders": True,
+        "rivet_threshold": rivet_threshold,
+        "surface_threshold": surface_threshold,
+    }
+    checkpoint_metadata.update({
+        key: np.array(value)
+        for key, value in optional_metadata.items()
+        if value is not None
+    })
+    np.savez(stats_out, **checkpoint_metadata)
     write_eval_csv(
         eval_out,
         metrics,
@@ -1103,8 +1587,6 @@ def save_checkpoint_bundle(
 
 
 def train(args):
-    global USE_INNER_LOOP_FEATURES
-    USE_INNER_LOOP_FEATURES = args.use_inner_loop_features
     if args.val_csv is None and args.test_csv is None:
         raise ValueError("Provide --val-csv for validation training, or --test-csv for one final test-only evaluation.")
     if args.val_csv is not None and args.test_csv is not None:
@@ -1115,6 +1597,28 @@ def train(args):
         raise ValueError("dropout must be in [0.0, 1.0).")
     if args.weight_decay < 0.0:
         raise ValueError("weight_decay must be non-negative.")
+    if args.rivet_negative_weight <= 0.0 or args.surface_negative_weight <= 0.0:
+        raise ValueError("Dual-head negative weights must be positive.")
+    if not 0.0 <= args.surface_recall_floor <= 1.0:
+        raise ValueError("surface_recall_floor must be between 0 and 1.")
+    if args.large_background_loss_weight <= 0.0:
+        raise ValueError("large_background_loss_weight must be positive.")
+    if args.host_background_loss_weight <= 0.0:
+        raise ValueError("host_background_loss_weight must be positive.")
+    if args.host_background_min_area < 0.0:
+        raise ValueError("host_background_min_area must be non-negative.")
+    if not 0.0 <= args.host_background_max_shared_boundary_ratio <= 1.0:
+        raise ValueError("host_background_max_shared_boundary_ratio must be between 0 and 1.")
+    if args.smooth_component_background_loss_weight <= 0.0:
+        raise ValueError("smooth_component_background_loss_weight must be positive.")
+    if args.smooth_component_background_min_area < 0.0:
+        raise ValueError("smooth_component_background_min_area must be non-negative.")
+    if args.rivet_positive_weight_scale <= 0.0:
+        raise ValueError("rivet_positive_weight_scale must be positive.")
+    if not 0.0 < args.rivet_threshold < 1.0:
+        raise ValueError("rivet_threshold must be between 0 and 1.")
+    if not 0.0 < args.surface_threshold < 1.0:
+        raise ValueError("surface_threshold must be between 0 and 1.")
 
     np.random.seed(args.seed)
     torch.manual_seed(args.seed)
@@ -1123,9 +1627,6 @@ def train(args):
 
     label_names = LABEL_NAMES
     test_only = args.test_csv is not None
-    if test_only and args.hard_negative_csv:
-        raise ValueError("Train/test-only runs cannot use hard-negative tuning; keep test evaluation strictly final.")
-
     (
         train_graphs,
         val_graphs,
@@ -1134,7 +1635,7 @@ def train(args):
         edge_mean,
         edge_std,
         feature_cols,
-        hard_negative_count,
+        train_full_graphs,
     ) = load_explicit_train_val_datasets(
         args.csv,
         args.test_csv if test_only else args.val_csv,
@@ -1142,9 +1643,9 @@ def train(args):
         window_hop=args.window_hop,
         background_ratio=args.background_ratio,
         seed=args.seed,
-        hard_negative_csv=args.hard_negative_csv,
-        hard_negative_fraction=args.hard_negative_fraction,
         large_background_fraction=args.large_background_fraction,
+        min_background_centers=args.min_background_centers,
+        background_coverage_fraction=args.background_coverage_fraction,
         label_names=label_names,
     )
     graphs = train_graphs + val_graphs
@@ -1164,17 +1665,25 @@ def train(args):
             f"classes={num_classes}, label_names={label_names}"
         )
 
-    train_loader = DataLoader(train_graphs, batch_size=args.batch_size, shuffle=True)
+    train_loader = DataLoader(
+        train_graphs,
+        batch_size=args.batch_size,
+        shuffle=True,
+    )
     val_loader = DataLoader(val_graphs, batch_size=args.batch_size, shuffle=False)
 
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    model = RivetGNN(
-        node_features=train_graphs[0].num_node_features,
-        edge_features=train_graphs[0].edge_attr.size(1),
-        hidden_dim=args.hidden_dim,
-        num_classes=num_classes,
-        num_layers=args.num_layers,
-        dropout=args.dropout,
+    model_kwargs = {
+        "node_features": train_graphs[0].num_node_features,
+        "edge_features": train_graphs[0].edge_attr.size(1),
+        "hidden_dim": args.hidden_dim,
+        "num_layers": args.num_layers,
+        "dropout": args.dropout,
+    }
+    model = (
+        DualHeadRivetGNN(**model_kwargs)
+        if args.model_architecture == "dual-head"
+        else RivetGNN(**model_kwargs, num_classes=num_classes)
     ).to(device)
 
     optimizer = torch.optim.AdamW(
@@ -1188,40 +1697,88 @@ def train(args):
     if args.surface_feature_weight_scale <= 0.0:
         raise ValueError("surface_feature_weight_scale must be positive.")
     class_weights[2] *= args.surface_feature_weight_scale
+    dual_head_positive_weights = compute_dual_head_positive_weights(
+        train_graphs,
+        max_weight=args.max_class_weight,
+        rivet_scale=args.rivet_positive_weight_scale,
+        surface_scale=args.surface_feature_weight_scale,
+    ).to(device)
+    dual_head_negative_weights = torch.tensor(
+        [args.rivet_negative_weight, args.surface_negative_weight],
+        dtype=torch.float,
+        device=device,
+    )
+    large_background_threshold = background_area_threshold(
+        train_full_graphs,
+        args.large_background_loss_quantile,
+    )
 
     print(f"Loaded {len(graphs)} graph samples ({split_description})")
     print(f"Classes: {num_classes}")
     print(f"Label names: {label_names}")
     print(f"Training mode: {args.training_mode}")
+    print(f"Model architecture: {args.model_architecture}")
+    print("Attached-surface features: enabled")
     print(f"Optimizer: AdamW | dropout={args.dropout:.3f} | weight_decay={args.weight_decay:.6f}")
     if test_only:
         print(f"Final-test-only mode: fixed {args.epochs} epochs; test metrics are computed once after training.")
     else:
         print(
-            f"Checkpoint selection: best mIoU and best eligible {label_names[2]} F1 "
+            f"Checkpoint selection: precision-first (rivet FP, surface FP, "
+            f"{label_names[2]} F1, mIoU) and best eligible {label_names[2]} F1 "
             f"(validation every {args.validation_interval} epochs)"
         )
     if args.training_mode == "window":
         print(f"Window hop: {args.window_hop}, background ratio: {args.background_ratio}")
-        print(
-            f"Training hard negatives requested: {hard_negative_count}, "
-            f"background quota fraction: {args.hard_negative_fraction:g}"
-        )
+        print(f"Resample window centers each epoch: {not args.fixed_window_centers}")
         print(
             "Large-background sampling fraction: "
             f"{args.large_background_fraction:g} from each model's largest-area quartile"
+        )
+        print(
+            "Per-model background quota: "
+            f"max(positive * ratio, {args.min_background_centers}, "
+            f"ceil(background * {args.background_coverage_fraction:g}))"
         )
     elif args.training_mode == "full-balanced":
         print(f"Full graph with balanced loss mask, background ratio: {args.background_ratio}")
     print(f"Train graphs: {len(train_graphs)}, Val graphs: {len(val_graphs)}")
     print(f"Training on: {device}")
-    print(f"Class weights: {class_weights.cpu().tolist()}")
+    if args.model_architecture == "dual-head":
+        print(f"Dual-head positive weights [rivet, surface]: {dual_head_positive_weights.cpu().tolist()}")
+        print(f"Dual-head negative weights [rivet, surface]: {dual_head_negative_weights.cpu().tolist()}")
+        print(
+            f"Decision thresholds: rivet={args.rivet_threshold:g}, "
+            f"surface={args.surface_threshold:g}"
+        )
+    else:
+        print(f"Class weights: {class_weights.cpu().tolist()}")
+    print(
+        "Large-background loss: "
+        f"weight={args.large_background_loss_weight:g}, "
+        f"background_quantile={args.large_background_loss_quantile:g}, "
+        f"area_threshold={large_background_threshold:.8g}"
+    )
+    if args.model_architecture == "dual-head":
+        print(
+            "Host-background surface-head loss: "
+            f"weight={args.host_background_loss_weight:g}, "
+            f"min_area={args.host_background_min_area:g}, "
+            "max_shared_boundary_ratio="
+            f"{args.host_background_max_shared_boundary_ratio:g}"
+        )
+        print(
+            "Smooth-shell background surface-head loss: "
+            f"weight={args.smooth_component_background_loss_weight:g}, "
+            f"min_component_area={args.smooth_component_background_min_area:g}"
+        )
 
     surface_model_out = args.surface_model_out or derive_surface_output_path(args.model_out)
     surface_stats_out = args.surface_stats_out or derive_surface_output_path(args.stats_out)
     surface_eval_out = args.surface_eval_out or derive_surface_output_path(args.eval_out)
     best_miou = float("-inf")
     best_surface_f1 = float("-inf")
+    best_safety_score = None
     best_miou_epoch = None
     best_surface_epoch = None
 
@@ -1233,9 +1790,60 @@ def train(args):
         for batch in train_loader:
             batch = batch.to(device)
             optimizer.zero_grad()
-            out = model(batch)
+            output = model(batch)
             target_mask = getattr(batch, "target_mask", torch.ones(batch.y.size(0), dtype=torch.bool, device=batch.y.device))
-            loss = focal_nll_loss(out[target_mask], batch.y[target_mask], class_weights, args.focal_gamma)
+            sample_weights = large_background_sample_weights(
+                batch.y[target_mask],
+                batch.normalized_area[target_mask],
+                large_background_threshold,
+                args.large_background_loss_weight,
+            )
+            if args.model_architecture == "dual-head":
+                head_sample_weights = torch.ones(
+                    (int(target_mask.sum().item()), 2),
+                    dtype=torch.float,
+                    device=batch.y.device,
+                )
+                head_sample_weights = apply_large_background_surface_head_weight(
+                    head_sample_weights,
+                    batch.y[target_mask],
+                    batch.normalized_area[target_mask],
+                    large_background_threshold,
+                    args.large_background_loss_weight,
+                )
+                head_sample_weights = apply_host_background_surface_head_weight(
+                    head_sample_weights,
+                    batch.y[target_mask],
+                    batch.normalized_area[target_mask],
+                    batch.shared_boundary_ratio[target_mask],
+                    args.host_background_min_area,
+                    args.host_background_max_shared_boundary_ratio,
+                    args.host_background_loss_weight,
+                )
+                head_sample_weights = apply_smooth_component_background_surface_head_weight(
+                    head_sample_weights,
+                    batch.y[target_mask],
+                    batch.smooth_component_normalized_area[target_mask],
+                    batch.smooth_component_face_count[target_mask],
+                    args.smooth_component_background_min_area,
+                    args.smooth_component_background_loss_weight,
+                )
+                loss = dual_head_focal_loss(
+                    output[target_mask],
+                    batch.y[target_mask],
+                    dual_head_positive_weights,
+                    args.focal_gamma,
+                    head_sample_weights=head_sample_weights,
+                    negative_weights=dual_head_negative_weights,
+                )
+            else:
+                loss = focal_nll_loss(
+                    output[target_mask],
+                    batch.y[target_mask],
+                    class_weights,
+                    args.focal_gamma,
+                    sample_weights=sample_weights,
+                )
             loss.backward()
             optimizer.step()
 
@@ -1261,12 +1869,35 @@ def train(args):
             device,
             num_classes,
             class_weights=class_weights,
+            dual_head_positive_weights=dual_head_positive_weights,
+            dual_head_negative_weights=dual_head_negative_weights,
             focal_gamma=args.focal_gamma,
+            model_architecture=args.model_architecture,
+            rivet_threshold=args.rivet_threshold,
+            surface_threshold=args.surface_threshold,
+            smooth_shell_guard=args.enable_smooth_shell_surface_guard,
         )
 
-        if val_summary["miou"] > best_miou:
+        # Precision-first checkpoint policy: false positives are the primary
+        # business risk for both heads; mIoU is only a tie-breaker.
+        rivet_eligible = val_metrics[1]["tp"] > 0
+        surface_recall_eligible = (
+            val_metrics[2]["recall"] >= args.surface_recall_floor
+        )
+        safety_score = (
+            -val_summary["rivet_fp"],
+            -val_summary["surface_fp"],
+            val_summary["class_2_f1"],
+            val_summary["miou"],
+        )
+        if (
+            rivet_eligible
+            and surface_recall_eligible
+            and (best_miou_epoch is None or safety_score > best_safety_score)
+        ):
             best_miou = val_summary["miou"]
             best_miou_epoch = epoch
+            best_safety_score = safety_score
             save_checkpoint_bundle(
                 model,
                 args.model_out,
@@ -1284,6 +1915,25 @@ def train(args):
                 val_acc,
                 label_names=label_names,
                 classification_schema="three_class_surface_feature_v1",
+                hidden_dim=args.hidden_dim,
+                training_mode=args.training_mode,
+                window_hop=args.window_hop,
+                training_seed=args.seed,
+                training_epochs=args.epochs,
+                resample_window_centers=(
+                    args.training_mode == "window" and not args.fixed_window_centers
+                ),
+                min_background_centers=args.min_background_centers,
+                background_coverage_fraction=args.background_coverage_fraction,
+                large_background_loss_weight=args.large_background_loss_weight,
+                large_background_loss_quantile=args.large_background_loss_quantile,
+                large_background_area_threshold=large_background_threshold,
+                host_background_loss_weight=args.host_background_loss_weight,
+                host_background_min_area=args.host_background_min_area,
+                host_background_max_shared_boundary_ratio=args.host_background_max_shared_boundary_ratio,
+                model_architecture=args.model_architecture,
+                rivet_threshold=args.rivet_threshold,
+                surface_threshold=args.surface_threshold,
             )
 
         surface_eligible = val_metrics[1]["tp"] > 0 and val_metrics[2]["tp"] > 0
@@ -1307,6 +1957,25 @@ def train(args):
                 val_acc,
                 label_names=label_names,
                 classification_schema="three_class_surface_feature_v1",
+                hidden_dim=args.hidden_dim,
+                training_mode=args.training_mode,
+                window_hop=args.window_hop,
+                training_seed=args.seed,
+                training_epochs=args.epochs,
+                resample_window_centers=(
+                    args.training_mode == "window" and not args.fixed_window_centers
+                ),
+                min_background_centers=args.min_background_centers,
+                background_coverage_fraction=args.background_coverage_fraction,
+                large_background_loss_weight=args.large_background_loss_weight,
+                large_background_loss_quantile=args.large_background_loss_quantile,
+                large_background_area_threshold=large_background_threshold,
+                host_background_loss_weight=args.host_background_loss_weight,
+                host_background_min_area=args.host_background_min_area,
+                host_background_max_shared_boundary_ratio=args.host_background_max_shared_boundary_ratio,
+                model_architecture=args.model_architecture,
+                rivet_threshold=args.rivet_threshold,
+                surface_threshold=args.surface_threshold,
             )
 
         print(
@@ -1328,7 +1997,13 @@ def train(args):
             device,
             num_classes,
             class_weights=class_weights,
+            dual_head_positive_weights=dual_head_positive_weights,
+            dual_head_negative_weights=dual_head_negative_weights,
             focal_gamma=args.focal_gamma,
+            model_architecture=args.model_architecture,
+            rivet_threshold=args.rivet_threshold,
+            surface_threshold=args.surface_threshold,
+            smooth_shell_guard=args.enable_smooth_shell_surface_guard,
         )
         save_checkpoint_bundle(
             model,
@@ -1347,6 +2022,25 @@ def train(args):
             test_acc,
             label_names=label_names,
             classification_schema="three_class_surface_feature_v1",
+            hidden_dim=args.hidden_dim,
+            training_mode=args.training_mode,
+            window_hop=args.window_hop,
+            training_seed=args.seed,
+            training_epochs=args.epochs,
+            resample_window_centers=(
+                args.training_mode == "window" and not args.fixed_window_centers
+            ),
+            min_background_centers=args.min_background_centers,
+            background_coverage_fraction=args.background_coverage_fraction,
+            large_background_loss_weight=args.large_background_loss_weight,
+            large_background_loss_quantile=args.large_background_loss_quantile,
+            large_background_area_threshold=large_background_threshold,
+            host_background_loss_weight=args.host_background_loss_weight,
+            host_background_min_area=args.host_background_min_area,
+            host_background_max_shared_boundary_ratio=args.host_background_max_shared_boundary_ratio,
+            model_architecture=args.model_architecture,
+            rivet_threshold=args.rivet_threshold,
+            surface_threshold=args.surface_threshold,
         )
         print_metric_table(test_metrics, test_summary, split_name="Final test")
         print(f"Final test checkpoint after epoch={args.epochs}")
@@ -1356,9 +2050,30 @@ def train(args):
         return
 
     if best_miou_epoch is None:
-        raise RuntimeError("No validation pass produced a best-mIoU checkpoint.")
+        if best_surface_epoch is None:
+            raise RuntimeError("No validation pass produced a checkpoint.")
+        # The safety selector may reject every epoch when the configured
+        # surface recall floor is too strict. Preserve the best surface
+        # checkpoint as a recoverable fallback instead of losing the run.
+        shutil.copy2(surface_model_out, args.model_out)
+        shutil.copy2(surface_stats_out, args.stats_out)
+        shutil.copy2(surface_eval_out, args.eval_out)
+        best_miou_epoch = best_surface_epoch
+        print(
+            "Warning: no checkpoint met surface_recall_floor; "
+            f"fell back to best surface checkpoint at epoch={best_surface_epoch}."
+        )
 
-    print(f"Best mIoU checkpoint: epoch={best_miou_epoch}, score={best_miou:.4f}")
+    if best_safety_score is None:
+        print(
+            f"Best precision-first checkpoint: fallback to surface epoch={best_miou_epoch}; "
+            "no epoch met the safety constraints"
+        )
+    else:
+        print(
+            f"Best precision-first checkpoint: epoch={best_miou_epoch}, "
+            f"miou_tiebreak={best_miou:.4f}"
+        )
     print(f"  model: {args.model_out}")
     print(f"  stats: {args.stats_out}")
     print(f"  eval:  {args.eval_out}")
@@ -1389,7 +2104,7 @@ def parse_args():
     parser.add_argument("--validation-interval", type=int, default=5, help="Run full validation every N epochs, plus the final epoch. Default: 5")
     parser.add_argument("--batch-size", type=int, default=8, help="Graphs per batch. Default: 8")
     parser.add_argument("--hidden-dim", type=int, default=64, help="Hidden dimension. Default: 64")
-    parser.add_argument("--num-layers", type=int, default=6, help="Residual NNConv layers. Default: 6")
+    parser.add_argument("--num-layers", type=int, default=4, help="Residual NNConv layers. Default: 4")
     parser.add_argument("--lr", type=float, default=0.005, help="Learning rate. Default: 0.005")
     parser.add_argument("--dropout", type=float, default=0.2, help="Dropout after each GNN layer. Default: 0.2")
     parser.add_argument("--weight-decay", type=float, default=0.0001, help="AdamW weight decay. Default: 0.0001")
@@ -1398,13 +2113,80 @@ def parse_args():
     parser.add_argument(
         "--surface-feature-weight-scale",
         type=float,
-        default=1.0,
-        help="Multiplier for the surface_feature (class 2) loss weight. Default: 1.0",
+        default=2.0,
+        help="Multiplier for the surface_feature (class 2) loss weight. Default: 2.0",
     )
     parser.add_argument("--seed", type=int, default=42, help="Random seed. Default: 42")
+    parser.add_argument(
+        "--model-architecture",
+        choices=["three-class", "dual-head"],
+        default="dual-head",
+        help="Three-class softmax or independent rivet/surface binary heads. Default: dual-head.",
+    )
+    parser.add_argument(
+        "--rivet-positive-weight-scale",
+        type=float,
+        default=1.0,
+        help="Additional positive-loss scale for the dual-head rivet output. Default: 1.",
+    )
+    parser.add_argument(
+        "--rivet-negative-weight",
+        type=float,
+        default=4.0,
+        help="Negative-loss multiplier for rivet non-positive faces in dual-head mode. Default: 4.",
+    )
+    parser.add_argument(
+        "--surface-negative-weight",
+        type=float,
+        default=1.0,
+        help="Negative-loss multiplier for surface non-positive faces in dual-head mode. Default: 1.",
+    )
+    parser.add_argument(
+        "--rivet-threshold",
+        type=float,
+        default=0.9,
+        help="Dual-head rivet decision threshold saved with the checkpoint. Default: 0.9.",
+    )
+    parser.add_argument(
+        "--surface-threshold",
+        type=float,
+        default=0.5,
+        help="Dual-head surface decision threshold saved with the checkpoint. Default: 0.5.",
+    )
+    parser.add_argument(
+        "--surface-recall-floor",
+        type=float,
+        default=0.50,
+        help="Minimum validation recall required for a precision-first checkpoint. Default: 0.50.",
+    )
     parser.add_argument("--training-mode", choices=["full", "full-balanced", "window"], default="full", help="Use full graphs, balanced-loss full graphs, or k-hop windows. Default: full")
     parser.add_argument("--window-hop", type=int, default=2, help="k-hop radius for window training. Default: 2")
     parser.add_argument("--background-ratio", type=int, default=5, help="Background center samples per positive center in window mode. Default: 5")
+    parser.add_argument(
+        "--min-background-centers",
+        type=int,
+        default=0,
+        help="Minimum background centers sampled per training model and epoch. Default: 0.",
+    )
+    parser.add_argument(
+        "--background-coverage-fraction",
+        type=float,
+        default=0.25,
+        help="Minimum fraction of each model's background faces sampled per epoch. Default: 0.25.",
+    )
+    parser.add_argument(
+        "--fixed-window-centers",
+        dest="fixed_window_centers",
+        action="store_true",
+        help="Reuse one sampled set of window centers for every epoch (default).",
+    )
+    parser.add_argument(
+        "--resample-window-centers",
+        dest="fixed_window_centers",
+        action="store_false",
+        help="Experimentally resample window centers deterministically each epoch.",
+    )
+    parser.set_defaults(fixed_window_centers=False)
     parser.add_argument(
         "--large-background-fraction",
         type=float,
@@ -1412,20 +2194,51 @@ def parse_args():
         help="Fraction of each training model's background window quota sampled from its largest-area quartile. Default: 0.",
     )
     parser.add_argument(
-        "--use-inner-loop-features",
-        action="store_true",
-        help="Include the re-exported inner-loop topology and dihedral features.",
-    )
-    parser.add_argument(
-        "--hard-negative-csv",
-        type=Path,
-        help="Training-only surface-feature false-positive manifest to prioritize in window sampling.",
-    )
-    parser.add_argument(
-        "--hard-negative-fraction",
+        "--large-background-loss-weight",
         type=float,
-        default=0.1,
-        help="Maximum fraction of each model's background window quota filled by hard negatives. Default: 0.1",
+        default=2.0,
+        help="Loss multiplier for true background faces above the configured area quantile. Default: 2.",
+    )
+    parser.add_argument(
+        "--large-background-loss-quantile",
+        type=float,
+        default=0.9,
+        help="Training-background normalized-area quantile used by the large-background loss. Default: 0.9.",
+    )
+    parser.add_argument(
+        "--host-background-loss-weight",
+        type=float,
+        default=3.0,
+        help="Surface-head loss multiplier for large, weakly attached true-background host faces. Default: 3.",
+    )
+    parser.add_argument(
+        "--host-background-min-area",
+        type=float,
+        default=0.01,
+        help="Minimum normalized area for host-background loss. Default: 0.01.",
+    )
+    parser.add_argument(
+        "--host-background-max-shared-boundary-ratio",
+        type=float,
+        default=0.2,
+        help="Maximum shared-boundary/perimeter ratio for host-background loss. Default: 0.2.",
+    )
+    parser.add_argument(
+        "--smooth-component-background-loss-weight",
+        type=float,
+        default=4.0,
+        help="Surface-head loss multiplier for true-background tangent shell components. Default: 4.",
+    )
+    parser.add_argument(
+        "--smooth-component-background-min-area",
+        type=float,
+        default=0.25,
+        help="Minimum normalized tangent-component area for shell-background loss. Default: 0.25.",
+    )
+    parser.add_argument(
+        "--enable-smooth-shell-surface-guard",
+        action="store_true",
+        help="At inference, reject surface predictions on dominant faces of large tangent shell components.",
     )
     return parser.parse_args()
 

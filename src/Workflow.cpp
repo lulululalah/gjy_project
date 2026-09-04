@@ -22,7 +22,7 @@ namespace
     constexpr const char *kFaceCsvHeader =
         "graph_id,model_name,id,area,relativeArea,perimeter,compactness,surfaceType,centerX,centerY,centerZ,"
         "normalizationCenterX,normalizationCenterY,normalizationCenterZ,normalizationScale,"
-        "meanCurvature,radius,numWires,innerWireCount,minInnerWireLength,maxInnerWireLength,"
+        "meanCurvature,uvInsideFraction,normalVariation,curvatureVariation,radius,numWires,innerWireCount,minInnerWireLength,maxInnerWireLength,"
         "minInnerLoopBoundaryDihedralMax,minInnerLoopBoundaryRightAngleDeviation,"
         "hasValidInnerLoopBoundaryDihedral,innerLoopAllDihedralBelowThreshold,hasInnerLoopInteriorBfsDepthAtMost2,"
         "hasSmallFlatInnerLoop,hasSmallRightAngleInnerLoop,"
@@ -278,6 +278,8 @@ namespace
                  << feature.normalizationCenterX << "," << feature.normalizationCenterY << ","
                  << feature.normalizationCenterZ << "," << feature.normalizationScale << ","
                  << feature.meanCurvature << ","
+                 << feature.uvInsideFraction << "," << feature.normalVariation << ","
+                 << feature.curvatureVariation << ","
                  << feature.radius << "," << feature.numWires << "," << feature.innerWireCount << ","
                  << feature.minInnerWireLength << "," << feature.maxInnerWireLength << ","
                  << feature.minInnerLoopBoundaryDihedralMax << ","

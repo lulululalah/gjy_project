@@ -36,6 +36,9 @@ struct FaceFeature
     double normalizationCenterZ = 0.0;
     double normalizationScale = 1.0;
     double meanCurvature = 0.0;
+    double uvInsideFraction = 0.0;
+    double normalVariation = 0.0;
+    double curvatureVariation = 0.0;
     double radius = 0.0;
     int numWires = 0;
     int innerWireCount = 0;

@@ -4,13 +4,93 @@ import subprocess
 from pathlib import Path
 
 import numpy as np
+import pandas as pd
 
 
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
 DEFAULT_INFERENCE_CSV = PROJECT_ROOT / "data" / "current_inference.csv"
-DEFAULT_DETECTOR = PROJECT_ROOT / "build" / "Debug" / "Detector.exe"
-DEFAULT_MODEL_PATH = PROJECT_ROOT / "rivet_gnn_no_centerz_split19_5.pth"
-DEFAULT_STATS_PATH = PROJECT_ROOT / "rivet_gnn_no_centerz_split19_5_stats.npz"
+DEFAULT_DETECTOR = PROJECT_ROOT / "build" / "Release" / "Detector.exe"
+DEFAULT_MODEL_PATH = PROJECT_ROOT / "work" / "rivet_gnn_xian20_train_simpletest_50ep.pth"
+DEFAULT_STATS_PATH = PROJECT_ROOT / "work" / "rivet_gnn_xian20_train_simpletest_50ep_stats.npz"
+LEGACY_INFERENCE_MODE = "full"
+LEGACY_WINDOW_HOP = 2
+
+
+def optional_stats_value(stats, key, default=None):
+    available = stats.files if hasattr(stats, "files") else stats
+    if key not in available:
+        return default
+    value = stats[key]
+    return value.item() if isinstance(value, np.ndarray) and value.ndim == 0 else value
+
+
+def infer_hidden_dim(state_dict, num_layers):
+    classifier_weight = state_dict.get("classifier.weight")
+    if classifier_weight is None:
+        classifier_weight = state_dict.get("rivet_classifier.weight")
+    if classifier_weight is None:
+        raise ValueError("Checkpoint is missing classifier or dual-head weights.")
+    classifier_input = int(classifier_weight.shape[1])
+    if num_layers == 3:
+        return classifier_input
+    if classifier_input % 3 != 0:
+        raise ValueError(
+            "Cannot infer hidden_dim from classifier.weight: "
+            f"input_features={classifier_input}, num_layers={num_layers}"
+        )
+    return classifier_input // 3
+
+
+def resolve_inference_contract(
+    stats,
+    requested_mode=None,
+    requested_window_hop=None,
+    requested_hidden_dim=None,
+    inferred_hidden_dim=None,
+    allow_override=False,
+):
+    saved_mode = optional_stats_value(stats, "inference_mode")
+    saved_training_mode = optional_stats_value(stats, "training_mode")
+    if saved_mode is None and saved_training_mode is not None:
+        saved_mode = "window" if saved_training_mode == "window" else "full"
+    saved_window_hop = optional_stats_value(stats, "window_hop")
+    saved_hidden_dim = optional_stats_value(stats, "hidden_dim")
+    checks = [
+        ("inference mode", requested_mode, saved_mode),
+        ("window hop", requested_window_hop, saved_window_hop),
+        ("hidden dimension", requested_hidden_dim, saved_hidden_dim),
+    ]
+    mismatches = [
+        f"{name}: requested={requested}, checkpoint={saved}"
+        for name, requested, saved in checks
+        if requested is not None and saved is not None and requested != saved
+    ]
+    if mismatches and not allow_override:
+        raise ValueError(
+            "Inference arguments do not match the checkpoint contract: "
+            + "; ".join(mismatches)
+            + ". Use --allow-contract-override only for a controlled experiment."
+        )
+
+    mode = next(
+        value for value in (requested_mode, saved_mode, LEGACY_INFERENCE_MODE)
+        if value is not None
+    )
+    window_hop = int(next(
+        value for value in (requested_window_hop, saved_window_hop, LEGACY_WINDOW_HOP)
+        if value is not None
+    ))
+    hidden_dim = int(next(
+        value for value in (requested_hidden_dim, saved_hidden_dim, inferred_hidden_dim, 64)
+        if value is not None
+    ))
+    if mode not in {"full", "window"}:
+        raise ValueError(f"Unsupported inference mode in checkpoint stats: {mode}")
+    if window_hop <= 0:
+        raise ValueError(f"window_hop must be positive, got {window_hop}")
+    if hidden_dim <= 0:
+        raise ValueError(f"hidden_dim must be positive, got {hidden_dim}")
+    return mode, window_hop, hidden_dim
 
 def export_inference_csv(step_path, detector_path, csv_path):
     if not detector_path.exists():
@@ -39,40 +119,120 @@ def run_inference(
     csv_path,
     model_path,
     stats_path,
-    hidden_dim,
-    inference_mode="full",
-    window_hop=2,
+    hidden_dim=None,
+    inference_mode=None,
+    window_hop=None,
     inference_batch_size=1,
+    allow_contract_override=False,
+    rivet_threshold_override=None,
+    surface_threshold_override=None,
 ):
     import torch
     from torch_geometric.loader import DataLoader
     from train_rivet_gcn import (
+        DualHeadRivetGNN,
         RivetGNN,
         build_window_cache,
         build_window_graph,
+        dual_head_decision,
+        apply_smooth_shell_surface_guard,
         label_names_from_stats,
         load_cad_data,
     )
-
-    data = load_cad_data(csv_path, stats_path=stats_path)
 
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     state_dict = torch.load(model_path, map_location=device)
     stats = np.load(stats_path, allow_pickle=True)
     num_layers = int(stats["num_layers"]) if "num_layers" in stats.files else 3
+    model_architecture = str(optional_stats_value(stats, "model_architecture", "three-class"))
     classifier_weight = state_dict.get("classifier.weight")
-    num_classes = int(classifier_weight.shape[0]) if classifier_weight is not None else 2
+    num_classes = 3 if model_architecture == "dual-head" else (
+        int(classifier_weight.shape[0]) if classifier_weight is not None else 2
+    )
     label_names = label_names_from_stats(stats, num_classes)
-    model = RivetGNN(
-        node_features=data.num_node_features,
-        edge_features=data.edge_attr.size(1),
-        hidden_dim=hidden_dim,
-        num_classes=num_classes,
-        num_layers=num_layers,
+    inference_mode, window_hop, hidden_dim = resolve_inference_contract(
+        stats,
+        requested_mode=inference_mode,
+        requested_window_hop=window_hop,
+        requested_hidden_dim=hidden_dim,
+        inferred_hidden_dim=infer_hidden_dim(state_dict, num_layers),
+        allow_override=allow_contract_override,
+    )
+    data = load_cad_data(csv_path, stats_path=stats_path)
+    model_kwargs = {
+        "node_features": data.num_node_features,
+        "edge_features": data.edge_attr.size(1),
+        "hidden_dim": hidden_dim,
+        "num_layers": num_layers,
+    }
+    model = (
+        DualHeadRivetGNN(**model_kwargs)
+        if model_architecture == "dual-head"
+        else RivetGNN(**model_kwargs, num_classes=num_classes)
     ).to(device)
 
     model.load_state_dict(state_dict)
     model.eval()
+    face_ids = data.face_id.cpu().tolist()
+    probabilities = []
+    predictions = []
+    rivet_threshold = float(optional_stats_value(stats, "rivet_threshold", 0.5))
+    surface_threshold = float(optional_stats_value(stats, "surface_threshold", 0.5))
+    if rivet_threshold_override is not None or surface_threshold_override is not None:
+        if not allow_contract_override:
+            raise ValueError(
+                "Decision-threshold overrides require --allow-contract-override."
+            )
+        rivet_threshold = (
+            float(rivet_threshold_override)
+            if rivet_threshold_override is not None
+            else rivet_threshold
+        )
+        surface_threshold = (
+            float(surface_threshold_override)
+            if surface_threshold_override is not None
+            else surface_threshold
+        )
+    if not 0.0 < rivet_threshold < 1.0:
+        raise ValueError("rivet_threshold must be between 0 and 1.")
+    if not 0.0 < surface_threshold < 1.0:
+        raise ValueError("surface_threshold must be between 0 and 1.")
+    print(
+        "Inference contract: "
+        f"mode={inference_mode}, window_hop={window_hop}, hidden_dim={hidden_dim}, "
+        f"num_layers={num_layers}, architecture={model_architecture}"
+    )
+    feature_cols = {str(value) for value in stats["feature_cols"].tolist()}
+    smooth_shell_guard = bool(
+        optional_stats_value(stats, "smooth_shell_surface_guard", False)
+    ) or "logSmoothComponentNormalizedArea" in feature_cols
+
+    def collect_output(output, target_mask, graph):
+        target_output = output[target_mask]
+        if model_architecture == "dual-head":
+            target_predictions, head_probabilities = dual_head_decision(
+                target_output,
+                rivet_threshold=rivet_threshold,
+                surface_threshold=surface_threshold,
+            )
+            if smooth_shell_guard:
+                target_predictions = apply_smooth_shell_surface_guard(
+                    target_predictions,
+                    graph.smooth_component_normalized_area[target_mask],
+                    graph.smooth_component_face_count[target_mask],
+                    graph.smooth_component_face_area_ratio[target_mask],
+                )
+            rivet_probability = head_probabilities[:, 0]
+            surface_probability = head_probabilities[:, 1]
+            background_probability = (1.0 - rivet_probability) * (1.0 - surface_probability)
+            output_probabilities = torch.stack(
+                [background_probability, rivet_probability, surface_probability], dim=1
+            )
+        else:
+            output_probabilities = target_output.exp()
+            target_predictions = output_probabilities.argmax(dim=1)
+        predictions.extend(target_predictions.cpu().tolist())
+        probabilities.extend(output_probabilities.cpu().tolist())
 
     if inference_mode == "window":
         data = data.cpu()
@@ -82,40 +242,73 @@ def run_inference(
             for center_idx in range(data.num_nodes)
         ]
         loader = DataLoader(windows, batch_size=inference_batch_size, shuffle=False)
-        pred = []
         with torch.no_grad():
             for batch in loader:
                 batch = batch.to(device)
-                out = model(batch)
-                target_log_probabilities = out[batch.target_mask]
-                pred.extend(target_log_probabilities.argmax(dim=1).cpu().tolist())
+                collect_output(model(batch), batch.target_mask, batch)
     else:
         with torch.no_grad():
-            out = model(data.to(device))
-            pred = out.argmax(dim=1).cpu().tolist()
-    return pred, label_names
+            output = model(data.to(device))
+            collect_output(
+                output,
+                torch.ones(output.shape[0], dtype=torch.bool, device=device),
+                data.to(device),
+            )
+    probability_array = np.asarray(probabilities, dtype=float)
+    pred = predictions
+    if len(face_ids) != len(pred):
+        raise RuntimeError(
+            f"Prediction/face ID count mismatch: predictions={len(pred)}, face_ids={len(face_ids)}"
+        )
+    return pred, label_names, face_ids, probability_array
 
 
-def write_predictions_csv(prediction_path, pred_labels):
+def write_predictions_csv(prediction_path, face_ids, pred_labels, probabilities=None, label_names=None):
     prediction_path = Path(prediction_path)
+    face_ids = list(face_ids)
+    pred_labels = list(pred_labels)
+    if len(face_ids) != len(pred_labels):
+        raise ValueError(
+            f"Prediction/face ID count mismatch: predictions={len(pred_labels)}, face_ids={len(face_ids)}"
+        )
+    if len(set(face_ids)) != len(face_ids):
+        raise ValueError("Prediction face IDs must be unique.")
+    probability_array = None if probabilities is None else np.asarray(probabilities, dtype=float)
+    if probability_array is not None and probability_array.shape != (len(pred_labels), len(label_names or [])):
+        raise ValueError(
+            "Probability matrix shape does not match predictions and label names: "
+            f"shape={probability_array.shape}, predictions={len(pred_labels)}, labels={len(label_names or [])}"
+        )
+
     prediction_path.parent.mkdir(parents=True, exist_ok=True)
     with prediction_path.open("w", newline="", encoding="utf-8") as csv_file:
         writer = csv.writer(csv_file)
-        writer.writerow(["face_id", "pred_label"])
-        for face_id, label in enumerate(pred_labels, start=1):
-            writer.writerow([face_id, label])
+        probability_headers = [f"prob_{name}" for name in (label_names or [])]
+        writer.writerow(["face_id", "pred_label", "pred_name", "pred_confidence", *probability_headers])
+        for row_index, (face_id, label) in enumerate(zip(face_ids, pred_labels)):
+            label_name = label_names[label] if label_names else str(label)
+            if probability_array is None:
+                writer.writerow([face_id, label, label_name, ""])
+                continue
+            row_probabilities = probability_array[row_index]
+            writer.writerow(
+                [face_id, label, label_name, float(row_probabilities[label]), *row_probabilities.tolist()]
+            )
     print(f"Prediction CSV ready: {prediction_path}")
 
 
 def read_predictions_csv(prediction_path):
+    face_ids = []
     pred_labels = []
     with Path(prediction_path).open("r", newline="", encoding="utf-8") as csv_file:
         for row in csv.DictReader(csv_file):
-            face_id = int(row["face_id"])
-            while len(pred_labels) < face_id:
-                pred_labels.append(0)
-            pred_labels[face_id - 1] = int(row["pred_label"])
-    return pred_labels
+            face_ids.append(int(row["face_id"]))
+            pred_labels.append(int(row["pred_label"]))
+    if not face_ids:
+        raise ValueError(f"Prediction CSV is empty: {prediction_path}")
+    if len(set(face_ids)) != len(face_ids):
+        raise ValueError("Prediction CSV contains duplicate face IDs.")
+    return face_ids, pred_labels
 
 
 def read_truth_csv(truth_path, model_name):
@@ -142,6 +335,8 @@ def visualize_cad_results(
     truth_labels=None,
     context_transparency=0.82,
     marker_radius=0.0,
+    pred_face_ids=None,
+    screenshot_path=None,
 ):
     from OCC.Core.Quantity import Quantity_Color, Quantity_NOC_GRAY, Quantity_TOC_RGB
     from OCC.Core.Bnd import Bnd_Box
@@ -200,6 +395,26 @@ def visualize_cad_results(
 
     num_faces = face_map.Size()
     print(f"Model faces: {num_faces}, Predicted labels: {len(pred_labels)}")
+    if pred_face_ids is None:
+        pred_face_ids = range(1, len(pred_labels) + 1)
+    pred_face_ids = list(pred_face_ids)
+    if len(pred_face_ids) != len(pred_labels):
+        raise ValueError(
+            f"Prediction/face ID count mismatch: predictions={len(pred_labels)}, "
+            f"face_ids={len(pred_face_ids)}"
+        )
+    predictions_by_face_id = dict(zip(pred_face_ids, pred_labels))
+    if len(predictions_by_face_id) != len(pred_face_ids):
+        raise ValueError("Prediction face IDs must be unique.")
+    expected_face_ids = set(range(1, num_faces + 1))
+    actual_face_ids = set(predictions_by_face_id)
+    if actual_face_ids != expected_face_ids:
+        missing = sorted(expected_face_ids - actual_face_ids)
+        unexpected = sorted(actual_face_ids - expected_face_ids)
+        raise ValueError(
+            "Prediction face IDs do not match the STEP face map: "
+            f"missing={missing[:10]}, unexpected={unexpected[:10]}"
+        )
     if truth_labels is not None and len(truth_labels) != num_faces:
         raise ValueError(f"Truth labels ({len(truth_labels)}) do not match STEP faces ({num_faces})")
 
@@ -223,7 +438,7 @@ def visualize_cad_results(
     highlight_markers = []
     for i in range(1, num_faces + 1):
         face = topods.Face(face_map.FindKey(i))
-        predicted = pred_labels[i - 1] if (i - 1) < len(pred_labels) else 0
+        predicted = predictions_by_face_id[i]
         truth = truth_labels[i - 1] if truth_labels is not None else None
         if truth_labels is None:
             if predicted == 0:
@@ -260,7 +475,12 @@ def visualize_cad_results(
         print(f"Error counts by truth->prediction: {error_counts}")
 
     display.FitAll()
-    start_display()
+    if screenshot_path:
+        if not display.View.Dump(str(screenshot_path)):
+            raise RuntimeError(f"Unable to write visualization screenshot: {screenshot_path}")
+        print(f"Visualization screenshot written: {screenshot_path}")
+    else:
+        start_display()
 
 
 def parse_args():
@@ -274,14 +494,18 @@ def parse_args():
     parser.add_argument("--pred-out", type=Path, help="Optional prediction CSV output path.")
     parser.add_argument("--truth-csv", type=Path, help="Optional labeled CSV used to color correct predictions and errors.")
     parser.add_argument("--truth-model-name", help="Exact model_name in --truth-csv. Required with --truth-csv.")
-    parser.add_argument("--hidden-dim", type=int, default=64, help="Hidden dimension used during training. Default: 64")
+    parser.add_argument("--hidden-dim", type=int, help="Override checkpoint hidden dimension.")
     parser.add_argument("--skip-export", action="store_true", help="Reuse an existing inference CSV instead of calling Detector.")
     parser.add_argument("--no-display", action="store_true", help="Only export predictions; do not open the OCC viewer.")
+    parser.add_argument("--screenshot", type=Path, help="Write an OCC PNG screenshot instead of opening the interactive viewer.")
     parser.add_argument("--context-transparency", type=float, default=0.82, help="Transparency for the full-model context. Default: 0.82")
     parser.add_argument("--marker-radius", type=float, default=0.0, help="Overlay marker sphere radius. Use 0 to disable markers. Default: 0")
-    parser.add_argument("--inference-mode", choices=["full", "window"], default="full", help="Run full-graph inference or per-face k-hop window inference. Default: full")
-    parser.add_argument("--window-hop", type=int, default=2, help="k-hop radius for window inference. Default: 2")
+    parser.add_argument("--inference-mode", choices=["full", "window"], help="Override checkpoint inference mode. Legacy v7 defaults to window.")
+    parser.add_argument("--window-hop", type=int, help="Override checkpoint window hop. Legacy v7 defaults to 2.")
     parser.add_argument("--inference-batch-size", type=int, default=1, help="Window inference batch size. Keep 1 because batched global pooling changes window predictions. Default: 1")
+    parser.add_argument("--allow-contract-override", action="store_true", help="Allow explicit inference arguments to override checkpoint metadata.")
+    parser.add_argument("--rivet-threshold", type=float, help="Override dual-head rivet threshold; requires --allow-contract-override.")
+    parser.add_argument("--surface-threshold", type=float, help="Override dual-head surface threshold; requires --allow-contract-override.")
     return parser.parse_args()
 
 
@@ -293,13 +517,14 @@ def main():
     label_names = [str(value) for value in stats["label_names"].tolist()]
 
     if args.pred_in:
-        predicted_labels = read_predictions_csv(args.pred_in)
+        prediction_face_ids, predicted_labels = read_predictions_csv(args.pred_in)
+        prediction_probabilities = None
         print(f"Loaded predictions: {args.pred_in}")
     else:
         if not args.skip_export:
             export_inference_csv(args.step_model, args.detector, args.csv)
 
-        predicted_labels, label_names = run_inference(
+        predicted_labels, label_names, prediction_face_ids, prediction_probabilities = run_inference(
             args.csv,
             args.model,
             args.stats,
@@ -307,6 +532,9 @@ def main():
             inference_mode=args.inference_mode,
             window_hop=args.window_hop,
             inference_batch_size=args.inference_batch_size,
+            allow_contract_override=args.allow_contract_override,
+            rivet_threshold_override=args.rivet_threshold,
+            surface_threshold_override=args.surface_threshold,
         )
         print("Inference finished.")
 
@@ -317,7 +545,13 @@ def main():
         truth_labels = read_truth_csv(args.truth_csv, args.truth_model_name)
 
     if args.pred_out:
-        write_predictions_csv(args.pred_out, predicted_labels)
+        write_predictions_csv(
+            args.pred_out,
+            prediction_face_ids,
+            predicted_labels,
+            probabilities=prediction_probabilities,
+            label_names=label_names,
+        )
 
     if not args.no_display:
         visualize_cad_results(
@@ -327,6 +561,8 @@ def main():
             truth_labels=truth_labels,
             context_transparency=args.context_transparency,
             marker_radius=args.marker_radius,
+            pred_face_ids=prediction_face_ids,
+            screenshot_path=args.screenshot,
         )
 
 

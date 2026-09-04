@@ -50,6 +50,9 @@ struct SampledSurfaceProperties
     bool hasCurvature = false;
     gp_Dir normal;
     double meanCurvature = 0.0;
+    double uvInsideFraction = 0.0;
+    double normalVariation = 0.0;
+    double curvatureVariation = 0.0;
 };
 
 bool IsUvInsideFace(const TopoDS_Face& face, double u, double v)
@@ -141,7 +144,11 @@ SampledSurfaceProperties SampleSurfacePropertiesInsideFace(
     gp_Dir referenceNormal;
     bool hasReferenceNormal = false;
     double accumulatedCurvature = 0.0;
+    double accumulatedCurvatureSquared = 0.0;
+    double accumulatedNormalVariation = 0.0;
     int curvatureSamples = 0;
+    int uvSamples = 0;
+    int insideSamples = 0;
 
     constexpr int sampleCountU = 5;
     constexpr int sampleCountV = 5;
@@ -149,11 +156,13 @@ SampledSurfaceProperties SampleSurfacePropertiesInsideFace(
         const double uFraction = static_cast<double>(uIndex + 1) / static_cast<double>(sampleCountU + 1);
         const double u = uMin + (uMax - uMin) * uFraction;
         for (int vIndex = 0; vIndex < sampleCountV; ++vIndex) {
+            uvSamples++;
             const double vFraction = static_cast<double>(vIndex + 1) / static_cast<double>(sampleCountV + 1);
             const double v = vMin + (vMax - vMin) * vFraction;
             if (!IsUvInsideFace(face, u, v)) {
                 continue;
             }
+            insideSamples++;
 
             BRepLProp_SLProps props(surfaceAdaptor, u, v, 2, Precision::Confusion());
             if (props.IsNormalDefined()) {
@@ -167,12 +176,14 @@ SampledSurfaceProperties SampleSurfacePropertiesInsideFace(
                 } else if (normal.Dot(referenceNormal) < 0.0) {
                     normal.Reverse();
                 }
+                accumulatedNormalVariation += 1.0 - std::clamp(std::abs(normal.Dot(referenceNormal)), 0.0, 1.0);
                 accumulatedNormal += gp_Vec(normal);
                 sampled.hasNormal = true;
             }
 
             if (props.IsCurvatureDefined()) {
                 accumulatedCurvature += props.MeanCurvature();
+                accumulatedCurvatureSquared += props.MeanCurvature() * props.MeanCurvature();
                 curvatureSamples++;
                 sampled.hasCurvature = true;
             }
@@ -187,9 +198,18 @@ SampledSurfaceProperties SampleSurfacePropertiesInsideFace(
 
     if (sampled.hasCurvature && curvatureSamples > 0) {
         sampled.meanCurvature = accumulatedCurvature / static_cast<double>(curvatureSamples);
+        const double meanSquare = accumulatedCurvatureSquared / static_cast<double>(curvatureSamples);
+        sampled.curvatureVariation = std::max(0.0, meanSquare - sampled.meanCurvature * sampled.meanCurvature);
     } else {
         sampled.hasCurvature = false;
     }
+
+    sampled.uvInsideFraction = uvSamples > 0
+        ? static_cast<double>(insideSamples) / static_cast<double>(uvSamples)
+        : 0.0;
+    sampled.normalVariation = sampled.hasNormal && insideSamples > 0
+        ? accumulatedNormalVariation / static_cast<double>(insideSamples)
+        : 0.0;
 
     return sampled;
 }
@@ -383,6 +403,9 @@ void FeatureExtractor::ComputeGeometricAttributes(const TopTools_IndexedMapOfSha
         } else {
             feat.meanCurvature = 0.0;
         }
+        feat.uvInsideFraction = sampledProps.uvInsideFraction;
+        feat.normalVariation = sampledProps.normalVariation;
+        feat.curvatureVariation = sampledProps.curvatureVariation;
 
         // 鎻愬彇鎷撴墤澶嶆潅搴︾壒寰?
         int wireCount = 0;
