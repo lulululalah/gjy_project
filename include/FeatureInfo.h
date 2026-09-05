@@ -45,13 +45,6 @@ struct FaceFeature
     double minInnerWireLength = 0.0;
     double maxInnerWireLength = 0.0;
     std::vector<double> innerWireLengths;
-    double minInnerLoopBoundaryDihedralMax = -1.0;
-    double minInnerLoopBoundaryRightAngleDeviation = -1.0;
-    int hasValidInnerLoopBoundaryDihedral = 0;
-    int innerLoopAllDihedralBelowThreshold = 0;
-    int hasInnerLoopInteriorBfsDepthAtMost2 = 0;
-    int hasSmallFlatInnerLoop = 0;
-    int hasSmallRightAngleInnerLoop = 0;
     int numEdges = 0;
     double neighborAreaMean = 0.0;
     double neighborAreaMax = 0.0;

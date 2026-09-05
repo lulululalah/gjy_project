@@ -57,16 +57,6 @@ NORMALIZED_GEOMETRY_FEATURE_COLS = [
     "normalizedNeighborAreaMax",
 ]
 
-INNER_LOOP_FEATURE_COLS = [
-    "minInnerLoopBoundaryDihedralMax",
-    "minInnerLoopBoundaryRightAngleDeviation",
-    "hasValidInnerLoopBoundaryDihedral",
-    "innerLoopAllDihedralBelowThreshold",
-    "hasInnerLoopInteriorBfsDepthAtMost2",
-    "hasSmallFlatInnerLoop",
-    "hasSmallRightAngleInnerLoop",
-]
-
 ATTACHED_SURFACE_FEATURE_COLS = [
     "logNormalizedTrimmedArea",
     "logNormalizedPerimeter",
@@ -79,6 +69,12 @@ ATTACHED_SURFACE_FEATURE_COLS = [
     "hasLargerSmoothSameSurfaceNeighbor",
     "uniqueNeighborToEdgeRatio",
     "sharedBoundaryRatio",
+]
+
+# These values are retained for the shell-protection rule, but are deliberately
+# excluded from the GNN input contract. Including them changed the established
+# 48-feature model and caused DC-10 window faces to collapse into background.
+SMOOTH_COMPONENT_RUNTIME_COLS = [
     "logSmoothComponentNormalizedArea",
     "smoothComponentFaceCount",
     "smoothComponentFaceAreaRatio",
@@ -96,13 +92,6 @@ BASE_FEATURE_COLS = [
     "innerWireCount",
     "normalizedMinInnerWireLength",
     "normalizedMaxInnerWireLength",
-    "minInnerLoopBoundaryDihedralMax",
-    "minInnerLoopBoundaryRightAngleDeviation",
-    "hasValidInnerLoopBoundaryDihedral",
-    "innerLoopAllDihedralBelowThreshold",
-    "hasInnerLoopInteriorBfsDepthAtMost2",
-    "hasSmallFlatInnerLoop",
-    "hasSmallRightAngleInnerLoop",
     "numEdges",
     "normalizedNeighborAreaMean",
     "normalizedNeighborAreaMax",
@@ -201,7 +190,6 @@ def infer_feature_columns(df):
         )
     surface_types = sorted({int(value) for value in df[SURFACE_TYPE_COL].fillna(0).astype(int).tolist()})
     feature_cols = list(BASE_FEATURE_COLS)
-    feature_cols = [column for column in feature_cols if column not in INNER_LOOP_FEATURE_COLS]
     feature_cols.extend(ATTACHED_SURFACE_FEATURE_COLS)
     feature_cols.extend(RELATIVE_NORMAL_FEATURE_COLS)
     if {"centerX", "centerY", "centerZ"}.issubset(df.columns):
@@ -337,7 +325,11 @@ def compute_attached_surface_feature_frame(df):
             "smoothComponentFaceCount": float(component_count),
             "smoothComponentFaceAreaRatio": float(normalized_area / max(component_area, 1e-12)),
         })
-    return pd.DataFrame(rows, index=df.index, columns=ATTACHED_SURFACE_FEATURE_COLS)
+    return pd.DataFrame(
+        rows,
+        index=df.index,
+        columns=ATTACHED_SURFACE_FEATURE_COLS + SMOOTH_COMPONENT_RUNTIME_COLS,
+    )
 
 
 def build_feature_frame(df, feature_cols=None):
@@ -412,16 +404,6 @@ def build_feature_frame(df, feature_cols=None):
             if col in feature_cols:
                 feature_df[col] = values
         feature_df[HAS_RADIUS_COL] = (radius_values.abs() > 1e-9).astype(float)
-
-    missing_inner_loop_columns = set(INNER_LOOP_FEATURE_COLS).intersection(feature_cols).difference(numeric_df.columns)
-    if missing_inner_loop_columns:
-        raise ValueError(
-            "CSV is missing inner-loop features. Re-export it with the updated Detector: "
-            f"{sorted(missing_inner_loop_columns)}"
-        )
-    for col in INNER_LOOP_FEATURE_COLS:
-        if col in feature_cols:
-            feature_df[col] = numeric_df[col].fillna(0.0).astype(float)
 
     for col in RELATIVE_NORMAL_FEATURE_COLS:
         feature_df[col] = numeric_df[col].fillna(0.0).astype(float)
@@ -820,25 +802,6 @@ def prepare_graph_samples(
     return full_graphs
 
 
-def load_graph_dataset(csv_path, training_mode="full", window_hop=2, background_ratio=5, seed=42):
-    df = pd.read_csv(csv_path)
-    if "graph_id" not in df.columns or "model_name" not in df.columns:
-        raise ValueError("CSV is missing graph_id/model_name columns. Please re-export training data.")
-
-    feature_frame, feature_cols = build_feature_frame(df)
-    feature_matrix = feature_frame.to_numpy()
-    feature_mean = feature_matrix.mean(axis=0)
-    feature_std = feature_matrix.std(axis=0) + 1e-6
-    edge_matrix = collect_edge_attr_matrix(df, feature_cols)
-    edge_mean = edge_matrix.mean(axis=0) if len(edge_matrix) else np.zeros(len(EDGE_ATTR_COLS))
-    edge_std = edge_matrix.std(axis=0) + 1e-6 if len(edge_matrix) else np.ones(len(EDGE_ATTR_COLS))
-
-    full_graphs = build_graphs_from_dataframe(df, feature_mean, feature_std, edge_mean, edge_std, feature_cols)
-    graphs = prepare_graph_samples(full_graphs, training_mode, window_hop, background_ratio, seed)
-
-    return graphs, feature_mean, feature_std, edge_mean, edge_std, feature_cols
-
-
 def load_explicit_train_val_datasets(
     train_csv_path,
     val_csv_path,
@@ -866,6 +829,19 @@ def load_explicit_train_val_datasets(
                 f"{name} CSV labels do not match {label_names}; "
                 f"found labels={sorted(labels)}"
             )
+
+    train_models = set(train_df["model_name"].astype(str))
+    val_models = set(val_df["model_name"].astype(str))
+    model_overlap = train_models & val_models
+    if model_overlap:
+        raise ValueError(
+            "Model leakage between train and validation/test CSVs: "
+            f"{sorted(model_overlap)}"
+        )
+    for name, df in [("train", train_df), ("val", val_df)]:
+        graph_model_counts = df.groupby("graph_id")["model_name"].nunique()
+        if (graph_model_counts > 1).any():
+            raise ValueError(f"Each graph_id in {name} must belong to exactly one model_name.")
 
     train_feature_frame, feature_cols = build_feature_frame(train_df)
     feature_matrix = train_feature_frame.to_numpy()
@@ -1520,6 +1496,9 @@ def save_checkpoint_bundle(
     model_architecture=None,
     rivet_threshold=None,
     surface_threshold=None,
+    smooth_shell_surface_guard=False,
+    smooth_shell_guard_min_component_area=0.25,
+    smooth_shell_guard_min_face_area_ratio=0.4,
 ):
     for output_path in (model_out, stats_out, eval_out):
         Path(output_path).parent.mkdir(parents=True, exist_ok=True)
@@ -1569,6 +1548,9 @@ def save_checkpoint_bundle(
         "aagnet_style_input_encoders": True,
         "rivet_threshold": rivet_threshold,
         "surface_threshold": surface_threshold,
+        "smooth_shell_surface_guard": smooth_shell_surface_guard,
+        "smooth_shell_guard_min_component_area": smooth_shell_guard_min_component_area,
+        "smooth_shell_guard_min_face_area_ratio": smooth_shell_guard_min_face_area_ratio,
     }
     checkpoint_metadata.update({
         key: np.array(value)
@@ -1934,6 +1916,7 @@ def train(args):
                 model_architecture=args.model_architecture,
                 rivet_threshold=args.rivet_threshold,
                 surface_threshold=args.surface_threshold,
+                smooth_shell_surface_guard=args.enable_smooth_shell_surface_guard,
             )
 
         surface_eligible = val_metrics[1]["tp"] > 0 and val_metrics[2]["tp"] > 0
@@ -1976,6 +1959,7 @@ def train(args):
                 model_architecture=args.model_architecture,
                 rivet_threshold=args.rivet_threshold,
                 surface_threshold=args.surface_threshold,
+                smooth_shell_surface_guard=args.enable_smooth_shell_surface_guard,
             )
 
         print(
@@ -2041,6 +2025,7 @@ def train(args):
             model_architecture=args.model_architecture,
             rivet_threshold=args.rivet_threshold,
             surface_threshold=args.surface_threshold,
+            smooth_shell_surface_guard=args.enable_smooth_shell_surface_guard,
         )
         print_metric_table(test_metrics, test_summary, split_name="Final test")
         print(f"Final test checkpoint after epoch={args.epochs}")

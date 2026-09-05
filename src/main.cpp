@@ -41,7 +41,6 @@ namespace
             << "  Detector.exe --inject-star-decals <new-data-file> [--host-face <id> ...] [--max-radius-scale <0..0.440>]\n"
             << "  Detector.exe --inject-v13-decal <new-data-file> --host-face <id>\n"
             << "  Detector.exe --inject-v14-decal <new-data-file> --host-face <id>\n"
-            << "  Detector.exe --inject-slimer15-decal <new-data-file> --host-face <id>\n"
             << "  Detector.exe --inject-s15-decal <new-data-file> --host-face <id>\n"
             << "  Detector.exe --inject-v2-decal <new-data-file> --host-face <id>\n"
             << "  Detector.exe --inject-v3-decal <new-data-file> --host-face <id> [--rotate-180]\n"
@@ -70,7 +69,7 @@ int main(int argc, char *argv[])
     else if (mode == "--predict" && argc >= 3)
     {
         const std::string filePath = argv[2];
-        RunSingleInferenceExport(filePath, paths.faceInferenceCsv.string());
+        return RunSingleInferenceExport(filePath, paths.faceInferenceCsv.string());
     }
     else if (mode == "--dump-faces" && argc >= 3)
     {
@@ -144,15 +143,6 @@ int main(int argc, char *argv[])
     {
         try {
             return RunStarDecalInjection(argv[2], std::stoi(argv[4]), 0.440, 4);
-        } catch (const std::exception&) {
-            std::cout << "Invalid host face ID: " << argv[4] << std::endl;
-            return 1;
-        }
-    }
-    else if (mode == "--inject-slimer15-decal" && argc == 5 && std::string(argv[3]) == "--host-face")
-    {
-        try {
-            return RunStarDecalInjection(argv[2], std::stoi(argv[4]), 0.440, 5);
         } catch (const std::exception&) {
             std::cout << "Invalid host face ID: " << argv[4] << std::endl;
             return 1;

@@ -11,12 +11,17 @@ PYTHON_DIR = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(PYTHON_DIR))
 
 from train_rivet_gcn import (
+    ATTACHED_SURFACE_FEATURE_COLS,
+    SMOOTH_COMPONENT_RUNTIME_COLS,
     apply_smooth_shell_surface_guard,
     compute_attached_surface_feature_frame,
 )
 
 
 class AttachedSurfaceFeatureTests(unittest.TestCase):
+    def test_smooth_component_runtime_values_are_not_model_features(self):
+        self.assertTrue(set(SMOOTH_COMPONENT_RUNTIME_COLS).isdisjoint(ATTACHED_SURFACE_FEATURE_COLS))
+
     def test_shell_guard_rejects_dominant_and_dense_shell_faces_only(self):
         predictions = torch.tensor([2, 2, 2, 1])
         guarded = apply_smooth_shell_surface_guard(

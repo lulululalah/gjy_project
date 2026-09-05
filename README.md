@@ -32,6 +32,7 @@ D:\Anaconda\envs\cad_graph_env\python.exe .\python\train_rivet_gcn.py `
   --test-csv .\work\uv_test4_xian20_simpletest.csv `
   --epochs 50 --batch-size 1 --hidden-dim 64 --num-layers 4 `
   --lr 0.005 --dropout 0.2 --weight-decay 0.0001 --seed 123 `
+  --enable-smooth-shell-surface-guard `
   --model-out .\work\rivet_gnn_xian20_train_simpletest_50ep.pth `
   --stats-out .\work\rivet_gnn_xian20_train_simpletest_50ep_stats.npz `
   --eval-out .\work\rivet_gnn_xian20_train_simpletest_50ep_eval.csv

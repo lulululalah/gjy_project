@@ -9,6 +9,6 @@ int RunSingleWingRivetTrainingExport(
     const std::string& modelStem,
     const std::string& outputCsv
 );
-void RunSingleInferenceExport(const std::string& inputFile, const std::string& outputCsv);
+int RunSingleInferenceExport(const std::string& inputFile, const std::string& outputCsv);
 void RunSingleFaceDump(const std::string& inputFile, const std::string& outputJson);
 int RunFaceIdConsistencyCheck(const std::string& inputFile);

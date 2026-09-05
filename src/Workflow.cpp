@@ -23,9 +23,6 @@ namespace
         "graph_id,model_name,id,area,relativeArea,perimeter,compactness,surfaceType,centerX,centerY,centerZ,"
         "normalizationCenterX,normalizationCenterY,normalizationCenterZ,normalizationScale,"
         "meanCurvature,uvInsideFraction,normalVariation,curvatureVariation,radius,numWires,innerWireCount,minInnerWireLength,maxInnerWireLength,"
-        "minInnerLoopBoundaryDihedralMax,minInnerLoopBoundaryRightAngleDeviation,"
-        "hasValidInnerLoopBoundaryDihedral,innerLoopAllDihedralBelowThreshold,hasInnerLoopInteriorBfsDepthAtMost2,"
-        "hasSmallFlatInnerLoop,hasSmallRightAngleInnerLoop,"
         "numEdges,neighborAreaMean,neighborAreaMax,areaToNeighborMean,areaToNeighborMax,"
         "normalNeighborDotMean,normalNeighborDotMin,normalNeighborDotMax,"
         "neighborPlaneCount,neighborCylinderCount,neighborCurvedCount,convexEdgeCount,concaveEdgeCount,"
@@ -282,13 +279,6 @@ namespace
                  << feature.curvatureVariation << ","
                  << feature.radius << "," << feature.numWires << "," << feature.innerWireCount << ","
                  << feature.minInnerWireLength << "," << feature.maxInnerWireLength << ","
-                 << feature.minInnerLoopBoundaryDihedralMax << ","
-                 << feature.minInnerLoopBoundaryRightAngleDeviation << ","
-                 << feature.hasValidInnerLoopBoundaryDihedral << ","
-                 << feature.innerLoopAllDihedralBelowThreshold << ","
-                 << feature.hasInnerLoopInteriorBfsDepthAtMost2 << ","
-                 << feature.hasSmallFlatInnerLoop << ","
-                 << feature.hasSmallRightAngleInnerLoop << ","
                  << feature.numEdges << ","
                  << feature.neighborAreaMean << "," << feature.neighborAreaMax << ","
                  << feature.areaToNeighborMean << "," << feature.areaToNeighborMax << ","
@@ -461,7 +451,25 @@ int RunWingRivetTrainingExport(const std::string &inputDir, const std::string &o
         return 1;
     }
 
-    std::ofstream dataFile(outputCsv);
+    const fs::path outputPath(outputCsv);
+    const fs::path temporaryPath = outputPath.string() + ".tmp";
+    if (!outputPath.parent_path().empty())
+    {
+        std::error_code directoryError;
+        fs::create_directories(outputPath.parent_path(), directoryError);
+        if (directoryError)
+        {
+            std::cout << ">>> Unable to create training export directory: "
+                      << directoryError.message() << std::endl;
+            return 1;
+        }
+    }
+    std::ofstream dataFile(temporaryPath);
+    if (!dataFile)
+    {
+        std::cout << ">>> Unable to open training export output: " << temporaryPath << std::endl;
+        return 1;
+    }
     WriteFaceCsvHeader(dataFile);
 
     int graphId = 0;
@@ -536,9 +544,29 @@ int RunWingRivetTrainingExport(const std::string &inputDir, const std::string &o
         std::cout << "  - Exported: " << stepPath.filename() << std::endl;
     }
 
+    dataFile.close();
+    if (skipped > 0 || graphId == 0)
+    {
+        std::error_code error;
+        fs::remove(temporaryPath, error);
+        std::cout << ">>> Wing-rivet training export failed. Models processed: " << graphId
+                  << ", skipped: " << skipped << std::endl;
+        return 2;
+    }
+
+    std::error_code error;
+    fs::copy_file(temporaryPath, outputPath, fs::copy_options::overwrite_existing, error);
+    if (error)
+    {
+        std::cout << ">>> Unable to finalize training export: " << error.message() << std::endl;
+        std::error_code cleanupError;
+        fs::remove(temporaryPath, cleanupError);
+        return 1;
+    }
+    fs::remove(temporaryPath, error);
     std::cout << ">>> Wing-rivet training export complete. Models processed: " << graphId
               << ", skipped: " << skipped << std::endl;
-    return graphId > 0 ? 0 : 2;
+    return 0;
 }
 
 int RunSingleWingRivetTrainingExport(
@@ -598,22 +626,35 @@ int RunSingleWingRivetTrainingExport(
     return 0;
 }
 
-void RunSingleInferenceExport(const std::string &inputFile, const std::string &outputCsv)
+int RunSingleInferenceExport(const std::string &inputFile, const std::string &outputCsv)
 {
     std::cout << ">>> Exporting inference data for: " << inputFile << std::endl;
+
+    if (!fs::exists(inputFile) || !fs::is_regular_file(inputFile))
+    {
+        std::cout << ">>> Input STEP file does not exist: " << inputFile << std::endl;
+        return 1;
+    }
 
     const auto features = ExtractFaceFeaturesFromStep(inputFile);
     if (features.empty())
     {
-        return;
+        std::cout << ">>> Failed to extract faces from input STEP." << std::endl;
+        return 2;
     }
 
     const std::string modelName = fs::path(inputFile).filename().string();
     std::ofstream dataFile(outputCsv);
+    if (!dataFile)
+    {
+        std::cout << ">>> Unable to open inference output: " << outputCsv << std::endl;
+        return 3;
+    }
     WriteFaceCsvHeader(dataFile);
     ExportFaceFeaturesForInference(dataFile, features, 0, modelName);
 
     std::cout << ">>> Inference CSV ready." << std::endl;
+    return 0;
 }
 
 void RunSingleFaceDump(const std::string &inputFile, const std::string &outputJson)

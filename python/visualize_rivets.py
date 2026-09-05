@@ -1,5 +1,6 @@
 ﻿import argparse
 import csv
+import shutil
 import subprocess
 from pathlib import Path
 
@@ -96,6 +97,8 @@ def export_inference_csv(step_path, detector_path, csv_path):
     if not detector_path.exists():
         raise FileNotFoundError(f"Detector executable not found: {detector_path}")
 
+    output_csv = DEFAULT_INFERENCE_CSV
+    previous_mtime = output_csv.stat().st_mtime_ns if output_csv.exists() else 0
     result = subprocess.run(
         [str(detector_path), "--predict", str(step_path)],
         cwd=PROJECT_ROOT,
@@ -111,8 +114,15 @@ def export_inference_csv(step_path, detector_path, csv_path):
             f"stderr:\n{result.stderr}"
         )
 
-    if not csv_path.exists():
-        raise FileNotFoundError(f"Inference CSV was not generated: {csv_path}")
+    if not output_csv.exists() or output_csv.stat().st_mtime_ns <= previous_mtime:
+        raise RuntimeError(
+            "Detector completed without producing a fresh inference CSV: "
+            f"{output_csv}"
+        )
+    csv_path = Path(csv_path)
+    if csv_path.resolve() != output_csv.resolve():
+        csv_path.parent.mkdir(parents=True, exist_ok=True)
+        shutil.copy2(output_csv, csv_path)
 
 
 def run_inference(
@@ -205,7 +215,13 @@ def run_inference(
     feature_cols = {str(value) for value in stats["feature_cols"].tolist()}
     smooth_shell_guard = bool(
         optional_stats_value(stats, "smooth_shell_surface_guard", False)
-    ) or "logSmoothComponentNormalizedArea" in feature_cols
+    )
+    smooth_shell_guard_min_component_area = float(
+        optional_stats_value(stats, "smooth_shell_guard_min_component_area", 0.25)
+    )
+    smooth_shell_guard_min_face_area_ratio = float(
+        optional_stats_value(stats, "smooth_shell_guard_min_face_area_ratio", 0.4)
+    )
 
     def collect_output(output, target_mask, graph):
         target_output = output[target_mask]
@@ -221,6 +237,8 @@ def run_inference(
                     graph.smooth_component_normalized_area[target_mask],
                     graph.smooth_component_face_count[target_mask],
                     graph.smooth_component_face_area_ratio[target_mask],
+                    minimum_component_area=smooth_shell_guard_min_component_area,
+                    minimum_face_area_ratio=smooth_shell_guard_min_face_area_ratio,
                 )
             rivet_probability = head_probabilities[:, 0]
             surface_probability = head_probabilities[:, 1]
