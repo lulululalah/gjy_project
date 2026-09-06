@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import argparse
+import csv
 import json
 from pathlib import Path
 
@@ -11,9 +12,14 @@ def main() -> int:
     parser = argparse.ArgumentParser(description="Click a STEP face to print its F-number.")
     parser.add_argument("step_model", type=Path)
     parser.add_argument("--labels-json", type=Path, help="Optional labels JSON to color confirmed faces.")
+    parser.add_argument(
+        "--candidate-csv",
+        type=Path,
+        help="Optional Boolean host-face CSV; eligible faces are highlighted and selection is restricted to them.",
+    )
     args = parser.parse_args()
 
-    from OCC.Core.Quantity import Quantity_Color, Quantity_NOC_GRAY, Quantity_TOC_RGB
+    from OCC.Core.Quantity import Quantity_Color, Quantity_NOC_GRAY, Quantity_NOC_ORANGE, Quantity_TOC_RGB
     from OCC.Core.BRep import BRep_Builder
     from OCC.Core.BRepBndLib import brepbndlib
     from OCC.Core.Bnd import Bnd_Box
@@ -50,6 +56,16 @@ def main() -> int:
         "decal": Quantity_Color(1.00, 0.55, 0.00, Quantity_TOC_RGB),
     }
 
+    candidate_ids: set[int] = set()
+    if args.candidate_csv:
+        with args.candidate_csv.open(newline="", encoding="utf-8-sig") as input_file:
+            candidate_ids = {int(row["face_id"]) for row in csv.DictReader(input_file)}
+        invalid_candidates = sorted(face_id for face_id in candidate_ids if not 1 <= face_id <= face_map.Size())
+        if invalid_candidates:
+            raise ValueError(
+                f"Candidate face IDs outside STEP range 1..{face_map.Size()}: {invalid_candidates[:10]}"
+            )
+
     root = tk.Tk()
     root.title("STEP face picker: right-click a face")
     selected_face_text = tk.StringVar(value="Right-click a face to show its F-number here.")
@@ -62,6 +78,10 @@ def main() -> int:
 
     def draw_model_with_labels() -> None:
         display.DisplayShape(shape, color=Quantity_NOC_GRAY, transparency=0.25, update=False)
+        for face_id in sorted(candidate_ids):
+            display.DisplayShape(
+                topods.Face(face_map.FindKey(face_id)), color=Quantity_NOC_ORANGE, update=False
+            )
         for face_id, semantic in labels_by_id.items():
             color = semantic_colors.get(semantic)
             if color is None:
@@ -112,7 +132,12 @@ def main() -> int:
             return
 
         def report_face_id(face_id: int) -> None:
-            message = f"Selected face: F{face_id}"
+            if candidate_ids and face_id not in candidate_ids:
+                message = f"F{face_id} is not a Boolean host candidate"
+            elif candidate_ids:
+                message = f"Selected candidate face: F{face_id}"
+            else:
+                message = f"Selected face: F{face_id}"
             selected_face_text.set(message)
             print(message)
 
@@ -164,7 +189,11 @@ def main() -> int:
     root.bind("9", show_full_model)
     canvas.focus_set()
     display.FitAll()
-    print("Left-drag rotates. Right-click a face to print its F-number.")
+    if candidate_ids:
+        print(f"Boolean host candidates highlighted: {len(candidate_ids)}")
+        print("Left-drag rotates. Right-click an orange candidate face to print its F-number.")
+    else:
+        print("Left-drag rotates. Right-click a face to print its F-number.")
     print("View keys: 1=front, 2=rear, 3=left, 4=right, 5=top, 0=axonometric.")
     print("Focus keys: 7=one end, 8=the other end, 9=full model.")
     root.mainloop()
