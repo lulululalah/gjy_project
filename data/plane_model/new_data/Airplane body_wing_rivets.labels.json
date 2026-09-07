@@ -1,7 +1,7 @@
 {
   "model_id": "Airplane body_wing_rivets",
   "base_model": "Airplane body.step",
-  "output_step": "C:\\Users\\25117\\Desktop\\new\\new_data\\Airplane body_wing_rivets.step",
+  "output_step": "data\\plane_model\\new_data\\Airplane body_wing_rivets.step",
   "faces": [
     {
       "face_id": 1,
@@ -156,56 +156,56 @@
     {
       "face_id": 26,
       "semantic": "rivet",
-      "instance_id": 14,
+      "instance_id": 15,
       "operation": "remove_protrusion"
     },
     {
       "face_id": 27,
       "semantic": "rivet",
-      "instance_id": 14,
+      "instance_id": 10,
       "operation": "remove_protrusion"
     },
     {
       "face_id": 28,
       "semantic": "rivet",
-      "instance_id": 14,
+      "instance_id": 9,
       "operation": "remove_protrusion"
     },
     {
       "face_id": 29,
-      "semantic": "rivet",
-      "instance_id": 14,
-      "operation": "remove_protrusion"
+      "semantic": "background",
+      "instance_id": -1,
+      "operation": "keep"
     },
     {
       "face_id": 30,
-      "semantic": "rivet",
-      "instance_id": 14,
-      "operation": "remove_protrusion"
+      "semantic": "background",
+      "instance_id": -1,
+      "operation": "keep"
     },
     {
       "face_id": 31,
-      "semantic": "rivet",
-      "instance_id": 14,
-      "operation": "remove_protrusion"
+      "semantic": "background",
+      "instance_id": -1,
+      "operation": "keep"
     },
     {
       "face_id": 32,
-      "semantic": "rivet",
-      "instance_id": 15,
-      "operation": "remove_protrusion"
+      "semantic": "background",
+      "instance_id": -1,
+      "operation": "keep"
     },
     {
       "face_id": 33,
-      "semantic": "rivet",
-      "instance_id": 10,
-      "operation": "remove_protrusion"
+      "semantic": "background",
+      "instance_id": -1,
+      "operation": "keep"
     },
     {
       "face_id": 34,
-      "semantic": "rivet",
-      "instance_id": 9,
-      "operation": "remove_protrusion"
+      "semantic": "background",
+      "instance_id": -1,
+      "operation": "keep"
     },
     {
       "face_id": 35,
@@ -287,81 +287,81 @@
     },
     {
       "face_id": 48,
-      "semantic": "background",
-      "instance_id": -1,
-      "operation": "keep"
-    },
-    {
-      "face_id": 49,
-      "semantic": "background",
-      "instance_id": -1,
-      "operation": "keep"
-    },
-    {
-      "face_id": 50,
-      "semantic": "background",
-      "instance_id": -1,
-      "operation": "keep"
-    },
-    {
-      "face_id": 51,
-      "semantic": "background",
-      "instance_id": -1,
-      "operation": "keep"
-    },
-    {
-      "face_id": 52,
-      "semantic": "background",
-      "instance_id": -1,
-      "operation": "keep"
-    },
-    {
-      "face_id": 53,
-      "semantic": "background",
-      "instance_id": -1,
-      "operation": "keep"
-    },
-    {
-      "face_id": 54,
       "semantic": "rivet",
       "instance_id": 12,
       "operation": "remove_protrusion"
     },
     {
-      "face_id": 55,
+      "face_id": 49,
       "semantic": "rivet",
       "instance_id": 11,
       "operation": "remove_protrusion"
     },
     {
-      "face_id": 56,
+      "face_id": 50,
       "semantic": "rivet",
       "instance_id": 13,
       "operation": "remove_protrusion"
     },
     {
-      "face_id": 57,
-      "semantic": "rivet",
-      "instance_id": 14,
-      "operation": "remove_protrusion"
-    },
-    {
-      "face_id": 58,
+      "face_id": 51,
       "semantic": "rivet",
       "instance_id": 15,
       "operation": "remove_protrusion"
     },
     {
-      "face_id": 59,
+      "face_id": 52,
       "semantic": "rivet",
       "instance_id": 10,
       "operation": "remove_protrusion"
     },
     {
-      "face_id": 60,
+      "face_id": 53,
       "semantic": "rivet",
       "instance_id": 9,
       "operation": "remove_protrusion"
+    },
+    {
+      "face_id": 54,
+      "semantic": "background",
+      "instance_id": -1,
+      "operation": "keep"
+    },
+    {
+      "face_id": 55,
+      "semantic": "background",
+      "instance_id": -1,
+      "operation": "keep"
+    },
+    {
+      "face_id": 56,
+      "semantic": "background",
+      "instance_id": -1,
+      "operation": "keep"
+    },
+    {
+      "face_id": 57,
+      "semantic": "background",
+      "instance_id": -1,
+      "operation": "keep"
+    },
+    {
+      "face_id": 58,
+      "semantic": "background",
+      "instance_id": -1,
+      "operation": "keep"
+    },
+    {
+      "face_id": 59,
+      "semantic": "background",
+      "instance_id": -1,
+      "operation": "keep"
+    },
+    {
+      "face_id": 60,
+      "semantic": "background",
+      "instance_id": -1,
+      "operation": "keep"
     },
     {
       "face_id": 61,
@@ -2471,153 +2471,153 @@
     },
     {
       "face_id": 412,
-      "semantic": "background",
-      "instance_id": -1,
-      "operation": "keep"
-    },
-    {
-      "face_id": 413,
-      "semantic": "background",
-      "instance_id": -1,
-      "operation": "keep"
-    },
-    {
-      "face_id": 414,
-      "semantic": "background",
-      "instance_id": -1,
-      "operation": "keep"
-    },
-    {
-      "face_id": 415,
-      "semantic": "background",
-      "instance_id": -1,
-      "operation": "keep"
-    },
-    {
-      "face_id": 416,
-      "semantic": "background",
-      "instance_id": -1,
-      "operation": "keep"
-    },
-    {
-      "face_id": 417,
-      "semantic": "background",
-      "instance_id": -1,
-      "operation": "keep"
-    },
-    {
-      "face_id": 418,
-      "semantic": "background",
-      "instance_id": -1,
-      "operation": "keep"
-    },
-    {
-      "face_id": 419,
       "semantic": "rivet",
       "instance_id": 4,
       "operation": "remove_protrusion"
     },
     {
-      "face_id": 420,
+      "face_id": 413,
       "semantic": "rivet",
       "instance_id": 3,
       "operation": "remove_protrusion"
     },
     {
-      "face_id": 421,
+      "face_id": 414,
       "semantic": "rivet",
       "instance_id": 3,
       "operation": "remove_protrusion"
     },
     {
-      "face_id": 422,
+      "face_id": 415,
       "semantic": "rivet",
       "instance_id": 3,
       "operation": "remove_protrusion"
     },
     {
-      "face_id": 423,
+      "face_id": 416,
       "semantic": "rivet",
       "instance_id": 3,
       "operation": "remove_protrusion"
     },
     {
-      "face_id": 424,
+      "face_id": 417,
       "semantic": "rivet",
       "instance_id": 3,
       "operation": "remove_protrusion"
     },
     {
-      "face_id": 425,
+      "face_id": 418,
       "semantic": "rivet",
       "instance_id": 3,
       "operation": "remove_protrusion"
     },
     {
-      "face_id": 426,
+      "face_id": 419,
       "semantic": "rivet",
       "instance_id": 5,
       "operation": "remove_protrusion"
     },
     {
-      "face_id": 427,
+      "face_id": 420,
       "semantic": "rivet",
       "instance_id": 6,
       "operation": "remove_protrusion"
     },
     {
-      "face_id": 428,
+      "face_id": 421,
       "semantic": "rivet",
       "instance_id": 6,
       "operation": "remove_protrusion"
     },
     {
-      "face_id": 429,
+      "face_id": 422,
       "semantic": "rivet",
       "instance_id": 6,
       "operation": "remove_protrusion"
     },
     {
-      "face_id": 430,
+      "face_id": 423,
       "semantic": "rivet",
       "instance_id": 6,
       "operation": "remove_protrusion"
     },
     {
-      "face_id": 431,
+      "face_id": 424,
       "semantic": "rivet",
       "instance_id": 6,
       "operation": "remove_protrusion"
     },
     {
-      "face_id": 432,
+      "face_id": 425,
       "semantic": "rivet",
       "instance_id": 6,
       "operation": "remove_protrusion"
     },
     {
-      "face_id": 433,
+      "face_id": 426,
       "semantic": "rivet",
       "instance_id": 7,
       "operation": "remove_protrusion"
     },
     {
-      "face_id": 434,
+      "face_id": 427,
       "semantic": "rivet",
       "instance_id": 8,
       "operation": "remove_protrusion"
     },
     {
-      "face_id": 435,
+      "face_id": 428,
       "semantic": "rivet",
       "instance_id": 2,
       "operation": "remove_protrusion"
     },
     {
-      "face_id": 436,
+      "face_id": 429,
       "semantic": "rivet",
       "instance_id": 1,
       "operation": "remove_protrusion"
+    },
+    {
+      "face_id": 430,
+      "semantic": "background",
+      "instance_id": -1,
+      "operation": "keep"
+    },
+    {
+      "face_id": 431,
+      "semantic": "background",
+      "instance_id": -1,
+      "operation": "keep"
+    },
+    {
+      "face_id": 432,
+      "semantic": "background",
+      "instance_id": -1,
+      "operation": "keep"
+    },
+    {
+      "face_id": 433,
+      "semantic": "background",
+      "instance_id": -1,
+      "operation": "keep"
+    },
+    {
+      "face_id": 434,
+      "semantic": "background",
+      "instance_id": -1,
+      "operation": "keep"
+    },
+    {
+      "face_id": 435,
+      "semantic": "background",
+      "instance_id": -1,
+      "operation": "keep"
+    },
+    {
+      "face_id": 436,
+      "semantic": "background",
+      "instance_id": -1,
+      "operation": "keep"
     },
     {
       "face_id": 437,
@@ -3017,93 +3017,93 @@
     },
     {
       "face_id": 503,
-      "semantic": "background",
-      "instance_id": -1,
-      "operation": "keep"
-    },
-    {
-      "face_id": 504,
-      "semantic": "background",
-      "instance_id": -1,
-      "operation": "keep"
-    },
-    {
-      "face_id": 505,
-      "semantic": "background",
-      "instance_id": -1,
-      "operation": "keep"
-    },
-    {
-      "face_id": 506,
-      "semantic": "background",
-      "instance_id": -1,
-      "operation": "keep"
-    },
-    {
-      "face_id": 507,
-      "semantic": "background",
-      "instance_id": -1,
-      "operation": "keep"
-    },
-    {
-      "face_id": 508,
-      "semantic": "background",
-      "instance_id": -1,
-      "operation": "keep"
-    },
-    {
-      "face_id": 509,
-      "semantic": "background",
-      "instance_id": -1,
-      "operation": "keep"
-    },
-    {
-      "face_id": 510,
       "semantic": "rivet",
       "instance_id": 4,
       "operation": "remove_protrusion"
     },
     {
-      "face_id": 511,
+      "face_id": 504,
       "semantic": "rivet",
       "instance_id": 3,
       "operation": "remove_protrusion"
     },
     {
-      "face_id": 512,
+      "face_id": 505,
       "semantic": "rivet",
       "instance_id": 5,
       "operation": "remove_protrusion"
     },
     {
-      "face_id": 513,
+      "face_id": 506,
       "semantic": "rivet",
       "instance_id": 6,
       "operation": "remove_protrusion"
     },
     {
-      "face_id": 514,
+      "face_id": 507,
       "semantic": "rivet",
       "instance_id": 7,
       "operation": "remove_protrusion"
     },
     {
-      "face_id": 515,
+      "face_id": 508,
       "semantic": "rivet",
       "instance_id": 8,
       "operation": "remove_protrusion"
     },
     {
-      "face_id": 516,
+      "face_id": 509,
       "semantic": "rivet",
       "instance_id": 2,
       "operation": "remove_protrusion"
     },
     {
-      "face_id": 517,
+      "face_id": 510,
       "semantic": "rivet",
       "instance_id": 1,
       "operation": "remove_protrusion"
+    },
+    {
+      "face_id": 511,
+      "semantic": "background",
+      "instance_id": -1,
+      "operation": "keep"
+    },
+    {
+      "face_id": 512,
+      "semantic": "background",
+      "instance_id": -1,
+      "operation": "keep"
+    },
+    {
+      "face_id": 513,
+      "semantic": "background",
+      "instance_id": -1,
+      "operation": "keep"
+    },
+    {
+      "face_id": 514,
+      "semantic": "background",
+      "instance_id": -1,
+      "operation": "keep"
+    },
+    {
+      "face_id": 515,
+      "semantic": "background",
+      "instance_id": -1,
+      "operation": "keep"
+    },
+    {
+      "face_id": 516,
+      "semantic": "background",
+      "instance_id": -1,
+      "operation": "keep"
+    },
+    {
+      "face_id": 517,
+      "semantic": "background",
+      "instance_id": -1,
+      "operation": "keep"
     },
     {
       "face_id": 518,
@@ -3323,81 +3323,81 @@
     },
     {
       "face_id": 554,
-      "semantic": "background",
-      "instance_id": -1,
-      "operation": "keep"
+      "semantic": "rivet",
+      "instance_id": 14,
+      "operation": "remove_protrusion"
     },
     {
       "face_id": 555,
-      "semantic": "background",
-      "instance_id": -1,
-      "operation": "keep"
+      "semantic": "rivet",
+      "instance_id": 14,
+      "operation": "remove_protrusion"
     },
     {
       "face_id": 556,
-      "semantic": "background",
-      "instance_id": -1,
-      "operation": "keep"
+      "semantic": "rivet",
+      "instance_id": 14,
+      "operation": "remove_protrusion"
     },
     {
       "face_id": 557,
-      "semantic": "background",
-      "instance_id": -1,
-      "operation": "keep"
+      "semantic": "rivet",
+      "instance_id": 14,
+      "operation": "remove_protrusion"
     },
     {
       "face_id": 558,
-      "semantic": "background",
-      "instance_id": -1,
-      "operation": "keep"
+      "semantic": "rivet",
+      "instance_id": 14,
+      "operation": "remove_protrusion"
     },
     {
       "face_id": 559,
-      "semantic": "background",
-      "instance_id": -1,
-      "operation": "keep"
+      "semantic": "rivet",
+      "instance_id": 14,
+      "operation": "remove_protrusion"
     },
     {
       "face_id": 560,
-      "semantic": "background",
-      "instance_id": -1,
-      "operation": "keep"
+      "semantic": "rivet",
+      "instance_id": 14,
+      "operation": "remove_protrusion"
     },
     {
       "face_id": 561,
-      "semantic": "background",
-      "instance_id": -1,
-      "operation": "keep"
+      "semantic": "rivet",
+      "instance_id": 14,
+      "operation": "remove_protrusion"
     },
     {
       "face_id": 562,
-      "semantic": "background",
-      "instance_id": -1,
-      "operation": "keep"
+      "semantic": "rivet",
+      "instance_id": 14,
+      "operation": "remove_protrusion"
     },
     {
       "face_id": 563,
-      "semantic": "background",
-      "instance_id": -1,
-      "operation": "keep"
+      "semantic": "rivet",
+      "instance_id": 14,
+      "operation": "remove_protrusion"
     },
     {
       "face_id": 564,
-      "semantic": "background",
-      "instance_id": -1,
-      "operation": "keep"
+      "semantic": "rivet",
+      "instance_id": 14,
+      "operation": "remove_protrusion"
     },
     {
       "face_id": 565,
-      "semantic": "background",
-      "instance_id": -1,
-      "operation": "keep"
+      "semantic": "rivet",
+      "instance_id": 14,
+      "operation": "remove_protrusion"
     },
     {
       "face_id": 566,
-      "semantic": "background",
-      "instance_id": -1,
-      "operation": "keep"
+      "semantic": "rivet",
+      "instance_id": 14,
+      "operation": "remove_protrusion"
     },
     {
       "face_id": 567,
@@ -3425,9 +3425,9 @@
     },
     {
       "face_id": 571,
-      "semantic": "window",
-      "instance_id": 31,
-      "operation": "native_window"
+      "semantic": "background",
+      "instance_id": -1,
+      "operation": "keep"
     },
     {
       "face_id": 572,
@@ -3455,15 +3455,15 @@
     },
     {
       "face_id": 576,
-      "semantic": "window",
-      "instance_id": 23,
-      "operation": "native_window"
+      "semantic": "background",
+      "instance_id": -1,
+      "operation": "keep"
     },
     {
       "face_id": 577,
-      "semantic": "window",
-      "instance_id": 32,
-      "operation": "native_window"
+      "semantic": "background",
+      "instance_id": -1,
+      "operation": "keep"
     },
     {
       "face_id": 578,
@@ -3492,14 +3492,14 @@
     {
       "face_id": 582,
       "semantic": "window",
-      "instance_id": 30,
+      "instance_id": 23,
       "operation": "native_window"
     },
     {
       "face_id": 583,
-      "semantic": "window",
-      "instance_id": 33,
-      "operation": "native_window"
+      "semantic": "background",
+      "instance_id": -1,
+      "operation": "keep"
     },
     {
       "face_id": 584,
@@ -3528,14 +3528,14 @@
     {
       "face_id": 588,
       "semantic": "window",
-      "instance_id": 22,
+      "instance_id": 36,
       "operation": "native_window"
     },
     {
       "face_id": 589,
-      "semantic": "window",
-      "instance_id": 34,
-      "operation": "native_window"
+      "semantic": "background",
+      "instance_id": -1,
+      "operation": "keep"
     },
     {
       "face_id": 590,
@@ -3564,14 +3564,14 @@
     {
       "face_id": 594,
       "semantic": "window",
-      "instance_id": 29,
+      "instance_id": 22,
       "operation": "native_window"
     },
     {
       "face_id": 595,
-      "semantic": "window",
-      "instance_id": 35,
-      "operation": "native_window"
+      "semantic": "background",
+      "instance_id": -1,
+      "operation": "keep"
     },
     {
       "face_id": 596,
@@ -3600,14 +3600,14 @@
     {
       "face_id": 600,
       "semantic": "window",
-      "instance_id": 21,
+      "instance_id": 35,
       "operation": "native_window"
     },
     {
       "face_id": 601,
-      "semantic": "window",
-      "instance_id": 36,
-      "operation": "native_window"
+      "semantic": "background",
+      "instance_id": -1,
+      "operation": "keep"
     },
     {
       "face_id": 602,
@@ -3636,14 +3636,14 @@
     {
       "face_id": 606,
       "semantic": "window",
-      "instance_id": 28,
+      "instance_id": 21,
       "operation": "native_window"
     },
     {
       "face_id": 607,
-      "semantic": "window",
-      "instance_id": 37,
-      "operation": "native_window"
+      "semantic": "background",
+      "instance_id": -1,
+      "operation": "keep"
     },
     {
       "face_id": 608,
@@ -3672,14 +3672,14 @@
     {
       "face_id": 612,
       "semantic": "window",
-      "instance_id": 20,
+      "instance_id": 34,
       "operation": "native_window"
     },
     {
       "face_id": 613,
-      "semantic": "window",
-      "instance_id": 38,
-      "operation": "native_window"
+      "semantic": "background",
+      "instance_id": -1,
+      "operation": "keep"
     },
     {
       "face_id": 614,
@@ -3708,14 +3708,14 @@
     {
       "face_id": 618,
       "semantic": "window",
-      "instance_id": 27,
+      "instance_id": 20,
       "operation": "native_window"
     },
     {
       "face_id": 619,
-      "semantic": "window",
-      "instance_id": 39,
-      "operation": "native_window"
+      "semantic": "background",
+      "instance_id": -1,
+      "operation": "keep"
     },
     {
       "face_id": 620,
@@ -3744,14 +3744,14 @@
     {
       "face_id": 624,
       "semantic": "window",
-      "instance_id": 19,
+      "instance_id": 33,
       "operation": "native_window"
     },
     {
       "face_id": 625,
-      "semantic": "window",
-      "instance_id": 40,
-      "operation": "native_window"
+      "semantic": "background",
+      "instance_id": -1,
+      "operation": "keep"
     },
     {
       "face_id": 626,
@@ -3780,14 +3780,14 @@
     {
       "face_id": 630,
       "semantic": "window",
-      "instance_id": 26,
+      "instance_id": 19,
       "operation": "native_window"
     },
     {
       "face_id": 631,
-      "semantic": "window",
-      "instance_id": 41,
-      "operation": "native_window"
+      "semantic": "background",
+      "instance_id": -1,
+      "operation": "keep"
     },
     {
       "face_id": 632,
@@ -3816,14 +3816,14 @@
     {
       "face_id": 636,
       "semantic": "window",
-      "instance_id": 18,
+      "instance_id": 32,
       "operation": "native_window"
     },
     {
       "face_id": 637,
-      "semantic": "window",
-      "instance_id": 42,
-      "operation": "native_window"
+      "semantic": "background",
+      "instance_id": -1,
+      "operation": "keep"
     },
     {
       "face_id": 638,
@@ -3852,14 +3852,14 @@
     {
       "face_id": 642,
       "semantic": "window",
-      "instance_id": 25,
+      "instance_id": 18,
       "operation": "native_window"
     },
     {
       "face_id": 643,
-      "semantic": "window",
-      "instance_id": 43,
-      "operation": "native_window"
+      "semantic": "background",
+      "instance_id": -1,
+      "operation": "keep"
     },
     {
       "face_id": 644,
@@ -3888,14 +3888,14 @@
     {
       "face_id": 648,
       "semantic": "window",
-      "instance_id": 17,
+      "instance_id": 31,
       "operation": "native_window"
     },
     {
       "face_id": 649,
-      "semantic": "window",
-      "instance_id": 44,
-      "operation": "native_window"
+      "semantic": "background",
+      "instance_id": -1,
+      "operation": "keep"
     },
     {
       "face_id": 650,
@@ -3924,7 +3924,7 @@
     {
       "face_id": 654,
       "semantic": "window",
-      "instance_id": 24,
+      "instance_id": 17,
       "operation": "native_window"
     },
     {
@@ -3959,9 +3959,9 @@
     },
     {
       "face_id": 660,
-      "semantic": "background",
-      "instance_id": -1,
-      "operation": "keep"
+      "semantic": "window",
+      "instance_id": 30,
+      "operation": "native_window"
     },
     {
       "face_id": 661,
@@ -4037,15 +4037,15 @@
     },
     {
       "face_id": 673,
-      "semantic": "background",
-      "instance_id": -1,
-      "operation": "keep"
+      "semantic": "window",
+      "instance_id": 28,
+      "operation": "native_window"
     },
     {
       "face_id": 674,
-      "semantic": "background",
-      "instance_id": -1,
-      "operation": "keep"
+      "semantic": "window",
+      "instance_id": 27,
+      "operation": "native_window"
     },
     {
       "face_id": 675,
@@ -4103,9 +4103,9 @@
     },
     {
       "face_id": 684,
-      "semantic": "background",
-      "instance_id": -1,
-      "operation": "keep"
+      "semantic": "window",
+      "instance_id": 24,
+      "operation": "native_window"
     },
     {
       "face_id": 685,
@@ -4181,15 +4181,15 @@
     },
     {
       "face_id": 697,
-      "semantic": "background",
-      "instance_id": -1,
-      "operation": "keep"
+      "semantic": "window",
+      "instance_id": 25,
+      "operation": "native_window"
     },
     {
       "face_id": 698,
-      "semantic": "background",
-      "instance_id": -1,
-      "operation": "keep"
+      "semantic": "window",
+      "instance_id": 26,
+      "operation": "native_window"
     },
     {
       "face_id": 699,
@@ -4214,167 +4214,203 @@
       "semantic": "background",
       "instance_id": -1,
       "operation": "keep"
+    },
+    {
+      "face_id": 703,
+      "semantic": "background",
+      "instance_id": -1,
+      "operation": "keep"
+    },
+    {
+      "face_id": 704,
+      "semantic": "background",
+      "instance_id": -1,
+      "operation": "keep"
+    },
+    {
+      "face_id": 705,
+      "semantic": "background",
+      "instance_id": -1,
+      "operation": "keep"
+    },
+    {
+      "face_id": 706,
+      "semantic": "background",
+      "instance_id": -1,
+      "operation": "keep"
+    },
+    {
+      "face_id": 707,
+      "semantic": "background",
+      "instance_id": -1,
+      "operation": "keep"
+    },
+    {
+      "face_id": 708,
+      "semantic": "window",
+      "instance_id": 29,
+      "operation": "native_window"
     }
   ],
   "instances": [
     {
       "instance_id": 1,
       "type": "rivet",
-      "host_face": 184,
+      "host_face": 9,
       "inverse_op": {
         "kind": "remove_protrusion",
-        "radius": 0.16,
-        "height": 0.104
+        "radius": 0.32,
+        "height": 0.208
       }
     },
     {
       "instance_id": 2,
       "type": "rivet",
-      "host_face": 184,
+      "host_face": 9,
       "inverse_op": {
         "kind": "remove_protrusion",
-        "radius": 0.16,
-        "height": 0.104
+        "radius": 0.32,
+        "height": 0.208
       }
     },
     {
       "instance_id": 3,
       "type": "rivet",
-      "host_face": 184,
+      "host_face": 9,
       "inverse_op": {
         "kind": "remove_protrusion",
-        "radius": 0.16,
-        "height": 0.104
+        "radius": 0.32,
+        "height": 0.208
       }
     },
     {
       "instance_id": 4,
       "type": "rivet",
-      "host_face": 184,
+      "host_face": 9,
       "inverse_op": {
         "kind": "remove_protrusion",
-        "radius": 0.16,
-        "height": 0.104
+        "radius": 0.32,
+        "height": 0.208
       }
     },
     {
       "instance_id": 5,
       "type": "rivet",
-      "host_face": 184,
+      "host_face": 9,
       "inverse_op": {
         "kind": "remove_protrusion",
-        "radius": 0.16,
-        "height": 0.104
+        "radius": 0.32,
+        "height": 0.208
       }
     },
     {
       "instance_id": 6,
       "type": "rivet",
-      "host_face": 184,
+      "host_face": 9,
       "inverse_op": {
         "kind": "remove_protrusion",
-        "radius": 0.16,
-        "height": 0.104
+        "radius": 0.32,
+        "height": 0.208
       }
     },
     {
       "instance_id": 7,
       "type": "rivet",
-      "host_face": 184,
+      "host_face": 9,
       "inverse_op": {
         "kind": "remove_protrusion",
-        "radius": 0.16,
-        "height": 0.104
+        "radius": 0.32,
+        "height": 0.208
       }
     },
     {
       "instance_id": 8,
       "type": "rivet",
-      "host_face": 184,
+      "host_face": 9,
       "inverse_op": {
         "kind": "remove_protrusion",
-        "radius": 0.16,
-        "height": 0.104
+        "radius": 0.32,
+        "height": 0.208
       }
     },
     {
       "instance_id": 9,
       "type": "rivet",
-      "host_face": 9,
+      "host_face": 184,
       "inverse_op": {
         "kind": "remove_protrusion",
-        "radius": 0.16,
-        "height": 0.104
+        "radius": 0.32,
+        "height": 0.208
       }
     },
     {
       "instance_id": 10,
       "type": "rivet",
-      "host_face": 9,
+      "host_face": 184,
       "inverse_op": {
         "kind": "remove_protrusion",
-        "radius": 0.16,
-        "height": 0.104
+        "radius": 0.32,
+        "height": 0.208
       }
     },
     {
       "instance_id": 11,
       "type": "rivet",
-      "host_face": 9,
+      "host_face": 184,
       "inverse_op": {
         "kind": "remove_protrusion",
-        "radius": 0.16,
-        "height": 0.104
+        "radius": 0.32,
+        "height": 0.208
       }
     },
     {
       "instance_id": 12,
       "type": "rivet",
-      "host_face": 9,
+      "host_face": 184,
       "inverse_op": {
         "kind": "remove_protrusion",
-        "radius": 0.16,
-        "height": 0.104
+        "radius": 0.32,
+        "height": 0.208
       }
     },
     {
       "instance_id": 13,
       "type": "rivet",
-      "host_face": 9,
+      "host_face": 184,
       "inverse_op": {
         "kind": "remove_protrusion",
-        "radius": 0.16,
-        "height": 0.104
+        "radius": 0.32,
+        "height": 0.208
       }
     },
     {
       "instance_id": 14,
       "type": "rivet",
-      "host_face": 9,
+      "host_face": 184,
       "inverse_op": {
         "kind": "remove_protrusion",
-        "radius": 0.16,
-        "height": 0.104
+        "radius": 0.32,
+        "height": 0.208
       }
     },
     {
       "instance_id": 15,
       "type": "rivet",
-      "host_face": 9,
+      "host_face": 184,
       "inverse_op": {
         "kind": "remove_protrusion",
-        "radius": 0.16,
-        "height": 0.104
+        "radius": 0.32,
+        "height": 0.208
       }
     },
     {
       "instance_id": 16,
       "type": "rivet",
-      "host_face": 9,
+      "host_face": 184,
       "inverse_op": {
         "kind": "remove_protrusion",
-        "radius": 0.16,
-        "height": 0.104
+        "radius": 0.32,
+        "height": 0.208
       }
     }
   ]

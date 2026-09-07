@@ -146,6 +146,8 @@ def run_inference(
         build_window_graph,
         dual_head_decision,
         apply_smooth_shell_surface_guard,
+        apply_wing_shell_surface_guard,
+        apply_rivet_size_guard,
         label_names_from_stats,
         load_cad_data,
     )
@@ -272,8 +274,30 @@ def run_inference(
                 torch.ones(output.shape[0], dtype=torch.bool, device=device),
                 data.to(device),
             )
+    feature_frame = pd.read_csv(csv_path)
+    if len(feature_frame) != len(face_ids):
+        raise RuntimeError(
+            "Wing-shell guard feature count does not match inference faces: "
+            f"features={len(feature_frame)}, faces={len(face_ids)}"
+        )
+    guarded_predictions = apply_wing_shell_surface_guard(
+        torch.tensor(predictions, dtype=torch.long),
+        feature_frame,
+    )
+    guarded_predictions = apply_rivet_size_guard(guarded_predictions, feature_frame)
+    suppressed_indices = [
+        index
+        for index, (raw_label, guarded_label) in enumerate(
+            zip(predictions, guarded_predictions.tolist())
+        )
+        if raw_label != guarded_label
+    ]
+    if suppressed_indices:
+        suppressed_face_ids = [face_ids[index] for index in suppressed_indices]
+        print(f"Wing-shell guard suppressed surface faces: {suppressed_face_ids}")
+
     probability_array = np.asarray(probabilities, dtype=float)
-    pred = predictions
+    pred = guarded_predictions.tolist()
     if len(face_ids) != len(pred):
         raise RuntimeError(
             f"Prediction/face ID count mismatch: predictions={len(pred)}, face_ids={len(face_ids)}"
@@ -355,6 +379,8 @@ def visualize_cad_results(
     marker_radius=0.0,
     pred_face_ids=None,
     screenshot_path=None,
+    simple_viewer=False,
+    foreground_only=False,
 ):
     from OCC.Core.Quantity import Quantity_Color, Quantity_NOC_GRAY, Quantity_TOC_RGB
     from OCC.Core.Bnd import Bnd_Box
@@ -364,7 +390,6 @@ def visualize_cad_results(
     from OCC.Core.STEPControl import STEPControl_Reader
     from OCC.Core.TopAbs import TopAbs_FACE
     from OCC.Core.TopoDS import topods
-    from OCC.Display.SimpleGui import init_display
 
     reader = STEPControl_Reader()
     if reader.ReadFile(str(step_path)) != 1:
@@ -373,7 +398,28 @@ def visualize_cad_results(
     reader.TransferRoots()
     shape = reader.OneShape()
 
-    display, start_display, _, _ = init_display()
+    root = None
+    canvas = None
+    selected_face_text = None
+    if screenshot_path or simple_viewer:
+        from OCC.Display.SimpleGui import init_display
+
+        display, start_display, _, _ = init_display()
+    else:
+        import tkinter as tk
+        from OCC.Display.tkDisplay import tkViewer3d
+
+        root = tk.Tk()
+        root.title(f"Prediction/truth comparison: {Path(step_path).name}")
+        selected_face_text = tk.StringVar(value="Right-click a face to show its F-number here.")
+        status = tk.Label(root, textvariable=selected_face_text, anchor="w", padx=8)
+        status.pack(side=tk.BOTTOM, fill=tk.X)
+        canvas = tkViewer3d(root)
+        canvas.pack(fill=tk.BOTH, expand=True)
+        root.update_idletasks()
+        root.update()
+        display = canvas._display
+        start_display = root.mainloop
     prediction_colors = {
         1: Quantity_Color(0.0, 0.8, 0.0, Quantity_TOC_RGB),
         2: Quantity_Color(0.1, 0.3, 1.0, Quantity_TOC_RGB),
@@ -398,12 +444,13 @@ def visualize_cad_results(
         print("purple=missed/wrong rivet, yellow=missed/wrong surface feature")
     print("transparent gray=predicted background/model context")
     print(f"transparent gray=model context (transparency={context_transparency:g})")
-    display.DisplayShape(
-        shape,
-        color=Quantity_NOC_GRAY,
-        transparency=context_transparency,
-        update=False,
-    )
+    if not foreground_only:
+        display.DisplayShape(
+            shape,
+            color=Quantity_NOC_GRAY,
+            transparency=context_transparency,
+            update=False,
+        )
 
     from OCC.Core.TopExp import topexp
     from OCC.Core.TopTools import TopTools_IndexedMapOfShape
@@ -441,7 +488,8 @@ def visualize_cad_results(
     x_min, y_min, z_min, x_max, y_max, z_max = model_box.Get()
     diagonal = ((x_max - x_min) ** 2 + (y_max - y_min) ** 2 + (z_max - z_min) ** 2) ** 0.5
     auto_marker_radius = min(max(diagonal * 0.001, 2.0), 12.0)
-    use_markers = marker_radius and marker_radius > 0
+    # Keep the original face-color visualization; do not overlay spherical markers.
+    use_markers = False
     if use_markers:
         print(f"Marker radius: {marker_radius:g}")
     else:
@@ -492,7 +540,46 @@ def visualize_cad_results(
     if truth_labels is not None:
         print(f"Error counts by truth->prediction: {error_counts}")
 
+    def report_selected_face(selected_shapes, x, y):
+        if not selected_shapes:
+            print(f"No face selected at ({x}, {y}); click directly on a visible surface.")
+            return
+
+        for selected in selected_shapes:
+            face_id = face_map.FindIndex(selected)
+            if not face_id:
+                for candidate_id in range(1, num_faces + 1):
+                    candidate = face_map.FindKey(candidate_id)
+                    if selected.IsSame(candidate) or selected.IsEqual(candidate):
+                        face_id = candidate_id
+                        break
+            if not face_id:
+                continue
+
+            message = f"Selected face: F{face_id}"
+            if selected_face_text is not None:
+                selected_face_text.set(message)
+            print(message)
+            return
+
+        print("Selected shape did not match a STEP face; click directly on a visible surface.")
+
+    display.SetSelectionModeFace()
+    display.register_select_callback(report_selected_face)
+    if canvas is not None:
+
+        def select_face(event):
+            display.MoveTo(event.x, event.y)
+            display.Select(event.x, event.y)
+
+        canvas.bind("<Button-3>", select_face)
+        print("Right-click a face to display its F-number in the status bar.")
+
     display.FitAll()
+    display.Repaint()
+    if root is not None:
+        root.update_idletasks()
+        root.after(200, lambda: (display.FitAll(), display.Repaint()))
     if screenshot_path:
         if not display.View.Dump(str(screenshot_path)):
             raise RuntimeError(f"Unable to write visualization screenshot: {screenshot_path}")
@@ -524,6 +611,21 @@ def parse_args():
     parser.add_argument("--allow-contract-override", action="store_true", help="Allow explicit inference arguments to override checkpoint metadata.")
     parser.add_argument("--rivet-threshold", type=float, help="Override dual-head rivet threshold; requires --allow-contract-override.")
     parser.add_argument("--surface-threshold", type=float, help="Override dual-head surface threshold; requires --allow-contract-override.")
+    parser.add_argument(
+        "--decal-only",
+        action="store_true",
+        help="Ignore rivets and keep surface predictions only when they match the decal topology signature.",
+    )
+    parser.add_argument(
+        "--simple-viewer",
+        action="store_true",
+        help="Use the OCC SimpleGui viewer instead of the Tk embedded viewer.",
+    )
+    parser.add_argument(
+        "--foreground-only",
+        action="store_true",
+        help="Display only predicted/truth foreground faces; omit the full-model context.",
+    )
     return parser.parse_args()
 
 
@@ -556,6 +658,35 @@ def main():
         )
         print("Inference finished.")
 
+    if args.decal_only:
+        import torch
+        from train_rivet_gcn import apply_decal_only_surface_guard
+
+        feature_frame = pd.read_csv(args.csv)
+        if "id" not in feature_frame.columns:
+            raise ValueError("Decal-only feature CSV must contain an id column.")
+        feature_face_ids = feature_frame["id"].astype(int).tolist()
+        if feature_face_ids != list(prediction_face_ids):
+            raise ValueError("Decal-only feature face IDs do not match prediction face IDs.")
+        raw_predictions = list(predicted_labels)
+        predicted_labels = apply_decal_only_surface_guard(
+            torch.tensor(raw_predictions, dtype=torch.long),
+            feature_frame,
+        ).tolist()
+        suppressed_face_ids = [
+            face_id
+            for face_id, raw_label, guarded_label in zip(
+                prediction_face_ids,
+                raw_predictions,
+                predicted_labels,
+            )
+            if raw_label != guarded_label
+        ]
+        print(
+            "Decal-only guard suppressed "
+            f"{len(suppressed_face_ids)} non-decal predictions."
+        )
+
     if (args.truth_csv is None) != (args.truth_model_name is None):
         raise ValueError("Use --truth-csv and --truth-model-name together.")
     truth_labels = None
@@ -581,6 +712,8 @@ def main():
             marker_radius=args.marker_radius,
             pred_face_ids=prediction_face_ids,
             screenshot_path=args.screenshot,
+            simple_viewer=args.simple_viewer,
+            foreground_only=args.foreground_only,
         )
 
 

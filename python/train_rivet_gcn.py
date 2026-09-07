@@ -1294,6 +1294,121 @@ def apply_smooth_shell_surface_guard(
     return result
 
 
+def apply_wing_shell_surface_guard(predictions, feature_frame):
+    """Reject characteristic wing and symmetric shell patches predicted as surface features.
+
+    The guard deliberately combines trimmed-face geometry and local topology.
+    It is not a global area cutoff, so large decals with curved neighbors or a
+    smooth attachment edge remain eligible as surface features.
+    """
+    required_columns = {
+        "surfaceType",
+        "innerWireCount",
+        "numEdges",
+        "relativeArea",
+        "compactness",
+        "neighborPlaneCount",
+        "neighborCurvedCount",
+        "convexEdgeCount",
+        "smoothEdgeCount",
+    }
+    missing_columns = sorted(required_columns - set(feature_frame.columns))
+    if missing_columns:
+        raise ValueError(f"Wing-shell guard is missing feature columns: {missing_columns}")
+    if len(feature_frame) != predictions.numel():
+        raise ValueError(
+            "Wing-shell guard row count does not match predictions: "
+            f"features={len(feature_frame)}, predictions={predictions.numel()}"
+        )
+
+    four_edge_wing_patch = (
+        (feature_frame["surfaceType"].astype(int).to_numpy() == 6)
+        & (feature_frame["innerWireCount"].astype(int).to_numpy() == 0)
+        & (feature_frame["numEdges"].astype(int).to_numpy() == 4)
+        & (feature_frame["relativeArea"].astype(float).to_numpy() >= 0.0013)
+        & (feature_frame["compactness"].astype(float).to_numpy() >= 1.8)
+        & (feature_frame["neighborPlaneCount"].astype(int).to_numpy() == 4)
+        & (feature_frame["neighborCurvedCount"].astype(int).to_numpy() == 0)
+        & (feature_frame["convexEdgeCount"].astype(int).to_numpy() == 4)
+        & (feature_frame["smoothEdgeCount"].astype(int).to_numpy() == 0)
+    )
+    five_edge_shell_patch = (
+        (feature_frame["surfaceType"].astype(int).to_numpy() == 6)
+        & (feature_frame["innerWireCount"].astype(int).to_numpy() == 0)
+        & (feature_frame["numEdges"].astype(int).to_numpy() == 5)
+        & (feature_frame["relativeArea"].astype(float).to_numpy() >= 0.0004)
+        & (feature_frame["relativeArea"].astype(float).to_numpy() <= 0.001)
+        & (feature_frame["compactness"].astype(float).to_numpy() >= 1.4)
+        & (feature_frame["compactness"].astype(float).to_numpy() <= 1.6)
+        & (feature_frame["neighborPlaneCount"].astype(int).to_numpy() >= 4)
+        & (feature_frame["neighborCurvedCount"].astype(int).to_numpy() <= 1)
+        & (feature_frame["convexEdgeCount"].astype(int).to_numpy() >= 4)
+        & (feature_frame["smoothEdgeCount"].astype(int).to_numpy() <= 1)
+    )
+    candidate = four_edge_wing_patch | five_edge_shell_patch
+    candidate = torch.as_tensor(candidate, dtype=torch.bool, device=predictions.device)
+    result = predictions.clone()
+    result[(result == 2) & candidate] = 0
+    return result
+
+
+def apply_decal_only_surface_guard(predictions, feature_frame):
+    """Keep only the coordinate-independent topology signature of decal faces."""
+    required_columns = {
+        "surfaceType",
+        "numEdges",
+        "innerWireCount",
+        "neighborCurvedCount",
+        "smoothEdgeCount",
+    }
+    missing_columns = sorted(required_columns - set(feature_frame.columns))
+    if missing_columns:
+        raise ValueError(f"Decal-only guard is missing feature columns: {missing_columns}")
+    if len(feature_frame) != predictions.numel():
+        raise ValueError(
+            "Decal-only guard row count does not match predictions: "
+            f"features={len(feature_frame)}, predictions={predictions.numel()}"
+        )
+
+    decal_signature = (
+        (feature_frame["surfaceType"].astype(int).to_numpy() == 6)
+        & (feature_frame["numEdges"].astype(int).to_numpy() == 2)
+        & (feature_frame["innerWireCount"].astype(int).to_numpy() == 0)
+        & (feature_frame["neighborCurvedCount"].astype(int).to_numpy() == 1)
+        & (feature_frame["smoothEdgeCount"].astype(int).to_numpy() == 1)
+    )
+    decal_signature = torch.as_tensor(
+        decal_signature,
+        dtype=torch.bool,
+        device=predictions.device,
+    )
+    result = predictions.clone()
+    result[result == 1] = 0
+    result[(result == 2) & ~decal_signature] = 0
+    return result
+
+
+def apply_rivet_size_guard(predictions, feature_frame, maximum_relative_area=5e-6):
+    """Reject rivet predictions whose normalized face area is too large."""
+    if maximum_relative_area <= 0.0:
+        raise ValueError("maximum_relative_area must be positive.")
+    if "relativeArea" not in feature_frame.columns:
+        raise ValueError("Rivet size guard is missing the relativeArea column.")
+    if len(feature_frame) != predictions.numel():
+        raise ValueError(
+            "Rivet size guard row count does not match predictions: "
+            f"features={len(feature_frame)}, predictions={predictions.numel()}"
+        )
+    oversized = torch.as_tensor(
+        feature_frame["relativeArea"].astype(float).to_numpy() > maximum_relative_area,
+        dtype=torch.bool,
+        device=predictions.device,
+    )
+    result = predictions.clone()
+    result[(result == 1) & oversized] = 0
+    return result
+
+
 def background_area_threshold(full_graphs, quantile):
     if not 0.0 <= quantile <= 1.0:
         raise ValueError("large_background_loss_quantile must be between 0 and 1.")

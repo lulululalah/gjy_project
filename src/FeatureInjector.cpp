@@ -1387,7 +1387,8 @@ std::vector<RivetPlacement> BuildWingRivetPlacements(
     BRepTools::UVBounds(hostFace, uMin, uMax, vMin, vMax);
 
     const double faceScale = std::sqrt(std::max(hostFeature.area, 1.0));
-    const double rivetRadius = std::clamp(faceScale * 0.0012, 0.003, 0.16);
+    // Use a slightly enlarged physical rivet so it remains visible at aircraft scale.
+    const double rivetRadius = std::clamp(faceScale * 0.0024, 0.006, 0.32);
     const double rivetHeight = std::max(rivetRadius * 0.65, 0.002);
     const double uvInsetScale = std::min(uMax - uMin, vMax - vMin);
     if (uvInsetScale <= Precision::PConfusion()) {
