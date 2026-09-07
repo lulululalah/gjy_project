@@ -31,6 +31,7 @@ add_executable(Detector
     src/main.cpp
     src/Workflow.cpp
     src/FeatureInjector.cpp
+    src/FeatureRemover.cpp
     src/FeatureExtractor.cpp
 )
 target_link_libraries(Detector PRIVATE ${OCC_LIBS})

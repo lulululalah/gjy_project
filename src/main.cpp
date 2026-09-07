@@ -1,4 +1,5 @@
 #include "FeatureInjector.h"
+#include "FeatureRemover.h"
 #include "Workflow.h"
 
 #include <filesystem>
@@ -37,6 +38,7 @@ namespace
             << "  Detector.exe --dump-faces <file>\n"
             << "  Detector.exe --check-face-id <file>\n"
             << "  Detector.exe --inject-wing-rivets <file> [--host-face <id> ...]\n"
+            << "  Detector.exe --remove-predicted-rivets <step> <postprocessed-pred.csv> <output.step>\n"
             << "  Detector.exe --dump-boolean-host-faces <file>\n"
             << "  Detector.exe --inject-star-decals <new-data-file> [--host-face <id> ...] [--max-radius-scale <0..0.440>]\n"
             << "  Detector.exe --inject-v13-decal <new-data-file> --host-face <id>\n"
@@ -102,6 +104,10 @@ int main(int argc, char *argv[])
     else if (mode == "--dump-boolean-host-faces" && argc == 3)
     {
         return RunBooleanHostFaceExport(argv[2]);
+    }
+    else if (mode == "--remove-predicted-rivets" && argc == 5)
+    {
+        return RunPredictedRivetRemoval(argv[2], argv[3], argv[4]);
     }
     else if (mode == "--inject-star-decals" && argc >= 3)
     {
