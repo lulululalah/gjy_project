@@ -19,9 +19,28 @@ from train_rivet_gcn import (
     apply_wing_shell_surface_guard,
     compute_attached_surface_feature_frame,
 )
+from surface_visibility_guard import suppress_internal_large_surface_predictions
 
 
 class AttachedSurfaceFeatureTests(unittest.TestCase):
+    def test_visibility_guard_suppresses_only_large_fully_occluded_surfaces(self):
+        guarded, suppressed = suppress_internal_large_surface_predictions(
+            predictions=[2, 2, 2, 1, 0],
+            relative_areas=[0.01, 0.01, 0.0005, 0.02, 0.02],
+            exposure_scores=[0.0, 0.2, 0.0, 0.0, 0.0],
+        )
+        self.assertEqual(guarded.tolist(), [0, 2, 2, 1, 0])
+        self.assertEqual(suppressed, [0])
+
+    def test_visibility_guard_ignores_unchecked_small_faces(self):
+        guarded, suppressed = suppress_internal_large_surface_predictions(
+            predictions=[2, 2],
+            relative_areas=[0.0002, 0.002],
+            exposure_scores=[np.nan, 0.0],
+        )
+        self.assertEqual(guarded.tolist(), [2, 0])
+        self.assertEqual(suppressed, [1])
+
     def test_smooth_component_runtime_values_are_not_model_features(self):
         self.assertTrue(set(SMOOTH_COMPONENT_RUNTIME_COLS).isdisjoint(ATTACHED_SURFACE_FEATURE_COLS))
 

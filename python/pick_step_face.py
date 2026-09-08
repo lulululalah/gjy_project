@@ -17,7 +17,15 @@ def main() -> int:
         type=Path,
         help="Optional Boolean host-face CSV; eligible faces are highlighted and selection is restricted to them.",
     )
+    parser.add_argument(
+        "--transparency",
+        type=float,
+        default=0.25,
+        help="Model transparency in [0, 1]; use 0 for an opaque exterior check.",
+    )
     args = parser.parse_args()
+    if not 0.0 <= args.transparency <= 1.0:
+        parser.error("--transparency must be between 0 and 1.")
 
     from OCC.Core.Quantity import Quantity_Color, Quantity_NOC_GRAY, Quantity_NOC_ORANGE, Quantity_TOC_RGB
     from OCC.Core.BRep import BRep_Builder
@@ -67,7 +75,7 @@ def main() -> int:
             )
 
     root = tk.Tk()
-    root.title("STEP face picker: right-click a face")
+    root.title(f"STEP face picker: {args.step_model.name}")
     selected_face_text = tk.StringVar(value="Right-click a face to show its F-number here.")
     status = tk.Label(root, textvariable=selected_face_text, anchor="w", padx=8)
     status.pack(side=tk.BOTTOM, fill=tk.X)
@@ -77,7 +85,12 @@ def main() -> int:
     display = canvas._display
 
     def draw_model_with_labels() -> None:
-        display.DisplayShape(shape, color=Quantity_NOC_GRAY, transparency=0.25, update=False)
+        display.DisplayShape(
+            shape,
+            color=Quantity_NOC_GRAY,
+            transparency=args.transparency,
+            update=False,
+        )
         for face_id in sorted(candidate_ids):
             display.DisplayShape(
                 topods.Face(face_map.FindKey(face_id)), color=Quantity_NOC_ORANGE, update=False
@@ -114,7 +127,12 @@ def main() -> int:
             if (use_minimum_end and center <= cutoff) or (not use_minimum_end and center >= cutoff):
                 builder.Add(region, face)
         display.EraseAll()
-        display.DisplayShape(region, color=Quantity_NOC_GRAY, transparency=0.18, update=False)
+        display.DisplayShape(
+            region,
+            color=Quantity_NOC_GRAY,
+            transparency=args.transparency,
+            update=False,
+        )
         display.FitAll()
         display.Repaint()
         print(f"Focused {'minimum' if use_minimum_end else 'maximum'} end of longest model axis")

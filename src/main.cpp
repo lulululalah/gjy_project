@@ -39,6 +39,9 @@ namespace
             << "  Detector.exe --check-face-id <file>\n"
             << "  Detector.exe --inject-wing-rivets <file> [--host-face <id> ...]\n"
             << "  Detector.exe --remove-predicted-rivets <step> <postprocessed-pred.csv> <output.step>\n"
+            << "  Detector.exe --remove-predicted-surface-features <step> <postprocessed-pred.csv> <output.step>\n"
+            << "  Detector.exe --rebuild-invalid-surface-hosts <step> <postprocessed-pred.csv> <output.step>\n"
+            << "  Detector.exe --rebuild-split-window-skins <step> <postprocessed-pred.csv> <output.step>\n"
             << "  Detector.exe --dump-boolean-host-faces <file>\n"
             << "  Detector.exe --inject-star-decals <new-data-file> [--host-face <id> ...] [--max-radius-scale <0..0.440>]\n"
             << "  Detector.exe --inject-v13-decal <new-data-file> --host-face <id>\n"
@@ -108,6 +111,34 @@ int main(int argc, char *argv[])
     else if (mode == "--remove-predicted-rivets" && argc == 5)
     {
         return RunPredictedRivetRemoval(argv[2], argv[3], argv[4]);
+    }
+    else if (mode == "--remove-predicted-surface-features" && argc == 5)
+    {
+        return RunPredictedSurfaceFeatureRemoval(argv[2], argv[3], argv[4]);
+    }
+    else if (mode == "--rebuild-invalid-surface-hosts" && argc == 5)
+    {
+        return RunInvalidSurfaceHostRebuild(argv[2], argv[3], argv[4]);
+    }
+    else if (mode == "--rebuild-split-window-skins" && argc == 5)
+    {
+        return RunSplitWindowSkinRebuild(argv[2], argv[3], argv[4]);
+    }
+    else if (mode == "--bridge-split-window-face" && argc == 5)
+    {
+        try
+        {
+            return RunBridgeSplitWindowFace(argv[2], std::stoi(argv[3]), argv[4]);
+        }
+        catch (const std::exception&)
+        {
+            std::cout << "Invalid window face ID: " << argv[3] << std::endl;
+            return 1;
+        }
+    }
+    else if (mode == "--rebuild-embedded-window-hosts" && argc == 5)
+    {
+        return RunEmbeddedWindowHostRebuild(argv[2], argv[3], argv[4]);
     }
     else if (mode == "--inject-star-decals" && argc >= 3)
     {

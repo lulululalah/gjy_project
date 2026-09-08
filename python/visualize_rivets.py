@@ -126,6 +126,7 @@ def export_inference_csv(step_path, detector_path, csv_path):
 
 
 def run_inference(
+    step_path,
     csv_path,
     model_path,
     stats_path,
@@ -136,6 +137,7 @@ def run_inference(
     allow_contract_override=False,
     rivet_threshold_override=None,
     surface_threshold_override=None,
+    exterior_surface_guard=True,
 ):
     import torch
     from torch_geometric.loader import DataLoader
@@ -295,6 +297,26 @@ def run_inference(
     if suppressed_indices:
         suppressed_face_ids = [face_ids[index] for index in suppressed_indices]
         print(f"Wing-shell guard suppressed surface faces: {suppressed_face_ids}")
+
+    if exterior_surface_guard:
+        from surface_visibility_guard import apply_exterior_visibility_surface_guard
+
+        visibility_guarded, visibility_diagnostics = (
+            apply_exterior_visibility_surface_guard(
+                step_path,
+                guarded_predictions.tolist(),
+                face_ids,
+                feature_frame,
+            )
+        )
+        guarded_predictions = torch.tensor(visibility_guarded, dtype=torch.long)
+        if visibility_diagnostics:
+            details = ", ".join(
+                f"F{item['face_id']}"
+                f"(area={item['relative_area']:.6g}, exposure={item['exposure_score']:.2f})"
+                for item in visibility_diagnostics
+            )
+            print(f"Exterior visibility guard suppressed internal surface faces: {details}")
 
     probability_array = np.asarray(probabilities, dtype=float)
     pred = guarded_predictions.tolist()
@@ -612,6 +634,11 @@ def parse_args():
     parser.add_argument("--rivet-threshold", type=float, help="Override dual-head rivet threshold; requires --allow-contract-override.")
     parser.add_argument("--surface-threshold", type=float, help="Override dual-head surface threshold; requires --allow-contract-override.")
     parser.add_argument(
+        "--disable-exterior-surface-guard",
+        action="store_true",
+        help="Disable the large internal surface-feature visibility post-processing guard.",
+    )
+    parser.add_argument(
         "--decal-only",
         action="store_true",
         help="Ignore rivets and keep surface predictions only when they match the decal topology signature.",
@@ -645,6 +672,7 @@ def main():
             export_inference_csv(args.step_model, args.detector, args.csv)
 
         predicted_labels, label_names, prediction_face_ids, prediction_probabilities = run_inference(
+            args.step_model,
             args.csv,
             args.model,
             args.stats,
@@ -655,6 +683,7 @@ def main():
             allow_contract_override=args.allow_contract_override,
             rivet_threshold_override=args.rivet_threshold,
             surface_threshold_override=args.surface_threshold,
+            exterior_surface_guard=not args.disable_exterior_surface_guard,
         )
         print("Inference finished.")
 
