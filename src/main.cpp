@@ -34,14 +34,13 @@ namespace
         std::cout
             << "Usage:\n"
             << "  Detector.exe --train\n"
-            << "  Detector.exe --predict <file>\n"
-            << "  Detector.exe --dump-faces <file>\n"
+            << "  Detector.exe --predict <file> [output.csv]\n"
+            << "  Detector.exe --dump-faces <file> [output.json]\n"
             << "  Detector.exe --check-face-id <file>\n"
             << "  Detector.exe --inject-wing-rivets <file> [--host-face <id> ...]\n"
             << "  Detector.exe --remove-predicted-rivets <step> <postprocessed-pred.csv> <output.step>\n"
-            << "  Detector.exe --remove-predicted-surface-features <step> <postprocessed-pred.csv> <output.step>\n"
-            << "  Detector.exe --rebuild-invalid-surface-hosts <step> <postprocessed-pred.csv> <output.step>\n"
-            << "  Detector.exe --rebuild-split-window-skins <step> <postprocessed-pred.csv> <output.step>\n"
+            << "  Detector.exe --rebuild-embedded-window-hosts <step> <postprocessed-pred.csv> <output.step> [auto|generic|airplane-body|aulira|airbus|gulfstream-g280]\n"
+            << "  Detector.exe --rebuild-embedded-window-hosts-batch <input-dir> <predictions-dir> <output-dir>\n"
             << "  Detector.exe --dump-boolean-host-faces <file>\n"
             << "  Detector.exe --inject-star-decals <new-data-file> [--host-face <id> ...] [--max-radius-scale <0..0.440>]\n"
             << "  Detector.exe --inject-v13-decal <new-data-file> --host-face <id>\n"
@@ -74,12 +73,16 @@ int main(int argc, char *argv[])
     else if (mode == "--predict" && argc >= 3)
     {
         const std::string filePath = argv[2];
-        return RunSingleInferenceExport(filePath, paths.faceInferenceCsv.string());
+        const std::string outputPath =
+            argc >= 4 ? argv[3] : paths.faceInferenceCsv.string();
+        return RunSingleInferenceExport(filePath, outputPath);
     }
     else if (mode == "--dump-faces" && argc >= 3)
     {
         const std::string filePath = argv[2];
-        RunSingleFaceDump(filePath, paths.faceDumpJson.string());
+        const std::string outputPath =
+            argc >= 4 ? argv[3] : paths.faceDumpJson.string();
+        RunSingleFaceDump(filePath, outputPath);
     }
     else if (mode == "--check-face-id" && argc >= 3)
     {
@@ -112,33 +115,16 @@ int main(int argc, char *argv[])
     {
         return RunPredictedRivetRemoval(argv[2], argv[3], argv[4]);
     }
-    else if (mode == "--remove-predicted-surface-features" && argc == 5)
+    else if (mode == "--rebuild-embedded-window-hosts" &&
+             (argc == 5 || argc == 6))
     {
-        return RunPredictedSurfaceFeatureRemoval(argv[2], argv[3], argv[4]);
+        const std::string rebuildProfile = argc == 6 ? argv[5] : "auto";
+        return RunEmbeddedWindowHostRebuild(
+            argv[2], argv[3], argv[4], rebuildProfile);
     }
-    else if (mode == "--rebuild-invalid-surface-hosts" && argc == 5)
+    else if (mode == "--rebuild-embedded-window-hosts-batch" && argc == 5)
     {
-        return RunInvalidSurfaceHostRebuild(argv[2], argv[3], argv[4]);
-    }
-    else if (mode == "--rebuild-split-window-skins" && argc == 5)
-    {
-        return RunSplitWindowSkinRebuild(argv[2], argv[3], argv[4]);
-    }
-    else if (mode == "--bridge-split-window-face" && argc == 5)
-    {
-        try
-        {
-            return RunBridgeSplitWindowFace(argv[2], std::stoi(argv[3]), argv[4]);
-        }
-        catch (const std::exception&)
-        {
-            std::cout << "Invalid window face ID: " << argv[3] << std::endl;
-            return 1;
-        }
-    }
-    else if (mode == "--rebuild-embedded-window-hosts" && argc == 5)
-    {
-        return RunEmbeddedWindowHostRebuild(argv[2], argv[3], argv[4]);
+        return RunBatchEmbeddedWindowHostRebuild(argv[2], argv[3], argv[4]);
     }
     else if (mode == "--inject-star-decals" && argc >= 3)
     {

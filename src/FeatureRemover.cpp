@@ -4,6 +4,7 @@
 #include <BRepBuilderAPI_MakeEdge.hxx>
 #include <BRepBuilderAPI_MakeFace.hxx>
 #include <BRepBuilderAPI_Sewing.hxx>
+#include <BRepBndLib.hxx>
 #include <BRep_Builder.hxx>
 #include <BRepCheck_Analyzer.hxx>
 #include <BRepGProp.hxx>
@@ -11,6 +12,7 @@
 #include <BRepTools.hxx>
 #include <BRepTools_ReShape.hxx>
 #include <BRep_Tool.hxx>
+#include <Bnd_Box.hxx>
 #include <GProp_GProps.hxx>
 #include <GCE2d_MakeSegment.hxx>
 #include <IFSelect_ReturnStatus.hxx>
@@ -1849,789 +1851,82 @@ int RunPredictedRivetRemoval(
     }
 }
 
-int RunPredictedSurfaceFeatureRemoval(
-    const std::string& inputFile,
-    const std::string& predictionsFile,
-    const std::string& outputFile)
-{
-    try
-    {
-        if (std::filesystem::weakly_canonical(inputFile) ==
-            std::filesystem::weakly_canonical(outputFile))
-        {
-            std::cerr << "Input and output STEP paths must be different." << std::endl;
-            return 1;
-        }
-
-        const PredictionSelection predictions = ReadPredictedFaceIds(predictionsFile);
-        if (predictions.surfaceFeatureFaceIds.empty())
-        {
-            std::cerr << "No post-processed surface-feature predictions (pred_label=2) were found."
-                      << std::endl;
-            return 1;
-        }
-
-        TopoDS_Shape inputShape;
-        if (!LoadStep(inputFile, inputShape))
-        {
-            std::cerr << "Failed to read STEP file: " << inputFile << std::endl;
-            return 1;
-        }
-        TopTools_IndexedMapOfShape originalFaceMap;
-        TopExp::MapShapes(inputShape, TopAbs_FACE, originalFaceMap);
-        if (predictions.allFaceIds.size() !=
-            static_cast<std::size_t>(originalFaceMap.Extent()))
-        {
-            std::cerr << "Prediction CSV covers " << predictions.allFaceIds.size()
-                      << " faces, but the STEP contains " << originalFaceMap.Extent()
-                      << ". Refusing to delete with mismatched data." << std::endl;
-            return 1;
-        }
-        for (int faceId = 1; faceId <= originalFaceMap.Extent(); ++faceId)
-        {
-            if (predictions.allFaceIds.count(faceId) == 0)
-            {
-                std::cerr << "Prediction CSV does not contain STEP face ID " << faceId
-                          << ". Refusing to delete with incomplete data." << std::endl;
-                return 1;
-            }
-        }
-        const bool inputIsValid = BRepCheck_Analyzer(inputShape).IsValid();
-        if (!inputIsValid)
-        {
-            std::cout << "Warning: input STEP is not a valid BRep; using raw face removal "
-                      << "without topology healing." << std::endl;
-        }
-
-        const RemovalSelection expandedSurfaceSelection = ExpandSmallConnectedFaces(
-            inputShape, originalFaceMap, predictions.surfaceFeatureFaceIds,
-            2.0, 32);
-        const std::set<int>& surfaceFaceIds = expandedSurfaceSelection.faceIds;
-        TopoDS_Shape repairedShape = inputShape;
-
-        if (!inputIsValid)
-        {
-            BRepTools_ReShape reshaper;
-            for (const int faceId : surfaceFaceIds)
-            {
-                reshaper.Remove(originalFaceMap.FindKey(faceId));
-            }
-            repairedShape = reshaper.Apply(inputShape);
-            if (repairedShape.IsNull() ||
-                CountFaces(repairedShape) >= originalFaceMap.Extent())
-            {
-                std::cerr << "Raw surface-feature removal did not reduce the face count; "
-                          << "no STEP file was written." << std::endl;
-                return 1;
-            }
-            const std::filesystem::path outputPath(outputFile);
-            if (outputPath.has_parent_path())
-            {
-                std::filesystem::create_directories(outputPath.parent_path());
-            }
-            if (!SaveStep(repairedShape, outputFile))
-            {
-                std::cerr << "Failed to write raw surface-feature removal STEP: "
-                          << outputFile << std::endl;
-                return 1;
-            }
-            std::cout << "Predicted surface-feature faces selected: "
-                      << predictions.surfaceFeatureFaceIds.size() << std::endl;
-            std::cout << "Raw faces removed: "
-                      << originalFaceMap.Extent() - CountFaces(repairedShape) << std::endl;
-            std::cout << "Output BRep valid: no (input was already invalid)" << std::endl;
-            std::cout << "Face count: " << originalFaceMap.Extent()
-                      << " -> " << CountFaces(repairedShape) << std::endl;
-            std::cout << "Surface-feature removal STEP: " << outputFile << std::endl;
-            return 0;
-        }
-        const std::vector<std::set<int>> groups = BuildSelectedFaceGroups(
-            inputShape, originalFaceMap, surfaceFaceIds);
-        int removedFreeShellCount = 0;
-        int directRemovalAccepted = 0;
-        int scopedDefeaturingAccepted = 0;
-        int rejectedGroups = 0;
-        const bool useLargeBatchRemoval = surfaceFaceIds.size() > 500;
-
-        const int filledSurfaceWireCount = RemoveSurfacePatchesAndFillHosts(
-            repairedShape, originalFaceMap, surfaceFaceIds);
-
-        std::set<int> remainingAfterMerge = FindOriginalFacesStillPresent(
-            repairedShape, originalFaceMap, surfaceFaceIds);
-        if (!remainingAfterMerge.empty())
-        {
-            removedFreeShellCount = RemoveFullySelectedFreeShells(
-                repairedShape, remainingAfterMerge);
-            remainingAfterMerge = FindOriginalFacesStillPresent(
-                repairedShape, originalFaceMap, surfaceFaceIds);
-        }
-        if (!remainingAfterMerge.empty())
-        {
-            // Large decal/window-heavy models are prohibitively expensive when
-            // every face is ShapeFix'ed independently.  Try one validated
-            // batch operation; smaller models retain the original per-group
-            // fallback below.
-            if (useLargeBatchRemoval)
-            {
-                if (TryDirectFaceRemoval(repairedShape, remainingAfterMerge))
-                {
-                    ++directRemovalAccepted;
-                }
-                else if (TryScopedDefeaturing(repairedShape, remainingAfterMerge))
-                {
-                    ++scopedDefeaturingAccepted;
-                }
-                remainingAfterMerge = FindOriginalFacesStillPresent(
-                    repairedShape, originalFaceMap, surfaceFaceIds);
-            }
-        }
-        if (!remainingAfterMerge.empty() && !useLargeBatchRemoval)
-        {
-            for (const std::set<int>& originalGroup : groups)
-            {
-                const std::set<int> currentIds = FindOriginalFacesStillPresent(
-                    repairedShape, originalFaceMap, originalGroup);
-                if (currentIds.empty())
-                {
-                    continue;
-                }
-                if (TryDirectFaceRemoval(repairedShape, currentIds))
-                {
-                    ++directRemovalAccepted;
-                }
-                else
-                {
-                    ++rejectedGroups;
-                }
-            }
-            remainingAfterMerge = FindOriginalFacesStillPresent(
-                repairedShape, originalFaceMap, surfaceFaceIds);
-        }
-        if (!remainingAfterMerge.empty() && !useLargeBatchRemoval)
-        {
-            for (const std::set<int>& originalGroup : groups)
-            {
-                const std::set<int> currentIds = FindOriginalFacesStillPresent(
-                    repairedShape, originalFaceMap, originalGroup);
-                if (!currentIds.empty() && TryScopedDefeaturing(repairedShape, currentIds))
-                {
-                    ++scopedDefeaturingAccepted;
-                }
-            }
-        }
-
-        const TopoDS_Shape shapeBeforeFinalFix = repairedShape;
-        ShapeFix_Shape finalFixer(repairedShape);
-        finalFixer.Perform();
-        if (!finalFixer.Shape().IsNull() &&
-            BRepCheck_Analyzer(finalFixer.Shape()).IsValid() &&
-            PreservesVolume(shapeBeforeFinalFix, finalFixer.Shape()))
-        {
-            repairedShape = finalFixer.Shape();
-        }
-        if (repairedShape.IsNull() || !BRepCheck_Analyzer(repairedShape).IsValid())
-        {
-            std::cerr << "The surface-feature removal result is not a valid BRep; "
-                      << "no STEP file was written." << std::endl;
-            return 1;
-        }
-
-        // Only heal seams when a host inner loop was actually detected and
-        // rebuilt.  Models without that topology keep the ordinary local
-        // deletion path and are not subjected to global surface merging.
-        if (filledSurfaceWireCount > 0)
-        {
-            const TopoDS_Shape shapeBeforeUnify = repairedShape;
-            ShapeUpgrade_UnifySameDomain unify(
-                repairedShape, Standard_True, Standard_True);
-            unify.Build();
-            if (!unify.Shape().IsNull() &&
-                BRepCheck_Analyzer(unify.Shape()).IsValid())
-            {
-                repairedShape = unify.Shape();
-            }
-
-            BRepBuilderAPI_Sewing sewing(1.0e-4, Standard_True, Standard_True,
-                                         Standard_True, Standard_False);
-            sewing.Add(repairedShape);
-            sewing.Perform();
-            if (!sewing.SewedShape().IsNull() &&
-                BRepCheck_Analyzer(sewing.SewedShape()).IsValid())
-            {
-                repairedShape = sewing.SewedShape();
-                ShapeUpgrade_UnifySameDomain sewnUnify(
-                    repairedShape, Standard_True, Standard_True);
-                sewnUnify.Build();
-                if (!sewnUnify.Shape().IsNull() &&
-                    BRepCheck_Analyzer(sewnUnify.Shape()).IsValid())
-                {
-                    repairedShape = sewnUnify.Shape();
-                }
-            }
-        }
-
-        const std::set<int> remainingSurfaceFaces = FindRemainingOriginalFaceIds(
-            repairedShape, originalFaceMap, surfaceFaceIds);
-        if (!remainingSurfaceFaces.empty())
-        {
-            std::cout << "Surface-feature faces skipped because no valid repair was found:"
-                      << std::endl;
-            std::cout << "Skipped original F-numbers:";
-            for (const int faceId : remainingSurfaceFaces)
-            {
-                std::cout << ' ' << faceId;
-            }
-            std::cout << std::endl;
-        }
-        const std::filesystem::path outputPath(outputFile);
-        if (outputPath.has_parent_path())
-        {
-            std::filesystem::create_directories(outputPath.parent_path());
-        }
-        if (!SaveStep(repairedShape, outputFile))
-        {
-            std::cerr << "Failed to write surface-feature removal STEP: "
-                      << outputFile << std::endl;
-            return 1;
-        }
-
-        std::cout << "Predicted surface-feature faces selected: "
-                  << predictions.surfaceFeatureFaceIds.size() << std::endl;
-        std::cout << "Surface-feature groups: " << groups.size() << std::endl;
-        std::cout << "Surface-feature host loops filled: "
-                  << filledSurfaceWireCount << std::endl;
-        std::cout << "Fully selected free shells removed: "
-                  << removedFreeShellCount << std::endl;
-        std::cout << "Groups removed directly: " << directRemovalAccepted << std::endl;
-        std::cout << "Groups removed by scoped defeaturing: "
-                  << scopedDefeaturingAccepted << std::endl;
-        std::cout << "Groups rejected: " << rejectedGroups << std::endl;
-        std::cout << "Predicted faces skipped: "
-                  << remainingSurfaceFaces.size() << std::endl;
-        std::cout << "Output BRep valid: yes" << std::endl;
-        std::cout << "Face count: " << originalFaceMap.Extent()
-                  << " -> " << CountFaces(repairedShape) << std::endl;
-        std::cout << "Surface-feature removal STEP: " << outputFile << std::endl;
-        return 0;
-    }
-    catch (const Standard_Failure& error)
-    {
-        std::cerr << "Predicted surface-feature removal failed in OpenCASCADE: "
-                  << error.GetMessageString() << std::endl;
-        return 1;
-    }
-    catch (const std::exception& error)
-    {
-        std::cerr << "Predicted surface-feature removal failed: "
-                  << error.what() << std::endl;
-        return 1;
-    }
-}
-
-int RunInvalidSurfaceHostRebuild(
-    const std::string& inputFile,
-    const std::string& predictionsFile,
-    const std::string& outputFile)
-{
-    try
-    {
-        if (std::filesystem::weakly_canonical(inputFile) ==
-            std::filesystem::weakly_canonical(outputFile))
-        {
-            std::cerr << "Input and output STEP paths must be different." << std::endl;
-            return 1;
-        }
-
-        const PredictionSelection predictions = ReadPredictedFaceIds(predictionsFile);
-        std::set<int> selectedFaceIds = predictions.surfaceFeatureFaceIds;
-        selectedFaceIds.insert(
-            predictions.rivetFaceIds.begin(), predictions.rivetFaceIds.end());
-        if (selectedFaceIds.empty())
-        {
-            std::cerr << "No non-background predictions were found." << std::endl;
-            return 1;
-        }
-
-        TopoDS_Shape inputShape;
-        if (!LoadStep(inputFile, inputShape))
-        {
-            std::cerr << "Failed to read STEP file: " << inputFile << std::endl;
-            return 1;
-        }
-        TopTools_IndexedMapOfShape originalFaceMap;
-        TopExp::MapShapes(inputShape, TopAbs_FACE, originalFaceMap);
-        if (predictions.allFaceIds.size() !=
-            static_cast<std::size_t>(originalFaceMap.Extent()))
-        {
-            std::cerr << "Prediction CSV covers " << predictions.allFaceIds.size()
-                      << " faces, but the STEP contains " << originalFaceMap.Extent()
-                      << ". Refusing to rebuild with mismatched data." << std::endl;
-            return 1;
-        }
-        if (BRepCheck_Analyzer(inputShape).IsValid())
-        {
-            std::cerr << "This dedicated rebuild mode is only for an already-invalid "
-                      << "source BRep. Use the standard removal mode for valid models."
-                      << std::endl;
-            return 1;
-        }
-
-        TopoDS_Shape rebuiltShape = inputShape;
-        const int filledHostLoopCount = RemoveSurfacePatchesAndFillHosts(
-            rebuiltShape, originalFaceMap, selectedFaceIds, true);
-        if (filledHostLoopCount <= 0 || rebuiltShape.IsNull())
-        {
-            std::cerr << "No predicted window host loops could be rebuilt; "
-                      << "no candidate STEP was written." << std::endl;
-            return 1;
-        }
-
-        // Remove only selected faces that are still present after the host
-        // faces have been rebuilt.  Do not run global same-domain unification:
-        // it is both expensive and unsafe on an already-invalid assembly.
-        TopTools_IndexedMapOfShape rebuiltFaceMap;
-        TopExp::MapShapes(rebuiltShape, TopAbs_FACE, rebuiltFaceMap);
-        BRepTools_ReShape remainingRemover;
-        int remainingSelectedFaceCount = 0;
-        for (const int originalFaceId : selectedFaceIds)
-        {
-            const int rebuiltFaceId = rebuiltFaceMap.FindIndex(
-                originalFaceMap.FindKey(originalFaceId));
-            if (rebuiltFaceId > 0)
-            {
-                remainingRemover.Remove(rebuiltFaceMap.FindKey(rebuiltFaceId));
-                ++remainingSelectedFaceCount;
-            }
-        }
-        if (remainingSelectedFaceCount > 0)
-        {
-            const TopoDS_Shape removedShape = remainingRemover.Apply(rebuiltShape);
-            if (!removedShape.IsNull())
-            {
-                rebuiltShape = removedShape;
-            }
-        }
-
-        const std::filesystem::path outputPath(outputFile);
-        if (outputPath.has_parent_path())
-        {
-            std::filesystem::create_directories(outputPath.parent_path());
-        }
-        if (!SaveStep(rebuiltShape, outputFile))
-        {
-            std::cerr << "Failed to write invalid-BRep host rebuild candidate: "
-                      << outputFile << std::endl;
-            return 1;
-        }
-
-        std::cout << "Invalid-BRep predicted faces selected: "
-                  << selectedFaceIds.size() << std::endl;
-        std::cout << "Window host loops rebuilt: " << filledHostLoopCount << std::endl;
-        std::cout << "Remaining selected faces removed: "
-                  << remainingSelectedFaceCount << std::endl;
-        std::cout << "Output BRep valid: "
-                  << (BRepCheck_Analyzer(rebuiltShape).IsValid() ? "yes" : "no")
-                  << " (diagnostic only)" << std::endl;
-        std::cout << "Face count: " << originalFaceMap.Extent()
-                  << " -> " << CountFaces(rebuiltShape) << std::endl;
-        std::cout << "Invalid-BRep host rebuild candidate: " << outputFile << std::endl;
-        return 0;
-    }
-    catch (const Standard_Failure& error)
-    {
-        std::cerr << "Invalid-BRep host rebuild failed in OpenCASCADE: "
-                  << error.GetMessageString() << std::endl;
-        return 1;
-    }
-    catch (const std::exception& error)
-    {
-        std::cerr << "Invalid-BRep host rebuild failed: "
-                  << error.what() << std::endl;
-        return 1;
-    }
-}
-
-int RunSplitWindowSkinRebuild(
-    const std::string& inputFile,
-    const std::string& predictionsFile,
-    const std::string& outputFile)
-{
-    try
-    {
-        if (std::filesystem::weakly_canonical(inputFile) ==
-            std::filesystem::weakly_canonical(outputFile))
-        {
-            std::cerr << "Input and output STEP paths must be different." << std::endl;
-            return 1;
-        }
-
-        const PredictionSelection predictions = ReadPredictedFaceIds(predictionsFile);
-        if (predictions.surfaceFeatureFaceIds.empty())
-        {
-            std::cerr << "No surface-feature predictions were found." << std::endl;
-            return 1;
-        }
-
-        TopoDS_Shape inputShape;
-        if (!LoadStep(inputFile, inputShape))
-        {
-            std::cerr << "Failed to read STEP file: " << inputFile << std::endl;
-            return 1;
-        }
-        TopTools_IndexedMapOfShape originalFaceMap;
-        TopExp::MapShapes(inputShape, TopAbs_FACE, originalFaceMap);
-        if (predictions.allFaceIds.size() !=
-            static_cast<std::size_t>(originalFaceMap.Extent()))
-        {
-            std::cerr << "Prediction CSV covers " << predictions.allFaceIds.size()
-                      << " faces, but the STEP contains " << originalFaceMap.Extent()
-                      << ". Refusing to rebuild with mismatched data." << std::endl;
-            return 1;
-        }
-
-        const bool inputIsValid = BRepCheck_Analyzer(inputShape).IsValid();
-        const int inputFreeEdgeCount = CountFreeEdges(inputShape);
-        TopoDS_Shape rebuiltShape = inputShape;
-        const int filledHostLoopCount = RemoveSurfacePatchesAndFillHosts(
-            rebuiltShape, originalFaceMap,
-            predictions.surfaceFeatureFaceIds, !inputIsValid, true);
-        if (filledHostLoopCount <= 0 || rebuiltShape.IsNull())
-        {
-            std::cerr << "No split-window host loops could be rebuilt; "
-                      << "no candidate STEP was written." << std::endl;
-            return 1;
-        }
-
-        int directRemovalAccepted = 0;
-        int scopedRemovalAccepted = 0;
-        std::set<int> removableWindowFaceIds;
-        for (const int faceId : predictions.surfaceFeatureFaceIds)
-        {
-            const TopoDS_Face face = TopoDS::Face(originalFaceMap.FindKey(faceId));
-            const TopoDS_Wire outerWire = BRepTools::OuterWire(face);
-            int innerWireCount = 0;
-            for (TopExp_Explorer wireExplorer(face, TopAbs_WIRE);
-                 wireExplorer.More(); wireExplorer.Next())
-            {
-                if (!wireExplorer.Current().IsSame(outerWire))
-                {
-                    ++innerWireCount;
-                }
-            }
-            if (innerWireCount == 0)
-            {
-                removableWindowFaceIds.insert(faceId);
-            }
-        }
-        const std::vector<std::set<int>> groups = BuildSelectedFaceGroups(
-            inputShape, originalFaceMap, removableWindowFaceIds);
-        constexpr std::size_t windowGroupsPerBatch = 8;
-        for (std::size_t batchStart = 0;
-             batchStart < groups.size();
-             batchStart += windowGroupsPerBatch)
-        {
-            const TopoDS_Shape shapeBeforeBatch = rebuiltShape;
-            std::set<int> batchFaceIds;
-            const std::size_t batchEnd = std::min(
-                groups.size(), batchStart + windowGroupsPerBatch);
-            for (std::size_t groupIndex = batchStart;
-                 groupIndex < batchEnd; ++groupIndex)
-            {
-                const std::set<int> currentIds = MatchGroupFaces(
-                    rebuiltShape, originalFaceMap, groups[groupIndex]);
-                batchFaceIds.insert(currentIds.begin(), currentIds.end());
-            }
-            bool acceptedBatch = !batchFaceIds.empty() &&
-                TryDirectFaceRemoval(rebuiltShape, batchFaceIds);
-            if (acceptedBatch &&
-                CountFreeEdges(rebuiltShape) <= inputFreeEdgeCount)
-            {
-                ++directRemovalAccepted;
-                continue;
-            }
-            rebuiltShape = shapeBeforeBatch;
-
-            // A mixed batch can contain one window whose host has not been
-            // reconstructed. Retry each group, but keep only closed-shell
-            // results so no real opening is introduced.
-            for (std::size_t groupIndex = batchStart;
-                 groupIndex < batchEnd; ++groupIndex)
-            {
-                const std::set<int> currentIds = MatchGroupFaces(
-                    rebuiltShape, originalFaceMap, groups[groupIndex]);
-                if (currentIds.empty())
-                {
-                    continue;
-                }
-                const TopoDS_Shape shapeBeforeGroup = rebuiltShape;
-                if (TryDirectFaceRemoval(rebuiltShape, currentIds) &&
-                    CountFreeEdges(rebuiltShape) <= inputFreeEdgeCount)
-                {
-                    ++directRemovalAccepted;
-                }
-                else
-                {
-                    rebuiltShape = shapeBeforeGroup;
-                }
-            }
-        }
-
-        const TopoDS_Shape shapeBeforeEdgeStraightening = rebuiltShape;
-        int straightenedSharedEdgeCount =
-            StraightenRepeatedSharedSkinEdges(rebuiltShape);
-        if (CountFreeEdges(rebuiltShape) > inputFreeEdgeCount)
-        {
-            rebuiltShape = shapeBeforeEdgeStraightening;
-            straightenedSharedEdgeCount = 0;
-        }
-
-        // DC-10 represents the visible window outlines as shared edges between
-        // adjacent B-spline skin patches.  After the window faces and host
-        // loops are removed, concatenate compatible B-spline patches so those
-        // shared trim edges disappear from the fuselage surface.
-        const TopoDS_Shape shapeBeforeSkinMerge = rebuiltShape;
-        try
-        {
-            ShapeUpgrade_UnifySameDomain skinMerge(
-                rebuiltShape, Standard_True, Standard_True, Standard_True);
-            skinMerge.SetLinearTolerance(1.0e-4);
-            skinMerge.SetAngularTolerance(1.0e-3);
-            skinMerge.Build();
-            if (!skinMerge.Shape().IsNull() &&
-                (!inputIsValid || BRepCheck_Analyzer(skinMerge.Shape()).IsValid()) &&
-                CountFreeEdges(skinMerge.Shape()) <= inputFreeEdgeCount)
-            {
-                rebuiltShape = skinMerge.Shape();
-            }
-            else
-            {
-                rebuiltShape = shapeBeforeSkinMerge;
-            }
-        }
-        catch (const Standard_Failure&)
-        {
-            rebuiltShape = shapeBeforeSkinMerge;
-        }
-
-        if (rebuiltShape.IsNull() ||
-            (inputIsValid && !BRepCheck_Analyzer(rebuiltShape).IsValid()) ||
-            CountFreeEdges(rebuiltShape) > inputFreeEdgeCount)
-        {
-            std::cerr << "Split-window skin rebuild produced an unusable result; "
-                      << "no candidate STEP was written." << std::endl;
-            return 1;
-        }
-
-        const std::set<int> remainingFaceIds = FindRemainingOriginalFaceIds(
-            rebuiltShape, originalFaceMap, predictions.surfaceFeatureFaceIds);
-        const std::filesystem::path outputPath(outputFile);
-        if (outputPath.has_parent_path())
-        {
-            std::filesystem::create_directories(outputPath.parent_path());
-        }
-        if (!SaveStep(rebuiltShape, outputFile))
-        {
-            std::cerr << "Failed to write split-window skin rebuild candidate: "
-                      << outputFile << std::endl;
-            return 1;
-        }
-
-        std::cout << "Split-window predicted faces selected: "
-                  << predictions.surfaceFeatureFaceIds.size() << std::endl;
-        std::cout << "Single-boundary window faces eligible for removal: "
-                  << removableWindowFaceIds.size() << std::endl;
-        std::cout << "Split-window host loops rebuilt: "
-                  << filledHostLoopCount << std::endl;
-        std::cout << "Remaining groups removed directly: "
-                  << directRemovalAccepted << std::endl;
-        std::cout << "Remaining groups removed by scoped defeaturing: "
-                  << scopedRemovalAccepted << std::endl;
-        std::cout << "Window detour edges replaced by vertex connections: "
-                  << straightenedSharedEdgeCount << std::endl;
-        std::cout << "Predicted faces still present: "
-                  << remainingFaceIds.size() << std::endl;
-        std::cout << "Output BRep valid: "
-                  << (BRepCheck_Analyzer(rebuiltShape).IsValid() ? "yes" : "no")
-                  << std::endl;
-        std::cout << "Free edges: " << inputFreeEdgeCount
-                  << " -> " << CountFreeEdges(rebuiltShape) << std::endl;
-        std::cout << "Face count: " << originalFaceMap.Extent()
-                  << " -> " << CountFaces(rebuiltShape) << std::endl;
-        std::cout << "Split-window skin rebuild candidate: "
-                  << outputFile << std::endl;
-        return 0;
-    }
-    catch (const Standard_Failure& error)
-    {
-        std::cerr << "Split-window skin rebuild failed in OpenCASCADE: "
-                  << error.GetMessageString() << std::endl;
-        return 1;
-    }
-    catch (const std::exception& error)
-    {
-        std::cerr << "Split-window skin rebuild failed: "
-                  << error.what() << std::endl;
-        return 1;
-    }
-}
-
-int RunBridgeSplitWindowFace(
-    const std::string& inputFile,
-    const int windowFaceId,
-    const std::string& outputFile)
-{
-    try
-    {
-        TopoDS_Shape inputShape;
-        if (!LoadStep(inputFile, inputShape))
-        {
-            std::cerr << "Failed to read STEP file: " << inputFile << std::endl;
-            return 1;
-        }
-
-        TopTools_IndexedMapOfShape faceMap;
-        TopExp::MapShapes(inputShape, TopAbs_FACE, faceMap);
-        if (windowFaceId <= 0 || windowFaceId > faceMap.Extent())
-        {
-            std::cerr << "Window face ID is outside the STEP face range." << std::endl;
-            return 1;
-        }
-        const TopoDS_Face windowFace = TopoDS::Face(
-            faceMap.FindKey(windowFaceId));
-
-        TopTools_IndexedDataMapOfShapeListOfShape edgeFaces;
-        TopExp::MapShapesAndAncestors(
-            inputShape, TopAbs_EDGE, TopAbs_FACE, edgeFaces);
-        std::vector<TopoDS_Edge> windowEdges;
-        std::vector<TopoDS_Face> hostFaces;
-        for (TopExp_Explorer explorer(windowFace, TopAbs_EDGE);
-             explorer.More(); explorer.Next())
-        {
-            const TopoDS_Edge edge = TopoDS::Edge(explorer.Current());
-            const int ancestorIndex = edgeFaces.FindIndex(edge);
-            if (ancestorIndex <= 0)
-            {
-                continue;
-            }
-            TopoDS_Face hostFace;
-            for (TopTools_ListIteratorOfListOfShape iterator(
-                     edgeFaces.FindFromIndex(ancestorIndex));
-                 iterator.More(); iterator.Next())
-            {
-                if (!iterator.Value().IsSame(windowFace))
-                {
-                    hostFace = TopoDS::Face(iterator.Value());
-                    break;
-                }
-            }
-            if (!hostFace.IsNull())
-            {
-                windowEdges.push_back(edge);
-                hostFaces.push_back(hostFace);
-            }
-        }
-        if (windowEdges.size() != 2 || hostFaces.size() != 2 ||
-            hostFaces[0].IsSame(hostFaces[1]))
-        {
-            std::cerr << "Selected face is not a two-edge split window between "
-                      << "two different skin faces." << std::endl;
-            return 1;
-        }
-
-        TopoDS_Vertex firstVertex;
-        TopoDS_Vertex lastVertex;
-        TopExp::Vertices(windowEdges.front(), firstVertex, lastVertex);
-        if (firstVertex.IsNull() || lastVertex.IsNull())
-        {
-            std::cerr << "Window endpoints could not be resolved." << std::endl;
-            return 1;
-        }
-
-        const Handle(Geom_Surface) firstSurface = BRep_Tool::Surface(hostFaces[0]);
-        const Handle(Geom_Surface) secondSurface = BRep_Tool::Surface(hostFaces[1]);
-        ShapeAnalysis_Surface firstAnalysis(firstSurface);
-        ShapeAnalysis_Surface secondAnalysis(secondSurface);
-        const gp_Pnt firstPoint = BRep_Tool::Pnt(firstVertex);
-        const gp_Pnt lastPoint = BRep_Tool::Pnt(lastVertex);
-        const Handle(Geom2d_TrimmedCurve) firstCurve = GCE2d_MakeSegment(
-            firstAnalysis.ValueOfUV(firstPoint, 1.0e-5),
-            firstAnalysis.ValueOfUV(lastPoint, 1.0e-5)).Value();
-        const Handle(Geom2d_TrimmedCurve) secondCurve = GCE2d_MakeSegment(
-            secondAnalysis.ValueOfUV(firstPoint, 1.0e-5),
-            secondAnalysis.ValueOfUV(lastPoint, 1.0e-5)).Value();
-
-        BRepBuilderAPI_MakeEdge edgeMaker(
-            firstCurve, firstSurface, firstVertex, lastVertex);
-        if (!edgeMaker.IsDone())
-        {
-            std::cerr << "Failed to build the replacement skin edge." << std::endl;
-            return 1;
-        }
-        TopoDS_Edge bridgeEdge = edgeMaker.Edge();
-        BRep_Builder builder;
-        builder.UpdateEdge(bridgeEdge, secondCurve, hostFaces[1], 1.0e-4);
-        BRepLib::BuildCurve3d(bridgeEdge, 1.0e-4);
-        BRepLib::SameParameter(bridgeEdge, 1.0e-4);
-
-        BRepTools_ReShape reshaper;
-        reshaper.Replace(windowEdges[0], bridgeEdge);
-        reshaper.Replace(windowEdges[1], bridgeEdge);
-        reshaper.Remove(windowFace);
-        TopoDS_Shape candidate = reshaper.Apply(inputShape);
-        ShapeFix_Shape fixer(candidate);
-        fixer.Perform();
-        if (!fixer.Shape().IsNull())
-        {
-            candidate = fixer.Shape();
-        }
-
-        const int inputFreeEdges = CountFreeEdges(inputShape);
-        const int outputFreeEdges = CountFreeEdges(candidate);
-        if (candidate.IsNull() || !BRepCheck_Analyzer(candidate).IsValid() ||
-            outputFreeEdges > inputFreeEdges)
-        {
-            std::cerr << "Single-window bridge failed topology validation; "
-                      << "no candidate STEP was written. Free edges: "
-                      << inputFreeEdges << " -> " << outputFreeEdges << std::endl;
-            return 1;
-        }
-
-        const std::filesystem::path outputPath(outputFile);
-        if (outputPath.has_parent_path())
-        {
-            std::filesystem::create_directories(outputPath.parent_path());
-        }
-        if (!SaveStep(candidate, outputFile))
-        {
-            std::cerr << "Failed to write single-window bridge candidate." << std::endl;
-            return 1;
-        }
-        std::cout << "Bridged split window face: F" << windowFaceId << std::endl;
-        std::cout << "Host faces: F" << faceMap.FindIndex(hostFaces[0])
-                  << " and F" << faceMap.FindIndex(hostFaces[1]) << std::endl;
-        std::cout << "BRep valid: yes" << std::endl;
-        std::cout << "Free edges: " << inputFreeEdges
-                  << " -> " << outputFreeEdges << std::endl;
-        std::cout << "Face count: " << faceMap.Extent()
-                  << " -> " << CountFaces(candidate) << std::endl;
-        std::cout << "Single-window candidate: " << outputFile << std::endl;
-        return 0;
-    }
-    catch (const Standard_Failure& error)
-    {
-        std::cerr << "Single-window bridge failed in OpenCASCADE: "
-                  << error.GetMessageString() << std::endl;
-        return 1;
-    }
-}
 
 int RunEmbeddedWindowHostRebuild(
     const std::string& inputFile,
     const std::string& predictionsFile,
-    const std::string& outputFile)
+    const std::string& outputFile,
+    const std::string& rebuildProfile)
 {
     try
     {
+        std::string effectiveProfile = rebuildProfile;
+        const std::string inputModelName =
+            std::filesystem::path(inputFile).filename().string();
+        if (effectiveProfile == "auto")
+        {
+            if (inputModelName.find("Airplane_body") == 0)
+            {
+                effectiveProfile = "airplane-body";
+            }
+            else if (inputModelName.find("AULIRA_2") == 0)
+            {
+                effectiveProfile = "aulira";
+            }
+            else if (inputModelName.find("Airbus") == 0)
+            {
+                effectiveProfile = "airbus";
+            }
+            else if (inputModelName.find("Gulfstream_G280") == 0)
+            {
+                effectiveProfile = "gulfstream-g280";
+            }
+            else
+            {
+                effectiveProfile = "generic";
+            }
+        }
+        const bool rebuildGulfstreamTailDecals =
+            effectiveProfile == "gulfstream-g280";
+        const bool rebuildAirbusWindows =
+            effectiveProfile == "airbus";
+        const bool usePredictedWindowFaceAnchors =
+            effectiveProfile == "aulira" || rebuildAirbusWindows ||
+            rebuildGulfstreamTailDecals;
+        if (effectiveProfile != "generic" &&
+            effectiveProfile != "airplane-body" &&
+            effectiveProfile != "aulira" &&
+            !rebuildAirbusWindows &&
+            !rebuildGulfstreamTailDecals)
+        {
+            std::cerr << "Unknown embedded-window rebuild profile: "
+                      << effectiveProfile << std::endl;
+            return 1;
+        }
+        const bool profileMatchesInput =
+            effectiveProfile == "generic" ||
+            (effectiveProfile == "airplane-body" &&
+             inputModelName.find("Airplane_body") == 0) ||
+            (effectiveProfile == "aulira" &&
+             inputModelName.find("AULIRA_2") == 0) ||
+            (rebuildAirbusWindows &&
+             inputModelName.find("Airbus") == 0) ||
+            (rebuildGulfstreamTailDecals &&
+             inputModelName.find("Gulfstream_G280") == 0);
+        if (!profileMatchesInput)
+        {
+            std::cerr << "Rebuild profile '" << effectiveProfile
+                      << "' does not match input model: " << inputFile
+                      << std::endl;
+            return 1;
+        }
+        std::cout << "Embedded-window rebuild profile: "
+                  << effectiveProfile;
+        if (rebuildProfile == "auto")
+        {
+            std::cout << " (auto-selected)";
+        }
+        std::cout << std::endl;
         if (std::filesystem::weakly_canonical(inputFile) ==
             std::filesystem::weakly_canonical(outputFile))
         {
@@ -2669,6 +1964,12 @@ int RunEmbeddedWindowHostRebuild(
             return 1;
         }
 
+        TopTools_IndexedDataMapOfShapeListOfShape originalEdgeFaces;
+        TopExp::MapShapesAndAncestors(
+            inputShape, TopAbs_EDGE, TopAbs_FACE, originalEdgeFaces);
+        std::set<int> selectedSurfaceFeatureFaceIds =
+            predictions.surfaceFeatureFaceIds;
+
         TopTools_IndexedMapOfShape solidMap;
         TopExp::MapShapes(inputShape, TopAbs_SOLID, solidMap);
         TopTools_IndexedDataMapOfShapeListOfShape faceSolids;
@@ -2678,7 +1979,7 @@ int RunEmbeddedWindowHostRebuild(
         std::map<int, TopoDS_Shape> removalContainers;
         std::set<int> embeddedWindowSeedFaceIds;
         constexpr int maximumEmbeddedWindowSolidFaces = 16;
-        for (const int selectedId : predictions.surfaceFeatureFaceIds)
+        for (const int selectedId : selectedSurfaceFeatureFaceIds)
         {
             const TopoDS_Shape selectedFace = originalFaceMap.FindKey(selectedId);
             const int ancestorIndex = faceSolids.FindIndex(selectedFace);
@@ -2720,7 +2021,7 @@ int RunEmbeddedWindowHostRebuild(
         // defeaturing reconstruct the supporting fuselage skin before the
         // frame components are removed.
         std::vector<std::pair<int, double>> mainSolidPredictions;
-        for (const int selectedId : predictions.surfaceFeatureFaceIds)
+        for (const int selectedId : selectedSurfaceFeatureFaceIds)
         {
             const TopoDS_Shape selectedFace = originalFaceMap.FindKey(selectedId);
             const int ancestorIndex = faceSolids.FindIndex(selectedFace);
@@ -2768,9 +2069,6 @@ int RunEmbeddedWindowHostRebuild(
             }
         }
 
-        TopTools_IndexedDataMapOfShapeListOfShape originalEdgeFaces;
-        TopExp::MapShapesAndAncestors(
-            inputShape, TopAbs_EDGE, TopAbs_FACE, originalEdgeFaces);
         std::set<int> mainSkinFacesToRemove;
         for (const std::set<int>& originalGroup : repeatedMainSkinGroups)
         {
@@ -2817,6 +2115,21 @@ int RunEmbeddedWindowHostRebuild(
             }
         }
 
+        const std::size_t maximumMainSkinRebuildFaces = std::max<std::size_t>(
+            1, static_cast<std::size_t>(originalFaceMap.Extent()) / 10);
+        bool useNarrowWindowRemoval = false;
+        if (mainSkinFacesToRemove.size() > maximumMainSkinRebuildFaces)
+        {
+            std::cout << "Broad main-skin reconstruction selected "
+                      << mainSkinFacesToRemove.size() << " of "
+                      << originalFaceMap.Extent() << " faces; limit is "
+                      << maximumMainSkinRebuildFaces
+                      << ". Falling back to narrow window removal."
+                      << std::endl;
+            mainSkinFacesToRemove.clear();
+            useNarrowWindowRemoval = true;
+        }
+
         TopoDS_Shape rebuiltShape = inputShape;
         if (!mainSkinFacesToRemove.empty())
         {
@@ -2836,6 +2149,7 @@ int RunEmbeddedWindowHostRebuild(
         // every host inner wire to the centroid of a predicted small-window
         // solid, then remove both the solid and all matched host loops.
         std::vector<gp_Pnt> windowCenters;
+        std::vector<gp_Pnt> tailDecalCenters;
         std::vector<TopoDS_Shape> removableWindowSolids;
         for (const auto& entry : removalContainers)
         {
@@ -2858,10 +2172,93 @@ int RunEmbeddedWindowHostRebuild(
             windowCenters.push_back(properties.CentreOfMass());
             removableWindowSolids.push_back(solid);
         }
+        if (useNarrowWindowRemoval && usePredictedWindowFaceAnchors)
+        {
+            // Some aircraft model the window patches as faces of the main
+            // fuselage solid instead of separate small solids.  Their
+            // predicted face centroids are the only reliable local anchors
+            // for rebuilding the carrier skin and removing copied side faces.
+            for (const int selectedId : selectedSurfaceFeatureFaceIds)
+            {
+                const TopoDS_Face selectedFace = TopoDS::Face(
+                    originalFaceMap.FindKey(selectedId));
+                int selectedEdgeCount = 0;
+                for (TopExp_Explorer edgeExplorer(selectedFace, TopAbs_EDGE);
+                     edgeExplorer.More(); edgeExplorer.Next())
+                {
+                    ++selectedEdgeCount;
+                }
+                GProp_GProps properties;
+                BRepGProp::SurfaceProperties(selectedFace, properties);
+                if ((!rebuildAirbusWindows && selectedEdgeCount > 2) ||
+                    (rebuildAirbusWindows && properties.Mass() > 5.0))
+                {
+                    continue;
+                }
+                windowCenters.push_back(properties.CentreOfMass());
+            }
+        }
 
-        constexpr double hostLoopMatchDistance = 300.0;
-        BRepTools_ReShape reshaper;
+        Bnd_Box modelBounds;
+        BRepBndLib::Add(inputShape, modelBounds);
+        double hostLoopMatchDistance = 300.0;
+        double modelDiagonal = 10000.0;
+        double modelXMin = 0.0;
+        double modelXMax = 0.0;
+        if (!modelBounds.IsVoid())
+        {
+            double yMin = 0.0;
+            double zMin = 0.0;
+            double yMax = 0.0;
+            double zMax = 0.0;
+            modelBounds.Get(
+                modelXMin, yMin, zMin, modelXMax, yMax, zMax);
+            modelDiagonal = std::sqrt(
+                (modelXMax - modelXMin) * (modelXMax - modelXMin) +
+                (yMax - yMin) * (yMax - yMin) +
+                (zMax - zMin) * (zMax - zMin));
+            hostLoopMatchDistance = std::min(
+                300.0, std::max(1.0e-3, modelDiagonal * 0.03));
+        }
+        if (useNarrowWindowRemoval && rebuildGulfstreamTailDecals &&
+            modelXMax > modelXMin)
+        {
+            // Lettering on the vertical tail consists of complex predicted
+            // faces rather than the one- or two-edge patches used by cabin
+            // windows.  Restrict those anchors to the aft 30 percent of the
+            // aircraft and match them with a much smaller radius below.
+            const double aftThreshold =
+                modelXMin + (modelXMax - modelXMin) * 0.70;
+            for (const int selectedId : selectedSurfaceFeatureFaceIds)
+            {
+                const TopoDS_Face selectedFace = TopoDS::Face(
+                    originalFaceMap.FindKey(selectedId));
+                int selectedEdgeCount = 0;
+                for (TopExp_Explorer edgeExplorer(selectedFace, TopAbs_EDGE);
+                     edgeExplorer.More(); edgeExplorer.Next())
+                {
+                    ++selectedEdgeCount;
+                }
+                if (selectedEdgeCount <= 2)
+                {
+                    continue;
+                }
+                GProp_GProps properties;
+                BRepGProp::SurfaceProperties(selectedFace, properties);
+                const gp_Pnt center = properties.CentreOfMass();
+                if (center.X() >= aftThreshold)
+                {
+                    tailDecalCenters.push_back(center);
+                }
+            }
+        }
+        std::cout << "Window-host match distance: "
+                  << hostLoopMatchDistance << std::endl;
+        std::cout << "Tail decal anchors: "
+                  << tailDecalCenters.size() << std::endl;
+        BRepTools_ReShape windowRemover;
         int rebuiltLoopCount = 0;
+        int rebuiltNarrowHostFaceCount = 0;
         int residualWindowFaceCount = 0;
         TopTools_IndexedMapOfShape currentFaceMap;
         TopExp::MapShapes(rebuiltShape, TopAbs_FACE, currentFaceMap);
@@ -2870,6 +2267,7 @@ int RunEmbeddedWindowHostRebuild(
             const TopoDS_Face hostFace = TopoDS::Face(
                 currentFaceMap.FindKey(faceIndex));
             const TopoDS_Wire outerWire = BRepTools::OuterWire(hostFace);
+            int matchedWindowLoopCount = 0;
             for (TopExp_Explorer wireExplorer(hostFace, TopAbs_WIRE);
                  wireExplorer.More(); wireExplorer.Next())
             {
@@ -2891,10 +2289,51 @@ int RunEmbeddedWindowHostRebuild(
                         break;
                     }
                 }
+                if (!isWindowHostLoop)
+                {
+                    const double tailDecalMatchDistance =
+                        hostLoopMatchDistance * 0.2;
+                    for (const gp_Pnt& decalCenter : tailDecalCenters)
+                    {
+                        if (loopCenter.Distance(decalCenter) <=
+                            tailDecalMatchDistance)
+                        {
+                            isWindowHostLoop = true;
+                            break;
+                        }
+                    }
+                }
                 if (isWindowHostLoop)
                 {
-                    reshaper.Remove(candidateWire);
-                    ++rebuiltLoopCount;
+                    if (useNarrowWindowRemoval && !rebuildAirbusWindows)
+                    {
+                        ++matchedWindowLoopCount;
+                    }
+                    else
+                    {
+                        windowRemover.Remove(candidateWire);
+                        ++rebuiltLoopCount;
+                    }
+                }
+            }
+            if (useNarrowWindowRemoval && matchedWindowLoopCount > 0)
+            {
+                double uMin = 0.0;
+                double uMax = 0.0;
+                double vMin = 0.0;
+                double vMax = 0.0;
+                BRepTools::UVBounds(hostFace, uMin, uMax, vMin, vMax);
+                const Handle(Geom_Surface) surface = BRep_Tool::Surface(hostFace);
+                if (!surface.IsNull())
+                {
+                    BRepBuilderAPI_MakeFace faceMaker(
+                        surface, uMin, uMax, vMin, vMax, 1.0e-6);
+                    if (faceMaker.IsDone())
+                    {
+                        windowRemover.Replace(hostFace, faceMaker.Face());
+                        rebuiltLoopCount += matchedWindowLoopCount;
+                        ++rebuiltNarrowHostFaceCount;
+                    }
                 }
             }
         }
@@ -2906,9 +2345,25 @@ int RunEmbeddedWindowHostRebuild(
         {
             const TopoDS_Face candidateFace = TopoDS::Face(
                 currentFaceMap.FindKey(faceIndex));
+            if (rebuildAirbusWindows)
+            {
+                const int originalFaceId =
+                    originalFaceMap.FindIndex(candidateFace);
+                if (originalFaceId <= 0 ||
+                    selectedSurfaceFeatureFaceIds.count(originalFaceId) == 0)
+                {
+                    continue;
+                }
+            }
             GProp_GProps properties;
             BRepGProp::SurfaceProperties(candidateFace, properties);
-            if (properties.Mass() < 10000.0 || properties.Mass() > 150000.0)
+            const double residualMinimumArea = useNarrowWindowRemoval ?
+                1.0e-9 : 10000.0;
+            const double residualMaximumArea = rebuildAirbusWindows ? 5.0 :
+                (useNarrowWindowRemoval ?
+                 modelDiagonal * modelDiagonal * 0.0001 : 150000.0);
+            if (properties.Mass() < residualMinimumArea ||
+                properties.Mass() > residualMaximumArea)
             {
                 continue;
             }
@@ -2916,36 +2371,61 @@ int RunEmbeddedWindowHostRebuild(
             bool isResidualWindowFace = false;
             for (const gp_Pnt& windowCenter : windowCenters)
             {
-                if (faceCenter.Distance(windowCenter) <= hostLoopMatchDistance)
+                const double residualMatchDistance = useNarrowWindowRemoval ?
+                    hostLoopMatchDistance * 0.2 : hostLoopMatchDistance;
+                if (faceCenter.Distance(windowCenter) <= residualMatchDistance)
                 {
                     isResidualWindowFace = true;
                     break;
                 }
             }
+            if (!isResidualWindowFace)
+            {
+                const double residualMatchDistance = useNarrowWindowRemoval ?
+                    hostLoopMatchDistance * 0.2 : hostLoopMatchDistance;
+                for (const gp_Pnt& decalCenter : tailDecalCenters)
+                {
+                    if (faceCenter.Distance(decalCenter) <=
+                        residualMatchDistance)
+                    {
+                        isResidualWindowFace = true;
+                        break;
+                    }
+                }
+            }
             if (isResidualWindowFace)
             {
-                reshaper.Remove(candidateFace);
+                windowRemover.Remove(candidateFace);
                 ++residualWindowFaceCount;
             }
         }
         for (const TopoDS_Shape& solid : removableWindowSolids)
         {
-            reshaper.Remove(solid);
+            windowRemover.Remove(solid);
         }
 
         const int inputFreeEdgeCount = CountFreeEdges(inputShape);
-        rebuiltShape = reshaper.Apply(rebuiltShape);
+        rebuiltShape = windowRemover.Apply(rebuiltShape);
+        std::cout << "Free edges after window removal: "
+                  << CountFreeEdges(rebuiltShape) << std::endl;
 
         // F13 is the visible fuselage skin after the window band has been
         // removed.  Its only outer wire still detours around every former
         // window.  Replace that trimmed face with the full parameter domain
         // of its own supporting surface, so the exterior is one smooth skin.
+        const int freeEdgesBeforeExteriorSkinRebuild = CountFreeEdges(rebuiltShape);
+        std::cout << "Free edges before exterior skin rebuild: "
+                  << freeEdgesBeforeExteriorSkinRebuild << std::endl;
         int rebuiltExteriorSkinFaceCount = 0;
         TopTools_IndexedMapOfShape exteriorFaceMap;
         TopExp::MapShapes(rebuiltShape, TopAbs_FACE, exteriorFaceMap);
         BRepTools_ReShape exteriorSkinReplacer;
         for (int faceIndex = 1; faceIndex <= exteriorFaceMap.Extent(); ++faceIndex)
         {
+            if (useNarrowWindowRemoval)
+            {
+                break;
+            }
             const TopoDS_Face candidateFace = TopoDS::Face(
                 exteriorFaceMap.FindKey(faceIndex));
             int exteriorEdgeCount = 0;
@@ -3003,6 +2483,61 @@ int RunEmbeddedWindowHostRebuild(
                 rebuiltExteriorSkinFaceCount = 0;
             }
         }
+
+        if (!rebuiltShape.IsNull() && !BRepCheck_Analyzer(rebuiltShape).IsValid())
+        {
+            ShapeFix_Shape fallbackFixer(rebuiltShape);
+            fallbackFixer.Perform();
+            const TopoDS_Shape fixedShape = fallbackFixer.Shape();
+            if (!fixedShape.IsNull() &&
+                BRepCheck_Analyzer(fixedShape).IsValid())
+            {
+                rebuiltShape = fixedShape;
+            }
+        }
+
+        // Replacing a trimmed skin face with its complete supporting surface
+        // creates fresh boundary edges.  Let OCC merge those edges with the
+        // adjacent skin edges before the final validation; accept the sewing
+        // only when it improves topology rather than hiding a regression.
+        if (rebuiltExteriorSkinFaceCount > 0)
+        {
+            const TopoDS_Shape shapeBeforeSewing = rebuiltShape;
+            try
+            {
+                ShapeFix_Shape fixer(rebuiltShape);
+                fixer.Perform();
+                const TopoDS_Shape fixedShape = fixer.Shape();
+                if (!fixedShape.IsNull() &&
+                    BRepCheck_Analyzer(fixedShape).IsValid() &&
+                    CountFreeEdges(fixedShape) <= CountFreeEdges(shapeBeforeSewing))
+                {
+                    rebuiltShape = fixedShape;
+                }
+
+                BRepBuilderAPI_Sewing sewing(
+                    1.0e-4, Standard_True, Standard_True,
+                    Standard_True, Standard_False);
+                sewing.Add(rebuiltShape);
+                sewing.Perform();
+                const TopoDS_Shape sewnShape = sewing.SewedShape();
+                if (!sewnShape.IsNull() &&
+                    BRepCheck_Analyzer(sewnShape).IsValid() &&
+                    CountFreeEdges(sewnShape) <= CountFreeEdges(shapeBeforeSewing))
+                {
+                    rebuiltShape = sewnShape;
+                }
+                else
+                {
+                    rebuiltShape = shapeBeforeSewing;
+                }
+            }
+            catch (const Standard_Failure&)
+            {
+                rebuiltShape = shapeBeforeSewing;
+            }
+        }
+
         int outputFreeEdgeCount = CountFreeEdges(rebuiltShape);
         const bool rebuiltValid = !rebuiltShape.IsNull() &&
             BRepCheck_Analyzer(rebuiltShape).IsValid();
@@ -3045,6 +2580,8 @@ int RunEmbeddedWindowHostRebuild(
 
         std::cout << "Embedded-window host loops rebuilt: "
                   << rebuiltLoopCount << std::endl;
+        std::cout << "Narrow-mode host skin faces rebuilt: "
+                  << rebuiltNarrowHostFaceCount << std::endl;
         std::cout << "Residual window faces removed: "
                   << residualWindowFaceCount << std::endl;
         std::cout << "Repeated main-skin window faces rebuilt: "
@@ -3066,4 +2603,90 @@ int RunEmbeddedWindowHostRebuild(
                   << error.GetMessageString() << std::endl;
         return 1;
     }
+}
+
+namespace
+{
+    bool IsStepFile(const std::filesystem::path& path)
+    {
+        const std::string extension = path.extension().string();
+        return extension == ".step" || extension == ".STEP" ||
+               extension == ".stp" || extension == ".STP";
+    }
+
+    std::filesystem::path FindBatchPrediction(
+        const std::filesystem::path& predictionsDir,
+        const std::string& stem)
+    {
+        const std::vector<std::filesystem::path> candidates = {
+            predictionsDir / (stem + ".pred.csv"),
+            predictionsDir / (stem + "_pred.csv"),
+            predictionsDir / (stem + ".csv")};
+        for (const auto& candidate : candidates)
+        {
+            if (std::filesystem::is_regular_file(candidate))
+            {
+                return candidate;
+            }
+        }
+        return {};
+    }
+}
+
+int RunBatchEmbeddedWindowHostRebuild(
+    const std::string& inputDir,
+    const std::string& predictionsDir,
+    const std::string& outputDir)
+{
+    const std::filesystem::path inputPath(inputDir);
+    const std::filesystem::path predictionPath(predictionsDir);
+    const std::filesystem::path outputPath(outputDir);
+    if (!std::filesystem::is_directory(inputPath) ||
+        !std::filesystem::is_directory(predictionPath))
+    {
+        std::cerr << "Batch input and prediction directories must exist." << std::endl;
+        return 1;
+    }
+    std::filesystem::create_directories(outputPath);
+
+    std::vector<std::filesystem::path> inputFiles;
+    for (const auto& entry : std::filesystem::directory_iterator(inputPath))
+    {
+        if (entry.is_regular_file() && IsStepFile(entry.path()))
+        {
+            inputFiles.push_back(entry.path());
+        }
+    }
+    std::sort(inputFiles.begin(), inputFiles.end());
+    if (inputFiles.empty())
+    {
+        std::cerr << "No STEP files found in batch input directory." << std::endl;
+        return 1;
+    }
+
+    int failureCount = 0;
+    for (const auto& inputFile : inputFiles)
+    {
+        const auto predictionFile = FindBatchPrediction(
+            predictionPath, inputFile.stem().string());
+        if (predictionFile.empty())
+        {
+            std::cerr << "Missing prediction CSV for " << inputFile.filename()
+                      << std::endl;
+            ++failureCount;
+            continue;
+        }
+        const auto outputFile = outputPath / inputFile.filename();
+        std::cout << "[batch] " << inputFile.filename() << std::endl;
+        if (RunEmbeddedWindowHostRebuild(
+                inputFile.string(), predictionFile.string(),
+                outputFile.string(), "auto") != 0)
+        {
+            ++failureCount;
+        }
+    }
+    std::cout << "Batch embedded-window rebuild complete: "
+              << (inputFiles.size() - failureCount) << "/"
+              << inputFiles.size() << " succeeded." << std::endl;
+    return failureCount == 0 ? 0 : 1;
 }

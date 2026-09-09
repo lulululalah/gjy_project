@@ -55,6 +55,102 @@ def _load_step_faces(step_path):
     return shape, face_map
 
 
+def find_compact_airbus_window_components(face_metrics, neighbors, predictions):
+    """Find complete 16-face Airbus window rings missed as background."""
+    candidate_ids = {
+        int(face_id)
+        for face_id, metrics in face_metrics.items()
+        if int(predictions.get(int(face_id), -1)) == 0
+        and 0.005 <= float(metrics["area"]) <= 0.1
+        and 4 <= int(metrics["edge_count"]) <= 12
+    }
+    visited = set()
+    completed_groups = []
+    for seed_face_id in sorted(candidate_ids):
+        if seed_face_id in visited:
+            continue
+        pending = [seed_face_id]
+        component = []
+        while pending:
+            face_id = pending.pop()
+            if face_id in visited:
+                continue
+            visited.add(face_id)
+            component.append(face_id)
+            pending.extend(
+                neighbor_id
+                for neighbor_id in neighbors.get(face_id, ())
+                if neighbor_id in candidate_ids and neighbor_id not in visited
+            )
+        if len(component) != 16:
+            continue
+        centers = np.asarray(
+            [face_metrics[face_id]["center"] for face_id in component],
+            dtype=float,
+        )
+        if np.any(np.ptp(centers, axis=0) > 1.0):
+            continue
+        completed_groups.append(sorted(component))
+    return completed_groups
+
+
+def detect_airbus_missed_window_components(step_path, predictions_by_face_id):
+    """Extract topology and return missed Airbus window groups."""
+    if not Path(step_path).name.lower().startswith("airbus"):
+        return []
+
+    from OCC.Core.BRepGProp import brepgprop
+    from OCC.Core.GProp import GProp_GProps
+    from OCC.Core.TopAbs import TopAbs_EDGE, TopAbs_FACE
+    from OCC.Core.TopExp import TopExp_Explorer, topexp
+    from OCC.Core.TopTools import (
+        TopTools_IndexedDataMapOfShapeListOfShape,
+        TopTools_ListIteratorOfListOfShape,
+    )
+    from OCC.Core.TopoDS import topods
+
+    shape, face_map = _load_step_faces(step_path)
+    expected_face_ids = set(range(1, face_map.Size() + 1))
+    if set(predictions_by_face_id) != expected_face_ids:
+        raise ValueError("Prediction CSV and STEP face IDs are not aligned.")
+
+    edge_faces = TopTools_IndexedDataMapOfShapeListOfShape()
+    topexp.MapShapesAndAncestors(shape, TopAbs_EDGE, TopAbs_FACE, edge_faces)
+    face_metrics = {}
+    neighbors = {}
+    for face_id in range(1, face_map.Size() + 1):
+        face = topods.Face(face_map.FindKey(face_id))
+        properties = GProp_GProps()
+        brepgprop.SurfaceProperties(face, properties)
+        center = properties.CentreOfMass()
+        edge_count = 0
+        neighbor_ids = set()
+        edge_explorer = TopExp_Explorer(face, TopAbs_EDGE)
+        while edge_explorer.More():
+            edge_count += 1
+            edge = edge_explorer.Current()
+            ancestor_index = edge_faces.FindIndex(edge)
+            if ancestor_index > 0:
+                iterator = TopTools_ListIteratorOfListOfShape(
+                    edge_faces.FindFromIndex(ancestor_index)
+                )
+                while iterator.More():
+                    neighbor_id = face_map.FindIndex(iterator.Value())
+                    if neighbor_id > 0 and neighbor_id != face_id:
+                        neighbor_ids.add(neighbor_id)
+                    iterator.Next()
+            edge_explorer.Next()
+        face_metrics[face_id] = {
+            "area": properties.Mass(),
+            "edge_count": edge_count,
+            "center": (center.X(), center.Y(), center.Z()),
+        }
+        neighbors[face_id] = neighbor_ids
+    return find_compact_airbus_window_components(
+        face_metrics, neighbors, predictions_by_face_id
+    )
+
+
 def _sample_face_points(face):
     from OCC.Core.BRepAdaptor import BRepAdaptor_Surface
     from OCC.Core.BRepClass import BRepClass_FaceClassifier
@@ -220,6 +316,33 @@ def postprocess_prediction_csv(step_path, feature_path, prediction_path, output_
                 index, "prob_background"
             ]
 
+    predictions_by_face_id = dict(zip(face_ids, guarded_predictions))
+    completed_window_groups = detect_airbus_missed_window_components(
+        step_path, predictions_by_face_id
+    )
+    row_index_by_face_id = {
+        int(face_id): index for index, face_id in enumerate(face_ids)
+    }
+    for group in completed_window_groups:
+        for face_id in group:
+            index = row_index_by_face_id[face_id]
+            guarded_predictions[index] = 2
+            prediction_frame.at[index, "pred_label"] = 2
+            prediction_frame.at[index, "pred_name"] = "surface_feature"
+            if (
+                "pred_confidence" in prediction_frame.columns
+                and "prob_surface_feature" in prediction_frame.columns
+            ):
+                prediction_frame.at[index, "pred_confidence"] = prediction_frame.at[
+                    index, "prob_surface_feature"
+                ]
+        diagnostics.append(
+            {
+                "action": "complete_airbus_window",
+                "face_ids": group,
+            }
+        )
+
     destination = Path(output_path) if output_path else Path(prediction_path)
     destination.parent.mkdir(parents=True, exist_ok=True)
     temporary_path = destination.with_name(destination.name + ".tmp")
@@ -245,10 +368,16 @@ def main():
     )
     if diagnostics:
         for item in diagnostics:
-            print(
-                f"F{item['face_id']}: area={item['relative_area']:.6g}, "
-                f"exposure={item['exposure_score']:.2f} -> background"
-            )
+            if item.get("action") == "complete_airbus_window":
+                print(
+                    "Airbus missed window -> surface_feature: "
+                    + ",".join(f"F{face_id}" for face_id in item["face_ids"])
+                )
+            else:
+                print(
+                    f"F{item['face_id']}: area={item['relative_area']:.6g}, "
+                    f"exposure={item['exposure_score']:.2f} -> background"
+                )
     else:
         print("No internal large surface-feature predictions were suppressed.")
 

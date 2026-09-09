@@ -15,7 +15,7 @@
 ## 当前数据与模型
 
 - 训练集：`work/uv_train17_xian20_simpletest_train.csv`
-- 测试集：`work/uv_test4_xian20_simpletest.csv`
+- 测试集：`work/uv_test5_xian20_simpletest_cessna.csv`
 - 模型：`work/rivet_gnn_xian20_train_simpletest_50ep.pth`
 - 归一化与推理契约：`work/rivet_gnn_xian20_train_simpletest_50ep_stats.npz`
 - 测试结果：`work/rivet_gnn_xian20_train_simpletest_50ep_eval.csv`
@@ -29,7 +29,7 @@
 ```powershell
 D:\Anaconda\envs\cad_graph_env\python.exe .\python\train_rivet_gcn.py `
   --csv .\work\uv_train17_xian20_simpletest_train.csv `
-  --test-csv .\work\uv_test4_xian20_simpletest.csv `
+  --test-csv .\work\uv_test5_xian20_simpletest_cessna.csv `
   --epochs 50 --batch-size 1 --hidden-dim 64 --num-layers 4 `
   --lr 0.005 --dropout 0.2 --weight-decay 0.0001 --seed 123 `
   --enable-smooth-shell-surface-guard `
@@ -61,7 +61,7 @@ D:\Anaconda\envs\cad_graph_env\python.exe .\python\visualize_rivets.py `
   --skip-export `
   --model .\work\rivet_gnn_xian20_train_simpletest_50ep.pth `
   --stats .\work\rivet_gnn_xian20_train_simpletest_50ep_stats.npz `
-  --truth-csv .\work\uv_test4_xian20_simpletest.csv `
+  --truth-csv .\work\uv_test5_xian20_simpletest_cessna.csv `
   --truth-model-name "87- 747-400 stp_beoing 747-400 v6_wing_rivets.stp"
 ```
 
@@ -77,4 +77,4 @@ D:\Anaconda\envs\cad_graph_env\python.exe .\python\visualize_rivets.py `
 - `python/initialize_step_labels.py`、`python/label_native_faces.py`：标签初始化和原生面标注
 - `python/pick_step_face.py`、`python/select_boolean_host_face.py`：人工几何检查
 
-模型预测后删除 CAD 面的功能尚未实现；当前阶段只负责稳定识别和输出可靠的删除候选。
+模型预测后处理与 CAD 面删除已实现。完整数据集使用同一套训练、预测、后处理和删除流程，通过 `--rebuild-embedded-window-hosts-batch` 批量处理全部模型；窗口、贴花等表面特征统一按 `surface_feature` 删除。
