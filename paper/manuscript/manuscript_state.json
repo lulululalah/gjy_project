@@ -1,0 +1,325 @@
+{
+  "schema_version": "1.1",
+  "project": {
+    "id": "aircraft-brep-small-feature-paper",
+    "title": "面向飞机 B-Rep 模型小特征处理的可追溯图学习与几何重建框架",
+    "archetype": "empirical methods paper",
+    "study_designs": [
+      "computational model",
+      "CAD geometry processing",
+      "comparative experiment"
+    ],
+    "lifecycle_stage": "project_and_outline",
+    "review_maturity": "developmental",
+    "target_venue": "Journal of Computational Design and Engineering (provisional)",
+    "active_release": "working-v1"
+  },
+  "artifacts": [
+    {
+      "id": "main-tex",
+      "path": "main.tex",
+      "role": "main_manuscript",
+      "status": "ACTIVE_TEMPLATE",
+      "required_for_release": true
+    },
+    {
+      "id": "master-plan",
+      "path": "../论文写作统筹计划.md",
+      "role": "project_plan",
+      "status": "ACTIVE",
+      "required_for_release": false
+    },
+    {
+      "id": "historical-outline",
+      "path": "../飞机STEP模型小特征识别期刊论文逻辑大纲_按意见修订_最终版.docx",
+      "role": "historical_outline",
+      "status": "REFERENCE_ONLY",
+      "required_for_release": false
+    }
+  ],
+  "authority_sources": [
+    {
+      "id": "current-code",
+      "kind": "verified_primary_evidence",
+      "path_or_reference": "python/train_rivet_gcn.py; python/visualize_rivets.py; src/; include/",
+      "scope": ["methods", "model_contract", "geometry_processing"],
+      "status": "VERIFIED",
+      "last_verified": "2026-09-10"
+    },
+    {
+      "id": "current-model-stats",
+      "kind": "verified_primary_evidence",
+      "path_or_reference": "work/rivet_gnn_xian20_train_simpletest_50ep_stats.npz",
+      "scope": ["features", "architecture", "thresholds", "training_parameters"],
+      "status": "VERIFIED",
+      "last_verified": "2026-09-10"
+    },
+    {
+      "id": "current-eval",
+      "kind": "analysis_output",
+      "path_or_reference": "work/rivet_gnn_xian20_train_simpletest_50ep_eval.csv",
+      "scope": ["historical_four_aircraft_results"],
+      "status": "VERIFIED",
+      "last_verified": "2026-09-10"
+    },
+    {
+      "id": "current-test-csv",
+      "kind": "processed_data",
+      "path_or_reference": "work/uv_test5_xian20_simpletest_cessna.csv",
+      "scope": ["candidate_test_dataset"],
+      "status": "VERIFIED",
+      "last_verified": "2026-09-10"
+    },
+    {
+      "id": "current-architecture",
+      "kind": "project_documentation",
+      "path_or_reference": "doc/当前架构说明.md",
+      "scope": ["system_overview", "file_contracts", "verified_models"],
+      "status": "VERIFIED",
+      "last_verified": "2026-09-10"
+    },
+    {
+      "id": "current-train-csv",
+      "kind": "processed_data",
+      "path_or_reference": "work/uv_train17_xian20_simpletest_train.csv",
+      "scope": ["training_dataset"],
+      "status": "VERIFIED",
+      "last_verified": "2026-09-10"
+    }
+  ],
+  "contract": {
+    "gap": "Existing CAD feature-recognition work provides limited evidence for traceable, risk-sensitive small-feature recognition and downstream geometry processing on complete heterogeneous aircraft B-Rep models.",
+    "task": "Recognize rivets and other surface features at B-Rep face level, preserve STEP face traceability, and validate safety-aware downstream CAD removal and reconstruction.",
+    "outcomes": [
+      "face-level recognition on complete aircraft",
+      "per-aircraft error and background false-positive analysis",
+      "traceable CAD removal and geometry reconstruction",
+      "optional mesh and CAE impact validation"
+    ],
+    "questions": [
+      {
+        "id": "RQ1",
+        "text": "Can face geometry and adjacency topology support rivet and surface-feature recognition across complete aircraft models?",
+        "lock": "SEMANTIC"
+      },
+      {
+        "id": "RQ2",
+        "text": "Does independent dual-specialist encoding reduce task interference relative to a unified classifier?",
+        "lock": "SEMANTIC"
+      },
+      {
+        "id": "RQ3",
+        "text": "Can smooth-shell protection reduce high-risk background false positives without unacceptable true-feature loss?",
+        "lock": "SEMANTIC"
+      },
+      {
+        "id": "RQ4",
+        "text": "Can predictions remain traceable to STEP faces and support auditable geometry removal and reconstruction?",
+        "lock": "SEMANTIC"
+      }
+    ],
+    "contribution": "A traceable, risk-sensitive graph-learning and CAD geometry-processing framework for small features in complete aircraft B-Rep models.",
+    "nonclaims": [
+      "No universal generalization claim across all aircraft or CAD sources.",
+      "BRep validity alone does not establish geometry or physics equivalence.",
+      "No CAE acceleration or response-preservation claim before controlled downstream experiments.",
+      "Human visual review is not described as fully automatic validation.",
+      "Retired BFS and 51-dimensional experiments are not part of the formal model."
+    ]
+  },
+  "semantic_locks": [
+    {
+      "id": "three-class-schema",
+      "kind": "SEMANTIC",
+      "canonical": "background=0, rivet=1, surface_feature=2; decal and window provenance remains in JSON"
+    },
+    {
+      "id": "model-level-split",
+      "kind": "SEMANTIC",
+      "canonical": "Dataset partitioning is performed by complete aircraft model, not by randomly splitting faces"
+    },
+    {
+      "id": "no-area-hard-filter",
+      "kind": "SEMANTIC",
+      "canonical": "Do not use a 0.0005 normalized-area hard prediction filter because valid large surface features exist"
+    }
+  ],
+  "terminology": [
+    {
+      "concept": "surface target class",
+      "preferred": "surface_feature",
+      "prohibited": ["four-class decal/window output"]
+    },
+    {
+      "concept": "graph node",
+      "preferred": "B-Rep face node",
+      "prohibited": ["geometric vertex"]
+    },
+    {
+      "concept": "model architecture",
+      "preferred": "dual-specialist GNN",
+      "prohibited": ["single shared encoder"]
+    }
+  ],
+  "style_profile": {
+    "language_variant": "US English for manuscript; Simplified Chinese for planning",
+    "protected_terms": [
+      "B-Rep",
+      "STEP",
+      "face_id",
+      "surface_feature",
+      "dual-specialist GNN",
+      "smooth-shell guard"
+    ],
+    "discouraged_phrases": [
+      "universally applicable",
+      "lossless simplification",
+      "fully automatic validation",
+      "significantly improves"
+    ],
+    "preferred_open_compounds": [],
+    "allowed_repetitions": ["B-Rep", "STEP", "face", "aircraft"],
+    "sentence_opening_words": 4,
+    "phrase_words": 5,
+    "phrase_min_occurrences": 3
+  },
+  "facts": [
+    {
+      "id": "train-current",
+      "value": "17 aircraft and 48095 faces in work/uv_train17_xian20_simpletest_train.csv",
+      "source_id": "current-train-csv",
+      "expected_strings": ["17", "48095"]
+    },
+    {
+      "id": "candidate-test-current",
+      "value": "9 aircraft and 34156 faces in work/uv_test5_xian20_simpletest_cessna.csv",
+      "source_id": "current-test-csv",
+      "expected_strings": ["9", "34156"]
+    },
+    {
+      "id": "model-contract-current",
+      "value": "48 node features, 6 edge attributes, 4 layers, hidden dimension 64, seed 123, 50 epochs, rivet threshold 0.9, surface threshold 0.5",
+      "source_id": "current-model-stats",
+      "expected_strings": ["48", "6", "4", "64", "123", "50", "0.9", "0.5"]
+    }
+  ],
+  "alignment": [
+    {
+      "question_id": "RQ1",
+      "method": "B-Rep face graph with geometric and topological attributes",
+      "evidence": "Frozen complete-aircraft evaluation and STEP overlays",
+      "result": "Pending authoritative rerun",
+      "interpretation": "Pending",
+      "limitation": "Limited aircraft and CAD-source diversity",
+      "contribution": "Complete-aircraft face-level recognition protocol",
+      "status": "PLANNED"
+    },
+    {
+      "question_id": "RQ2",
+      "method": "Dual-specialist GNN versus unified three-class baseline",
+      "evidence": "Matched multi-seed ablation",
+      "result": "Pending",
+      "interpretation": "Pending",
+      "limitation": "Architecture and parameter-count fairness must be documented",
+      "contribution": "Risk-aware specialist modeling",
+      "status": "PLANNED"
+    },
+    {
+      "question_id": "RQ3",
+      "method": "Raw prediction versus area filter versus smooth-shell guard",
+      "evidence": "Per-aircraft FP, maximum FP area, and true-positive loss",
+      "result": "Pending",
+      "interpretation": "Pending",
+      "limitation": "Guard parameters may be domain dependent",
+      "contribution": "Safety-aware post-processing",
+      "status": "PLANNED"
+    },
+    {
+      "question_id": "RQ4",
+      "method": "face_id traceability, CAD removal, local reconstruction, and BRep checks",
+      "evidence": "Nine final STEP models plus quantitative geometry validation",
+      "result": "Final STEP models exist; unified quantitative table pending",
+      "interpretation": "Pending quantitative validation",
+      "limitation": "BRep validity does not prove physical equivalence",
+      "contribution": "Auditable downstream CAD processing",
+      "status": "IN_PROGRESS"
+    }
+  ],
+  "dimensions": [
+    {
+      "id": "recognition",
+      "required_fields": ["per-class precision recall f1", "mIoU", "per-aircraft errors", "background false positives", "maximum false-positive area"],
+      "status": "INCOMPLETE"
+    },
+    {
+      "id": "geometry",
+      "required_fields": ["face count", "BRep validity", "target removal completeness", "volume and area change", "failure cases"],
+      "status": "INCOMPLETE"
+    },
+    {
+      "id": "reproducibility",
+      "required_fields": ["dataset manifest", "experiment manifest", "code commit", "environment", "random seeds", "artifact hashes"],
+      "status": "INCOMPLETE"
+    }
+  ],
+  "decisions": [
+    {
+      "id": "D1",
+      "date": "2026-09-10",
+      "decision": "Plan the paper as an end-to-end recognition and geometry-processing framework, with a recognition-only fallback title if downstream evidence remains insufficient."
+    },
+    {
+      "id": "D2",
+      "date": "2026-09-10",
+      "decision": "Treat the 3631-face evaluation as historical because it does not match the current 34156-face candidate test CSV."
+    }
+  ],
+  "issues": [
+    {
+      "id": "I1",
+      "severity": "S4",
+      "status": "OPEN",
+      "description": "Current test CSV scope and existing evaluation CSV scope do not match.",
+      "evidence_status": "CONFIRMED",
+      "required_action": "Freeze a dataset manifest and rerun one authoritative evaluation."
+    },
+    {
+      "id": "I2",
+      "severity": "S4",
+      "status": "OPEN",
+      "description": "Some candidate test aircraft may have been used in historical model or post-processing development.",
+      "evidence_status": "PROBABLE",
+      "required_action": "Add a never-used frozen external test or scope the claims as developmental evaluation."
+    },
+    {
+      "id": "I3",
+      "severity": "S3",
+      "status": "OPEN",
+      "description": "Quantitative geometry, mesh, and CAE validation is incomplete.",
+      "evidence_status": "CONFIRMED",
+      "required_action": "Complete controlled downstream validation or narrow title and claims."
+    },
+    {
+      "id": "I4",
+      "severity": "S3",
+      "status": "OPEN",
+      "description": "The active main.tex is still largely the journal example template.",
+      "evidence_status": "CONFIRMED",
+      "required_action": "Replace template content only after the evidence and section contracts are frozen."
+    }
+  ],
+  "release": {
+    "status": "WORKING",
+    "candidate_artifact_ids": ["main-tex"],
+    "required_checks": [
+      "argument_structure",
+      "evidence_scope",
+      "scholarly_writing",
+      "delivery_integrity",
+      "functional_completeness"
+    ],
+    "completed_checks": [],
+    "checked_hashes": {},
+    "visual_check": "NOT_RUN"
+  }
+}
