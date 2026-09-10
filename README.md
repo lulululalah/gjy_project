@@ -1,30 +1,47 @@
 # gjy_byproject
 
-项目当前只保留一条识别主线：
+本项目用于飞机 STEP 面级小特征识别、预测结果审查和经过人工确认后的 CAD 面删除。
 
-`STEP -> 面特征/邻接图 -> 独立 rivet 与 surface specialist -> 壳体保护 -> 预测/真值可视化`
+当前正式主线为：
 
-类别约定：
+```text
+STEP → 几何/拓扑特征 → 三分类预测 → surface 后处理
+     → 铆钉/表面特征删除 → 模型专用几何修复 → ending 最终结果
+```
+
+## 分类约定
 
 - `0 = background`
 - `1 = rivet`
-- `2 = surface_feature`（原生贴花、原生窗户和后加贴花）
+- `2 = surface_feature`：原生贴花、原生窗户和后续注入的表面特征
 
-当前目标是优先控制误检：铆钉允许少量漏检但不应误检；surface 允许少量漏检和误检，但大面积机身或发动机壳体不能成为删除候选。
+大面积机身、机翼和发动机壳体不能直接成为删除候选。最终删除前必须先完成预测值/真值可视化检查。
 
-## 当前数据与模型
+## 核心文件
+
+训练与推理模型：
 
 - 训练集：`work/uv_train17_xian20_simpletest_train.csv`
 - 测试集：`work/uv_test5_xian20_simpletest_cessna.csv`
-- 模型：`work/rivet_gnn_xian20_train_simpletest_50ep.pth`
-- 归一化与推理契约：`work/rivet_gnn_xian20_train_simpletest_50ep_stats.npz`
-- 测试结果：`work/rivet_gnn_xian20_train_simpletest_50ep_eval.csv`
+- 权重：`work/rivet_gnn_xian20_train_simpletest_50ep.pth`
+- stats：`work/rivet_gnn_xian20_train_simpletest_50ep_stats.npz`
+- 评估结果：`work/rivet_gnn_xian20_train_simpletest_50ep_eval.csv`
 
-训练集和测试集按完整飞机划分，不允许同一飞机同时出现在两边。当前测试机型为 109、DC-10、747-400 和 Gulfstream G280。
+飞机数据目录：
+
+- `data/plane_model/source`：原始 STEP 输入
+- `data/plane_model/new_data`：中间几何处理和特征注入结果
+- `data/plane_model/after_two`：预测值/真值对比使用的最终验证 STEP
+- `data/plane_model/removed`：铆钉删除后的中间 STEP
+- `data/plane_model/removed_surface`：表面特征处理候选和历史验证结果
+- `data/plane_model/ending`：最终删除后的可视化 STEP
+- `data/plane_model/label`：与 STEP 对齐的标签和标注文件
+
+当前已完成验证的模型包括：109、DC-10、747-400、Air Plane Idea A、Airbus、Airplane body、AULIRA 2、Cessna Citation 2 和 Gulfstream G280 v17。
 
 ## 训练
 
-项目不再使用交叉验证、OOF 或 hard-negative 回灌。训练固定使用一个训练集，完成全部 epoch 后只在测试集评估一次。
+训练按完整飞机划分，避免同一飞机的相邻面同时出现在训练集和测试集。正式模型采用固定训练集、固定测试集和三分类 dual-head GNN：
 
 ```powershell
 D:\Anaconda\envs\cad_graph_env\python.exe .\python\train_rivet_gcn.py `
@@ -38,43 +55,82 @@ D:\Anaconda\envs\cad_graph_env\python.exe .\python\train_rivet_gcn.py `
   --eval-out .\work\rivet_gnn_xian20_train_simpletest_50ep_eval.csv
 ```
 
-模型使用两个完全独立的 GNN 编码器：一个识别 rivet，一个识别 surface。两个输出分别使用阈值，合并时 rivet 优先。
+两个 specialist 使用同一套几何/拓扑输入，但编码器、分类头和阈值独立；融合时保留 rivet 优先级，输出最终三分类标签。
 
-## 壳体误检保护
+## 批量删除流程
 
-推理会在 surface 输出之后检查光滑同曲面连通组件。以下两类面会从 surface 回退为 background：
-
-- 在大型光滑组件中占主导面积的面；
-- 在至少 100 个面的密集壳体组件中，占组件面积至少 3% 的异常大面。
-
-该规则结合连通拓扑、组件规模和组件内面积比例，不是全局面积过滤。当前训练集和测试集内满足保护条件的已标注面全部是 background。
-
-## 推理与可视化
-
-Detector 将单个 STEP 导出到共享临时文件 `data/current_inference.csv`。每次切换飞机都必须重新导出，不能复用上一架飞机的该文件。
+批量流程入口为：
 
 ```powershell
-.\build\Release\Detector.exe --predict ".\data\plane_model\after_two\87- 747-400 stp_beoing 747-400 v6_wing_rivets.stp"
-
-D:\Anaconda\envs\cad_graph_env\python.exe .\python\visualize_rivets.py `
-  ".\data\plane_model\after_two\87- 747-400 stp_beoing 747-400 v6_wing_rivets.stp" `
-  --skip-export `
-  --model .\work\rivet_gnn_xian20_train_simpletest_50ep.pth `
-  --stats .\work\rivet_gnn_xian20_train_simpletest_50ep_stats.npz `
-  --truth-csv .\work\uv_test5_xian20_simpletest_cessna.csv `
-  --truth-model-name "87- 747-400 stp_beoing 747-400 v6_wing_rivets.stp"
+D:\Anaconda\envs\cad_graph_env\python.exe .\python\run_test_removal_pipeline.py
 ```
 
-对比颜色：绿色为正确铆钉，蓝色为正确 surface，紫色为铆钉错误，红色为 surface 误检，黄色为 surface 漏检，透明灰色为背景。
+默认读取 `data/plane_model/after_two`，以测试清单中的完整飞机为单位处理，并将最终结果写入 `data/plane_model/ending`。中间预测、日志和候选 STEP 写入 `work/test_removal_pipeline`。
 
-## 保留的核心代码
+每个模型按以下顺序处理：
 
-- `src/FeatureExtractor.cpp`：几何与 UV 特征提取
-- `src/Workflow.cpp`：训练和推理 CSV 导出
-- `python/train_rivet_gcn.py`：双 specialist 训练和测试
-- `python/visualize_rivets.py`：推理、壳体保护和 OCC 可视化
-- `python/swap_models_between_splits.py`：整机级训练/测试互换
-- `python/initialize_step_labels.py`、`python/label_native_faces.py`：标签初始化和原生面标注
-- `python/pick_step_face.py`、`python/select_boolean_host_face.py`：人工几何检查
+1. 对原始验证 STEP 提取特征并预测铆钉。
+2. 删除预测铆钉，生成 `*_removed.step`。
+3. 对铆钉删除后的 STEP 重新提取特征并预测 `surface_feature`。
+4. 执行 surface 后处理，抑制大型光滑壳体误报。
+5. 根据模型拓扑选择对应的表面特征删除和宿主面重建策略。
+6. 将通过检查的结果复制到 `data/plane_model/ending`。
 
-模型预测后处理与 CAD 面删除已实现。完整数据集使用同一套训练、预测、后处理和删除流程，通过 `--rebuild-embedded-window-hosts-batch` 批量处理全部模型；窗口、贴花等表面特征统一按 `surface_feature` 删除。
+模型专用策略如下：
+
+| 模型 | 删除/修复策略 |
+|---|---|
+| 109、747-400、Cessna Citation 2 | 通用 surface 特征删除 |
+| DC-10 | split window skin 重建，再执行 bridge 修复 |
+| AULIRA 2、Airplane body、Gulfstream G280 v17 | embedded window host 重建 |
+| Airbus | 使用验证过的铆钉删除拓扑；补全漏检窗面后执行 embedded window host 重建 |
+| Air Plane Idea A | 使用 invalid surface host rebuild；允许保留原始非法 BRep 诊断结果 |
+
+Airbus 是特殊情况：重新导出铆钉删除 STEP 会改变拓扑和面映射，因此流程固定复用已经验证过的 `data/plane_model/removed/Airbus_removed.step`，再使用 `surface_visibility_guard.py` 补全 5 组漏检窗面，最后执行窄窗删除策略。
+
+批量流程会检查关键结果日志。Airbus 必须满足 108 个窗环、删除 1037 个残余窗面、1723 面变为 686 面且 BRep 合法，才允许写入 `ending`。
+
+## 预测值与真值对比可视化
+
+真值 CSV 位于 `work/test_eval_models`，当前后处理预测位于 `work/postprocess_current_20260909`。STEP、真值 CSV 和预测 CSV 的面数必须完全一致。
+
+示例：
+
+```powershell
+D:\Anaconda\envs\cad_graph_env\python.exe .\python\visualize_rivets.py `
+  ".\data\plane_model\after_two\Airplane body_wing_rivets.step" `
+  --pred-in ".\work\postprocess_current_20260909\Airplane body_wing_rivets.pred.csv" `
+  --truth-csv ".\work\Airplane body_wing_rivets.truth.csv" `
+  --truth-model-name "Airplane body_wing_rivets.step" `
+  --context-transparency 0.82
+```
+
+颜色约定：
+
+- 绿色：正确 rivet
+- 蓝色：正确 surface feature
+- 紫色：rivet 误检或类别错误
+- 红色：surface feature 误检
+- 黄色：surface feature 漏检或类别错误
+- 透明灰色：模型上下文
+
+不要把 `after_two` 的预测对比模型和 `ending` 的删除后模型混用。删除后可视化应直接打开 `data/plane_model/ending` 中对应的 STEP。
+
+## 删除后线框可视化
+
+删除后的交互式线框窗口使用：
+
+```powershell
+D:\Anaconda\envs\cad_graph_env\python.exe .\work\open_ending_step_viewer.py `
+  ".\data\plane_model\ending\Airbus_wing_rivets.step"
+```
+
+窗口显示透明灰色面和黑色拓扑边，不读取预测或真值 CSV。
+
+## 重要约束
+
+- `data/current_inference.csv` 是共享临时文件，每次切换 STEP 都必须重新导出。
+- 权重和 stats 必须成对使用，不能只替换 `.pth`。
+- 真值 CSV、预测 CSV 和 STEP 必须面数一致，且 `face_id` 必须对齐。
+- 已通过的 `ending` 模型和当前代码属于最终工作结果，不要用旧中间文件覆盖它们。
+- 旧预测快照、旧候选 STEP 和诊断日志可以在确认不再需要回溯后清理，但不能删除代码、最终 STEP、真值 CSV 或当前后处理结果。

@@ -510,8 +510,8 @@ def visualize_cad_results(
     x_min, y_min, z_min, x_max, y_max, z_max = model_box.Get()
     diagonal = ((x_max - x_min) ** 2 + (y_max - y_min) ** 2 + (z_max - z_min) ** 2) ** 0.5
     auto_marker_radius = min(max(diagonal * 0.001, 2.0), 12.0)
-    # Keep the original face-color visualization; do not overlay spherical markers.
-    use_markers = False
+    # Enable enlarged face-center markers when the caller explicitly requests one.
+    use_markers = marker_radius > 0
     if use_markers:
         print(f"Marker radius: {marker_radius:g}")
     else:

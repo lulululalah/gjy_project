@@ -7,6 +7,26 @@ int RunPredictedRivetRemoval(
     const std::string& predictionsFile,
     const std::string& outputFile);
 
+int RunPredictedSurfaceFeatureRemoval(
+    const std::string& inputFile,
+    const std::string& predictionsFile,
+    const std::string& outputFile);
+
+int RunInvalidSurfaceHostRebuild(
+    const std::string& inputFile,
+    const std::string& predictionsFile,
+    const std::string& outputFile);
+
+int RunSplitWindowSkinRebuild(
+    const std::string& inputFile,
+    const std::string& predictionsFile,
+    const std::string& outputFile);
+
+int RunBridgeSplitWindowFace(
+    const std::string& inputFile,
+    int windowFaceId,
+    const std::string& outputFile);
+
 int RunEmbeddedWindowHostRebuild(
     const std::string& inputFile,
     const std::string& predictionsFile,

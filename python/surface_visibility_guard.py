@@ -211,26 +211,36 @@ def compute_surface_exposure_scores(step_path, candidate_face_ids):
         face = face_map.FindKey(face_id)
         sample_points = _sample_face_points(face)
         exposed_samples = 0
-        for point in sample_points:
-            sample_is_exposed = False
-            for direction_values in AXIS_DIRECTIONS:
-                intersector.Perform(
-                    gp_Lin(point, gp_Dir(*direction_values)),
-                    minimum_hit_distance,
-                    maximum_ray_distance,
-                )
-                blocked = False
-                for hit_index in range(1, intersector.NbPnt() + 1):
-                    if intersector.WParameter(hit_index) <= minimum_hit_distance:
-                        continue
-                    if intersector.Face(hit_index).IsSame(face):
-                        continue
-                    blocked = True
-                    break
-                if not blocked:
-                    sample_is_exposed = True
-                    break
-            exposed_samples += int(sample_is_exposed)
+        try:
+            for point in sample_points:
+                sample_is_exposed = False
+                for direction_values in AXIS_DIRECTIONS:
+                    intersector.Perform(
+                        gp_Lin(point, gp_Dir(*direction_values)),
+                        minimum_hit_distance,
+                        maximum_ray_distance,
+                    )
+                    blocked = False
+                    for hit_index in range(1, intersector.NbPnt() + 1):
+                        if intersector.WParameter(hit_index) <= minimum_hit_distance:
+                            continue
+                        if intersector.Face(hit_index).IsSame(face):
+                            continue
+                        blocked = True
+                        break
+                    if not blocked:
+                        sample_is_exposed = True
+                        break
+                exposed_samples += int(sample_is_exposed)
+        except Exception as error:
+            # Some malformed or degenerate STEP faces can make OCCT's ray
+            # intersector throw. Keep the candidate surface feature in that
+            # case instead of suppressing it based on an unknown exposure.
+            print(
+                f"Exterior visibility guard skipped F{face_id}: {error}"
+            )
+            scores[face_id] = 1.0
+            continue
         scores[face_id] = exposed_samples / max(len(sample_points), 1)
     return scores
 
