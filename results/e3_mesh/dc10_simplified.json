@@ -1,0 +1,27 @@
+{
+  "input_step": "data\\plane_model\\ending\\27- DC-10 SolidWorks stp igs_DC 10_wing_rivets.step",
+  "brep_valid": true,
+  "bounding_box_diagonal": 602.1131916394686,
+  "relative_deflection": 0.0005,
+  "linear_deflection": 0.3010565958197343,
+  "angular_deflection_rad": 0.5,
+  "face_count": 170,
+  "mesh_node_count": 20608,
+  "mesh_triangle_count": 35496,
+  "mesh_quality": {
+    "degenerate_triangle_count": 8,
+    "minimum_angle_deg": 0.04981862182095625,
+    "minimum_angle_p05_deg": 1.9987814012115386,
+    "maximum_aspect_ratio": 667.8514650178114,
+    "aspect_ratio_p95": 18.05210177219094
+  },
+  "mesh_repeats": 5,
+  "mesh_elapsed_seconds_samples": [
+    0.08332259999588132,
+    0.09434890002012253,
+    0.10474430001340806,
+    0.09613439999520779,
+    0.08926340006291866
+  ],
+  "mesh_elapsed_seconds_median": 0.09434890002012253
+}

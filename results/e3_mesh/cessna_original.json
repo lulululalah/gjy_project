@@ -1,0 +1,27 @@
+{
+  "input_step": "data\\plane_model\\after_two\\Cessna Citation 2_wing_rivets.step",
+  "brep_valid": true,
+  "bounding_box_diagonal": 21594.289290729783,
+  "relative_deflection": 0.0005,
+  "linear_deflection": 10.797144645364892,
+  "angular_deflection_rad": 0.5,
+  "face_count": 312,
+  "mesh_node_count": 13756,
+  "mesh_triangle_count": 19696,
+  "mesh_quality": {
+    "degenerate_triangle_count": 10,
+    "minimum_angle_deg": 0.0007485715755751662,
+    "minimum_angle_p05_deg": 1.3042685032065238,
+    "maximum_aspect_ratio": 44190.89912227709,
+    "aspect_ratio_p95": 29.217613597236507
+  },
+  "mesh_repeats": 5,
+  "mesh_elapsed_seconds_samples": [
+    0.08521530008874834,
+    0.09234210010617971,
+    0.09197120019234717,
+    0.09655000013299286,
+    0.09270390006713569
+  ],
+  "mesh_elapsed_seconds_median": 0.09234210010617971
+}

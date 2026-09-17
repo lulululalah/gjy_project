@@ -1,0 +1,20 @@
+[
+  {
+    "model": "Cessna Citation 2",
+    "role": "铆钉代表",
+    "original": "results/e3_mesh/cessna_original.json",
+    "simplified": "results/e3_mesh/cessna_simplified.json"
+  },
+  {
+    "model": "747-400",
+    "role": "surface-feature 代表",
+    "original": "results/e3_mesh/747_original.json",
+    "simplified": "results/e3_mesh/747_simplified.json"
+  },
+  {
+    "model": "DC-10",
+    "role": "复杂拓扑代表",
+    "original": "results/e3_mesh/dc10_original.json",
+    "simplified": "results/e3_mesh/dc10_simplified.json"
+  }
+]
