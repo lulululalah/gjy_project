@@ -1,0 +1,27 @@
+{
+  "input_step": "D:\\projects\\gjy_byproject\\data\\plane_model\\ending\\AULIRA 2_wing_rivets.step",
+  "brep_valid": true,
+  "bounding_box_diagonal": 538.9616721846662,
+  "relative_deflection": 0.0005,
+  "linear_deflection": 0.2694808360923331,
+  "angular_deflection_rad": 0.5,
+  "face_count": 136,
+  "mesh_node_count": 7824,
+  "mesh_triangle_count": 12589,
+  "mesh_quality": {
+    "degenerate_triangle_count": 6,
+    "minimum_angle_deg": 2.091309789151873e-06,
+    "minimum_angle_p05_deg": 1.501284104499195,
+    "maximum_aspect_ratio": 15375925.262018932,
+    "aspect_ratio_p95": 22.548787354554495
+  },
+  "mesh_repeats": 5,
+  "mesh_elapsed_seconds_samples": [
+    0.0732215999159962,
+    0.08027310017496347,
+    0.07289399998262525,
+    0.07369180000387132,
+    0.0735232001170516
+  ],
+  "mesh_elapsed_seconds_median": 0.0735232001170516
+}

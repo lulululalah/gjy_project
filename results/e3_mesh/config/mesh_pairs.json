@@ -1,0 +1,56 @@
+[
+  {
+    "model": "109-ww1 standard E-1 aircraft",
+    "role": "rivet and decal removal",
+    "original": "results/e3_mesh/per_model/standard_original.json",
+    "simplified": "results/e3_mesh/per_model/standard_simplified.json"
+  },
+  {
+    "model": "DC-10",
+    "role": "complex topology",
+    "original": "results/e3_mesh/per_model/dc10_original.json",
+    "simplified": "results/e3_mesh/per_model/dc10_simplified.json"
+  },
+  {
+    "model": "747-400",
+    "role": "surface-feature removal",
+    "original": "results/e3_mesh/per_model/747_original.json",
+    "simplified": "results/e3_mesh/per_model/747_simplified.json"
+  },
+  {
+    "model": "AULIRA 2",
+    "role": "embedded-window reconstruction",
+    "original": "results/e3_mesh/per_model/aulira_original.json",
+    "simplified": "results/e3_mesh/per_model/aulira_simplified.json"
+  },
+  {
+    "model": "Air Plane Idea A",
+    "role": "decal-only removal",
+    "original": "results/e3_mesh/per_model/air_plane_idea_original.json",
+    "simplified": "results/e3_mesh/per_model/air_plane_idea_simplified.json"
+  },
+  {
+    "model": "Airbus",
+    "role": "embedded-window reconstruction",
+    "original": "results/e3_mesh/per_model/airbus_original.json",
+    "simplified": "results/e3_mesh/per_model/airbus_simplified.json"
+  },
+  {
+    "model": "Airplane body",
+    "role": "embedded-window reconstruction",
+    "original": "results/e3_mesh/per_model/airplane_body_original.json",
+    "simplified": "results/e3_mesh/per_model/airplane_body_simplified.json"
+  },
+  {
+    "model": "Cessna Citation 2",
+    "role": "rivet removal",
+    "original": "results/e3_mesh/per_model/cessna_original.json",
+    "simplified": "results/e3_mesh/per_model/cessna_simplified.json"
+  },
+  {
+    "model": "Gulfstream G280 v17",
+    "role": "embedded-window reconstruction",
+    "original": "results/e3_mesh/per_model/gulfstream_original.json",
+    "simplified": "results/e3_mesh/per_model/gulfstream_simplified.json"
+  }
+]

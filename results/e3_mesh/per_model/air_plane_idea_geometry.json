@@ -1,0 +1,34 @@
+{
+  "original_step": "D:\\projects\\gjy_byproject\\data\\plane_model\\after_two\\Air Plane Idea A.STEP",
+  "simplified_step": "D:\\projects\\gjy_byproject\\data\\plane_model\\ending\\Air Plane Idea A.step",
+  "sampling_linear_deflection": 99.92218626712666,
+  "sampling_angular_deflection_rad": 0.5,
+  "free_edge_count": {
+    "original": 2813,
+    "simplified": 2771
+  },
+  "surface_area": {
+    "original": 12629698091.03712,
+    "simplified": 12629879540.63243,
+    "relative_change_percent": 0.0014366898875997093
+  },
+  "sampled_distance": {
+    "original_to_simplified": {
+      "sample_count": 500,
+      "mean": 0.0013705391176659424,
+      "rms": 0.030637921880534373,
+      "maximum": 0.6850847525758277
+    },
+    "simplified_to_original": {
+      "sample_count": 500,
+      "mean": 1.0946332354507715e-09,
+      "rms": 1.2119836632355432e-09,
+      "maximum": 2.1440252177003704e-09
+    },
+    "scope": "Distances include deliberately removed feature regions; maximum distance therefore captures both intended feature removal and any unintended geometric change."
+  },
+  "volume": {
+    "interpretable": false,
+    "reason": "At least one STEP has free edges, so volume is not treated as a comparable metric."
+  }
+}

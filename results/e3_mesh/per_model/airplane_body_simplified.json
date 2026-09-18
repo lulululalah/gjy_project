@@ -1,0 +1,27 @@
+{
+  "input_step": "D:\\projects\\gjy_byproject\\data\\plane_model\\ending\\Airplane body_wing_rivets.step",
+  "brep_valid": false,
+  "bounding_box_diagonal": 28950.142528678076,
+  "relative_deflection": 0.0005,
+  "linear_deflection": 14.475071264339038,
+  "angular_deflection_rad": 0.5,
+  "face_count": 450,
+  "mesh_node_count": 27114,
+  "mesh_triangle_count": 42401,
+  "mesh_quality": {
+    "degenerate_triangle_count": 18,
+    "minimum_angle_deg": 3.05336003858729e-05,
+    "minimum_angle_p05_deg": 1.4735458183126555,
+    "maximum_aspect_ratio": 1083973.6271336733,
+    "aspect_ratio_p95": 27.365370057710077
+  },
+  "mesh_repeats": 5,
+  "mesh_elapsed_seconds_samples": [
+    0.15711409994401038,
+    0.26866449997760355,
+    0.1913465999532491,
+    0.20224349992349744,
+    0.19252640008926392
+  ],
+  "mesh_elapsed_seconds_median": 0.19252640008926392
+}

@@ -1,0 +1,27 @@
+{
+  "input_step": "D:\\projects\\gjy_byproject\\data\\plane_model\\ending\\Gulfstream G280 v17_wing_rivets.step",
+  "brep_valid": true,
+  "bounding_box_diagonal": 437.65636011267725,
+  "relative_deflection": 0.0005,
+  "linear_deflection": 0.21882818005633864,
+  "angular_deflection_rad": 0.5,
+  "face_count": 277,
+  "mesh_node_count": 10244,
+  "mesh_triangle_count": 14378,
+  "mesh_quality": {
+    "degenerate_triangle_count": 2,
+    "minimum_angle_deg": 0.003692419213641234,
+    "minimum_angle_p05_deg": 1.862947018553029,
+    "maximum_aspect_ratio": 13046.688983689626,
+    "aspect_ratio_p95": 18.526039134052176
+  },
+  "mesh_repeats": 5,
+  "mesh_elapsed_seconds_samples": [
+    0.10137320007197559,
+    0.10325450007803738,
+    0.10400569997727871,
+    0.10349030001088977,
+    0.1406684999819845
+  ],
+  "mesh_elapsed_seconds_median": 0.10349030001088977
+}

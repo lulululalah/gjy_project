@@ -1,0 +1,12 @@
+D:\projects\gjy_byproject\python\compare_step_geometry.py:36: DeprecationWarning: Call to deprecated function brepgprop_SurfaceProperties since pythonocc-core 7.7.1. This function will be removed in a future release, please rather use the static method brepgprop.SurfaceProperties
+  brepgprop_SurfaceProperties(shape, area_props)
+D:\projects\gjy_byproject\python\compare_step_geometry.py:36: DeprecationWarning: Call to deprecated function brepgprop_SurfaceProperties since pythonocc-core 7.7.1. This function will be removed in a future release, please rather use the static method brepgprop.SurfaceProperties
+  brepgprop_SurfaceProperties(shape, area_props)
+D:\projects\gjy_byproject\python\compare_step_geometry.py:43: DeprecationWarning: Call to deprecated function topexp_MapShapes since pythonocc-core 7.7.1. This function will be removed in a future release, please rather use the static method topexp.MapShapes
+  topexp_MapShapes(shape, TopAbs_EDGE, edges)
+D:\projects\gjy_byproject\python\compare_step_geometry.py:44: DeprecationWarning: Call to deprecated function topexp_MapShapesAndAncestors since pythonocc-core 7.7.1. This function will be removed in a future release, please rather use the static method topexp.MapShapesAndAncestors
+  topexp_MapShapesAndAncestors(shape, TopAbs_EDGE, TopAbs_FACE, edge_faces)
+D:\projects\gjy_byproject\python\compare_step_geometry.py:43: DeprecationWarning: Call to deprecated function topexp_MapShapes since pythonocc-core 7.7.1. This function will be removed in a future release, please rather use the static method topexp.MapShapes
+  topexp_MapShapes(shape, TopAbs_EDGE, edges)
+D:\projects\gjy_byproject\python\compare_step_geometry.py:44: DeprecationWarning: Call to deprecated function topexp_MapShapesAndAncestors since pythonocc-core 7.7.1. This function will be removed in a future release, please rather use the static method topexp.MapShapesAndAncestors
+  topexp_MapShapesAndAncestors(shape, TopAbs_EDGE, TopAbs_FACE, edge_faces)

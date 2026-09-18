@@ -262,19 +262,166 @@ The main contributions of this work are as follows:
   \item A protection mechanism is introduced for large smooth shell background faces to reduce the risk of high-impact background misclassification. It is intended to preserve critical exterior geometry during feature processing while supporting mesh-count reduction and simulation acceleration.
 \end{enumerate}
 
-The next section presents the face-level graph construction, node and edge features, dual-specialist GNN, data partitioning and training procedure, prediction fusion, smooth-shell protection mechanism, and the geometry-traceability and feature-processing workflow for simulation-oriented mesh simplification.
+The next section describes the data preparation, graph representation, dual-specialist GNN, decision rules, and geometry-processing procedure used for the evaluation.
 
 
 %--- Section ---%
-\section{Example of first level head}\label{sec3}
+\section{Methodology}\label{sec:methods}
 
-\subsection{This is an example of second level head - subsection head}\label{subsec2}
+\subsection{Data preparation and label contract}\label{sec:data_preparation}
 
-\subsubsection{This is an example of third level head - subsubsection head}\label{subsubsec2}
-\lipsum[8]
+Each complete-aircraft STEP model is processed as an independent sample. The final STEP models used for prediction--truth comparison are stored separately from intermediate removal outputs so that face identifiers remain traceable to the geometry used for evaluation. Each B-Rep face is assigned one of three labels: background, rivet, or surface feature. The surface-feature class includes non-rivet small features such as decals and windows. Every training, inference, and evaluation record retains the original STEP face identifier; a result is accepted for face-level comparison only when the identifier set and face count agree exactly between the STEP model, prediction CSV, and truth CSV.
 
-\subsubsubsection{This is an example of fourth level head - paragraph head}
-\lipsum[9]
+The training and test data are partitioned by complete aircraft rather than by randomly selected faces. Consequently, adjacent faces from the same aircraft cannot occur in both partitions. The training CSV is used to determine the node-feature and edge-feature normalisation statistics. These stored statistics, the feature-column order, the class mapping, the architecture parameters, and the decision thresholds are reused without recalculation for test models and new STEP inputs.
+
+\subsection{Face graph and input attributes}\label{sec:face_graph}
+
+For a STEP model, each B-Rep face forms a graph node and two nodes are connected when their faces share a boundary. The node representation contains 48 geometric and topological attributes. These attributes describe face scale, perimeter, compactness, curvature, radius availability, wire and edge counts, neighbouring-face area relations, surface types, convex/concave/smooth edge statistics, same-surface connectivity, normal similarity, and relative position. The attributes are normalised using the training-set statistics before graph inference.
+
+Each adjacency edge has six attributes: connection type, area ratio, neighbouring surface type, shared-edge length, mean dihedral angle, and dihedral-angle standard deviation. The node and edge attributes are supplied jointly to message passing. No individual input column is treated as a hand-coded rule for either target class; the two classifiers learn different combinations of the same geometric--topological inputs.
+
+\subsection{Dual-specialist graph neural network}\label{sec:dual_gnn}
+
+The classifier contains a rivet specialist and a surface-feature specialist with independent encoders, adapters, and output heads. Each encoder first transforms the node and edge attributes and then applies four residual edge-conditioned graph-convolution layers. The edge-conditioned layers use the shared-boundary attributes to generate message-passing weights. The hidden dimension is 64, and dropout is applied after each graph-convolution layer. The rivet and surface-feature encoders do not share parameters, allowing the two target classes to use separate representations and decision thresholds.
+
+Each specialist outputs one sigmoid score per face. Let $p_r$ and $p_s$ denote the rivet and surface-feature scores. The fused prediction is
+\begin{equation}
+\hat{y}_i =
+\begin{cases}
+1, & p_r \geq \tau_r, \\
+2, & p_r < \tau_r \ \text{and} \ p_s \geq \tau_s, \\
+0, & \text{otherwise},
+\end{cases}
+\label{eq:dual_head_decision}
+\end{equation}
+where 0, 1, and 2 denote background, rivet, and surface feature, respectively. The rivet decision has precedence in the fusion rule. The fixed thresholds are $\tau_r=0.9$ and $\tau_s=0.5$.
+
+\subsection{Training, inference, and smooth-shell protection}\label{sec:training_inference}
+
+The reported model is trained for 50 epochs with full-aircraft graphs, a batch size of 1, a learning rate of 0.005, dropout of 0.2, weight decay of $10^{-4}$, and random seed 123. AdamW is used for optimisation. The dual-head loss uses class-aware weighting to address the imbalance between target features and background faces. The test partition is evaluated once after the fixed training schedule; it is not used for checkpoint selection.
+
+After score fusion, a smooth-shell protection stage examines only faces predicted as surface features. It constructs connected components through smooth same-surface relations and can relabel a candidate as background when it is a dominant face of a large smooth-shell component. A component is protected when it contains at least two faces, has normalised area at least 0.25, and the candidate occupies at least 0.40 of the component area; a second condition protects components with at least 100 faces when the candidate occupies at least 0.03 of the component area. This stage does not alter the 48-dimensional GNN input, does not promote background faces to target classes, and does not modify rivet predictions.
+
+\subsection{Feature removal and surface-mesh protocol}\label{sec:geometry_protocol}
+
+The downstream geometry workflow first predicts and removes rivets, then re-extracts face features from the rivet-removed STEP model before predicting surface features. Surface-feature candidates are processed using a model-specific strategy: a generic removal route for applicable models, embedded-host reconstruction for features contained within a host surface, or split/bridge repair for the DC-10. The final checked STEP outputs are stored separately from the original verification STEP models.
+
+Surface-mesh evaluation is conducted only on model pairs whose reconstructed STEP files can be read successfully. OpenCASCADE surface meshes are generated with a relative linear deflection of 0.0005 and an angular deflection of 0.5 rad. Each original--simplified pair is meshed five times, and the median meshing time is reported. The evaluation records node count, triangle count, mesh-quality statistics, and bidirectional sampled surface distances. Distances from the original model to the simplified model are not interpreted as a global shell-error measure because that direction includes deliberately removed features.
+
+
+\section{Experimental Results}\label{sec:results}
+
+\subsection{Evaluation scope and face-level detection}\label{sec:e1_results}
+
+The face-level evaluation used the fixed three-class GNN checkpoint, its paired normalisation statistics, and the associated test-label snapshot. Cessna Citation 2, 747-400, and DC-10 were reprocessed from their final STEP models. For each aircraft, the STEP face identifiers, 48-dimensional face features, predictions, and truth labels were checked for one-to-one alignment. The reported set contains 2,031 B-Rep faces and is a reproducible main-case evaluation; it is not a nine-aircraft generalisation claim because the available full test CSV is not the snapshot paired with the historical aggregate evaluation file.
+
+Table~\ref{tab:e1_class_metrics} reports the aggregate face-level metrics. The overall accuracy was 0.9818. Rivet recall was 1.0000, while its precision was 0.9074 because ten background faces on the 747-400 were predicted as rivets. The surface-feature class achieved an F1 score of 0.9654. The foreground macro F1 across rivet and surface-feature classes was 0.9584.
+
+\begin{table}[!ht]
+\centering
+\caption{Aggregate face-level detection results for the three main-case aircraft (2,031 B-Rep faces).}\label{tab:e1_class_metrics}
+\begin{tabular}{lrrrrr}
+\toprule
+Class & Support & Precision & Recall & F1 & IoU \\
+\midrule
+Background & 1,539 & 0.9889 & 0.9870 & 0.9880 & 0.9762 \\
+Rivet & 98 & 0.9074 & 1.0000 & 0.9515 & 0.9074 \\
+Surface feature & 394 & 0.9742 & 0.9569 & 0.9654 & 0.9332 \\
+Macro average & -- & -- & -- & 0.9683 & -- \\
+Foreground macro average & -- & -- & -- & 0.9584 & -- \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Engineering risk was assessed per aircraft by counting background faces predicted as target features (Table~\ref{tab:e1_risk}). Cessna Citation 2 and DC-10 had no background-to-rivet errors. The 747-400 accounted for all ten background-to-rivet errors and four background-to-surface-feature errors. The largest relative area of a background false positive was $5.58992\times10^{-4}$ for Cessna Citation 2, $1.27017\times10^{-5}$ for the 747-400, and $9.61987\times10^{-5}$ for the DC-10.
+
+\begin{table}[!ht]
+\centering
+\caption{Per-aircraft background false-positive risk in the main-case evaluation. $B\rightarrow R$ and $B\rightarrow S$ denote background faces predicted as rivets and surface features, respectively.}\label{tab:e1_risk}
+\begin{tabular}{lrrrrr}
+\toprule
+Model & Faces & Accuracy & $B\rightarrow R$ & $B\rightarrow S$ & Total \\
+\midrule
+Cessna Citation 2 & 312 & 0.9872 & 0 & 4 & 4 \\
+747-400 & 1,432 & 0.9860 & 10 & 4 & 14 \\
+DC-10 & 287 & 0.9547 & 0 & 2 & 2 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Feature removal and reconstruction}\label{sec:e2_results}
+
+The removal and reconstruction pipeline completed for nine aircraft models (Table~\ref{tab:e2_results}). All nine original--simplified pairs were subsequently subjected to the same surface-mesh protocol. Seven pairs were B-Rep valid at both endpoints. Air Plane Idea A was invalid at both endpoints and was processed with the decal-only route, while the simplified Airplane body output was invalid. Their surface-mesh observations are retained as descriptive stress-test cases but are not used for B-Rep-valid-pair summary statistics.
+
+\begin{table}[!ht]
+\centering
+\caption{End-to-end feature-removal outputs for the nine processed aircraft models.}\label{tab:e2_results}
+\begin{tabular}{llrr}
+\toprule
+Model & Processing route & Rivet faces & Surface-feature faces \\
+\midrule
+109-ww1-standart-e-1-aircraft & Generic & 26 & 27 \\
+DC-10 & Split & 26 & 110 \\
+747-400 & Generic & 30 & 254 \\
+AULIRA 2 & Embedded & 52 & 100 \\
+Air Plane Idea A & Invalid-host/decal-only & -- & 88 \\
+Airbus & Embedded & 52 & 960 \\
+Airplane body & Embedded & 58 & 53 \\
+Cessna Citation 2 & Generic & 52 & 23 \\
+Gulfstream G280 v17 & Embedded & 60 & 50 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{figure}[!ht]
+\centering
+\includegraphics[width=0.92\linewidth]{figures/e2_rivet_before_after.png}
+\caption{Rivet-removal comparisons. (a,b) Model 109 before and after removal; (c,d) Gulfstream G280 v17 before and after removal using the pipeline prediction. Red denotes rivet faces, grey denotes retained surfaces, and teal denotes the simplified model.}\label{fig:e2_rivet_examples}
+\end{figure}
+
+\begin{figure}[!ht]
+\centering
+\includegraphics[width=0.92\linewidth]{figures/e2_window_before_after.png}
+\caption{Side-view surface-feature removal comparisons. (a,b) the Gulfstream G280 v17 decal region, (c,d) Air Plane Idea A, (e,f) DC-10, and (g,h) the star-decal region of model 109 before and after removal. Orange denotes predicted surface-feature faces on the original model, grey denotes retained surfaces, and teal denotes the simplified model.}\label{fig:e2_window_examples}
+\end{figure}
+
+\subsection{Surface-mesh evaluation}\label{sec:e3_results}
+
+Surface meshes were generated with OpenCASCADE using a relative linear deflection of 0.0005 and an angular deflection of 0.5 rad. Each original and simplified model was meshed five times, and the median meshing time was reported. The comparison concerns surface meshing only.
+
+All nine pairs completed the surface-mesh procedure (Table~\ref{tab:e3_mesh}). Seven pairs were B-Rep valid at both endpoints and form the primary comparison set. For every valid pair, simplification reduced node count, triangle count, and median meshing time. The triangle-count reduction ranged from 0.57\% to 48.66\%, with a median of 19.86\%; the corresponding median reductions in nodes and meshing time were 35.40\% and 45.84\%, respectively. The two invalid-B-Rep rows are retained in the table and figure for transparency, but are excluded from these summary statistics.
+
+\begin{table}[!ht]
+\centering
+\caption{Surface-mesh size and median meshing time before and after simplification. Rows marked $*$ or $\dagger$ have an invalid B-Rep endpoint and are descriptive only.}\label{tab:e3_mesh}
+\resizebox{\linewidth}{!}{%
+\begin{tabular}{lrrr}
+\toprule
+Model & CAD faces & Triangles & Median time (s) \\
+\midrule
+109-ww1 standard E-1 & 1,244 $\rightarrow$ 986 & 58,692 $\rightarrow$ 58,357 ($-0.57\%$) & 0.4108 $\rightarrow$ 0.3410 ($-16.98\%$) \\
+DC-10 & 287 $\rightarrow$ 170 & 41,914 $\rightarrow$ 35,496 ($-15.31\%$) & 0.2215 $\rightarrow$ 0.0943 ($-57.40\%$) \\
+747-400 & 1,432 $\rightarrow$ 1,132 & 76,017 $\rightarrow$ 48,959 ($-35.59\%$) & 0.6227 $\rightarrow$ 0.3373 ($-45.84\%$) \\
+AULIRA 2 & 370 $\rightarrow$ 136 & 24,519 $\rightarrow$ 12,589 ($-48.66\%$) & 0.1378 $\rightarrow$ 0.0735 ($-46.65\%$) \\
+Air Plane Idea A$^*$ & 27,366 $\rightarrow$ 27,278 & 438,769 $\rightarrow$ 424,893 ($-3.16\%$) & 3.6364 $\rightarrow$ 3.5458 ($-2.49\%$) \\
+Airbus & 1,775 $\rightarrow$ 686 & 95,610 $\rightarrow$ 63,505 ($-33.58\%$) & 0.6107 $\rightarrow$ 0.2547 ($-58.29\%$) \\
+Airplane body$^\dagger$ & 708 $\rightarrow$ 450 & 51,605 $\rightarrow$ 42,401 ($-17.84\%$) & 0.2788 $\rightarrow$ 0.1925 ($-30.95\%$) \\
+Cessna Citation 2 & 312 $\rightarrow$ 231 & 19,696 $\rightarrow$ 19,037 ($-3.35\%$) & 0.0923 $\rightarrow$ 0.0725 ($-21.54\%$) \\
+Gulfstream G280 v17 & 668 $\rightarrow$ 277 & 17,941 $\rightarrow$ 14,378 ($-19.86\%$) & 0.1816 $\rightarrow$ 0.1035 ($-43.00\%$) \\
+\bottomrule
+\end{tabular}
+}
+\end{table}
+
+\begin{figure}[!ht]
+\centering
+\includegraphics[width=0.90\linewidth]{figures/e3_surface_mesh_scale_and_time.png}
+\caption{Surface-mesh node counts, triangle counts, and median meshing times before and after feature removal for all nine aircraft pairs. Node and triangle axes use logarithmic scales. The two rows with invalid B-Rep endpoints are explicitly marked.}\label{fig:e3_mesh}
+\end{figure}
+
+Across the seven valid pairs, the number of degenerate triangles did not increase after simplification. The 5th-percentile minimum angle improved for six pairs and decreased slightly for DC-10; the 95th-percentile aspect ratio improved for five pairs and changed slightly in the reverse direction for 109-ww1 standard E-1 and DC-10. For the three initially audited main-case pairs (Cessna Citation 2, 747-400, and DC-10), sampled distances from retained simplified surfaces to the corresponding original surfaces were close to numerical zero. Distances from original to simplified surfaces include deliberately removed features and are not interpreted as a global shell-error measure. Because the models have free edges, no volume comparison is reported.
+
+\begin{comment}
 
 
 %--- Section ---%
@@ -582,6 +729,7 @@ You can find information about the examples of APA-style references to various s
 
 
 %--- Section ---%
+\end{comment}
 \section{Conclusions}
 Some conclusions here.
 

@@ -55,6 +55,9 @@ def main() -> int:
         writer.writeheader()
         writer.writerows(rows)
 
+    valid_pair_count = sum(
+        row["original_brep_valid"] and row["simplified_brep_valid"] for row in rows
+    )
     lines = [
         "# E3 表面网格汇总结果",
         "",
@@ -86,11 +89,11 @@ def main() -> int:
         "",
         "## 当前可支持的结论",
         "",
-        "三架样本的原始与简化 STEP 均通过 B-Rep 有效性检查。在固定表面网格参数下，简化模型的 CAD 面数、网格节点数、三角形数和网格阶段耗时中位数均下降。",
+        f"本批共包含 {len(rows)} 对模型，其中 {valid_pair_count} 对原始与简化 STEP 均通过 B-Rep 有效性检查。有效模型对在固定表面网格参数下均表现为 CAD 面数、网格节点数、三角形数和网格阶段耗时中位数下降。",
         "",
         "## 尚未完成的指标",
         "",
-        "本表不包含主体壳面几何误差、网格质量分布或体网格结果。因此当前不能将结果表述为主体几何精度影响很小，也不能将其用于 CFD 加速结论。",
+        "本表不包含主体壳面几何误差、网格质量分布或体网格结果。因此当前不能将结果表述为主体几何精度影响很小。",
     ])
     args.markdown_output.write_text("\n".join(lines) + "\n", encoding="utf-8")
     return 0

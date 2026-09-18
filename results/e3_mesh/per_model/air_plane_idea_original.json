@@ -1,0 +1,27 @@
+{
+  "input_step": "D:\\projects\\gjy_byproject\\data\\plane_model\\after_two\\Air Plane Idea A.STEP",
+  "brep_valid": false,
+  "bounding_box_diagonal": 199844.3725342533,
+  "relative_deflection": 0.0005,
+  "linear_deflection": 99.92218626712666,
+  "angular_deflection_rad": 0.5,
+  "face_count": 27366,
+  "mesh_node_count": 443054,
+  "mesh_triangle_count": 438769,
+  "mesh_quality": {
+    "degenerate_triangle_count": 2548,
+    "minimum_angle_deg": 0.0,
+    "minimum_angle_p05_deg": 1.2203002255784183,
+    "maximum_aspect_ratio": 4921918518.69227,
+    "aspect_ratio_p95": 28.832739738069517
+  },
+  "mesh_repeats": 5,
+  "mesh_elapsed_seconds_samples": [
+    3.516920499969274,
+    3.6363599998876452,
+    3.738314599962905,
+    4.2542898000683635,
+    3.634178000036627
+  ],
+  "mesh_elapsed_seconds_median": 3.6363599998876452
+}
