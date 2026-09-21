@@ -1,0 +1,10 @@
+model,faces,accuracy,background_to_rivet,background_to_surface_feature,total_background_false_positives,max_background_false_positive_relative_area
+109-ww1-standart-e-1-aircraft CATIA STP_standart-e1_wing_rivets,1244,0.9935691318327974,0,6,6,9.95e-07
+27- DC-10 SolidWorks stp igs_DC 10_wing_rivets,287,0.9477351916376306,0,2,2,9.61987e-05
+87- 747-400 stp_beoing 747-400 v6_wing_rivets,1432,0.9874301675977654,10,0,10,2.56619e-08
+AULIRA 2_wing_rivets,370,0.9459459459459459,0,16,16,6.91349e-06
+Air Plane Idea A,27366,0.9970035810860192,9,73,82,0.000220926
+Airbus_wing_rivets,1775,0.9104225352112676,0,52,52,0.0880831
+Airplane body_wing_rivets,708,0.9759887005649718,0,10,10,0.000721426
+Cessna Citation 2_wing_rivets,312,0.9711538461538461,0,4,4,0.000558992
+Gulfstream G280 v17_wing_rivets,668,0.9820359281437125,0,8,8,0.0026764

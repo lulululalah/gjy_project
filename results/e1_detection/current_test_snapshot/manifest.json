@@ -1,0 +1,103 @@
+{
+  "truth_dir": "model\\evaluation\\test_eval_models",
+  "prediction_dir": "model\\predictions\\postprocess_current_20260909",
+  "model_checkpoint": "model\\final_detection_model\\rivet_gnn_train17_rebuilt_20260921_50ep.pth",
+  "model_stats": "model\\final_detection_model\\rivet_gnn_train17_rebuilt_20260921_50ep_stats.npz",
+  "postprocess": [
+    "rivet_topology_guard",
+    "surface_visibility_guard"
+  ],
+  "snapshot_date": "2026-09-21",
+  "models": [
+    {
+      "model": "109-ww1-standart-e-1-aircraft CATIA STP_standart-e1_wing_rivets",
+      "truth_file": "model\\evaluation\\test_eval_models\\109-ww1-standart-e-1-aircraft CATIA STP_standart-e1_wing_rivets_decals.step.csv",
+      "source_prediction_file": "model\\predictions\\postprocess_current_20260909\\109-ww1-standart-e-1-aircraft CATIA STP_standart-e1_wing_rivets.pred.csv",
+      "output_prediction_file": "results\\e1_detection\\current_test_snapshot\\109-ww1-standart-e-1-aircraft CATIA STP_standart-e1_wing_rivets.pred.csv",
+      "truth_faces": 1244,
+      "source_prediction_faces": 1244,
+      "frozen_prediction_faces": 1244,
+      "excluded_source_prediction_faces": 0
+    },
+    {
+      "model": "27- DC-10 SolidWorks stp igs_DC 10_wing_rivets",
+      "truth_file": "model\\evaluation\\test_eval_models\\27- DC-10 SolidWorks stp igs_DC 10_wing_rivets.step.csv",
+      "source_prediction_file": "model\\predictions\\postprocess_current_20260909\\27- DC-10 SolidWorks stp igs_DC 10_wing_rivets.pred.csv",
+      "output_prediction_file": "results\\e1_detection\\current_test_snapshot\\27- DC-10 SolidWorks stp igs_DC 10_wing_rivets.pred.csv",
+      "truth_faces": 287,
+      "source_prediction_faces": 287,
+      "frozen_prediction_faces": 287,
+      "excluded_source_prediction_faces": 0
+    },
+    {
+      "model": "87- 747-400 stp_beoing 747-400 v6_wing_rivets",
+      "truth_file": "model\\evaluation\\test_eval_models\\87- 747-400 stp_beoing 747-400 v6_wing_rivets.stp.csv",
+      "source_prediction_file": "model\\predictions\\postprocess_current_20260909\\87- 747-400 stp_beoing 747-400 v6_wing_rivets.pred.csv",
+      "output_prediction_file": "results\\e1_detection\\current_test_snapshot\\87- 747-400 stp_beoing 747-400 v6_wing_rivets.pred.csv",
+      "truth_faces": 1432,
+      "source_prediction_faces": 1432,
+      "frozen_prediction_faces": 1432,
+      "excluded_source_prediction_faces": 0
+    },
+    {
+      "model": "AULIRA 2_wing_rivets",
+      "truth_file": "model\\evaluation\\test_eval_models\\AULIRA 2_wing_rivets.step.csv",
+      "source_prediction_file": "model\\predictions\\postprocess_current_20260909\\AULIRA 2_wing_rivets.pred.csv",
+      "output_prediction_file": "results\\e1_detection\\current_test_snapshot\\AULIRA 2_wing_rivets.pred.csv",
+      "truth_faces": 370,
+      "source_prediction_faces": 370,
+      "frozen_prediction_faces": 370,
+      "excluded_source_prediction_faces": 0
+    },
+    {
+      "model": "Air Plane Idea A",
+      "truth_file": "model\\evaluation\\test_eval_models\\Air Plane Idea A.step.csv",
+      "source_prediction_file": "model\\predictions\\postprocess_current_20260909\\Air Plane Idea A.pred.csv",
+      "output_prediction_file": "results\\e1_detection\\current_test_snapshot\\Air Plane Idea A.pred.csv",
+      "truth_faces": 27366,
+      "source_prediction_faces": 27366,
+      "frozen_prediction_faces": 27366,
+      "excluded_source_prediction_faces": 0
+    },
+    {
+      "model": "Airbus_wing_rivets",
+      "truth_file": "model\\evaluation\\test_eval_models\\Airbus_wing_rivets.step.csv",
+      "source_prediction_file": "model\\predictions\\postprocess_current_20260909\\Airbus_wing_rivets.pred.csv",
+      "output_prediction_file": "results\\e1_detection\\current_test_snapshot\\Airbus_wing_rivets.pred.csv",
+      "truth_faces": 1775,
+      "source_prediction_faces": 1775,
+      "frozen_prediction_faces": 1775,
+      "excluded_source_prediction_faces": 0
+    },
+    {
+      "model": "Airplane body_wing_rivets",
+      "truth_file": "model\\evaluation\\test_eval_models\\Airplane body_wing_rivets.step.csv",
+      "source_prediction_file": "model\\predictions\\postprocess_current_20260909\\Airplane body_wing_rivets.pred.csv",
+      "output_prediction_file": "results\\e1_detection\\current_test_snapshot\\Airplane body_wing_rivets.pred.csv",
+      "truth_faces": 708,
+      "source_prediction_faces": 708,
+      "frozen_prediction_faces": 708,
+      "excluded_source_prediction_faces": 0
+    },
+    {
+      "model": "Cessna Citation 2_wing_rivets",
+      "truth_file": "model\\evaluation\\test_eval_models\\Cessna Citation 2_wing_rivets.step.csv",
+      "source_prediction_file": "model\\predictions\\postprocess_current_20260909\\Cessna Citation 2_wing_rivets.pred.csv",
+      "output_prediction_file": "results\\e1_detection\\current_test_snapshot\\Cessna Citation 2_wing_rivets.pred.csv",
+      "truth_faces": 312,
+      "source_prediction_faces": 312,
+      "frozen_prediction_faces": 312,
+      "excluded_source_prediction_faces": 0
+    },
+    {
+      "model": "Gulfstream G280 v17_wing_rivets",
+      "truth_file": "model\\evaluation\\test_eval_models\\Gulfstream G280 v17_wing_rivets.step.csv",
+      "source_prediction_file": "model\\predictions\\postprocess_current_20260909\\Gulfstream G280 v17_wing_rivets.pred.csv",
+      "output_prediction_file": "results\\e1_detection\\current_test_snapshot\\Gulfstream G280 v17_wing_rivets.pred.csv",
+      "truth_faces": 668,
+      "source_prediction_faces": 668,
+      "frozen_prediction_faces": 668,
+      "excluded_source_prediction_faces": 0
+    }
+  ]
+}

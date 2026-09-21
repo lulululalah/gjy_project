@@ -11,8 +11,14 @@ import pandas as pd
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
 DEFAULT_INFERENCE_CSV = PROJECT_ROOT / "data" / "current_inference.csv"
 DEFAULT_DETECTOR = PROJECT_ROOT / "build" / "Release" / "Detector.exe"
-DEFAULT_MODEL_PATH = PROJECT_ROOT / "work" / "rivet_gnn_xian20_train_simpletest_50ep.pth"
-DEFAULT_STATS_PATH = PROJECT_ROOT / "work" / "rivet_gnn_xian20_train_simpletest_50ep_stats.npz"
+DEFAULT_MODEL_PATH = (
+    PROJECT_ROOT / "model" / "final_detection_model"
+    / "rivet_gnn_train17_rebuilt_20260921_50ep.pth"
+)
+DEFAULT_STATS_PATH = (
+    PROJECT_ROOT / "model" / "final_detection_model"
+    / "rivet_gnn_train17_rebuilt_20260921_50ep_stats.npz"
+)
 LEGACY_INFERENCE_MODE = "full"
 LEGACY_WINDOW_HOP = 2
 
@@ -313,7 +319,7 @@ def run_inference(
         if visibility_diagnostics:
             details = ", ".join(
                 f"F{item['face_id']}"
-                f"(area={item['relative_area']:.6g}, exposure={item['exposure_score']:.2f})"
+                f"(exposure={item['exposure_score']:.2f})"
                 for item in visibility_diagnostics
             )
             print(f"Exterior visibility guard suppressed internal surface faces: {details}")

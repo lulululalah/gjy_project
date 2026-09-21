@@ -19,7 +19,11 @@ from train_rivet_gcn import (
     apply_wing_shell_surface_guard,
     compute_attached_surface_feature_frame,
 )
-from surface_visibility_guard import suppress_internal_large_surface_predictions
+from surface_visibility_guard import (
+    suppress_low_confidence_dense_surface_predictions,
+    suppress_fully_occluded_surface_predictions,
+    suppress_internal_large_surface_predictions,
+)
 
 
 class AttachedSurfaceFeatureTests(unittest.TestCase):
@@ -40,6 +44,34 @@ class AttachedSurfaceFeatureTests(unittest.TestCase):
         )
         self.assertEqual(guarded.tolist(), [2, 0])
         self.assertEqual(suppressed, [1])
+
+    def test_pure_visibility_guard_checks_every_surface_candidate(self):
+        guarded, suppressed = suppress_fully_occluded_surface_predictions(
+            predictions=[2, 2, 1, 0],
+            exposure_scores=[0.0, 0.2, 0.0, 0.0],
+        )
+        self.assertEqual(guarded.tolist(), [0, 2, 1, 0])
+        self.assertEqual(suppressed, [0])
+
+    def test_dense_surface_guard_suppresses_only_low_confidence_candidates(self):
+        guarded, suppressed, density = suppress_low_confidence_dense_surface_predictions(
+            predictions=[2, 2, 2, 0],
+            surface_probabilities=[0.69, 0.70, 0.95, 0.99],
+            density_threshold=0.5,
+            minimum_surface_confidence=0.7,
+        )
+        self.assertAlmostEqual(density, 0.75)
+        self.assertEqual(guarded.tolist(), [0, 2, 2, 0])
+        self.assertEqual(suppressed, [0])
+
+    def test_dense_surface_guard_does_not_trigger_at_normal_density(self):
+        guarded, suppressed, density = suppress_low_confidence_dense_surface_predictions(
+            predictions=[2, 0, 0, 0],
+            surface_probabilities=[0.2, 0.1, 0.1, 0.1],
+        )
+        self.assertAlmostEqual(density, 0.25)
+        self.assertEqual(guarded.tolist(), [2, 0, 0, 0])
+        self.assertEqual(suppressed, [])
 
     def test_smooth_component_runtime_values_are_not_model_features(self):
         self.assertTrue(set(SMOOTH_COMPONENT_RUNTIME_COLS).isdisjoint(ATTACHED_SURFACE_FEATURE_COLS))

@@ -16,7 +16,7 @@ def run(command: list[str], log_path: Path) -> int:
     print("RUN:", subprocess.list2cmdline(command), flush=True)
     result = subprocess.run(
         command,
-        cwd=log_path.parents[2],
+        cwd=Path(__file__).resolve().parents[1],
         text=True,
         stdout=subprocess.PIPE,
         stderr=subprocess.STDOUT,
@@ -77,6 +77,7 @@ def infer(
     *,
     decal_only: bool = False,
     skip_export: bool = False,
+    exterior_surface_guard: bool = True,
 ) -> int:
     command = [
         str(python),
@@ -98,6 +99,8 @@ def infer(
         command.append("--decal-only")
     if skip_export:
         command.append("--skip-export")
+    if not exterior_surface_guard:
+        command.append("--disable-exterior-surface-guard")
     return run(command, log_path)
 
 
@@ -110,7 +113,15 @@ def main() -> int:
     )
     parser.add_argument(
         "--test-csv", type=Path,
-        default=root / "work" / "uv_test5_xian20_simpletest_cessna.csv"
+        default=root / "model" / "final_detection_model"
+        / "test_9_models_frozen_truth.csv"
+    )
+    parser.add_argument(
+        "--snapshot-manifest", type=Path,
+        help=(
+            "Replay the formal first-stage prediction snapshot recorded by this "
+            "manifest instead of re-running initial inference."
+        ),
     )
     parser.add_argument(
         "--ending-dir", type=Path,
@@ -129,11 +140,13 @@ def main() -> int:
     )
     parser.add_argument(
         "--model", type=Path,
-        default=root / "work" / "rivet_gnn_xian20_train_simpletest_50ep.pth"
+        default=root / "model" / "final_detection_model"
+        / "rivet_gnn_train17_rebuilt_20260921_50ep.pth"
     )
     parser.add_argument(
         "--stats", type=Path,
-        default=root / "work" / "rivet_gnn_xian20_train_simpletest_50ep_stats.npz"
+        default=root / "model" / "final_detection_model"
+        / "rivet_gnn_train17_rebuilt_20260921_50ep_stats.npz"
     )
     args = parser.parse_args()
 
@@ -141,25 +154,45 @@ def main() -> int:
     bridge_script = root / "python" / "batch_bridge_split_windows.py"
     surface_postprocessor = root / "python" / "surface_visibility_guard.py"
     required = [
-        args.input_dir, args.test_csv, args.detector, args.python,
-        args.model, args.stats, viewer, bridge_script, surface_postprocessor,
+        args.input_dir, args.detector, args.python, args.model, args.stats,
+        viewer, bridge_script, surface_postprocessor,
     ]
+    if args.snapshot_manifest is None:
+        required.append(args.test_csv)
+    else:
+        required.append(args.snapshot_manifest)
     missing = [str(path) for path in required if not path.exists()]
     if missing:
         raise FileNotFoundError("Missing required paths: " + ", ".join(missing))
 
-    names = test_model_names(args.test_csv)
-    if len(names) != 9:
-        raise RuntimeError(f"Expected 9 test models, found {len(names)}")
+    if args.snapshot_manifest is None:
+        runs = [(args.input_dir / name, None) for name in test_model_names(args.test_csv)]
+    else:
+        manifest = json.loads(args.snapshot_manifest.read_text(encoding="utf-8"))
+        source_by_stem = {
+            stage_stem(path.name): path for path in args.input_dir.iterdir() if path.is_file()
+        }
+        runs = []
+        for item in manifest.get("models", []):
+            stem = stage_stem(str(item["model"]))
+            source = source_by_stem.get(stem)
+            prediction = root / item["source_prediction_file"]
+            if source is None:
+                raise FileNotFoundError(
+                    f"No input STEP matches snapshot model {item['model']}."
+                )
+            if not prediction.exists():
+                raise FileNotFoundError(f"Missing snapshot prediction: {prediction}")
+            runs.append((source, prediction))
+    if len(runs) != 9:
+        raise RuntimeError(f"Expected 9 test models, found {len(runs)}")
 
     args.ending_dir.mkdir(parents=True, exist_ok=True)
     args.work_dir.mkdir(parents=True, exist_ok=True)
     summaries: list[dict[str, object]] = []
 
-    for model_name in names:
-        source = args.input_dir / model_name
-        if not source.exists():
-            raise FileNotFoundError(f"Missing test STEP: {source}")
+    for source, snapshot_prediction in runs:
+        model_name = source.name
         stem = stage_stem(model_name)
         model_dir = args.work_dir / stem
         model_dir.mkdir(parents=True, exist_ok=True)
@@ -177,13 +210,17 @@ def main() -> int:
         if route == "invalid-host":
             decal_csv = model_dir / "decal.features.csv"
             decal_pred = model_dir / "decal.pred.csv"
-            if infer(
-                args.python, viewer, args.detector, args.model, args.stats,
-                source, decal_csv, decal_pred, model_dir / "decal.log",
-                decal_only=True,
-            ) != 0:
-                continue
-            summary["stages"].append("decal_only_prediction")
+            if snapshot_prediction is None:
+                if infer(
+                    args.python, viewer, args.detector, args.model, args.stats,
+                    source, decal_csv, decal_pred, model_dir / "decal.log",
+                    decal_only=True,
+                ) != 0:
+                    continue
+                summary["stages"].append("decal_only_prediction")
+            else:
+                shutil.copy2(snapshot_prediction, decal_pred)
+                summary["stages"].append("formal_snapshot_prediction")
             summary["predicted_surface_faces"] = prediction_count(decal_pred, 2)
             destination = args.ending_dir / model_name
             if run(
@@ -199,17 +236,21 @@ def main() -> int:
 
         initial_csv = model_dir / "initial.features.csv"
         initial_pred = model_dir / "initial.pred.csv"
-        if infer(
-            args.python, viewer, args.detector, args.model, args.stats,
-            source, initial_csv, initial_pred, model_dir / "initial.log"
-        ) != 0:
-            continue
-        summary["stages"].append("initial_prediction")
+        if snapshot_prediction is None:
+            if infer(
+                args.python, viewer, args.detector, args.model, args.stats,
+                source, initial_csv, initial_pred, model_dir / "initial.log"
+            ) != 0:
+                continue
+            summary["stages"].append("initial_prediction")
+        else:
+            shutil.copy2(snapshot_prediction, initial_pred)
+            summary["stages"].append("formal_snapshot_prediction")
 
         removed = model_dir / f"{stem}_removed.step"
         rivet_count = prediction_count(initial_pred, 1)
         summary["predicted_rivets"] = rivet_count
-        if stem.startswith("Airbus"):
+        if stem.startswith("Airbus") and snapshot_prediction is None:
             # Airbus window cleanup depends on the topology of this validated
             # rivet-removal result. Re-running STEP export preserves the face
             # count but changes the topology/face mapping used by narrow mode.
@@ -240,25 +281,23 @@ def main() -> int:
         surface_pred = model_dir / "surface.pred.csv"
         if infer(
             args.python, viewer, args.detector, args.model, args.stats,
-            removed, surface_csv, surface_pred, model_dir / "surface.log"
+            removed, surface_csv, surface_pred, model_dir / "surface.log",
+            exterior_surface_guard=False,
         ) != 0:
             continue
         summary["stages"].append("post_rivet_prediction")
 
-        surface_pred_for_removal = surface_pred
-        if stem.startswith("Airbus"):
-            completed_surface_pred = model_dir / "surface.completed.pred.csv"
-            if run(
-                [
-                    str(args.python), str(surface_postprocessor),
-                    str(removed), str(surface_csv), str(surface_pred),
-                    "--output", str(completed_surface_pred),
-                ],
-                model_dir / "surface_completion.log",
-            ) != 0:
-                continue
-            surface_pred_for_removal = completed_surface_pred
-            summary["stages"].append("airbus_window_completion")
+        surface_pred_for_removal = model_dir / "surface.visibility.pred.csv"
+        if run(
+            [
+                str(args.python), str(surface_postprocessor),
+                str(removed), str(surface_csv), str(surface_pred),
+                "--output", str(surface_pred_for_removal),
+            ],
+            model_dir / "surface_visibility.log",
+        ) != 0:
+            continue
+        summary["stages"].append("surface_visibility_guard")
 
         surface_count = prediction_count(surface_pred_for_removal, 2)
         summary["predicted_surface_faces"] = surface_count
@@ -273,7 +312,7 @@ def main() -> int:
             candidate = model_dir / f"{stem}_surface_removed.step"
             command = [
                 str(args.detector), "--remove-predicted-surface-features",
-                str(removed), str(surface_pred), str(candidate),
+                str(removed), str(surface_pred_for_removal), str(candidate),
             ]
             if run(command, model_dir / "generic_surface.log") == 0:
                 shutil.copy2(candidate, destination)
@@ -292,14 +331,18 @@ def main() -> int:
                 ],
                 embedded_log,
             ) == 0:
-                if stem.startswith("Airbus") and not log_contains(
-                    embedded_log,
-                    (
-                        "Embedded-window host loops rebuilt: 108",
-                        "Residual window faces removed: 1037",
-                        "BRep valid: yes",
-                        "Face count: 1723 -> 686",
-                    ),
+                if (
+                    stem.startswith("Airbus")
+                    and snapshot_prediction is None
+                    and not log_contains(
+                        embedded_log,
+                        (
+                            "Embedded-window host loops rebuilt: 108",
+                            "Residual window faces removed: 1037",
+                            "BRep valid: yes",
+                            "Face count: 1723 -> 686",
+                        ),
+                    )
                 ):
                     summary["stages"].append("airbus_geometry_regression")
                     continue
@@ -312,7 +355,7 @@ def main() -> int:
         if run(
             [
                 str(args.detector), "--rebuild-split-window-skins",
-                str(removed), str(surface_pred), str(split),
+                str(removed), str(surface_pred_for_removal), str(split),
             ],
             model_dir / "split.log",
         ) == 0:
@@ -338,7 +381,7 @@ def main() -> int:
         if run(
             [
                 str(args.detector), "--rebuild-embedded-window-hosts",
-                str(removed), str(surface_pred), str(split), "auto",
+                str(removed), str(surface_pred_for_removal), str(split), "auto",
             ],
             model_dir / "embedded_fallback.log",
         ) == 0:

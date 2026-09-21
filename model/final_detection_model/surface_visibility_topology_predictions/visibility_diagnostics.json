@@ -1,0 +1,1302 @@
+{
+  "109-ww1-standart-e-1-aircraft CATIA STP_standart-e1_wing_rivets": [
+    {
+      "face_id": 589,
+      "exposure_score": 0.0
+    },
+    {
+      "face_id": 605,
+      "exposure_score": 0.0
+    },
+    {
+      "face_id": 613,
+      "exposure_score": 0.0
+    },
+    {
+      "face_id": 618,
+      "exposure_score": 0.0
+    },
+    {
+      "face_id": 626,
+      "exposure_score": 0.0
+    },
+    {
+      "face_id": 639,
+      "exposure_score": 0.0
+    },
+    {
+      "face_id": 646,
+      "exposure_score": 0.0
+    },
+    {
+      "face_id": 655,
+      "exposure_score": 0.0
+    },
+    {
+      "face_id": 1141,
+      "exposure_score": 0.0
+    },
+    {
+      "face_id": 1146,
+      "exposure_score": 0.0
+    }
+  ],
+  "27- DC-10 SolidWorks stp igs_DC 10_wing_rivets": [],
+  "87- 747-400 stp_beoing 747-400 v6_wing_rivets": [],
+  "AULIRA 2_wing_rivets": [
+    {
+      "face_id": 43,
+      "exposure_score": 0.0
+    },
+    {
+      "face_id": 44,
+      "exposure_score": 0.0
+    },
+    {
+      "face_id": 45,
+      "exposure_score": 0.0
+    },
+    {
+      "face_id": 46,
+      "exposure_score": 0.0
+    },
+    {
+      "face_id": 48,
+      "exposure_score": 0.0
+    },
+    {
+      "face_id": 50,
+      "exposure_score": 0.0
+    },
+    {
+      "face_id": 52,
+      "exposure_score": 0.0
+    },
+    {
+      "face_id": 53,
+      "exposure_score": 0.0
+    },
+    {
+      "face_id": 54,
+      "exposure_score": 0.0
+    },
+    {
+      "face_id": 55,
+      "exposure_score": 0.0
+    },
+    {
+      "face_id": 57,
+      "exposure_score": 0.0
+    },
+    {
+      "face_id": 58,
+      "exposure_score": 0.0
+    },
+    {
+      "face_id": 59,
+      "exposure_score": 0.0
+    },
+    {
+      "face_id": 60,
+      "exposure_score": 0.0
+    },
+    {
+      "face_id": 62,
+      "exposure_score": 0.0
+    },
+    {
+      "face_id": 63,
+      "exposure_score": 0.0
+    },
+    {
+      "face_id": 64,
+      "exposure_score": 0.0
+    },
+    {
+      "face_id": 65,
+      "exposure_score": 0.0
+    },
+    {
+      "face_id": 67,
+      "exposure_score": 0.0
+    },
+    {
+      "face_id": 68,
+      "exposure_score": 0.0
+    },
+    {
+      "face_id": 70,
+      "exposure_score": 0.0
+    },
+    {
+      "face_id": 71,
+      "exposure_score": 0.0
+    },
+    {
+      "face_id": 72,
+      "exposure_score": 0.0
+    },
+    {
+      "face_id": 73,
+      "exposure_score": 0.0
+    },
+    {
+      "face_id": 74,
+      "exposure_score": 0.0
+    },
+    {
+      "face_id": 75,
+      "exposure_score": 0.0
+    },
+    {
+      "face_id": 78,
+      "exposure_score": 0.0
+    },
+    {
+      "face_id": 79,
+      "exposure_score": 0.0
+    },
+    {
+      "face_id": 81,
+      "exposure_score": 0.0
+    },
+    {
+      "face_id": 82,
+      "exposure_score": 0.0
+    },
+    {
+      "face_id": 83,
+      "exposure_score": 0.0
+    },
+    {
+      "face_id": 84,
+      "exposure_score": 0.0
+    },
+    {
+      "face_id": 85,
+      "exposure_score": 0.0
+    },
+    {
+      "face_id": 87,
+      "exposure_score": 0.0
+    },
+    {
+      "face_id": 88,
+      "exposure_score": 0.0
+    },
+    {
+      "face_id": 89,
+      "exposure_score": 0.0
+    },
+    {
+      "face_id": 90,
+      "exposure_score": 0.0
+    },
+    {
+      "face_id": 93,
+      "exposure_score": 0.0
+    },
+    {
+      "face_id": 95,
+      "exposure_score": 0.0
+    },
+    {
+      "face_id": 96,
+      "exposure_score": 0.0
+    },
+    {
+      "face_id": 97,
+      "exposure_score": 0.0
+    },
+    {
+      "face_id": 98,
+      "exposure_score": 0.0
+    },
+    {
+      "face_id": 99,
+      "exposure_score": 0.0
+    },
+    {
+      "face_id": 100,
+      "exposure_score": 0.0
+    },
+    {
+      "face_id": 101,
+      "exposure_score": 0.0
+    },
+    {
+      "face_id": 102,
+      "exposure_score": 0.0
+    },
+    {
+      "face_id": 103,
+      "exposure_score": 0.0
+    },
+    {
+      "face_id": 104,
+      "exposure_score": 0.0
+    },
+    {
+      "face_id": 105,
+      "exposure_score": 0.0
+    },
+    {
+      "face_id": 106,
+      "exposure_score": 0.0
+    },
+    {
+      "face_id": 107,
+      "exposure_score": 0.0
+    },
+    {
+      "face_id": 108,
+      "exposure_score": 0.0
+    },
+    {
+      "face_id": 109,
+      "exposure_score": 0.0
+    },
+    {
+      "face_id": 110,
+      "exposure_score": 0.0
+    },
+    {
+      "face_id": 111,
+      "exposure_score": 0.0
+    },
+    {
+      "face_id": 112,
+      "exposure_score": 0.0
+    },
+    {
+      "face_id": 113,
+      "exposure_score": 0.0
+    },
+    {
+      "face_id": 117,
+      "exposure_score": 0.0
+    },
+    {
+      "face_id": 120,
+      "exposure_score": 0.0
+    },
+    {
+      "face_id": 141,
+      "exposure_score": 0.0
+    },
+    {
+      "face_id": 144,
+      "exposure_score": 0.0
+    },
+    {
+      "face_id": 145,
+      "exposure_score": 0.0
+    },
+    {
+      "face_id": 146,
+      "exposure_score": 0.0
+    },
+    {
+      "face_id": 151,
+      "exposure_score": 0.0
+    },
+    {
+      "face_id": 154,
+      "exposure_score": 0.0
+    },
+    {
+      "face_id": 155,
+      "exposure_score": 0.0
+    },
+    {
+      "face_id": 159,
+      "exposure_score": 0.0
+    },
+    {
+      "face_id": 160,
+      "exposure_score": 0.0
+    },
+    {
+      "face_id": 161,
+      "exposure_score": 0.0
+    },
+    {
+      "face_id": 163,
+      "exposure_score": 0.0
+    },
+    {
+      "face_id": 164,
+      "exposure_score": 0.0
+    },
+    {
+      "face_id": 166,
+      "exposure_score": 0.0
+    },
+    {
+      "face_id": 167,
+      "exposure_score": 0.0
+    },
+    {
+      "face_id": 168,
+      "exposure_score": 0.0
+    },
+    {
+      "face_id": 177,
+      "exposure_score": 0.0
+    },
+    {
+      "face_id": 178,
+      "exposure_score": 0.0
+    },
+    {
+      "face_id": 179,
+      "exposure_score": 0.0
+    },
+    {
+      "face_id": 180,
+      "exposure_score": 0.0
+    },
+    {
+      "face_id": 181,
+      "exposure_score": 0.0
+    },
+    {
+      "face_id": 183,
+      "exposure_score": 0.0
+    },
+    {
+      "face_id": 184,
+      "exposure_score": 0.0
+    },
+    {
+      "face_id": 185,
+      "exposure_score": 0.0
+    },
+    {
+      "face_id": 191,
+      "exposure_score": 0.0
+    },
+    {
+      "face_id": 192,
+      "exposure_score": 0.0
+    },
+    {
+      "face_id": 194,
+      "exposure_score": 0.0
+    },
+    {
+      "face_id": 195,
+      "exposure_score": 0.0
+    },
+    {
+      "face_id": 197,
+      "exposure_score": 0.0
+    },
+    {
+      "face_id": 198,
+      "exposure_score": 0.0
+    },
+    {
+      "face_id": 199,
+      "exposure_score": 0.0
+    },
+    {
+      "face_id": 200,
+      "exposure_score": 0.0
+    },
+    {
+      "face_id": 201,
+      "exposure_score": 0.0
+    },
+    {
+      "face_id": 203,
+      "exposure_score": 0.0
+    },
+    {
+      "face_id": 204,
+      "exposure_score": 0.0
+    },
+    {
+      "face_id": 206,
+      "exposure_score": 0.0
+    },
+    {
+      "face_id": 207,
+      "exposure_score": 0.0
+    },
+    {
+      "face_id": 208,
+      "exposure_score": 0.0
+    },
+    {
+      "face_id": 209,
+      "exposure_score": 0.0
+    },
+    {
+      "face_id": 210,
+      "exposure_score": 0.0
+    },
+    {
+      "face_id": 211,
+      "exposure_score": 0.0
+    },
+    {
+      "face_id": 212,
+      "exposure_score": 0.0
+    },
+    {
+      "face_id": 213,
+      "exposure_score": 0.0
+    },
+    {
+      "face_id": 215,
+      "exposure_score": 0.0
+    },
+    {
+      "face_id": 217,
+      "exposure_score": 0.0
+    },
+    {
+      "face_id": 218,
+      "exposure_score": 0.0
+    },
+    {
+      "face_id": 219,
+      "exposure_score": 0.0
+    },
+    {
+      "face_id": 220,
+      "exposure_score": 0.0
+    },
+    {
+      "face_id": 221,
+      "exposure_score": 0.0
+    },
+    {
+      "face_id": 222,
+      "exposure_score": 0.0
+    },
+    {
+      "face_id": 223,
+      "exposure_score": 0.0
+    },
+    {
+      "face_id": 225,
+      "exposure_score": 0.0
+    },
+    {
+      "face_id": 226,
+      "exposure_score": 0.0
+    },
+    {
+      "face_id": 227,
+      "exposure_score": 0.0
+    },
+    {
+      "face_id": 228,
+      "exposure_score": 0.0
+    },
+    {
+      "face_id": 229,
+      "exposure_score": 0.0
+    },
+    {
+      "face_id": 231,
+      "exposure_score": 0.0
+    },
+    {
+      "face_id": 232,
+      "exposure_score": 0.0
+    },
+    {
+      "face_id": 233,
+      "exposure_score": 0.0
+    },
+    {
+      "face_id": 234,
+      "exposure_score": 0.0
+    },
+    {
+      "face_id": 236,
+      "exposure_score": 0.0
+    },
+    {
+      "face_id": 237,
+      "exposure_score": 0.0
+    },
+    {
+      "face_id": 238,
+      "exposure_score": 0.0
+    },
+    {
+      "face_id": 240,
+      "exposure_score": 0.0
+    },
+    {
+      "face_id": 242,
+      "exposure_score": 0.0
+    },
+    {
+      "face_id": 243,
+      "exposure_score": 0.0
+    },
+    {
+      "face_id": 244,
+      "exposure_score": 0.0
+    },
+    {
+      "face_id": 246,
+      "exposure_score": 0.0
+    },
+    {
+      "face_id": 247,
+      "exposure_score": 0.0
+    },
+    {
+      "face_id": 248,
+      "exposure_score": 0.0
+    },
+    {
+      "face_id": 249,
+      "exposure_score": 0.0
+    },
+    {
+      "face_id": 250,
+      "exposure_score": 0.0
+    },
+    {
+      "face_id": 255,
+      "exposure_score": 0.0
+    },
+    {
+      "face_id": 259,
+      "exposure_score": 0.0
+    },
+    {
+      "face_id": 263,
+      "exposure_score": 0.0
+    },
+    {
+      "face_id": 265,
+      "exposure_score": 0.0
+    },
+    {
+      "face_id": 268,
+      "exposure_score": 0.0
+    },
+    {
+      "face_id": 272,
+      "exposure_score": 0.0
+    }
+  ],
+  "Air Plane Idea A": [
+    {
+      "face_id": 7645,
+      "exposure_score": 0.0
+    },
+    {
+      "face_id": 10119,
+      "exposure_score": 0.0
+    },
+    {
+      "face_id": 10145,
+      "exposure_score": 0.0
+    },
+    {
+      "face_id": 10150,
+      "exposure_score": 0.0
+    },
+    {
+      "face_id": 10154,
+      "exposure_score": 0.0
+    },
+    {
+      "face_id": 10158,
+      "exposure_score": 0.0
+    },
+    {
+      "face_id": 10804,
+      "exposure_score": 0.0
+    },
+    {
+      "face_id": 10823,
+      "exposure_score": 0.0
+    },
+    {
+      "face_id": 10828,
+      "exposure_score": 0.0
+    },
+    {
+      "face_id": 10832,
+      "exposure_score": 0.0
+    },
+    {
+      "face_id": 10836,
+      "exposure_score": 0.0
+    },
+    {
+      "face_id": 11475,
+      "exposure_score": 0.0
+    },
+    {
+      "face_id": 11482,
+      "exposure_score": 0.0
+    },
+    {
+      "face_id": 11501,
+      "exposure_score": 0.0
+    },
+    {
+      "face_id": 11506,
+      "exposure_score": 0.0
+    },
+    {
+      "face_id": 11510,
+      "exposure_score": 0.0
+    },
+    {
+      "face_id": 11514,
+      "exposure_score": 0.0
+    },
+    {
+      "face_id": 12153,
+      "exposure_score": 0.0
+    },
+    {
+      "face_id": 12160,
+      "exposure_score": 0.0
+    },
+    {
+      "face_id": 12179,
+      "exposure_score": 0.0
+    },
+    {
+      "face_id": 12184,
+      "exposure_score": 0.0
+    },
+    {
+      "face_id": 12188,
+      "exposure_score": 0.0
+    },
+    {
+      "face_id": 12192,
+      "exposure_score": 0.0
+    },
+    {
+      "face_id": 13314,
+      "exposure_score": 0.0
+    },
+    {
+      "face_id": 16741,
+      "exposure_score": 0.0
+    },
+    {
+      "face_id": 20606,
+      "exposure_score": 0.0
+    },
+    {
+      "face_id": 24031,
+      "exposure_score": 0.0
+    }
+  ],
+  "Airbus_wing_rivets": [
+    {
+      "face_id": 438,
+      "exposure_score": 0.0
+    },
+    {
+      "face_id": 581,
+      "exposure_score": 0.0
+    },
+    {
+      "face_id": 589,
+      "exposure_score": 0.0
+    },
+    {
+      "face_id": 597,
+      "exposure_score": 0.0
+    },
+    {
+      "face_id": 614,
+      "exposure_score": 0.0
+    },
+    {
+      "face_id": 718,
+      "exposure_score": 0.0
+    },
+    {
+      "face_id": 813,
+      "exposure_score": 0.0
+    },
+    {
+      "face_id": 814,
+      "exposure_score": 0.0
+    },
+    {
+      "face_id": 821,
+      "exposure_score": 0.0
+    },
+    {
+      "face_id": 822,
+      "exposure_score": 0.0
+    },
+    {
+      "face_id": 827,
+      "exposure_score": 0.0
+    },
+    {
+      "face_id": 829,
+      "exposure_score": 0.0
+    },
+    {
+      "face_id": 831,
+      "exposure_score": 0.0
+    },
+    {
+      "face_id": 834,
+      "exposure_score": 0.0
+    },
+    {
+      "face_id": 835,
+      "exposure_score": 0.0
+    },
+    {
+      "face_id": 839,
+      "exposure_score": 0.0
+    },
+    {
+      "face_id": 840,
+      "exposure_score": 0.0
+    },
+    {
+      "face_id": 846,
+      "exposure_score": 0.0
+    },
+    {
+      "face_id": 892,
+      "exposure_score": 0.0
+    },
+    {
+      "face_id": 895,
+      "exposure_score": 0.0
+    },
+    {
+      "face_id": 899,
+      "exposure_score": 0.0
+    },
+    {
+      "face_id": 901,
+      "exposure_score": 0.0
+    },
+    {
+      "face_id": 902,
+      "exposure_score": 0.0
+    },
+    {
+      "face_id": 908,
+      "exposure_score": 0.0
+    },
+    {
+      "face_id": 910,
+      "exposure_score": 0.0
+    },
+    {
+      "face_id": 911,
+      "exposure_score": 0.0
+    },
+    {
+      "face_id": 919,
+      "exposure_score": 0.0
+    },
+    {
+      "face_id": 997,
+      "exposure_score": 0.0
+    },
+    {
+      "face_id": 1138,
+      "exposure_score": 0.0
+    },
+    {
+      "face_id": 1144,
+      "exposure_score": 0.0
+    },
+    {
+      "face_id": 1154,
+      "exposure_score": 0.0
+    },
+    {
+      "face_id": 1162,
+      "exposure_score": 0.0
+    },
+    {
+      "face_id": 1291,
+      "exposure_score": 0.0
+    },
+    {
+      "face_id": 1297,
+      "exposure_score": 0.0
+    },
+    {
+      "face_id": 1550,
+      "exposure_score": 0.0
+    },
+    {
+      "face_id": 1757,
+      "exposure_score": 0.0
+    },
+    {
+      "face_id": 1766,
+      "exposure_score": 0.0
+    }
+  ],
+  "Airplane body_wing_rivets": [
+    {
+      "face_id": 124,
+      "exposure_score": 0.0
+    },
+    {
+      "face_id": 125,
+      "exposure_score": 0.0
+    },
+    {
+      "face_id": 126,
+      "exposure_score": 0.0
+    },
+    {
+      "face_id": 127,
+      "exposure_score": 0.0
+    },
+    {
+      "face_id": 128,
+      "exposure_score": 0.0
+    },
+    {
+      "face_id": 129,
+      "exposure_score": 0.0
+    },
+    {
+      "face_id": 130,
+      "exposure_score": 0.0
+    },
+    {
+      "face_id": 131,
+      "exposure_score": 0.0
+    },
+    {
+      "face_id": 132,
+      "exposure_score": 0.0
+    },
+    {
+      "face_id": 133,
+      "exposure_score": 0.0
+    },
+    {
+      "face_id": 134,
+      "exposure_score": 0.0
+    },
+    {
+      "face_id": 135,
+      "exposure_score": 0.0
+    },
+    {
+      "face_id": 137,
+      "exposure_score": 0.0
+    },
+    {
+      "face_id": 138,
+      "exposure_score": 0.0
+    },
+    {
+      "face_id": 139,
+      "exposure_score": 0.0
+    },
+    {
+      "face_id": 140,
+      "exposure_score": 0.0
+    },
+    {
+      "face_id": 141,
+      "exposure_score": 0.0
+    },
+    {
+      "face_id": 142,
+      "exposure_score": 0.0
+    },
+    {
+      "face_id": 143,
+      "exposure_score": 0.0
+    },
+    {
+      "face_id": 144,
+      "exposure_score": 0.0
+    },
+    {
+      "face_id": 145,
+      "exposure_score": 0.0
+    },
+    {
+      "face_id": 146,
+      "exposure_score": 0.0
+    },
+    {
+      "face_id": 147,
+      "exposure_score": 0.0
+    },
+    {
+      "face_id": 148,
+      "exposure_score": 0.0
+    },
+    {
+      "face_id": 149,
+      "exposure_score": 0.0
+    },
+    {
+      "face_id": 150,
+      "exposure_score": 0.0
+    },
+    {
+      "face_id": 151,
+      "exposure_score": 0.0
+    },
+    {
+      "face_id": 152,
+      "exposure_score": 0.0
+    },
+    {
+      "face_id": 153,
+      "exposure_score": 0.0
+    },
+    {
+      "face_id": 154,
+      "exposure_score": 0.0
+    },
+    {
+      "face_id": 155,
+      "exposure_score": 0.0
+    },
+    {
+      "face_id": 156,
+      "exposure_score": 0.0
+    },
+    {
+      "face_id": 157,
+      "exposure_score": 0.0
+    },
+    {
+      "face_id": 158,
+      "exposure_score": 0.0
+    },
+    {
+      "face_id": 159,
+      "exposure_score": 0.0
+    },
+    {
+      "face_id": 160,
+      "exposure_score": 0.0
+    },
+    {
+      "face_id": 162,
+      "exposure_score": 0.0
+    },
+    {
+      "face_id": 163,
+      "exposure_score": 0.0
+    },
+    {
+      "face_id": 164,
+      "exposure_score": 0.0
+    },
+    {
+      "face_id": 165,
+      "exposure_score": 0.0
+    },
+    {
+      "face_id": 166,
+      "exposure_score": 0.0
+    },
+    {
+      "face_id": 167,
+      "exposure_score": 0.0
+    },
+    {
+      "face_id": 168,
+      "exposure_score": 0.0
+    },
+    {
+      "face_id": 169,
+      "exposure_score": 0.0
+    },
+    {
+      "face_id": 170,
+      "exposure_score": 0.0
+    },
+    {
+      "face_id": 171,
+      "exposure_score": 0.0
+    },
+    {
+      "face_id": 172,
+      "exposure_score": 0.0
+    },
+    {
+      "face_id": 173,
+      "exposure_score": 0.0
+    },
+    {
+      "face_id": 174,
+      "exposure_score": 0.0
+    },
+    {
+      "face_id": 175,
+      "exposure_score": 0.0
+    },
+    {
+      "face_id": 176,
+      "exposure_score": 0.0
+    },
+    {
+      "face_id": 177,
+      "exposure_score": 0.0
+    },
+    {
+      "face_id": 178,
+      "exposure_score": 0.0
+    },
+    {
+      "face_id": 179,
+      "exposure_score": 0.0
+    },
+    {
+      "face_id": 180,
+      "exposure_score": 0.0
+    },
+    {
+      "face_id": 181,
+      "exposure_score": 0.0
+    },
+    {
+      "face_id": 182,
+      "exposure_score": 0.0
+    },
+    {
+      "face_id": 183,
+      "exposure_score": 0.0
+    },
+    {
+      "face_id": 184,
+      "exposure_score": 0.0
+    },
+    {
+      "face_id": 185,
+      "exposure_score": 0.0
+    },
+    {
+      "face_id": 186,
+      "exposure_score": 0.0
+    },
+    {
+      "face_id": 187,
+      "exposure_score": 0.0
+    },
+    {
+      "face_id": 188,
+      "exposure_score": 0.0
+    },
+    {
+      "face_id": 189,
+      "exposure_score": 0.0
+    },
+    {
+      "face_id": 297,
+      "exposure_score": 0.0
+    },
+    {
+      "face_id": 316,
+      "exposure_score": 0.0
+    },
+    {
+      "face_id": 320,
+      "exposure_score": 0.0
+    },
+    {
+      "face_id": 322,
+      "exposure_score": 0.0
+    },
+    {
+      "face_id": 326,
+      "exposure_score": 0.0
+    },
+    {
+      "face_id": 578,
+      "exposure_score": 0.0
+    },
+    {
+      "face_id": 580,
+      "exposure_score": 0.0
+    },
+    {
+      "face_id": 590,
+      "exposure_score": 0.0
+    },
+    {
+      "face_id": 591,
+      "exposure_score": 0.0
+    },
+    {
+      "face_id": 592,
+      "exposure_score": 0.0
+    },
+    {
+      "face_id": 602,
+      "exposure_score": 0.0
+    },
+    {
+      "face_id": 603,
+      "exposure_score": 0.0
+    },
+    {
+      "face_id": 604,
+      "exposure_score": 0.0
+    },
+    {
+      "face_id": 614,
+      "exposure_score": 0.0
+    },
+    {
+      "face_id": 615,
+      "exposure_score": 0.0
+    },
+    {
+      "face_id": 616,
+      "exposure_score": 0.0
+    },
+    {
+      "face_id": 626,
+      "exposure_score": 0.0
+    },
+    {
+      "face_id": 627,
+      "exposure_score": 0.0
+    },
+    {
+      "face_id": 628,
+      "exposure_score": 0.0
+    },
+    {
+      "face_id": 629,
+      "exposure_score": 0.0
+    },
+    {
+      "face_id": 638,
+      "exposure_score": 0.0
+    },
+    {
+      "face_id": 639,
+      "exposure_score": 0.0
+    },
+    {
+      "face_id": 640,
+      "exposure_score": 0.0
+    },
+    {
+      "face_id": 641,
+      "exposure_score": 0.0
+    },
+    {
+      "face_id": 645,
+      "exposure_score": 0.0
+    },
+    {
+      "face_id": 647,
+      "exposure_score": 0.0
+    },
+    {
+      "face_id": 650,
+      "exposure_score": 0.0
+    },
+    {
+      "face_id": 651,
+      "exposure_score": 0.0
+    },
+    {
+      "face_id": 652,
+      "exposure_score": 0.0
+    },
+    {
+      "face_id": 653,
+      "exposure_score": 0.0
+    },
+    {
+      "face_id": 657,
+      "exposure_score": 0.0
+    },
+    {
+      "face_id": 658,
+      "exposure_score": 0.0
+    },
+    {
+      "face_id": 659,
+      "exposure_score": 0.0
+    },
+    {
+      "face_id": 675,
+      "exposure_score": 0.0
+    },
+    {
+      "face_id": 699,
+      "exposure_score": 0.0
+    }
+  ],
+  "Cessna Citation 2_wing_rivets": [
+    {
+      "face_id": 89,
+      "exposure_score": 0.0
+    },
+    {
+      "face_id": 115,
+      "exposure_score": 0.0
+    }
+  ],
+  "Gulfstream G280 v17_wing_rivets": [
+    {
+      "face_id": 41,
+      "exposure_score": 0.0
+    },
+    {
+      "face_id": 42,
+      "exposure_score": 0.0
+    },
+    {
+      "face_id": 46,
+      "exposure_score": 0.0
+    },
+    {
+      "face_id": 49,
+      "exposure_score": 0.0
+    },
+    {
+      "face_id": 54,
+      "exposure_score": 0.0
+    },
+    {
+      "face_id": 60,
+      "exposure_score": 0.0
+    },
+    {
+      "face_id": 421,
+      "exposure_score": 0.0
+    },
+    {
+      "face_id": 429,
+      "exposure_score": 0.0
+    },
+    {
+      "face_id": 436,
+      "exposure_score": 0.0
+    },
+    {
+      "face_id": 437,
+      "exposure_score": 0.0
+    }
+  ]
+}

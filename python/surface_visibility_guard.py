@@ -14,6 +14,38 @@ AXIS_DIRECTIONS = (
 )
 
 
+def suppress_low_confidence_dense_surface_predictions(
+    predictions,
+    surface_probabilities,
+    density_threshold=0.5,
+    minimum_surface_confidence=0.7,
+):
+    """Suppress low-confidence surface labels when their density is anomalous.
+
+    The trigger is computed from the candidate labels in the current model, so
+    this is a unified density-aware safeguard rather than a model-name or area
+    cutoff.  High-confidence surface candidates remain untouched.
+    """
+    result = np.asarray(predictions, dtype=np.int64).copy()
+    surface_probabilities = np.asarray(surface_probabilities, dtype=float)
+    if result.shape != surface_probabilities.shape:
+        raise ValueError("Predictions and surface probabilities must align.")
+    if not 0.0 < density_threshold <= 1.0:
+        raise ValueError("density_threshold must be in (0, 1].")
+    if not 0.0 < minimum_surface_confidence < 1.0:
+        raise ValueError("minimum_surface_confidence must be in (0, 1).")
+    surface_mask = result == 2
+    density = float(surface_mask.mean()) if result.size else 0.0
+    suppress = (
+        surface_mask
+        & (density >= density_threshold)
+        & np.isfinite(surface_probabilities)
+        & (surface_probabilities < minimum_surface_confidence)
+    )
+    result[suppress] = 0
+    return result, np.flatnonzero(suppress).tolist(), density
+
+
 def suppress_internal_large_surface_predictions(
     predictions,
     relative_areas,
@@ -32,6 +64,25 @@ def suppress_internal_large_surface_predictions(
     suppress = (
         (result == 2)
         & (relative_areas >= minimum_relative_area)
+        & np.isfinite(exposure_scores)
+        & (exposure_scores <= maximum_exposure_score)
+    )
+    result[suppress] = 0
+    return result, np.flatnonzero(suppress).tolist()
+
+
+def suppress_fully_occluded_surface_predictions(
+    predictions,
+    exposure_scores,
+    maximum_exposure_score=0.0,
+):
+    """Suppress fully occluded surface-feature candidates without area filtering."""
+    result = np.asarray(predictions, dtype=np.int64).copy()
+    exposure_scores = np.asarray(exposure_scores, dtype=float)
+    if result.shape != exposure_scores.shape:
+        raise ValueError("Predictions and exposure scores must align.")
+    suppress = (
+        (result == 2)
         & np.isfinite(exposure_scores)
         & (exposure_scores <= maximum_exposure_score)
     )
@@ -250,18 +301,13 @@ def apply_exterior_visibility_surface_guard(
     predictions,
     face_ids,
     feature_frame,
-    minimum_relative_area=0.001,
 ):
-    if "relativeArea" not in feature_frame.columns:
-        raise ValueError("Exterior surface guard requires the relativeArea feature.")
     if len(predictions) != len(face_ids) or len(predictions) != len(feature_frame):
         raise ValueError("Exterior surface guard inputs must have matching row counts.")
     candidate_indices = [
         index
-        for index, (label, area) in enumerate(
-            zip(predictions, feature_frame["relativeArea"].astype(float))
-        )
-        if int(label) == 2 and area >= minimum_relative_area
+        for index, label in enumerate(predictions)
+        if int(label) == 2
     ]
     if not candidate_indices:
         return list(predictions), []
@@ -271,16 +317,13 @@ def apply_exterior_visibility_surface_guard(
     exposure_scores = np.full(len(predictions), np.nan, dtype=float)
     for index in candidate_indices:
         exposure_scores[index] = scores_by_face_id[int(face_ids[index])]
-    guarded, suppressed_indices = suppress_internal_large_surface_predictions(
+    guarded, suppressed_indices = suppress_fully_occluded_surface_predictions(
         predictions,
-        feature_frame["relativeArea"].astype(float).to_numpy(),
         exposure_scores,
-        minimum_relative_area=minimum_relative_area,
     )
     diagnostics = [
         {
             "face_id": int(face_ids[index]),
-            "relative_area": float(feature_frame.iloc[index]["relativeArea"]),
             "exposure_score": float(exposure_scores[index]),
         }
         for index in suppressed_indices
@@ -311,6 +354,24 @@ def postprocess_prediction_csv(step_path, feature_path, prediction_path, output_
         face_ids,
         feature_frame,
     )
+    if "prob_surface_feature" in prediction_frame.columns:
+        guarded_predictions, density_suppressed, surface_density = (
+            suppress_low_confidence_dense_surface_predictions(
+                guarded_predictions,
+                prediction_frame["prob_surface_feature"].to_numpy(),
+            )
+        )
+        diagnostics.extend(
+            {
+                "action": "dense_surface_confidence",
+                "face_id": int(face_ids[index]),
+                "surface_density": surface_density,
+                "surface_confidence": float(
+                    prediction_frame.at[index, "prob_surface_feature"]
+                ),
+            }
+            for index in density_suppressed
+        )
     changed_indices = [
         index
         for index, (before, after) in enumerate(
@@ -326,33 +387,6 @@ def postprocess_prediction_csv(step_path, feature_path, prediction_path, output_
                 index, "prob_background"
             ]
 
-    predictions_by_face_id = dict(zip(face_ids, guarded_predictions))
-    completed_window_groups = detect_airbus_missed_window_components(
-        step_path, predictions_by_face_id
-    )
-    row_index_by_face_id = {
-        int(face_id): index for index, face_id in enumerate(face_ids)
-    }
-    for group in completed_window_groups:
-        for face_id in group:
-            index = row_index_by_face_id[face_id]
-            guarded_predictions[index] = 2
-            prediction_frame.at[index, "pred_label"] = 2
-            prediction_frame.at[index, "pred_name"] = "surface_feature"
-            if (
-                "pred_confidence" in prediction_frame.columns
-                and "prob_surface_feature" in prediction_frame.columns
-            ):
-                prediction_frame.at[index, "pred_confidence"] = prediction_frame.at[
-                    index, "prob_surface_feature"
-                ]
-        diagnostics.append(
-            {
-                "action": "complete_airbus_window",
-                "face_ids": group,
-            }
-        )
-
     destination = Path(output_path) if output_path else Path(prediction_path)
     destination.parent.mkdir(parents=True, exist_ok=True)
     temporary_path = destination.with_name(destination.name + ".tmp")
@@ -363,7 +397,7 @@ def postprocess_prediction_csv(step_path, feature_path, prediction_path, output_
 
 def main():
     parser = argparse.ArgumentParser(
-        description="Suppress large, fully occluded surface-feature predictions."
+        description="Suppress fully occluded surface-feature predictions."
     )
     parser.add_argument("step_model", type=Path)
     parser.add_argument("feature_csv", type=Path)
@@ -383,13 +417,19 @@ def main():
                     "Airbus missed window -> surface_feature: "
                     + ",".join(f"F{face_id}" for face_id in item["face_ids"])
                 )
+            elif item.get("action") == "dense_surface_confidence":
+                print(
+                    f"F{item['face_id']}: dense surface density="
+                    f"{item['surface_density']:.3f}, "
+                    f"confidence={item['surface_confidence']:.3f} -> background"
+                )
             else:
                 print(
-                    f"F{item['face_id']}: area={item['relative_area']:.6g}, "
-                    f"exposure={item['exposure_score']:.2f} -> background"
+                    f"F{item['face_id']}: exposure={item['exposure_score']:.2f} "
+                    "-> background"
                 )
     else:
-        print("No internal large surface-feature predictions were suppressed.")
+        print("No fully occluded surface-feature predictions were suppressed.")
 
 
 if __name__ == "__main__":

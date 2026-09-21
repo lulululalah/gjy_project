@@ -21,11 +21,11 @@ STEP → 几何/拓扑特征 → 三分类预测 → surface 后处理
 
 训练与推理模型：
 
-- 训练集：`work/uv_train17_xian20_simpletest_train.csv`
-- 测试集：`work/uv_test5_xian20_simpletest_cessna.csv`
-- 权重：`work/rivet_gnn_xian20_train_simpletest_50ep.pth`
-- stats：`work/rivet_gnn_xian20_train_simpletest_50ep_stats.npz`
-- 评估结果：`work/rivet_gnn_xian20_train_simpletest_50ep_eval.csv`
+- 训练集：`model/final_detection_model/train_17_models.csv`
+- 测试集：`model/final_detection_model/test_9_models_frozen_truth.csv`
+- 权重：`model/final_detection_model/rivet_gnn_train17_rebuilt_20260921_50ep.pth`
+- stats：`model/final_detection_model/rivet_gnn_train17_rebuilt_20260921_50ep_stats.npz`
+- 评估结果：`model/final_detection_model/rivet_gnn_train17_rebuilt_20260921_50ep_eval.csv`
 
 飞机数据目录：
 
@@ -45,14 +45,14 @@ STEP → 几何/拓扑特征 → 三分类预测 → surface 后处理
 
 ```powershell
 D:\Anaconda\envs\cad_graph_env\python.exe .\python\train_rivet_gcn.py `
-  --csv .\work\uv_train17_xian20_simpletest_train.csv `
-  --test-csv .\work\uv_test5_xian20_simpletest_cessna.csv `
+  --csv .\model\final_detection_model\train_17_models.csv `
+  --test-csv .\model\final_detection_model\test_9_models_frozen_truth.csv `
   --epochs 50 --batch-size 1 --hidden-dim 64 --num-layers 4 `
   --lr 0.005 --dropout 0.2 --weight-decay 0.0001 --seed 123 `
   --enable-smooth-shell-surface-guard `
-  --model-out .\work\rivet_gnn_xian20_train_simpletest_50ep.pth `
-  --stats-out .\work\rivet_gnn_xian20_train_simpletest_50ep_stats.npz `
-  --eval-out .\work\rivet_gnn_xian20_train_simpletest_50ep_eval.csv
+  --model-out .\model\final_detection_model\rivet_gnn_train17_rebuilt_20260921_50ep.pth `
+  --stats-out .\model\final_detection_model\rivet_gnn_train17_rebuilt_20260921_50ep_stats.npz `
+  --eval-out .\model\final_detection_model\rivet_gnn_train17_rebuilt_20260921_50ep_eval.csv
 ```
 
 两个 specialist 使用同一套几何/拓扑输入，但编码器、分类头和阈值独立；融合时保留 rivet 优先级，输出最终三分类标签。
@@ -92,14 +92,14 @@ Airbus 是特殊情况：重新导出铆钉删除 STEP 会改变拓扑和面映�
 
 ## 预测值与真值对比可视化
 
-真值 CSV 位于 `work/test_eval_models`，当前后处理预测位于 `work/postprocess_current_20260909`。STEP、真值 CSV 和预测 CSV 的面数必须完全一致。
+真值 CSV 位于 `model/evaluation/test_eval_models`，当前后处理预测位于 `model/predictions/postprocess_current_20260909`。STEP、真值 CSV 和预测 CSV 的面数必须完全一致。
 
 示例：
 
 ```powershell
 D:\Anaconda\envs\cad_graph_env\python.exe .\python\visualize_rivets.py `
   ".\data\plane_model\after_two\Airplane body_wing_rivets.step" `
-  --pred-in ".\work\postprocess_current_20260909\Airplane body_wing_rivets.pred.csv" `
+  --pred-in ".\model\predictions\postprocess_current_20260909\Airplane body_wing_rivets.pred.csv" `
   --truth-csv ".\work\Airplane body_wing_rivets.truth.csv" `
   --truth-model-name "Airplane body_wing_rivets.step" `
   --context-transparency 0.82
@@ -121,7 +121,7 @@ D:\Anaconda\envs\cad_graph_env\python.exe .\python\visualize_rivets.py `
 删除后的交互式线框窗口使用：
 
 ```powershell
-D:\Anaconda\envs\cad_graph_env\python.exe .\work\open_ending_step_viewer.py `
+D:\Anaconda\envs\cad_graph_env\python.exe .\python\open_ending_step_viewer.py `
   ".\data\plane_model\ending\Airbus_wing_rivets.step"
 ```
 

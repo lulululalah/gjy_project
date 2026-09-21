@@ -49,7 +49,7 @@
     {
       "id": "current-model-stats",
       "kind": "verified_primary_evidence",
-      "path_or_reference": "work/rivet_gnn_xian20_train_simpletest_50ep_stats.npz",
+      "path_or_reference": "model/final_detection_model/rivet_gnn_train17_rebuilt_20260921_50ep_stats.npz",
       "scope": ["features", "architecture", "thresholds", "training_parameters"],
       "status": "VERIFIED",
       "last_verified": "2026-09-10"
@@ -57,16 +57,16 @@
     {
       "id": "current-eval",
       "kind": "analysis_output",
-      "path_or_reference": "work/rivet_gnn_xian20_train_simpletest_50ep_eval.csv",
-      "scope": ["historical_four_aircraft_results"],
+      "path_or_reference": "model/final_detection_model/rivet_gnn_train17_rebuilt_20260921_50ep_eval.csv",
+      "scope": ["raw_nine_aircraft_results"],
       "status": "VERIFIED",
       "last_verified": "2026-09-10"
     },
     {
       "id": "current-test-csv",
       "kind": "processed_data",
-      "path_or_reference": "work/uv_test5_xian20_simpletest_cessna.csv",
-      "scope": ["candidate_test_dataset"],
+      "path_or_reference": "model/final_detection_model/test_9_models_frozen_truth.csv",
+      "scope": ["frozen_test_dataset"],
       "status": "VERIFIED",
       "last_verified": "2026-09-10"
     },
@@ -81,7 +81,7 @@
     {
       "id": "current-train-csv",
       "kind": "processed_data",
-      "path_or_reference": "work/uv_train17_xian20_simpletest_train.csv",
+      "path_or_reference": "model/final_detection_model/train_17_models.csv",
       "scope": ["training_dataset"],
       "status": "VERIFIED",
       "last_verified": "2026-09-10"
@@ -89,7 +89,7 @@
   ],
   "contract": {
     "gap": "Existing CAD feature-recognition work provides limited evidence for traceable, risk-sensitive small-feature recognition and downstream geometry processing on complete heterogeneous aircraft B-Rep models.",
-    "task": "Recognize rivets and other surface features at B-Rep face level, preserve STEP face traceability, and validate safety-aware downstream CAD removal and reconstruction.",
+    "task": "Recognize rivets and other surface-features at B-Rep face level, preserve STEP face traceability, and validate safety-aware downstream CAD removal and reconstruction.",
     "outcomes": [
       "face-level recognition on complete aircraft",
       "per-aircraft error and background false-positive analysis",
@@ -141,10 +141,15 @@
     {
       "id": "no-area-hard-filter",
       "kind": "SEMANTIC",
-      "canonical": "Do not use a 0.0005 normalized-area hard prediction filter because valid large surface features exist"
+      "canonical": "Do not use a 0.0005 normalized-area hard prediction filter because valid large surface-features exist"
     }
   ],
   "terminology": [
+    {
+      "concept": "surface target class in manuscript prose",
+      "preferred": "surface-feature",
+      "prohibited": ["surface feature", "surface features"]
+    },
     {
       "concept": "surface target class",
       "preferred": "surface_feature",
@@ -166,7 +171,8 @@
     "protected_terms": [
       "B-Rep",
       "STEP",
-      "face_id",
+      "face-id",
+      "surface-feature",
       "surface_feature",
       "dual-specialist GNN",
       "smooth-shell guard"
@@ -186,15 +192,15 @@
   "facts": [
     {
       "id": "train-current",
-      "value": "17 aircraft and 48095 faces in work/uv_train17_xian20_simpletest_train.csv",
+      "value": "17 aircraft and 48095 faces in model/final_detection_model/train_17_models.csv",
       "source_id": "current-train-csv",
       "expected_strings": ["17", "48095"]
     },
     {
       "id": "candidate-test-current",
-      "value": "9 aircraft and 34156 faces in work/uv_test5_xian20_simpletest_cessna.csv",
+      "value": "9 aircraft and 34162 faces in model/final_detection_model/test_9_models_frozen_truth.csv",
       "source_id": "current-test-csv",
-      "expected_strings": ["9", "34156"]
+      "expected_strings": ["9", "34162"]
     },
     {
       "id": "model-contract-current",
@@ -236,7 +242,7 @@
     },
     {
       "question_id": "RQ4",
-      "method": "face_id traceability, CAD removal, local reconstruction, and BRep checks",
+      "method": "face-id traceability, CAD removal, local reconstruction, and BRep checks",
       "evidence": "Nine final STEP models plus quantitative geometry validation",
       "result": "Final STEP models exist; unified quantitative table pending",
       "interpretation": "Pending quantitative validation",

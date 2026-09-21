@@ -134,10 +134,21 @@ EDGE_ATTR_COLS = [
     "edge_dihedral_stds",
 ]
 
-DEFAULT_CSV = Path("work/uv_train17_xian20_simpletest_train.csv")
-DEFAULT_MODEL_PATH = Path("work/rivet_gnn_xian20_train_simpletest_50ep.pth")
-DEFAULT_STATS_PATH = Path("work/rivet_gnn_xian20_train_simpletest_50ep_stats.npz")
-DEFAULT_EVAL_PATH = Path("work/rivet_gnn_xian20_train_simpletest_50ep_eval.csv")
+DEFAULT_CSV = Path(
+    "model/final_detection_model/train_17_models.csv"
+)
+DEFAULT_MODEL_PATH = Path(
+    "model/final_detection_model/"
+    "rivet_gnn_train17_rebuilt_20260921_50ep.pth"
+)
+DEFAULT_STATS_PATH = Path(
+    "model/final_detection_model/"
+    "rivet_gnn_train17_rebuilt_20260921_50ep_stats.npz"
+)
+DEFAULT_EVAL_PATH = Path(
+    "model/final_detection_model/"
+    "rivet_gnn_train17_rebuilt_20260921_50ep_eval.csv"
+)
 
 LABEL_NAMES = ["background", "rivet", "surface_feature"]
 
