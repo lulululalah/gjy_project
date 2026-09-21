@@ -47,7 +47,6 @@
 \usepackage{enumitem}
 \usepackage{chngcntr}
 \usepackage{booktabs}
-\usepackage{lipsum}
 \usepackage{subcaption}
 \usepackage{authblk}
 \usepackage[T1]{fontenc}    % Font encoding
@@ -122,9 +121,10 @@
 
 
 \begin{center}
-{\Huge Article title article title article title}
+{\Huge Face-Level Graph Learning for Traceable Small-Feature Recognition in Complete-Aircraft STEP/B-Rep Models}
 \\[5ex]
 
+\iffalse
 {\large First Author} \\
 {\small
 Department, University, Street, City, State ZIP, Country \\
@@ -158,6 +158,7 @@ Department, University, Street, City, State ZIP, Country \\
 user-id@univ.edu \\
 \url{https://orcid.org/0000-0003-1025-5678}
 }
+\fi
 \end{center}
 
 \begin{abstract}
@@ -174,25 +175,9 @@ user-id@univ.edu \\
 % Paper Body
 %-------------------------------------------
 %--- Section ---%
-\section*{Nomenclature}
-
-\begin{tabbing}
-$T$\qquad \= Temperature (K)\\
-$u_i$ \> Velocity in the x-direction (m/s)\\
-$\tau_{ij}$ \> Shear stress (N/m2)\\
-$\omega$ \> Specific turbulent dissipation rate (1/s)\\
-$Y_\omega$ \> Dissipation of $\omega$
-\end{tabbing}
-
-
-
-%--- Section ---%
 \section{Introduction}
 
-Your introduction goes here! Simply start writing your document and use the Recompile button to view the updated PDF preview. Examples of commonly used commands and features are listed below to help you get started.
-\lipsum[2]
-
-Once familiar with the editor, you can find various project settings in the Overleaf menu, accessed via the button at the top left of the editor. To view tutorials, user guides, and further documentation, please visit our \href{https://www.overleaf.com/learn}{help library}, or head to our plans page to \href{https://www.overleaf.com/user/subscription/plans}{choose your plan}. 
+Complete-aircraft STEP/B-Rep models contain many small surface features whose recognition must remain traceable to the original CAD entities. This study develops and evaluates a face-level graph-learning workflow for recognising rivets and other surface-features while controlling the risk of background-face false positives. The method is evaluated using aircraft-level data partitioning and downstream geometry-processing evidence.
 
 %--- Section ---%
 \section{Related Work and Problem Formulation}\label{sec2}
@@ -580,6 +565,15 @@ Figures~\ref{fig:e2_rivet_examples} and~\ref{fig:e2_window_examples} provide rep
 
 This section evaluates the nine original--simplified STEP pairs produced in Section~\ref{sec:e2_results} under a unified surface-meshing protocol. Both endpoints were processed with OpenCASCADE \texttt{BRepMesh\_IncrementalMesh}, using a relative linear deflection of 0.0005 and an angular deflection of 0.5 rad. Each endpoint was meshed five times, and the median mesh-generation time was recorded. The evaluation compares mesh scale, generation time, and discretisation-quality indicators under fixed meshing parameters; the suitability of CAD simplification remains dependent on the intended analysis task \parencite{thakur2009cad_simplification}.
 
+Figure~\ref{fig:e3_brep_schematic} provides a schematic illustration of the original--simplified B-Rep comparison used to explain the processing context. It shows local feature removal and the associated surface reconstruction concept; it is an illustrative diagram rather than a quantitative result for any one of the nine evaluated aircraft.
+
+\begin{figure}[!ht]
+\centering
+\includegraphics[width=0.90\linewidth]{figures/fig_original_simplified_brep_comparison.png}
+\caption{Illustrative comparison of an original B-Rep model and a simplified B-Rep model after local feature removal and surface reconstruction.}
+\label{fig:e3_brep_schematic}
+\end{figure}
+
 Across the nine pairs, CAD face count decreased by 0.32\%--63.24\%, with a median reduction of 36.44\%. Mesh-node count decreased by 2.09\%--51.64\%, with a median reduction of 23.79\%, and surface-triangle count decreased by 0.57\%--48.66\%, with a median reduction of 17.84\%. The magnitude of the change varied between aircraft. AULIRA 2 had a 48.66\% reduction in surface triangles, while the reductions for 747-400 and Airbus were 35.59\% and 33.58\%, respectively. In contrast, the reductions for 109-ww1 standard E-1, Air Plane Idea A, and Cessna Citation 2 were 0.57\%, 3.16\%, and 3.35\%, respectively. These differences reflect the combined effects of the original face partition, local feature distribution, and reconstructed regions.
 
 The median mesh-generation time decreased for all nine pairs, with reductions ranging from 2.49\% to 58.29\% and a median reduction of 43.00\%. The reductions for Airbus, DC-10, and 747-400 were 58.29\%, 57.40\%, and 45.84\%, respectively, whereas Air Plane Idea A changed by 2.49\%. The time changes broadly followed the changes in mesh scale, but the relationship was not proportional across models.
@@ -926,11 +920,14 @@ You can find information about the examples of APA-style references to various s
 %--- Section ---%
 \end{comment}
 \section{Conclusions}
-Some conclusions here.
+The face-level graph-learning pipeline was evaluated on a nine-aircraft test partition and retained traceability to the original STEP face entities. The results quantify class-level detection performance, aircraft-level background false-positive risk, staged feature processing, and surface-mesh changes under fixed meshing parameters.
+
+Feature processing reduced CAD face counts and was accompanied by lower mesh-node counts, triangle counts, and median mesh-generation times across the evaluated model pairs. These observations describe the current dataset and processing protocol only; they do not by themselves establish unchanged physical response, finite-element accuracy, or lossless geometric simplification. Further validation should therefore use task-specific loads, boundary conditions, material properties, and solver convergence criteria.
 
 %-------------------------------------------
-% Acknowledgement Sections
+% Template acknowledgement statements disabled until author metadata is finalised.
 %-------------------------------------------
+\iffalse
 
 %--- Mandatory Section ---%
 \section*{Conflicts of interest} 
@@ -959,6 +956,8 @@ The data availability statement should provide information on where and under wh
 The authors thank those people or institutions that have helped you in the preparation of the manuscript. 
 
 
+\fi
+
 %-------------------------------------------
 % References
 %-------------------------------------------
@@ -970,8 +969,9 @@ The authors thank those people or institutions that have helped you in the prepa
 
 
 %-------------------------------------------
-% Appendix
+% Appendix (template material disabled)
 %-------------------------------------------
+\iffalse
 % Activate the appendix in the doc
 % from here on sections are numerated with capital letters 
 %\appendix
@@ -1061,5 +1061,6 @@ As shown in Figure \ref{fig:cat2}, the section number is inserted in the figure 
 \lipsum[15]
 
 \end{appendices}
+\fi
 
 \end{document}
