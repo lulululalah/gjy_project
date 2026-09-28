@@ -9,8 +9,8 @@
       "CAD geometry processing",
       "comparative experiment"
     ],
-    "lifecycle_stage": "project_and_outline",
-    "review_maturity": "developmental",
+    "lifecycle_stage": "complete_internal_draft",
+    "review_maturity": "integration",
     "target_venue": "Journal of Computational Design and Engineering (provisional)",
     "active_release": "working-v1"
   },
@@ -89,7 +89,7 @@
   ],
   "contract": {
     "gap": "Existing CAD feature-recognition work provides limited evidence for traceable, risk-sensitive small-feature recognition and downstream geometry processing on complete heterogeneous aircraft B-Rep models.",
-    "task": "Recognize rivets and other surface-features at B-Rep face level, preserve STEP face traceability, and validate safety-aware downstream CAD removal and reconstruction.",
+    "task": "Recognize rivets and other surface-features at B-Rep face level, preserve face identifier traceability, and validate safety-aware downstream CAD removal and reconstruction.",
     "outcomes": [
       "face-level recognition on complete aircraft",
       "per-aircraft error and background false-positive analysis",
@@ -114,7 +114,7 @@
       },
       {
         "id": "RQ4",
-        "text": "Can predictions remain traceable to STEP faces and support auditable geometry removal and reconstruction?",
+        "text": "Can predictions remain traceable to original B-Rep faces and support auditable geometry removal and reconstruction?",
         "lock": "SEMANTIC"
       }
     ],
@@ -167,11 +167,10 @@
     }
   ],
   "style_profile": {
-    "language_variant": "US English for manuscript; Simplified Chinese for planning",
+    "language_variant": "British English for manuscript; Simplified Chinese for planning",
     "protected_terms": [
       "B-Rep",
-      "STEP",
-      "face-id",
+      "face identifier",
       "surface-feature",
       "surface_feature",
       "dual-specialist GNN",
@@ -184,7 +183,7 @@
       "significantly improves"
     ],
     "preferred_open_compounds": [],
-    "allowed_repetitions": ["B-Rep", "STEP", "face", "aircraft"],
+    "allowed_repetitions": ["B-Rep", "face", "aircraft"],
     "sentence_opening_words": 4,
     "phrase_words": 5,
     "phrase_min_occurrences": 3
@@ -213,39 +212,39 @@
     {
       "question_id": "RQ1",
       "method": "B-Rep face graph with geometric and topological attributes",
-      "evidence": "Frozen complete-aircraft evaluation and STEP overlays",
-      "result": "Pending authoritative rerun",
-      "interpretation": "Pending",
-      "limitation": "Limited aircraft and CAD-source diversity",
+      "evidence": "Frozen complete-aircraft evaluation and face-level overlays",
+      "result": "On 34162 faces from nine aircraft after complete post-processing, rivet F1=0.9394 and surface-feature F1=0.5172; Airbus contributes 713 of 818 background false positives",
+      "interpretation": "Face-level recognition is feasible in the reported partition but performance varies substantially by class and aircraft",
+      "limitation": "Some test aircraft may have been used during historical development; limited aircraft and CAD-source diversity",
       "contribution": "Complete-aircraft face-level recognition protocol",
-      "status": "PLANNED"
+      "status": "IN_PROGRESS"
     },
     {
       "question_id": "RQ2",
       "method": "Dual-specialist GNN versus unified three-class baseline",
-      "evidence": "Matched multi-seed ablation",
-      "result": "Pending",
-      "interpretation": "Pending",
-      "limitation": "Architecture and parameter-count fairness must be documented",
+      "evidence": "Single-seed parameter-matched controlled retraining on the fixed 17/9 partition",
+      "result": "Dual specialist: 599188 parameters, mIoU 0.4251, macro F1 0.5270, background FP 4048; unified: 596884 parameters, mIoU 0.4180, macro F1 0.5200, background FP 4936",
+      "interpretation": "The dual-specialist run improved rivet and background-risk measures, whereas the unified run had higher surface-feature F1; no uniform or statistical superiority claim is supported",
+      "limitation": "One seed only; repeated runs are required for uncertainty estimates",
       "contribution": "Risk-aware specialist modeling",
-      "status": "PLANNED"
+      "status": "RESOLVED"
     },
     {
       "question_id": "RQ3",
-      "method": "Raw prediction versus area filter versus smooth-shell guard",
-      "evidence": "Per-aircraft FP, maximum FP area, and true-positive loss",
-      "result": "Pending",
-      "interpretation": "Pending",
+      "method": "No constraints versus topology versus topology plus visibility versus complete post-processing",
+      "evidence": "Cumulative face-level ablation on all 34162 fixed-test faces",
+      "result": "Background FP changed 4152 -> 1262 -> 944 -> 818; surface-feature F1 changed 0.4916 -> 0.4916 -> 0.5576 -> 0.5172",
+      "interpretation": "Topology and visibility provide most of the gain; the complete conservative stage further reduces false positives but sacrifices surface-feature recall",
       "limitation": "Guard parameters may be domain dependent",
       "contribution": "Safety-aware post-processing",
-      "status": "PLANNED"
+      "status": "RESOLVED"
     },
     {
       "question_id": "RQ4",
-      "method": "face-id traceability, CAD removal, local reconstruction, and BRep checks",
-      "evidence": "Nine final STEP models plus quantitative geometry validation",
-      "result": "Final STEP models exist; unified quantitative table pending",
-      "interpretation": "Pending quantitative validation",
+      "method": "face identifier traceability, CAD removal, local reconstruction, and BRep checks",
+      "evidence": "Nine final B-Rep models plus quantitative geometry validation",
+      "result": "Nine original--simplified pairs were compared under fixed surface-meshing settings; median triangle reduction 17.84 percent and median meshing-time reduction 43.00 percent; operation-level success inventory remains pending",
+      "interpretation": "The reported pairs show changes in CAD and mesh properties, without establishing removal completeness or engineering-response equivalence",
       "limitation": "BRep validity does not prove physical equivalence",
       "contribution": "Auditable downstream CAD processing",
       "status": "IN_PROGRESS"
@@ -278,16 +277,51 @@
       "id": "D2",
       "date": "2026-09-10",
       "decision": "Treat the 3631-face evaluation as historical because it does not match the current 34156-face candidate test CSV."
+    },
+    {
+      "id": "D3",
+      "date": "2026-09-22",
+      "decision": "By author instruction, describe the study in terms of B-Rep models and face identifier traceability, without presenting STEP as a file-format contribution."
+    },
+    {
+      "id": "D4",
+      "date": "2026-09-22",
+      "decision": "By author confirmation, use the current 17-aircraft training and 9-aircraft test partition as the fixed evaluation dataset; the earlier dataset-scope mismatch is resolved."
+    },
+    {
+      "id": "D5",
+      "date": "2026-09-23",
+      "decision": "By author instruction, organize related work from three-dimensional scene segmentation to CAD feature recognition, then state the bounded gap for learning-guided small-geometry processing in industrial simulation workflows; do not claim mesh or simulation effects without controlled evidence."
+    },
+    {
+      "id": "D6",
+      "date": "2026-09-23",
+      "decision": "By author instruction, introduce concise B-Rep preliminaries before the learning formulation, treat small geometry only as a supervised label contract, and make face-graph encoding and dual-specialist graph learning the theoretical focus of Section 3."
+    },
+    {
+      "id": "D7",
+      "date": "2026-09-23",
+      "decision": "By author instruction, present Chapter 4 as a concise traceable processing contract: retain candidate filtering principles, staged face identifier handling, operation alternatives, rollback, and B-Rep checks, but do not enumerate detailed boundary-case rules in the main text."
+    },
+    {
+      "id": "D8",
+      "date": "2026-09-23",
+      "decision": "By author instruction, organise the experimental evidence into training and face-level recognition (6.1), CAD simplification with original--simplified surface-mesh comparison (6.2), and cross-aircraft variation with evidence boundaries (6.3); do not fabricate a training-convergence curve when epoch-wise records are unavailable."
+    },
+    {
+      "id": "D9",
+      "date": "2026-09-23",
+      "decision": "For the current integration revision, report the observed recognition and surface-mesh results in the abstract and conclusion, and describe the fixed nine-aircraft partition as developmental because historical use of some test aircraft remains possible."
     }
   ],
   "issues": [
     {
       "id": "I1",
       "severity": "S4",
-      "status": "OPEN",
+      "status": "RESOLVED",
       "description": "Current test CSV scope and existing evaluation CSV scope do not match.",
       "evidence_status": "CONFIRMED",
-      "required_action": "Freeze a dataset manifest and rerun one authoritative evaluation."
+      "required_action": "Use the fixed 17-aircraft training and 9-aircraft test partition recorded in decision D4."
     },
     {
       "id": "I2",
@@ -307,11 +341,19 @@
     },
     {
       "id": "I4",
-      "severity": "S3",
+      "severity": "S1",
       "status": "OPEN",
-      "description": "The active main.tex is still largely the journal example template.",
+      "description": "Disabled journal-template examples remain in main.tex as source-only reference material; they are excluded from the compiled manuscript.",
       "evidence_status": "CONFIRMED",
-      "required_action": "Replace template content only after the evidence and section contracts are frozen."
+      "required_action": "Remove the disabled source-only examples when final journal metadata and appendices are prepared."
+    },
+    {
+      "id": "I5",
+      "severity": "S3",
+      "status": "RESOLVED",
+      "description": "The parameter-matched architecture comparison and post-processing component ablations were removed from the manuscript by author instruction.",
+      "evidence_status": "CONFIRMED",
+      "required_action": "Do not cite the retired comparison or ablation results as formal paper evidence."
     }
   ],
   "release": {
@@ -324,8 +366,17 @@
       "delivery_integrity",
       "functional_completeness"
     ],
-    "completed_checks": [],
-    "checked_hashes": {},
-    "visual_check": "NOT_RUN"
+    "completed_checks": [
+      "argument_structure",
+      "evidence_scope",
+      "scholarly_writing",
+      "delivery_integrity",
+      "functional_completeness"
+    ],
+    "checked_hashes": {
+      "main.tex": "a0ba881bfad377ede0cf7485e1257dae99e1bb250a4a77afc9a43a2db66a6b55",
+      "main.pdf": "8cf38211ca1350b3ad98b5054ecfc0240b8a1622f0871b9f6b8ee3d34ddfb634"
+    },
+    "visual_check": "PASS_WITH_SOURCE_IMAGE_WHITE_SPACE_NOTE"
   }
 }
