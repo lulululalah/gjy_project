@@ -8,15 +8,15 @@ from pathlib import Path
 import matplotlib.pyplot as plt
 from matplotlib.patches import Patch
 from mpl_toolkits.mplot3d.art3d import Poly3DCollection
-from OCP.BRep import BRep_Tool
-from OCP.BRepBndLib import BRepBndLib
-from OCP.BRepMesh import BRepMesh_IncrementalMesh
-from OCP.Bnd import Bnd_Box
-from OCP.STEPControl import STEPControl_Reader
-from OCP.TopAbs import TopAbs_FACE
-from OCP.TopExp import TopExp_Explorer
-from OCP.TopLoc import TopLoc_Location
-from OCP.TopoDS import TopoDS
+from OCC.Core.BRep import BRep_Tool
+from OCC.Core.BRepBndLib import brepbndlib
+from OCC.Core.BRepMesh import BRepMesh_IncrementalMesh
+from OCC.Core.Bnd import Bnd_Box
+from OCC.Core.STEPControl import STEPControl_Reader
+from OCC.Core.TopAbs import TopAbs_FACE
+from OCC.Core.TopExp import TopExp_Explorer
+from OCC.Core.TopLoc import TopLoc_Location
+from OCC.Core.TopoDS import topods
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -86,11 +86,8 @@ def read_labels(path: Path, feature: str) -> dict[int, str]:
 
 def mesh_polygons(shape, labels: dict[int, str] | None, feature: str):
     box = Bnd_Box()
-    BRepBndLib.Add_s(shape, box)
-    bounds = (
-        box.GetXMin(), box.GetYMin(), box.GetZMin(),
-        box.GetXMax(), box.GetYMax(), box.GetZMax(),
-    )
+    brepbndlib.Add(shape, box)
+    bounds = box.Get()
     xmin, ymin, zmin, xmax, ymax, zmax = bounds
     diagonal = ((xmax - xmin) ** 2 + (ymax - ymin) ** 2 + (zmax - zmin) ** 2) ** 0.5
     mesher = BRepMesh_IncrementalMesh(shape, diagonal * 0.0008, False, 0.5, True)
@@ -104,7 +101,7 @@ def mesh_polygons(shape, labels: dict[int, str] | None, feature: str):
     while explorer.More():
         face_id += 1
         location = TopLoc_Location()
-        triangulation = BRep_Tool.Triangulation_s(TopoDS.Face(explorer.Current()), location)
+        triangulation = BRep_Tool.Triangulation(topods.Face(explorer.Current()), location)
         if triangulation is not None:
             transform = location.Transformation()
             color = SIMPLIFIED_COLOR if labels is None else (

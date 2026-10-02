@@ -25,7 +25,7 @@ STEP → 几何/拓扑特征 → 三分类预测 → surface 后处理
 - 测试集：`model/final_detection_model/test_9_models_frozen_truth.csv`
 - 权重：`model/final_detection_model/rivet_gnn_train17_rebuilt_20260921_50ep.pth`
 - stats：`model/final_detection_model/rivet_gnn_train17_rebuilt_20260921_50ep_stats.npz`
-- 评估结果：`model/final_detection_model/rivet_gnn_train17_rebuilt_20260921_50ep_eval.csv`
+- 唯一正式评估结果：`results/e1_detection/current_test_snapshot/`（2026-09-21 冻结全量快照，34,162 面）
 
 飞机数据目录：
 
@@ -52,7 +52,7 @@ D:\Anaconda\envs\cad_graph_env\python.exe .\python\train_rivet_gcn.py `
   --enable-smooth-shell-surface-guard `
   --model-out .\model\final_detection_model\rivet_gnn_train17_rebuilt_20260921_50ep.pth `
   --stats-out .\model\final_detection_model\rivet_gnn_train17_rebuilt_20260921_50ep_stats.npz `
-  --eval-out .\model\final_detection_model\rivet_gnn_train17_rebuilt_20260921_50ep_eval.csv
+  --eval-out .\work\rivet_gnn_train17_rebuilt_20260921_50ep_eval.csv
 ```
 
 两个 specialist 使用同一套几何/拓扑输入，但编码器、分类头和阈值独立；融合时保留 rivet 优先级，输出最终三分类标签。

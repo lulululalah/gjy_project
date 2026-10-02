@@ -146,7 +146,7 @@ DEFAULT_STATS_PATH = Path(
     "rivet_gnn_train17_rebuilt_20260921_50ep_stats.npz"
 )
 DEFAULT_EVAL_PATH = Path(
-    "model/final_detection_model/"
+    "work/"
     "rivet_gnn_train17_rebuilt_20260921_50ep_eval.csv"
 )
 
