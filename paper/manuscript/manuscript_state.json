@@ -19,7 +19,7 @@
       "id": "main-tex",
       "path": "main.tex",
       "role": "main_manuscript",
-      "status": "ACTIVE_TEMPLATE",
+      "status": "ACTIVE",
       "required_for_release": true
     },
     {
@@ -42,9 +42,18 @@
       "id": "current-code",
       "kind": "verified_primary_evidence",
       "path_or_reference": "python/train_rivet_gcn.py; python/visualize_rivets.py; src/; include/",
-      "scope": ["methods", "model_contract", "geometry_processing"],
+      "scope": ["methods", "model_contract", "geometry_processing", "qem_baseline"],
       "status": "VERIFIED",
-      "last_verified": "2026-09-10"
+      "last_verified": "2026-10-02"
+    },
+    {
+      "id": "current-execution-environment",
+      "kind": "local_runtime_probe",
+      "path_or_reference": "D:\\Anaconda\\envs\\cad_graph_env\\python.exe; work/qem_baseline/python310_packages; local Windows host",
+      "scope": ["software_versions", "qem_runtime", "mesh_measurement_environment"],
+      "status": "VERIFIED",
+      "last_verified": "2026-10-02",
+      "details": "Windows 10 Pro 25H2; Intel Core i7-14700KF; NVIDIA GeForce RTX 4060 8 GB (driver 591.86); Python 3.10.20; OpenCASCADE 7.9.0; PyTorch 2.12.1+cu130; fast-simplification 0.2.0. This is a local execution probe, not a substitute for a release manifest."
     },
     {
       "id": "current-model-stats",
@@ -57,8 +66,8 @@
     {
       "id": "current-eval",
       "kind": "analysis_output",
-      "path_or_reference": "model/final_detection_model/rivet_gnn_train17_rebuilt_20260921_50ep_eval.csv",
-      "scope": ["raw_nine_aircraft_results"],
+      "path_or_reference": "results/e1_detection/current_test_snapshot/manifest.json; results/e1_detection/current_test_snapshot/face_level_metrics.csv; results/e1_detection/current_test_snapshot/per_aircraft_risk.csv",
+      "scope": ["frozen_full_test_results", "per_aircraft_risk"],
       "status": "VERIFIED",
       "last_verified": "2026-09-10"
     },
@@ -89,12 +98,12 @@
   ],
   "contract": {
     "gap": "Existing CAD feature-recognition work provides limited evidence for traceable, risk-sensitive small-feature recognition and downstream geometry processing on complete heterogeneous aircraft B-Rep models.",
-    "task": "Recognize rivets and other surface-features at B-Rep face level, preserve face identifier traceability, and validate safety-aware downstream CAD removal and reconstruction.",
+    "task": "Recognize rivets and surface-features at B-Rep face level, preserve face identifier traceability, and use predictions as candidate inputs to staged CAD processing.",
     "outcomes": [
       "face-level recognition on complete aircraft",
       "per-aircraft error and background false-positive analysis",
-      "traceable CAD removal and geometry reconstruction",
-      "optional mesh and CAE impact validation"
+      "traceable CAD-processing candidates",
+      "paired surface-mesh scale and timing comparison"
     ],
     "questions": [
       {
@@ -103,26 +112,17 @@
         "lock": "SEMANTIC"
       },
       {
-        "id": "RQ2",
-        "text": "Does independent dual-specialist encoding reduce task interference relative to a unified classifier?",
-        "lock": "SEMANTIC"
-      },
-      {
-        "id": "RQ3",
-        "text": "Can smooth-shell protection reduce high-risk background false positives without unacceptable true-feature loss?",
-        "lock": "SEMANTIC"
-      },
-      {
         "id": "RQ4",
-        "text": "Can predictions remain traceable to original B-Rep faces and support auditable geometry removal and reconstruction?",
+        "text": "Can predictions remain traceable to original or intermediate B-Rep faces and support staged CAD-processing candidates?",
         "lock": "SEMANTIC"
       }
     ],
-    "contribution": "A traceable, risk-sensitive graph-learning and CAD geometry-processing framework for small features in complete aircraft B-Rep models.",
+    "contribution": "A traceable face-level graph-learning framework that links small-feature predictions on complete-aircraft B-Rep models to staged CAD-processing candidates and paired mesh comparisons.",
     "nonclaims": [
       "No universal generalization claim across all aircraft or CAD sources.",
-      "BRep validity alone does not establish geometry or physics equivalence.",
+      "Geometric comparison does not establish physics equivalence.",
       "No CAE acceleration or response-preservation claim before controlled downstream experiments.",
+      "No mesh-quality or geometric-fidelity superiority claim over QEM.",
       "Human visual review is not described as fully automatic validation.",
       "Retired BFS and 51-dimensional experiments are not part of the formal model."
     ]
@@ -141,7 +141,7 @@
     {
       "id": "no-area-hard-filter",
       "kind": "SEMANTIC",
-      "canonical": "Do not use a 0.0005 normalized-area hard prediction filter because valid large surface-features exist"
+      "canonical": "The rivet-stage guard rejects predicted rivet faces with relative area greater than 5e-6; no corresponding global area threshold is applied to the surface-feature branch."
     }
   ],
   "terminology": [
@@ -162,8 +162,8 @@
     },
     {
       "concept": "model architecture",
-      "preferred": "dual-specialist GNN",
-      "prohibited": ["single shared encoder"]
+      "preferred": "class-specific GNNs",
+      "prohibited": ["single shared encoder", "dual-specialist GNN"]
     }
   ],
   "style_profile": {
@@ -213,40 +213,20 @@
       "question_id": "RQ1",
       "method": "B-Rep face graph with geometric and topological attributes",
       "evidence": "Frozen complete-aircraft evaluation and face-level overlays",
-      "result": "On 34162 faces from nine aircraft after complete post-processing, rivet F1=0.9394 and surface-feature F1=0.5172; Airbus contributes 713 of 818 background false positives",
-      "interpretation": "Face-level recognition is feasible in the reported partition but performance varies substantially by class and aircraft",
+      "result": "In the 2026-09-21 frozen snapshot of 34162 faces from nine aircraft, rivet F1=0.9312 and surface-feature F1=0.8091; Air Plane Idea A contributes 82 of 190 background false positives",
+      "interpretation": "Face-level recognition is feasible in the reported partition, while per-aircraft residual false-positive risk remains relevant to downstream processing",
       "limitation": "Some test aircraft may have been used during historical development; limited aircraft and CAD-source diversity",
       "contribution": "Complete-aircraft face-level recognition protocol",
       "status": "IN_PROGRESS"
     },
     {
-      "question_id": "RQ2",
-      "method": "Dual-specialist GNN versus unified three-class baseline",
-      "evidence": "Single-seed parameter-matched controlled retraining on the fixed 17/9 partition",
-      "result": "Dual specialist: 599188 parameters, mIoU 0.4251, macro F1 0.5270, background FP 4048; unified: 596884 parameters, mIoU 0.4180, macro F1 0.5200, background FP 4936",
-      "interpretation": "The dual-specialist run improved rivet and background-risk measures, whereas the unified run had higher surface-feature F1; no uniform or statistical superiority claim is supported",
-      "limitation": "One seed only; repeated runs are required for uncertainty estimates",
-      "contribution": "Risk-aware specialist modeling",
-      "status": "RESOLVED"
-    },
-    {
-      "question_id": "RQ3",
-      "method": "No constraints versus topology versus topology plus visibility versus complete post-processing",
-      "evidence": "Cumulative face-level ablation on all 34162 fixed-test faces",
-      "result": "Background FP changed 4152 -> 1262 -> 944 -> 818; surface-feature F1 changed 0.4916 -> 0.4916 -> 0.5576 -> 0.5172",
-      "interpretation": "Topology and visibility provide most of the gain; the complete conservative stage further reduces false positives but sacrifices surface-feature recall",
-      "limitation": "Guard parameters may be domain dependent",
-      "contribution": "Safety-aware post-processing",
-      "status": "RESOLVED"
-    },
-    {
       "question_id": "RQ4",
-      "method": "face identifier traceability, CAD removal, local reconstruction, and BRep checks",
-      "evidence": "Nine final B-Rep models plus quantitative geometry validation",
-      "result": "Nine original--simplified pairs were compared under fixed surface-meshing settings; median triangle reduction 17.84 percent and median meshing-time reduction 43.00 percent; operation-level success inventory remains pending",
-      "interpretation": "The reported pairs show changes in CAD and mesh properties, without establishing removal completeness or engineering-response equivalence",
-      "limitation": "BRep validity does not prove physical equivalence",
-      "contribution": "Auditable downstream CAD processing",
+      "method": "face identifier traceability, CAD removal, and local reconstruction",
+      "evidence": "Nine original--simplified B-Rep pairs, fixed OpenCASCADE meshing controls, and a matched-triangle QEM timing-component baseline",
+      "result": "Across the nine pairs, triangle reduction was 0.57--48.66 percent and median meshing-time reduction was 2.49--58.29 percent. At matched triangle targets, final meshing was 6.89--59.99 percent lower than original meshing plus the QEM kernel under the stated limited timing account.",
+      "interpretation": "The reported pairs support traceable CAD-processing candidates and reduced mesh scale or meshing time under the tested controls, without establishing removal completeness, end-to-end superiority, mesh-quality superiority, or engineering-response equivalence.",
+      "limitation": "Operation-level outcomes, matched-quality QEM comparison, and downstream CAE evidence remain unavailable.",
+      "contribution": "Traceable downstream CAD-processing candidates and paired mesh comparison",
       "status": "IN_PROGRESS"
     }
   ],
@@ -258,7 +238,7 @@
     },
     {
       "id": "geometry",
-      "required_fields": ["face count", "BRep validity", "target removal completeness", "volume and area change", "failure cases"],
+      "required_fields": ["face count", "paired mesh node and triangle counts", "median meshing time", "operation-level outcomes", "matched-quality baseline"],
       "status": "INCOMPLETE"
     },
     {
@@ -301,7 +281,7 @@
     {
       "id": "D7",
       "date": "2026-09-23",
-      "decision": "By author instruction, present Chapter 4 as a concise traceable processing contract: retain candidate filtering principles, staged face identifier handling, operation alternatives, rollback, and B-Rep checks, but do not enumerate detailed boundary-case rules in the main text."
+      "decision": "By author instruction, present Chapter 4 as a concise traceable processing contract: retain candidate filtering principles, staged face identifier handling, and operation alternatives, but do not enumerate detailed boundary-case rules or legal-status checks in the main text."
     },
     {
       "id": "D8",
@@ -342,10 +322,10 @@
     {
       "id": "I4",
       "severity": "S1",
-      "status": "OPEN",
-      "description": "Disabled journal-template examples remain in main.tex as source-only reference material; they are excluded from the compiled manuscript.",
+      "status": "RESOLVED",
+      "description": "Disabled journal-template examples were removed from main.tex; author and submission-metadata placeholders remain intentionally outside this source-cleanup item.",
       "evidence_status": "CONFIRMED",
-      "required_action": "Remove the disabled source-only examples when final journal metadata and appendices are prepared."
+      "required_action": "None for source cleanup."
     },
     {
       "id": "I5",
@@ -374,8 +354,8 @@
       "functional_completeness"
     ],
     "checked_hashes": {
-      "main.tex": "a0ba881bfad377ede0cf7485e1257dae99e1bb250a4a77afc9a43a2db66a6b55",
-      "main.pdf": "8cf38211ca1350b3ad98b5054ecfc0240b8a1622f0871b9f6b8ee3d34ddfb634"
+      "main.tex": "798de3000f37a025e21205ec9202f6aea7a94c14823c06bce76040c69c48f120",
+      "main.pdf": "a09b4bad8aefaa10be81963a417022fddba400ca376bf95d3cf5ad327b6a7e9e"
     },
     "visual_check": "PASS_WITH_SOURCE_IMAGE_WHITE_SPACE_NOTE"
   }
