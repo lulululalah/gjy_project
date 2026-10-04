@@ -25,7 +25,7 @@ STEP → 几何/拓扑特征 → 三分类预测 → surface 后处理
 - 测试集：`model/final_detection_model/test_9_models_frozen_truth.csv`
 - 权重：`model/final_detection_model/rivet_gnn_train17_rebuilt_20260921_50ep.pth`
 - stats：`model/final_detection_model/rivet_gnn_train17_rebuilt_20260921_50ep_stats.npz`
-- 唯一正式评估结果：`results/e1_detection/current_test_snapshot/`（2026-09-21 冻结全量快照，34,162 面）
+- 当前采用的全测试集评估结果：`results/e1_detection/current_test_snapshot/`（9 架飞机，34,162 面）
 
 飞机数据目录：
 

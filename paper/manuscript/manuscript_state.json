@@ -67,7 +67,7 @@
       "id": "current-eval",
       "kind": "analysis_output",
       "path_or_reference": "results/e1_detection/current_test_snapshot/manifest.json; results/e1_detection/current_test_snapshot/face_level_metrics.csv; results/e1_detection/current_test_snapshot/per_aircraft_risk.csv",
-      "scope": ["frozen_full_test_results", "per_aircraft_risk"],
+      "scope": ["full_test_results", "per_aircraft_risk"],
       "status": "VERIFIED",
       "last_verified": "2026-09-10"
     },
@@ -75,7 +75,7 @@
       "id": "current-test-csv",
       "kind": "processed_data",
       "path_or_reference": "model/final_detection_model/test_9_models_frozen_truth.csv",
-      "scope": ["frozen_test_dataset"],
+      "scope": ["fixed_test_dataset"],
       "status": "VERIFIED",
       "last_verified": "2026-09-10"
     },
@@ -212,9 +212,9 @@
     {
       "question_id": "RQ1",
       "method": "B-Rep face graph with geometric and topological attributes",
-      "evidence": "Frozen complete-aircraft evaluation and face-level overlays",
-      "result": "In the 2026-09-21 frozen snapshot of 34162 faces from nine aircraft, rivet F1=0.9312 and surface-feature F1=0.8091; Air Plane Idea A contributes 82 of 190 background false positives",
-      "interpretation": "Face-level recognition is feasible in the reported partition, while per-aircraft residual false-positive risk remains relevant to downstream processing",
+      "evidence": "Complete-aircraft test evaluation, per-aircraft target-class counts and F1, and background false-positive risk",
+      "result": "Across 34162 test faces from nine aircraft, rivet F1=0.9312 and surface-feature F1=0.8091; 28 rivet and 122 surface-feature faces were missed in total, including 103 surface-feature faces on Airbus; Air Plane Idea A contributes 82 of 190 background false positives",
+      "interpretation": "Face-level recognition is feasible in the reported partition, but pooled metrics do not establish uniform target-class performance across aircraft and residual background false-positive risk remains relevant to downstream processing",
       "limitation": "Some test aircraft may have been used during historical development; limited aircraft and CAD-source diversity",
       "contribution": "Complete-aircraft face-level recognition protocol",
       "status": "IN_PROGRESS"
@@ -222,10 +222,10 @@
     {
       "question_id": "RQ4",
       "method": "face identifier traceability, CAD removal, and local reconstruction",
-      "evidence": "Nine original--simplified B-Rep pairs, fixed OpenCASCADE meshing controls, and a matched-triangle QEM timing-component baseline",
-      "result": "Across the nine pairs, triangle reduction was 0.57--48.66 percent and median meshing-time reduction was 2.49--58.29 percent. At matched triangle targets, final meshing was 6.89--59.99 percent lower than original meshing plus the QEM kernel under the stated limited timing account.",
-      "interpretation": "The reported pairs support traceable CAD-processing candidates and reduced mesh scale or meshing time under the tested controls, without establishing removal completeness, end-to-end superiority, mesh-quality superiority, or engineering-response equivalence.",
-      "limitation": "Operation-level outcomes, matched-quality QEM comparison, and downstream CAE evidence remain unavailable.",
+      "evidence": "Face-identifier alignment between original-model recognition and CAD-input predictions, nine original--simplified B-Rep pairs, fixed OpenCASCADE meshing controls, and a matched-triangle QEM timing-component baseline",
+      "result": "Across the nine pairs, triangle reduction was 0.57--48.66 percent and median meshing-time reduction was 2.49--58.29 percent. At matched triangle targets, final meshing was 7.22--60.05 percent lower than original meshing plus the QEM kernel under the stated limited timing account.",
+      "interpretation": "Original-model predictions align face by face across recognition and CAD-input records; the added planar-patch check accounts for the rivet-count difference. The reported pairs have reduced mesh scale and meshing time under the tested controls, without establishing removal completeness, end-to-end superiority, mesh-quality superiority, or engineering-response equivalence.",
+      "limitation": "Candidate records do not establish operation-level outcomes; matched-quality QEM comparison and downstream CAE evidence remain unavailable.",
       "contribution": "Traceable downstream CAD-processing candidates and paired mesh comparison",
       "status": "IN_PROGRESS"
     }
@@ -309,7 +309,7 @@
       "status": "OPEN",
       "description": "Some candidate test aircraft may have been used in historical model or post-processing development.",
       "evidence_status": "PROBABLE",
-      "required_action": "Add a never-used frozen external test or scope the claims as developmental evaluation."
+      "required_action": "Add an independent external test or scope the claims as developmental evaluation."
     },
     {
       "id": "I3",
@@ -354,9 +354,9 @@
       "functional_completeness"
     ],
     "checked_hashes": {
-      "main.tex": "798de3000f37a025e21205ec9202f6aea7a94c14823c06bce76040c69c48f120",
-      "main.pdf": "a09b4bad8aefaa10be81963a417022fddba400ca376bf95d3cf5ad327b6a7e9e"
+      "main.tex": "74c1a2f42256b45b9f28d8530eab33895ce0360de0d9b6e1965f76f4fd476022",
+      "main.pdf": "03a0b7dc57d7e53e8941ad0767c480a15b21fa262338100935bc4f84617f959e"
     },
-    "visual_check": "PASS_WITH_SOURCE_IMAGE_WHITE_SPACE_NOTE"
+    "visual_check": "FIGURE_3_PAGE_8_REVIEWED_2026-10-04"
   }
 }
