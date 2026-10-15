@@ -1,0 +1,140 @@
+{
+  "model": "109 standard E-1",
+  "endpoint_scope": "Original and processed decal endpoint shown in the CAD figure.",
+  "projection": "orthographic",
+  "size": [
+    2400,
+    1000
+  ],
+  "camera": {
+    "center": [
+      -1537.6142423869926,
+      2444.0000000003492,
+      862.5108808244371
+    ],
+    "projection": [
+      0.12,
+      -1,
+      0.2
+    ],
+    "up": [
+      0,
+      0,
+      1
+    ],
+    "scale": 2906.461558501601
+  },
+  "geometry_modified": false,
+  "relative_deflection": 0.0005,
+  "angular_deflection_rad": 0.5,
+  "stages": [
+    {
+      "stage": "before",
+      "step": "D:\\projects\\gjy_byproject\\data\\plane_model\\after_two\\109-ww1-standart-e-1-aircraft CATIA STP_standart-e1_wing_rivets_decals.step",
+      "labels": "D:\\projects\\gjy_byproject\\data\\plane_model\\label\\109-ww1-standart-e-1-aircraft CATIA STP_standart-e1_wing_rivets_decals.labels.json",
+      "step_sha256": "5c6dcc1665e3a676091897cebab18b50a238d4f1365c6ebca49563fe549dd970",
+      "labels_sha256": "faf5859ec524fb86c90774bf50ee593519cf3a2890fab823aa3a93484768c8ac",
+      "cad_image": "cad_109_before.png",
+      "cad_camera": {
+        "center": [
+          -1537.6142423869926,
+          2444.0000000003492,
+          862.5108808244372
+        ],
+        "direction": [
+          -0.11686340806974296,
+          0.9738617339145248,
+          -0.19477234678290495
+        ],
+        "up": [
+          -0.02320619422781869,
+          0.19338495189848912,
+          0.9808484760291367
+        ],
+        "scale": 2906.461558501601,
+        "aspect": 2.4
+      },
+      "mesh": {
+        "faces": 1244,
+        "nodes": 47808,
+        "triangles": 58692,
+        "linear_deflection": 3.230348313897115,
+        "mesh_decimated": false
+      },
+      "mesh_image": "mesh_109_before.png",
+      "mesh_camera": {
+        "center": [
+          -1537.6142423869926,
+          2444.0000000003497,
+          862.5108808244371
+        ],
+        "direction": [
+          -0.11686340806974296,
+          0.9738617339145248,
+          -0.19477234678290495
+        ],
+        "up": [
+          -0.02320619422781869,
+          0.19338495189848912,
+          0.9808484760291367
+        ],
+        "scale": 2906.461558501601,
+        "aspect": 2.4
+      }
+    },
+    {
+      "stage": "after",
+      "step": "D:\\projects\\gjy_byproject\\data\\plane_model\\ending\\109-ww1-standart-e-1-aircraft CATIA STP_standart-e1_wing_rivets_decals.step",
+      "labels": "D:\\projects\\gjy_byproject\\work\\109_after_visualization\\after_render.labels.json",
+      "step_sha256": "3b66fd7db4501255b282ed71c412491748bdd21ff2dd82ebbacae878084607cf",
+      "labels_sha256": "052335dc9971447a248ef793f9ebdd8ae9d68a0a1150c858227bb677fc103370",
+      "cad_image": "cad_109_after.png",
+      "cad_camera": {
+        "center": [
+          -1537.6142423869926,
+          2444.0000000003497,
+          862.5108808244371
+        ],
+        "direction": [
+          -0.11686340806974296,
+          0.9738617339145248,
+          -0.19477234678290495
+        ],
+        "up": [
+          -0.02320619422781869,
+          0.19338495189848912,
+          0.9808484760291367
+        ],
+        "scale": 2906.461558501601,
+        "aspect": 2.4
+      },
+      "mesh": {
+        "faces": 986,
+        "nodes": 46811,
+        "triangles": 58357,
+        "linear_deflection": 3.230348313897115,
+        "mesh_decimated": false
+      },
+      "mesh_image": "mesh_109_after.png",
+      "mesh_camera": {
+        "center": [
+          -1537.6142423869926,
+          2444.0000000003497,
+          862.5108808244371
+        ],
+        "direction": [
+          -0.11686340806974296,
+          0.9738617339145248,
+          -0.19477234678290495
+        ],
+        "up": [
+          -0.02320619422781869,
+          0.19338495189848912,
+          0.9808484760291367
+        ],
+        "scale": 2906.461558501601,
+        "aspect": 2.4
+      }
+    }
+  ]
+}

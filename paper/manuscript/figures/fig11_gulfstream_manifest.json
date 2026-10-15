@@ -1,0 +1,309 @@
+{
+  "model": "Gulfstream G280 v17",
+  "scope": "Original and final STEP endpoints of Table 8",
+  "size": [
+    2400,
+    800
+  ],
+  "camera": {
+    "center": [
+      1.570460351435436,
+      14.708050328405257,
+      -1.183776554247899
+    ],
+    "projection": [
+      0,
+      0,
+      1
+    ],
+    "up": [
+      0,
+      1,
+      0
+    ],
+    "scale": 57.40960823600792
+  },
+  "detail": {
+    "original_face_id": 138,
+    "semantic": "window",
+    "center": [
+      -10.413767943411793,
+      7.459990025562975,
+      6.926174033652608
+    ],
+    "projection": [
+      0,
+      0,
+      1
+    ],
+    "up": [
+      0,
+      1,
+      0
+    ],
+    "scale": 10.63140893259406
+  },
+  "render_style": {
+    "body_rgb": [
+      0.94,
+      0.96,
+      0.98
+    ],
+    "edge_rgb": [
+      0.015,
+      0.02,
+      0.025
+    ],
+    "edge_width": 0.85,
+    "material": "plaster",
+    "transparency": 0.0
+  },
+  "relative_deflection": 0.0005,
+  "angular_deflection_rad": 0.5,
+  "geometry_modified": false,
+  "stages": [
+    {
+      "stage": "before",
+      "step": "D:\\projects\\gjy_byproject\\data\\plane_model\\after_two\\Gulfstream G280 v17_wing_rivets.step",
+      "step_sha256": "6f22774ee215b073c3cf6ce137fc810e09701ccffca48b0349ae996d312d22bc",
+      "metric_source": "D:\\projects\\gjy_byproject\\results\\e3_mesh\\per_model\\gulfstream_original.json",
+      "mesh": {
+        "faces": 668,
+        "nodes": 15858,
+        "triangles": 17941,
+        "linear_deflection": 0.21882818005633864,
+        "mesh_decimated": false
+      },
+      "images": {
+        "mesh_overview": "fig11_gulfstream_before_mesh_overview.png",
+        "mesh_detail": "fig11_gulfstream_before_mesh_detail.png",
+        "mesh_tail_decal": "fig11_gulfstream_before_mesh_tail_decal.png"
+      },
+      "cameras": {
+        "mesh_overview": {
+          "center": [
+            1.570460351435429,
+            14.70805032840525,
+            -1.1837765542479133
+          ],
+          "direction": [
+            -0.0,
+            -0.0,
+            -1.0
+          ],
+          "up": [
+            0.0,
+            1.0,
+            0.0
+          ],
+          "scale": 57.40960823600792,
+          "aspect": 3.0
+        },
+        "mesh_detail": {
+          "center": [
+            -10.413767943411793,
+            7.459990025562975,
+            6.9261740336526145
+          ],
+          "direction": [
+            -0.0,
+            -0.0,
+            -1.0
+          ],
+          "up": [
+            0.0,
+            1.0,
+            0.0
+          ],
+          "scale": 10.63140893259406,
+          "aspect": 3.0
+        },
+        "mesh_tail_decal": {
+          "center": [
+            55.41114993175908,
+            19.991664623977208,
+            -0.8924576675076423
+          ],
+          "direction": [
+            -0.0,
+            -0.0,
+            -1.0
+          ],
+          "up": [
+            0.0,
+            1.0,
+            0.0
+          ],
+          "scale": 10.496441811185877,
+          "aspect": 3.0
+        }
+      }
+    },
+    {
+      "stage": "after",
+      "step": "D:\\projects\\gjy_byproject\\data\\plane_model\\ending\\Gulfstream G280 v17_wing_rivets.step",
+      "step_sha256": "a958756e51ba37e98df26e6882c622f6a9e04b74a33c0dd460f4d34734663d8e",
+      "metric_source": "D:\\projects\\gjy_byproject\\results\\e3_mesh\\per_model\\gulfstream_simplified.json",
+      "mesh": {
+        "faces": 277,
+        "nodes": 8727,
+        "triangles": 11084,
+        "linear_deflection": 0.21882818005633864,
+        "mesh_decimated": false
+      },
+      "images": {
+        "mesh_overview": "fig11_gulfstream_after_mesh_overview.png",
+        "mesh_detail": "fig11_gulfstream_after_mesh_detail.png",
+        "mesh_tail_decal": "fig11_gulfstream_after_mesh_tail_decal.png",
+        "cad_overview": "fig11_gulfstream_after_cad_overview.png",
+        "cad_detail": "fig11_gulfstream_after_cad_detail.png",
+        "cad_tail_decal": "fig11_gulfstream_after_cad_tail_decal.png"
+      },
+      "cameras": {
+        "mesh_overview": {
+          "center": [
+            1.570460351435436,
+            14.708050328405257,
+            -1.1837765542478564
+          ],
+          "direction": [
+            -0.0,
+            -0.0,
+            -1.0
+          ],
+          "up": [
+            0.0,
+            1.0,
+            0.0
+          ],
+          "scale": 57.40960823600792,
+          "aspect": 3.0
+        },
+        "mesh_detail": {
+          "center": [
+            -10.413767943411793,
+            7.459990025562975,
+            6.9261740336526145
+          ],
+          "direction": [
+            -0.0,
+            -0.0,
+            -1.0
+          ],
+          "up": [
+            0.0,
+            1.0,
+            0.0
+          ],
+          "scale": 10.63140893259406,
+          "aspect": 3.0
+        },
+        "mesh_tail_decal": {
+          "center": [
+            55.41114993175908,
+            19.991664623977208,
+            -0.8924576675076423
+          ],
+          "direction": [
+            -0.0,
+            -0.0,
+            -1.0
+          ],
+          "up": [
+            0.0,
+            1.0,
+            0.0
+          ],
+          "scale": 10.496441811185877,
+          "aspect": 3.0
+        },
+        "cad_overview": {
+          "center": [
+            1.570460351435436,
+            14.708050328405257,
+            -1.1837765542478564
+          ],
+          "direction": [
+            -0.0,
+            -0.0,
+            -1.0
+          ],
+          "up": [
+            0.0,
+            1.0,
+            0.0
+          ],
+          "scale": 57.40960823600792,
+          "aspect": 3.0
+        },
+        "cad_detail": {
+          "center": [
+            -10.413767943411793,
+            7.459990025562975,
+            6.9261740336526145
+          ],
+          "direction": [
+            -0.0,
+            -0.0,
+            -1.0
+          ],
+          "up": [
+            0.0,
+            1.0,
+            0.0
+          ],
+          "scale": 10.63140893259406,
+          "aspect": 3.0
+        },
+        "cad_tail_decal": {
+          "center": [
+            55.41114993175908,
+            19.991664623977208,
+            -0.8924576675076423
+          ],
+          "direction": [
+            -0.0,
+            -0.0,
+            -1.0
+          ],
+          "up": [
+            0.0,
+            1.0,
+            0.0
+          ],
+          "scale": 10.496441811185877,
+          "aspect": 3.0
+        }
+      }
+    }
+  ],
+  "extra_details": [
+    {
+      "name": "tail_decal",
+      "semantic": "decal",
+      "original_face_ids": [
+        294,
+        327,
+        361,
+        378
+      ],
+      "center": [
+        55.41114993175907,
+        19.991664623977208,
+        -0.8924576675076533
+      ],
+      "projection": [
+        0,
+        0,
+        1
+      ],
+      "up": [
+        0,
+        1,
+        0
+      ],
+      "scale": 10.496441811185877
+    }
+  ],
+  "original_labels_sha256": "13dd9fd1080f740668ce0b35602eb518aa41bba1c27c1d79b5620c13b25ab447"
+}

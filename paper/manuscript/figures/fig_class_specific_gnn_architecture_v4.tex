@@ -1,64 +1,95 @@
-% Exact face-to-node correspondence for the input panel of Figure 3.
-% The unchanged raster underneath supplies the two GNN branches and fusion path.
+% Two-row overview of the class-specific GNN and decision-fusion pipeline.
 \begingroup
-\newdimen\figthreeunit
-\figthreeunit=\dimexpr\linewidth/1250\relax
-\begin{tikzpicture}[x=\figthreeunit,y=\figthreeunit]
-  \node[anchor=south west,inner sep=0,outer sep=0] at (0,0)
-    {\includegraphics[width=\linewidth]{figures/fig_class_specific_gnn_architecture_v3.png}};
+% Custom muted palette inspired by BrepGPT's partition illustration.
+% Reference: https://bunnysocrazy.github.io/BrepGPT/
+% These are locally chosen colours, not the paper's published colour codes.
+\definecolor{figFiveFaceOne}{HTML}{86A9BC}
+\definecolor{figFiveFaceTwo}{HTML}{F2D58A}
+\definecolor{figFiveFaceThree}{HTML}{F0B078}
+\definecolor{figFiveFaceFour}{HTML}{E9A4A0}
+\definecolor{figFiveRivet}{HTML}{6D94AC}
+\definecolor{figFiveSurface}{HTML}{C77D45}
+\newdimen\figfiveunit
+\figfiveunit=\dimexpr\linewidth/1020\relax
+\begin{tikzpicture}[x=\figfiveunit,y=\figfiveunit,
+  face node/.style={circle,minimum size=44\figfiveunit,inner sep=0,
+    draw=black,line width=1.2\figfiveunit,
+    font=\sffamily\bfseries\fontsize{8.5}{9.5}\selectfont},
+  flow line/.style={draw=black!65,line width=1.5\figfiveunit},
+  flow arrow/.style={flow line,->}]
+  % Upper row: a rendered cubic B-spline sheet with four B-Rep faces.
+  \node[font=\sffamily\bfseries\fontsize{9.0}{10.0}\selectfont] at (500,590)
+    {B-spline surface with four B-Rep faces};
+  \node[anchor=south,inner sep=0] at (500,340)
+    {\includegraphics[width=450\figfiveunit]{figures/fig5_bspline_curved_sheet.png}};
 
-  % Replace only the input panel. A shared B-Rep edge becomes one graph edge.
-  \begin{scope}[yshift=34\figthreeunit]
-  \path[fill=white] (69,45) rectangle (241,415);
-  \draw[rounded corners=13,fill=gray!9,draw=gray!55,line width=1.5\figthreeunit]
-    (71,48) rectangle (239,412);
-  \node[font=\sffamily\bfseries\fontsize{6.6}{7.5}\selectfont] at (155,389)
-    {B-Rep face graph};
+  % Lower row: face graph, class-specific branches, fusion, and output.
+  \node[font=\sffamily\bfseries\fontsize{8.5}{9.5}\selectfont] at (85,265)
+    {Face-adjacency graph};
+  % The four patches induce a four-edge face-adjacency cycle.
+  \draw[flow line] (45,210)--(125,210)--(125,140)--(45,140)--cycle;
+  \node[face node,fill=figFiveFaceThree] at (45,210) {F3};
+  \node[face node,fill=figFiveFaceOne] at (125,210) {F1};
+  \node[face node,fill=figFiveFaceFour] at (45,140) {F4};
+  \node[face node,fill=figFiveFaceTwo] at (125,140) {F2};
+  \draw[rounded corners=5,fill=gray!13,draw=gray!55,line width=1.1\figfiveunit]
+    (0,55) rectangle (170,97);
+  \node[align=center,font=\sffamily\itshape\fontsize{8.0}{9.0}\selectfont] at (85,76)
+    {Node and edge\\attributes};
 
-  % Four faces of a local B-Rep surface patch, viewed obliquely.
-  \path[fill=blue!22,draw=gray!65,line width=1.1\figthreeunit]
-    (101,351)--(153,366)--(151,322)--(101,308)--cycle;
-  \path[fill=orange!38,draw=gray!65,line width=1.1\figthreeunit]
-    (153,366)--(209,349)--(209,305)--(151,322)--cycle;
-  \path[fill=gray!35,draw=gray!65,line width=1.1\figthreeunit]
-    (101,308)--(151,322)--(151,280)--(101,265)--cycle;
-  \path[fill=blue!46,draw=gray!65,line width=1.1\figthreeunit]
-    (151,322)--(209,305)--(209,264)--(151,280)--cycle;
-  \draw[draw=blue!75!black,line width=2.5\figthreeunit]
-    (153,366)--(151,322);
-  \node[font=\sffamily\bfseries\fontsize{6.3}{7}\selectfont] at (127,338) {F1};
-  \node[font=\sffamily\bfseries\fontsize{6.3}{7}\selectfont] at (181,337) {F2};
-  \node[font=\sffamily\bfseries\fontsize{6.3}{7}\selectfont] at (127,294) {F3};
-  \node[font=\sffamily\bfseries\fontsize{6.3}{7}\selectfont] at (181,292) {F4};
+  % Both branches split symmetrically from the shared-input centreline.
+  \draw[flow line] (125,175)--(210,175);
+  \draw[flow arrow] (210,175)--(255,245);
+  \draw[flow arrow] (210,175)--(255,105);
+  \node[align=center,font=\sffamily\fontsize{7.5}{8.5}\selectfont]
+    at (180,208) {shared\\input};
 
-  \node[font=\sffamily\fontsize{5.3}{6}\selectfont,text=black!70]
-    at (155,245) {Shared edge $\rightarrow$ link};
+  \draw[rounded corners=8,fill=figFiveRivet!12,draw=figFiveRivet,line width=1.8\figfiveunit]
+    (255,214) rectangle (490,276);
+  \node[font=\sffamily\bfseries\fontsize{10.0}{11.0}\selectfont,text=figFiveRivet!65!black]
+    at (372.5,245) {Rivet GNN};
+  \draw[rounded corners=8,fill=figFiveSurface!12,draw=figFiveSurface,line width=1.8\figfiveunit]
+    (255,74) rectangle (490,136);
+  \node[font=\sffamily\bfseries\fontsize{9.0}{10.0}\selectfont,text=figFiveSurface!65!black]
+    at (372.5,105) {Surface-feature GNN};
 
-  % F1--F4 and F2--F3 meet only at a vertex, so no diagonal graph edge exists.
-  \draw[draw=gray!70,line width=1.2\figthreeunit] (121,214)--(121,166);
-  \draw[draw=gray!70,line width=1.2\figthreeunit] (188,214)--(188,166);
-  \draw[draw=gray!70,line width=1.2\figthreeunit] (121,166)--(188,166);
-  \draw[draw=blue!75!black,line width=2.5\figthreeunit] (121,214)--(188,214);
-  \foreach \x/\y/\name/\colour in {
-    121/214/F1/blue!22,
-    188/214/F2/orange!38,
-    121/166/F3/gray!35,
-    188/166/F4/blue!46
-  } {
-    \node[circle,minimum size=27\figthreeunit,inner sep=0,
-      draw=gray!70,fill=\colour,line width=1.2\figthreeunit,
-      font=\sffamily\bfseries\fontsize{5.8}{6.5}\selectfont]
-      at (\x,\y) {\name};
-  }
+  \draw[flow arrow] (490,245)--(525,245);
+  \draw[rounded corners=7,fill=figFiveRivet!22,draw=figFiveRivet,line width=1.5\figfiveunit]
+    (525,217) rectangle (585,273);
+  \node[font=\sffamily\bfseries\fontsize{9.0}{10.0}\selectfont] at (555,245) {$s_r$};
+  \node[font=\sffamily\fontsize{7.0}{8.0}\selectfont] at (555,293) {rivet score};
+  \draw[flow arrow] (490,105)--(525,105);
+  \draw[rounded corners=7,fill=figFiveSurface!22,draw=figFiveSurface,line width=1.5\figfiveunit]
+    (525,77) rectangle (585,133);
+  \node[font=\sffamily\bfseries\fontsize{9.0}{10.0}\selectfont] at (555,105) {$s_f$};
+  \node[align=center,font=\sffamily\fontsize{7.0}{8.0}\selectfont] at (555,50)
+    {surface-feature\\score};
 
-  \draw[rounded corners=4,fill=gray!16,draw=gray!55,line width=1.1\figthreeunit]
-    (84,116) rectangle (226,145);
-  \node[font=\sffamily\itshape\fontsize{5.6}{6.5}\selectfont]
-    at (155,130) {Node attributes};
-  \draw[rounded corners=4,fill=gray!16,draw=gray!55,line width=1.1\figthreeunit]
-    (84,80) rectangle (226,109);
-  \node[font=\sffamily\itshape\fontsize{5.6}{6.5}\selectfont]
-    at (155,94) {Edge attributes};
-  \end{scope}
+  % Shared vertex anchors keep both arrowheads on the diamond centreline.
+  \coordinate (fusionNorth) at (710,220);
+  \coordinate (fusionSouth) at (710,130);
+  \coordinate (fusionWest) at (655,175);
+  \coordinate (fusionEast) at (765,175);
+  \draw[fill=gray!8,draw=gray!70,line width=1.5\figfiveunit]
+    (fusionWest)--(fusionNorth)--(fusionEast)--(fusionSouth)--cycle;
+  \draw[flow arrow] (585,245)--(710,245)--(fusionNorth);
+  \draw[flow arrow] (585,105)--(710,105)--(fusionSouth);
+  \node[align=center,font=\sffamily\bfseries\fontsize{8.0}{9.0}\selectfont]
+    at (710,175) {Decision\\fusion};
+  \draw[flow arrow] (fusionEast)--(805,175);
+
+  \draw[rounded corners=8,fill=gray!8,draw=gray!60,line width=1.5\figfiveunit]
+    (805,77) rectangle (1000,273);
+  \node[font=\sffamily\bfseries\fontsize{8.5}{9.5}\selectfont] at (902.5,249)
+    {Three-class output};
+  \draw[rounded corners=5,fill=gray!17,draw=gray!55,line width=1.1\figfiveunit]
+    (820,194) rectangle (985,229);
+  \node[font=\sffamily\itshape\fontsize{8.0}{9.0}\selectfont] at (902.5,211.5) {Background};
+  \draw[rounded corners=5,fill=figFiveRivet!18,draw=figFiveRivet,line width=1.1\figfiveunit]
+    (820,143) rectangle (985,178);
+  \node[font=\sffamily\itshape\fontsize{8.0}{9.0}\selectfont] at (902.5,160.5) {Rivet};
+  \draw[rounded corners=5,fill=figFiveSurface!18,draw=figFiveSurface,line width=1.1\figfiveunit]
+    (820,92) rectangle (985,127);
+  \node[font=\sffamily\itshape\fontsize{8.0}{9.0}\selectfont] at (902.5,109.5) {Surface-feature};
 \end{tikzpicture}
 \endgroup

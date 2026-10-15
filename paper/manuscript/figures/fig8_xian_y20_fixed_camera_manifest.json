@@ -1,0 +1,241 @@
+{
+  "projection": "orthographic",
+  "view": "top",
+  "model_geometry_modified": false,
+  "reference_bounds": [
+    -6.657277923202,
+    -11.17399682227332,
+    -6.253374559467579,
+    7.731793261538658,
+    -7.267080664760762,
+    6.8533795100153325
+  ],
+  "center": [
+    0.5372576691683291,
+    -9.220538743517041,
+    0.3000024752738768
+  ],
+  "scale": 14.155294395041544,
+  "size": [
+    2400,
+    2100
+  ],
+  "details": [
+    {
+      "number": 1,
+      "original_face_id": 83,
+      "center": [
+        -1.209936904737,
+        -9.507323826659,
+        -3.670501949702
+      ],
+      "scale": 0.1
+    },
+    {
+      "number": 2,
+      "original_face_id": 59,
+      "center": [
+        -0.649147036362,
+        -9.485576006359,
+        -3.047725859239
+      ],
+      "scale": 0.1
+    },
+    {
+      "number": 3,
+      "original_face_id": 48,
+      "center": [
+        -1.045379152788,
+        -9.40961711958,
+        1.480674608454
+      ],
+      "scale": 0.1
+    }
+  ],
+  "stages": [
+    {
+      "stage": "original",
+      "step": "D:\\projects\\gjy_byproject\\data\\plane_model\\new_data\\4-20 xi-an y20 STP STL_Xian Y-20 v3_wing_rivets.step",
+      "labels": "D:\\projects\\gjy_byproject\\data\\plane_model\\label\\4-20 xi-an y20 STP STL_Xian Y-20 v3_wing_rivets.labels.json",
+      "step_sha256": "a9d128c6e986e51bc61b5d8970101c858bb9cf7e2293a912ed1d4f7167624b05",
+      "labels_sha256": "96958dcbc2e1b21b284eb53b9cba14f7e7af9ab195f89d0569359a287674c1fc",
+      "faces": 357,
+      "images": [
+        "fig8_xian_y20_original_overview_fixed.png",
+        "fig8_xian_y20_original_detail_1_fixed.png",
+        "fig8_xian_y20_original_detail_2_fixed.png",
+        "fig8_xian_y20_original_detail_3_fixed.png"
+      ],
+      "cameras": {
+        "overview": {
+          "center": [
+            0.5372576691683548,
+            -9.220538743517068,
+            0.3000024752738568
+          ],
+          "direction": [
+            -0.0,
+            -1.0,
+            -0.0
+          ],
+          "up": [
+            0.0,
+            0.0,
+            -1.0
+          ],
+          "scale": 14.155294395041544,
+          "aspect": 1.1428571428571428
+        },
+        "detail_1": {
+          "center": [
+            -1.2099369047369994,
+            -9.507323826659047,
+            -3.670501949702
+          ],
+          "direction": [
+            0.0,
+            -1.0,
+            0.0
+          ],
+          "up": [
+            0.0,
+            0.0,
+            -1.0
+          ],
+          "scale": 0.1,
+          "aspect": 1.0
+        },
+        "detail_2": {
+          "center": [
+            -0.6491470363619999,
+            -9.485576006358997,
+            -3.0477258592390006
+          ],
+          "direction": [
+            0.0,
+            -1.0,
+            0.0
+          ],
+          "up": [
+            0.0,
+            0.0,
+            -1.0
+          ],
+          "scale": 0.1,
+          "aspect": 1.0
+        },
+        "detail_3": {
+          "center": [
+            -1.0453791527880003,
+            -9.409617119580048,
+            1.480674608454
+          ],
+          "direction": [
+            0.0,
+            -1.0,
+            0.0
+          ],
+          "up": [
+            0.0,
+            0.0,
+            -1.0
+          ],
+          "scale": 0.1,
+          "aspect": 1.0
+        }
+      }
+    },
+    {
+      "stage": "rivet_removed",
+      "step": "D:\\projects\\gjy_byproject\\work\\xian_y20_rivet_removal\\Xian_Y20_after_rivets.step",
+      "labels": "D:\\projects\\gjy_byproject\\work\\xian_y20_rivet_removal\\after_rivet_render.labels.json",
+      "step_sha256": "a366a436fc167872de7a9e6e9509ba036df13f8d525952ce1c3c50fdfdf26dce",
+      "labels_sha256": "ad149896a66ed5ac5cbf1ad3f3db3578933a3da32497969fb9706d0e2c87ccc2",
+      "faces": 313,
+      "images": [
+        "fig8_xian_y20_rivet_removed_overview_fixed.png",
+        "fig8_xian_y20_rivet_removed_detail_1_fixed.png",
+        "fig8_xian_y20_rivet_removed_detail_2_fixed.png",
+        "fig8_xian_y20_rivet_removed_detail_3_fixed.png"
+      ],
+      "cameras": {
+        "overview": {
+          "center": [
+            0.5372576691683288,
+            -9.220538743517011,
+            0.3000024752738765
+          ],
+          "direction": [
+            0.0,
+            -1.0,
+            0.0
+          ],
+          "up": [
+            0.0,
+            0.0,
+            -1.0
+          ],
+          "scale": 14.155294395041544,
+          "aspect": 1.1428571428571428
+        },
+        "detail_1": {
+          "center": [
+            -1.2099369047370003,
+            -9.507323826659047,
+            -3.670501949702001
+          ],
+          "direction": [
+            0.0,
+            -1.0,
+            0.0
+          ],
+          "up": [
+            0.0,
+            0.0,
+            -1.0
+          ],
+          "scale": 0.1,
+          "aspect": 1.0
+        },
+        "detail_2": {
+          "center": [
+            -0.6491470363619998,
+            -9.485576006359054,
+            -3.0477258592389993
+          ],
+          "direction": [
+            0.0,
+            -1.0,
+            0.0
+          ],
+          "up": [
+            0.0,
+            0.0,
+            -1.0
+          ],
+          "scale": 0.1,
+          "aspect": 1.0
+        },
+        "detail_3": {
+          "center": [
+            -1.0453791527879999,
+            -9.409617119580048,
+            1.480674608454
+          ],
+          "direction": [
+            0.0,
+            -1.0,
+            0.0
+          ],
+          "up": [
+            0.0,
+            0.0,
+            -1.0
+          ],
+          "scale": 0.1,
+          "aspect": 1.0
+        }
+      }
+    }
+  ]
+}

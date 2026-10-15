@@ -3081,7 +3081,10 @@ int RunEmbeddedWindowHostRebuild(
                 }
                 if (isWindowHostLoop)
                 {
-                    if (useNarrowWindowRemoval && !rebuildAirbusWindows)
+                    // Keep G280's outer trimming boundary: rebuilding its UV
+                    // rectangle can overlap neighbouring fuselage patches.
+                    if (useNarrowWindowRemoval && !rebuildAirbusWindows &&
+                        !rebuildGulfstreamTailDecals)
                     {
                         ++matchedWindowLoopCount;
                     }

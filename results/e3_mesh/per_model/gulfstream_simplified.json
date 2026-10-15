@@ -1,27 +1,27 @@
 {
-  "input_step": "D:\\projects\\gjy_byproject\\data\\plane_model\\ending\\Gulfstream G280 v17_wing_rivets.step",
+  "input_step": "data\\plane_model\\ending\\Gulfstream G280 v17_wing_rivets.step",
   "brep_valid": true,
   "bounding_box_diagonal": 437.65636011267725,
   "relative_deflection": 0.0005,
   "linear_deflection": 0.21882818005633864,
   "angular_deflection_rad": 0.5,
   "face_count": 277,
-  "mesh_node_count": 10244,
-  "mesh_triangle_count": 14378,
+  "mesh_node_count": 8727,
+  "mesh_triangle_count": 11084,
   "mesh_quality": {
     "degenerate_triangle_count": 2,
     "minimum_angle_deg": 0.003692419213641234,
-    "minimum_angle_p05_deg": 1.862947018553029,
+    "minimum_angle_p05_deg": 1.318633718763112,
     "maximum_aspect_ratio": 13046.688983689626,
-    "aspect_ratio_p95": 18.526039134052176
+    "aspect_ratio_p95": 27.988241165480353
   },
   "mesh_repeats": 5,
   "mesh_elapsed_seconds_samples": [
-    0.10137320007197559,
-    0.10325450007803738,
-    0.10400569997727871,
-    0.10349030001088977,
-    0.1406684999819845
+    0.07882990001235157,
+    0.09267169999657199,
+    0.09675159998005256,
+    0.09608590003335848,
+    0.12748930003726855
   ],
-  "mesh_elapsed_seconds_median": 0.10349030001088977
+  "mesh_elapsed_seconds_median": 0.09608590003335848
 }

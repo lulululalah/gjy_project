@@ -1,0 +1,55 @@
+{
+  "date": "2026-10-15",
+  "root_cause": "G280 narrow window removal expanded trimmed host surfaces to UV rectangles, creating coincident skin layers and mesh occlusion.",
+  "fix": "Keep original outer host wires and remove matched inner wires through the existing reshape path; retain other aircraft profile behavior.",
+  "metrics": {
+    "faces": 277,
+    "nodes": 8727,
+    "triangles": 11084,
+    "mesh_seconds_median": 0.09608590003335848,
+    "qem_total_seconds": 0.18752290005795658,
+    "qem_relative_difference_percent": 48.76044472239828,
+    "nine_model_qem_median_percent": 48.08364426429172
+  },
+  "validation": {
+    "native_build": "PASS",
+    "relevant_tests": "4 passed: G280 geometry integration (2), removal-pipeline contract (2)",
+    "front_layer_probe": {
+      "triangles": 11084,
+      "sampled_rays_with_two_or_more_hits": 171,
+      "rays_with_near_front_layers": 0,
+      "near_threshold": 0.21882818005633864,
+      "front_face_pairs": {},
+      "near_samples": []
+    },
+    "brep_valid": true,
+    "free_edges": {
+      "original": 2,
+      "simplified": 89
+    },
+    "table_count": 9,
+    "table_font_tex_pt": 10,
+    "pdf_pages": 26,
+    "visual_pages": [
+      14,
+      21,
+      22,
+      23
+    ],
+    "source_scope": "Exactly two G280 table rows, one QEM median, and the G280 Figure 11 triangle label changed against pre-repair manuscript backup.",
+    "pdf_matches_inspected_build": true
+  },
+  "checked_hashes": {
+    "main.tex": "e3615042813a809b71c929301c88017334f6948b94c2b6efb919dcd11f400784",
+    "main.pdf": "772fc124dfea19d289e0d6be556ae25de21f66b3fa39aced402fd67f88a5b241",
+    "repaired_step": "a958756e51ba37e98df26e6882c622f6a9e04b74a33c0dd460f4d34734663d8e"
+  },
+  "limitations": "Local front-skin overlap is removed. The processed STEP retains 89 free edges under the formal geometry counter. This does not certify watertightness, geometric equivalence or CAE performance.",
+  "provenance": {
+    "backup": "work/figure11_g280_repair_20261015/backup",
+    "measurement": "results/e3_mesh/per_model/gulfstream_simplified.json",
+    "geometry": "results/e3_mesh/per_model/gulfstream_geometry.json",
+    "qem_replay": "work/figure11_g280_repair_20261015/remeasure_qem.py",
+    "regression": "python/tests/test_g280_rebuild_geometry.py"
+  }
+}

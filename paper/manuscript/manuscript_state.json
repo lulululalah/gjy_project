@@ -2,7 +2,7 @@
   "schema_version": "1.1",
   "project": {
     "id": "aircraft-brep-small-feature-paper",
-    "title": "面向飞机 B-Rep 模型小特征处理的可追溯图学习与几何重建框架",
+    "title": "飞机 B-Rep 模型小特征识别的面级图学习方法",
     "archetype": "empirical methods paper",
     "study_designs": [
       "computational model",
@@ -42,7 +42,12 @@
       "id": "current-code",
       "kind": "verified_primary_evidence",
       "path_or_reference": "python/train_rivet_gcn.py; python/visualize_rivets.py; src/; include/",
-      "scope": ["methods", "model_contract", "geometry_processing", "qem_baseline"],
+      "scope": [
+        "methods",
+        "model_contract",
+        "geometry_processing",
+        "qem_baseline"
+      ],
       "status": "VERIFIED",
       "last_verified": "2026-10-02"
     },
@@ -50,7 +55,11 @@
       "id": "current-execution-environment",
       "kind": "local_runtime_probe",
       "path_or_reference": "D:\\Anaconda\\envs\\cad_graph_env\\python.exe; work/qem_baseline/python310_packages; local Windows host",
-      "scope": ["software_versions", "qem_runtime", "mesh_measurement_environment"],
+      "scope": [
+        "software_versions",
+        "qem_runtime",
+        "mesh_measurement_environment"
+      ],
       "status": "VERIFIED",
       "last_verified": "2026-10-02",
       "details": "Windows 10 Pro 25H2; Intel Core i7-14700KF; NVIDIA GeForce RTX 4060 8 GB (driver 591.86); Python 3.10.20; OpenCASCADE 7.9.0; PyTorch 2.12.1+cu130; fast-simplification 0.2.0. This is a local execution probe, not a substitute for a release manifest."
@@ -59,7 +68,12 @@
       "id": "current-model-stats",
       "kind": "verified_primary_evidence",
       "path_or_reference": "model/final_detection_model/rivet_gnn_train17_rebuilt_20260921_50ep_stats.npz",
-      "scope": ["features", "architecture", "thresholds", "training_parameters"],
+      "scope": [
+        "features",
+        "architecture",
+        "thresholds",
+        "training_parameters"
+      ],
       "status": "VERIFIED",
       "last_verified": "2026-09-10"
     },
@@ -67,7 +81,10 @@
       "id": "current-eval",
       "kind": "analysis_output",
       "path_or_reference": "results/e1_detection/current_test_snapshot/manifest.json; results/e1_detection/current_test_snapshot/face_level_metrics.csv; results/e1_detection/current_test_snapshot/per_aircraft_risk.csv",
-      "scope": ["full_test_results", "per_aircraft_risk"],
+      "scope": [
+        "full_test_results",
+        "per_aircraft_risk"
+      ],
       "status": "VERIFIED",
       "last_verified": "2026-09-10"
     },
@@ -75,7 +92,9 @@
       "id": "current-test-csv",
       "kind": "processed_data",
       "path_or_reference": "model/final_detection_model/test_9_models_frozen_truth.csv",
-      "scope": ["fixed_test_dataset"],
+      "scope": [
+        "fixed_test_dataset"
+      ],
       "status": "VERIFIED",
       "last_verified": "2026-09-10"
     },
@@ -83,7 +102,11 @@
       "id": "current-architecture",
       "kind": "project_documentation",
       "path_or_reference": "doc/当前架构说明.md",
-      "scope": ["system_overview", "file_contracts", "verified_models"],
+      "scope": [
+        "system_overview",
+        "file_contracts",
+        "verified_models"
+      ],
       "status": "VERIFIED",
       "last_verified": "2026-09-10"
     },
@@ -91,18 +114,30 @@
       "id": "current-train-csv",
       "kind": "processed_data",
       "path_or_reference": "model/final_detection_model/train_17_models.csv",
-      "scope": ["training_dataset"],
+      "scope": [
+        "training_dataset"
+      ],
       "status": "VERIFIED",
       "last_verified": "2026-09-10"
+    },
+    {
+      "id": "formal-three-class-comparison",
+      "kind": "analysis_output",
+      "path_or_reference": "results/e1_detection/formal_three_class_20261011/manifest.json; results/e1_detection/formal_three_class_20261011/postprocessed/three-class_h64_seed123/metrics/face_level_metrics.csv",
+      "scope": [
+        "unified_three_class_comparison"
+      ],
+      "status": "VERIFIED",
+      "last_verified": "2026-10-11"
     }
   ],
   "contract": {
-    "gap": "Existing CAD feature-recognition work provides limited evidence for traceable, risk-sensitive small-feature recognition and downstream geometry processing on complete heterogeneous aircraft B-Rep models.",
-    "task": "Recognize rivets and surface-features at B-Rep face level, preserve face identifier traceability, and use predictions as candidate inputs to staged CAD processing.",
+    "gap": "Existing CAD feature-recognition work provides limited evidence for risk-sensitive small-feature recognition and downstream geometry processing on complete heterogeneous aircraft B-Rep models.",
+    "task": "Recognize rivets and surface-features at B-Rep face level and use predictions as candidate inputs to staged CAD processing.",
     "outcomes": [
       "face-level recognition on complete aircraft",
       "per-aircraft error and background false-positive analysis",
-      "traceable CAD-processing candidates",
+      "CAD-processing candidates",
       "paired surface-mesh scale and timing comparison"
     ],
     "questions": [
@@ -113,11 +148,11 @@
       },
       {
         "id": "RQ4",
-        "text": "Can predictions remain traceable to original or intermediate B-Rep faces and support staged CAD-processing candidates?",
+        "text": "Can face-level predictions support staged CAD-processing candidates on original and intermediate B-Rep models?",
         "lock": "SEMANTIC"
       }
     ],
-    "contribution": "A traceable face-level graph-learning framework that links small-feature predictions on complete-aircraft B-Rep models to staged CAD-processing candidates and paired mesh comparisons.",
+    "contribution": "A face-level graph-learning framework for small-feature recognition on complete-aircraft B-Rep models, with staged CAD-processing candidates and paired mesh comparisons.",
     "nonclaims": [
       "No universal generalization claim across all aircraft or CAD sources.",
       "Geometric comparison does not establish physics equivalence.",
@@ -148,22 +183,32 @@
     {
       "concept": "surface target class in manuscript prose",
       "preferred": "surface-feature",
-      "prohibited": ["surface feature", "surface features"]
+      "prohibited": [
+        "surface feature",
+        "surface features"
+      ]
     },
     {
       "concept": "surface target class",
       "preferred": "surface_feature",
-      "prohibited": ["four-class decal/window output"]
+      "prohibited": [
+        "four-class decal/window output"
+      ]
     },
     {
       "concept": "graph node",
       "preferred": "B-Rep face node",
-      "prohibited": ["geometric vertex"]
+      "prohibited": [
+        "geometric vertex"
+      ]
     },
     {
       "concept": "model architecture",
       "preferred": "class-specific GNNs",
-      "prohibited": ["single shared encoder", "dual-specialist GNN"]
+      "prohibited": [
+        "single shared encoder",
+        "dual-specialist GNN"
+      ]
     }
   ],
   "style_profile": {
@@ -183,29 +228,66 @@
       "significantly improves"
     ],
     "preferred_open_compounds": [],
-    "allowed_repetitions": ["B-Rep", "face", "aircraft"],
+    "allowed_repetitions": [
+      "B-Rep",
+      "face",
+      "aircraft"
+    ],
     "sentence_opening_words": 4,
     "phrase_words": 5,
-    "phrase_min_occurrences": 3
+    "phrase_min_occurrences": 3,
+    "table_body_font": {
+      "tex_pt": 10,
+      "applies_to": "All table headers and body cells; mathematical superscripts use standard smaller sizes.",
+      "whole_table_scaling": false
+    }
   },
   "facts": [
     {
       "id": "train-current",
       "value": "17 aircraft and 48095 faces in model/final_detection_model/train_17_models.csv",
       "source_id": "current-train-csv",
-      "expected_strings": ["17", "48095"]
+      "expected_strings": [
+        "17",
+        "48095"
+      ]
     },
     {
       "id": "candidate-test-current",
       "value": "9 aircraft and 34162 faces in model/final_detection_model/test_9_models_frozen_truth.csv",
       "source_id": "current-test-csv",
-      "expected_strings": ["9", "34162"]
+      "expected_strings": [
+        "9",
+        "34162"
+      ]
     },
     {
       "id": "model-contract-current",
       "value": "48 node features, 6 edge attributes, 4 layers, hidden dimension 64, seed 123, 50 epochs, rivet threshold 0.9, surface threshold 0.5",
       "source_id": "current-model-stats",
-      "expected_strings": ["48", "6", "4", "64", "123", "50", "0.9", "0.5"]
+      "expected_strings": [
+        "48",
+        "6",
+        "4",
+        "64",
+        "123",
+        "50",
+        "0.9",
+        "0.5"
+      ]
+    },
+    {
+      "id": "formal-three-class-comparison-result",
+      "value": "On 34162 fixed test faces after the documented two-stage CAD screening, the unified three-class classifier obtained background F1=0.9168, rivet F1=0.1312, surface-feature F1=0.4589, mIoU=0.4048, and 4762 background false positives.",
+      "source_id": "formal-three-class-comparison",
+      "expected_strings": [
+        "34162",
+        "0.9168",
+        "0.1312",
+        "0.4589",
+        "0.4048",
+        "4762"
+      ]
     }
   ],
   "alignment": [
@@ -221,29 +303,48 @@
     },
     {
       "question_id": "RQ4",
-      "method": "face identifier traceability, CAD removal, and local reconstruction",
-      "evidence": "Face-identifier alignment between original-model recognition and CAD-input predictions, nine original--simplified B-Rep pairs, fixed OpenCASCADE meshing controls, and a matched-triangle QEM timing-component baseline",
+      "method": "staged CAD removal and local reconstruction",
+      "evidence": "Face-level alignment between original-model recognition and CAD-input predictions, nine original--simplified B-Rep pairs, fixed OpenCASCADE meshing controls, and a matched-triangle QEM timing-component baseline",
       "result": "Across the nine pairs, triangle reduction was 0.57--48.66 percent and median meshing-time reduction was 2.49--58.29 percent. At matched triangle targets, final meshing was 7.22--60.05 percent lower than original meshing plus the QEM kernel under the stated limited timing account.",
       "interpretation": "Original-model predictions align face by face across recognition and CAD-input records; the added planar-patch check accounts for the rivet-count difference. The reported pairs have reduced mesh scale and meshing time under the tested controls, without establishing removal completeness, end-to-end superiority, mesh-quality superiority, or engineering-response equivalence.",
       "limitation": "Candidate records do not establish operation-level outcomes; matched-quality QEM comparison and downstream CAE evidence remain unavailable.",
-      "contribution": "Traceable downstream CAD-processing candidates and paired mesh comparison",
+      "contribution": "Downstream CAD-processing candidates and paired mesh comparison",
       "status": "IN_PROGRESS"
     }
   ],
   "dimensions": [
     {
       "id": "recognition",
-      "required_fields": ["per-class precision recall f1", "mIoU", "per-aircraft errors", "background false positives", "maximum false-positive area"],
+      "required_fields": [
+        "per-class precision recall f1",
+        "mIoU",
+        "per-aircraft errors",
+        "background false positives",
+        "maximum false-positive area"
+      ],
       "status": "INCOMPLETE"
     },
     {
       "id": "geometry",
-      "required_fields": ["face count", "paired mesh node and triangle counts", "median meshing time", "operation-level outcomes", "matched-quality baseline"],
+      "required_fields": [
+        "face count",
+        "paired mesh node and triangle counts",
+        "median meshing time",
+        "operation-level outcomes",
+        "matched-quality baseline"
+      ],
       "status": "INCOMPLETE"
     },
     {
       "id": "reproducibility",
-      "required_fields": ["dataset manifest", "experiment manifest", "code commit", "environment", "random seeds", "artifact hashes"],
+      "required_fields": [
+        "dataset manifest",
+        "experiment manifest",
+        "code commit",
+        "environment",
+        "random seeds",
+        "artifact hashes"
+      ],
       "status": "INCOMPLETE"
     }
   ],
@@ -292,8 +393,517 @@
       "id": "D9",
       "date": "2026-09-23",
       "decision": "For the current integration revision, report the observed recognition and surface-mesh results in the abstract and conclusion, and describe the fixed nine-aircraft partition as developmental because historical use of some test aircraft remains possible."
+    },
+    {
+      "id": "D10",
+      "date": "2026-10-09",
+      "decision": "By author instruction, reserve Section 3 for preliminaries only: B-Rep topology and geometry, face-adjacency graphs, and general attributed-graph message passing, at approximately 2--2.5 pages. Place the study-specific task, graph attributes, class-specific GNNs, and inference rule in Section 4, while retaining feature processing and training in Section 5. This supersedes the Section 3 focus recorded in D6."
+    },
+    {
+      "id": "D11",
+      "date": "2026-10-11",
+      "decision": "By author instruction, retain the formal dual-branch face-level results and add a unified three-class classifier trained on the same fixed split and evaluated after the documented two-stage CAD screening to Table 5."
+    },
+    {
+      "id": "D12",
+      "date": "2026-10-12",
+      "decision": "By author instruction, face identifiers are treated as an implementation reference needed only to locate a selected face in the relevant B-Rep state, not as a standalone contribution or recurring traceability theme."
+    },
+    {
+      "id": "D13",
+      "date": "2026-10-13",
+      "decision": "By author instruction, replace the staged-processing schematic with original G280, rivet-removed, and window/decal-processed screenshots in Figure 6. Use paired side and oblique top views for the first two stages, and the author-supplied final-stage view for the third. Preserve the source screenshots and all visible face boundaries, crop only outer whitespace in LaTeX, and disclose the different viewing angles. The final-stage view is illustrative, not evidence of complete removal, watertightness, geometric fidelity, or CAE suitability; the archived embedded.log reports free edges increasing from 3 to 194.",
+      "verification": "The initial Figure 6 layout on PDF page 13 was visually reviewed after successful latexmk compilation. Source screenshot copied byte-for-byte and SHA-256 checked. Exact caption and adjacent paragraph manually checked against the current contract, terminology, and evidence boundaries; PowerShell diagnostic scan found no registered prohibited or discouraged phrases. No numbers or citations changed. Python-based skill audits were not run because the author prohibits AI use of Python. This is a local figure revision, not a full-manuscript release audit; I2 and I3 remain open."
+    },
+    {
+      "id": "D14",
+      "date": "2026-10-13",
+      "decision": "By author instruction, use the same 90 mm display width and aligned position for all three stage side views in Figure 6. Add arrow-linked insets beside the first two stages: the author-supplied G280 rivet close-up for the original stage and a crop of the archived post-rivet top screenshot for the processed wing-edge region. These views are not registered at an identical camera angle or certified as an exact face-to-face match. Preserve source image pixels and genuine model boundaries; perform cropping only through LaTeX.",
+      "verification": "Recompiled successfully with latexmk and reviewed Figure 6 on page 13 at 145 dpi. All three stage side views use width=90mm and share x=-30mm; labels, black inset frames, and arrows are visible without overlap or new overfull boxes. Caption manually checked against the current contract and unchanged adjacent prose. No numbers, citations, geometry, or source image pixels changed; no Python was executed. The post-rivet inset is visibly pixelated because it is enlarged from a 45-by-47-pixel screenshot crop; a new close-up screenshot is needed for publication-quality detail. Exact local face correspondence remains unverified."
+    },
+    {
+      "id": "D15",
+      "date": "2026-10-13",
+      "decision": "By author confirmation, keep Figure 6 in Section 5.2 as a staged workflow illustrated with a real aircraft, not relocate it to Results. Add downward stage-transition arrows: rivet removal between A and B, then face re-extraction, surface-feature recognition, and window/decal processing between B and C. Preserve equal-width aligned side views and existing local insets. Update the caption to explain the sequence without implying complete removal or geometric validation.",
+      "verification": "Successful latexmk compilation and visual review of Figure 6 on PDF page 13 at 140 dpi. Both stage arrows and their operation labels are visible without overlap; three side views remain 90 mm wide and source screenshots remain unchanged. Exact caption manually checked against the staged-processing paragraph, contract, British spelling, citation preservation, and evidence limits; registered-phrase diagnostic and git diff --check run. No numbers, citations, geometry, or source image pixels changed. No Python executed. The existing pixelated post-rivet inset and unverified exact local face correspondence remain unresolved; this check is limited to the requested workflow annotations."
+    },
+    {
+      "id": "D16",
+      "date": "2026-10-13",
+      "decision": "By author instruction, remove the former Figure 7 (face_identifier_operation_link) and its directly dependent introductory paragraph from the manuscript. Preserve Figure 6, all other prose including the existing face re-extraction explanation, scientific results, citations, and source image assets. Subsequent figure numbers and references are regenerated by LaTeX.",
+      "verification": "Successful latexmk compilation produced a 25-page PDF. The removed label and references are absent from main.tex and main.aux; Figure 6 remains Figure 6 on page 13, and the rivet-removal and surface-feature examples are now Figures 7 and 8 on pages 18 and 19. No undefined-reference warnings. Pages 13 and 14 visually reviewed after deletion, and the adjacent unchanged prose read for continuity. JSON parsed and git diff --check passed. No scientific numbers, citations, other prose, image assets, or Python execution changed. This is a local deletion check, not a whole-manuscript release audit."
+    },
+    {
+      "id": "D17",
+      "date": "2026-10-13",
+      "decision": "By author instruction, update the current Figure 7 directly in the manuscript using the author-supplied Airbus complete-aircraft screenshot and rivet close-up, placed side by side with original pixels preserved. Replace the previous Model 109/G280 rivet comparison panel, and revise the adjacent prose and caption to describe pre-removal geometry only. This is the first component of the planned three-aircraft comparison excluding G280; post-removal images and the other two aircraft remain pending. Do not describe the present Figure 7 as a completed before/after comparison or use its close-up as proof of removal success.",
+      "verification": "Successful latexmk compilation and visual review of Figure 7 on page 18 at 145 dpi. The complete-aircraft screenshot and supplied three-rivet close-up are side by side without overlap, and the close-up copy has identical SHA-256 to the user source. The exact caption and adjacent paragraph were manually checked for before/after distinction, evidence scope, terminology, repetition, and unchanged citation coverage; registered-phrase scan and git diff --check run. No quantitative results or geometric assets changed. The viewer was launched earlier for a detail request, but no Python image-processing or audit script was run. The planned three-aircraft removal comparison remains incomplete."
+    },
+    {
+      "id": "D18",
+      "date": "2026-10-13",
+      "decision": "By author instruction, add the supplied post-rivet Airbus screenshot to Figure 7 and label this aircraft example (a). Use three columns: original overview, pre-removal rivet close-up, and post-rivet overview. Preserve source pixels, use equal 55 mm widths for both complete-aircraft views, and disclose differing camera angles. Labels (b) and (c) are reserved for future aircraft examples, but no placeholder images are inserted. Update the caption and adjacent prose from a pre-removal illustration to a bounded rivet-stage comparison. The complete three-aircraft figure remains in progress.",
+      "verification": "Successful latexmk compilation; Figure 7 remains on page 18 and was visually reviewed at 145 dpi. The (a) label applies to the Airbus example rather than the processing stages; before and after overview widths are equal and all three panels and headings are visible without overlap. The new screenshot was copied byte-for-byte and SHA-256 verified. Exact caption and adjacent prose manually checked against current contract, source screenshots, terminology, repetition, citation preservation, and inference limits; registered-phrase check and git diff --check run. No numerical results, citations, geometry, or source image pixels changed; no Python executed. Examples (b) and (c) remain pending."
+    },
+    {
+      "id": "D19",
+      "date": "2026-10-13",
+      "decision": "By author instruction, replace the three-column Airbus comparison with two rows under model label (a): before removal above, after removal below. Each row pairs an 85 mm complete-aircraft view with the corresponding author-supplied local screenshot in an equal 48-by-38 mm frame. Preserve image aspect ratios and original pixels; do not use the pre-removal close-up as the post-removal close-up. Update caption and adjacent prose accordingly, retaining the camera-angle and operation-completeness qualifications. Aircraft examples (b) and (c) remain pending.",
+      "verification": "Successful latexmk compilation and visual review of Figure 7 on PDF page 19 at 140 dpi. The two rows contain four distinct source screenshots; model label (a), stage labels, and local-view labels are visible without overlap. Overview widths and inset frame dimensions match between rows, and keepaspectratio preserves the differently shaped close-ups using whitespace rather than distortion. The new close-up SHA-256 matches the user source. Exact caption and adjacent prose manually checked for evidence boundaries, terminology, repetition, British spelling, and unchanged citation coverage; registered-phrase scan and git diff --check run. No numerical results, citations, geometry, or source image pixels changed; no Python executed. The requested Airbus pair is complete; the full three-aircraft Figure 7 remains in progress."
     }
   ],
+  "figure_asset_updates": [
+    {
+      "date": "2026-10-13",
+      "figure": "fig:e2_rivet_examples (a)",
+      "asset": "figures/fig7_airbus_after_rivets_closeup.png",
+      "source": "C:/Users/25117/AppData/Local/Temp/codex-clipboard-1d065237-71c3-459d-bb96-5a5f1b75f913.png",
+      "sha256": "5FC7C419EA86E636048D3B2C74CFC271E79DC5068E74034B3FC49A8475D09F64",
+      "decision": "By author instruction, replace only the Airbus post-rivet local screenshot with this newly supplied image. Preserve original pixels, aspect ratio, equal inset frames, two-row layout, all other images, and unchanged caption and adjacent prose. This supersedes the post-rivet close-up source used in D19, not its layout.",
+      "verification": "Byte-for-byte source hash match, successful latexmk compilation, and visual inspection of Figure 7 on PDF page 19 at 140 dpi. No label or frame overlap; local image fitted without stretching. Existing camera-angle and operation-completeness qualifications retained. Exact local face correspondence remains unverified. No Python executed, no numbers, citations, geometry, or prose changed. This is a bounded image replacement, not a full manuscript release audit; I2 and I3 remain open."
+    }
+  ],
+  "figure_before_overview_update": {
+    "date": "2026-10-13",
+    "figure": "fig:e2_rivet_examples (a)",
+    "asset": "figures/fig7_airbus_before_rivets_overview.png",
+    "source": "C:/Users/25117/AppData/Local/Temp/codex-clipboard-0fdabf92-dd03-4337-8b0b-e6303570fb07.png",
+    "sha256": "E4C1361B691A941BADDC0B5A70530CF990C4D176F4CE220AC8EE14B626A39945",
+    "decision": "By author instruction, use the newly supplied whole-aircraft screenshot as the before-rivet-removal overview for Airbus (a). Preserve its source pixels and red boxes, 85 mm display width, both local views, post-rivet overview, current two-row layout, and unchanged prose and caption. This supersedes the before-overview source used in D19.",
+    "verification": "Source and copied asset SHA-256 match; successful latexmk compilation and visual inspection of Figure 7 on PDF page 19 at 140 dpi confirmed the new overview and two red boxes are visible without label overlap. Other panels and current lower-inset stretching remain unchanged. Caption and adjacent prose retain differing-camera-angle and operation-completeness boundaries. No numbers, citations, geometry, prose, or Python execution changed; exact local face correspondence remains unverified. This is a bounded asset replacement, not a full manuscript release audit."
+  },
+  "figure_display_overrides": [
+    {
+      "date": "2026-10-13",
+      "figure": "fig:e2_rivet_examples (a)",
+      "panel": "Post-rivet local view",
+      "decision": "By explicit author instruction, stretch only the post-rivet close-up to 48 by 38 mm to fill the black frame, overriding the aspect-ratio preservation decision for this panel. Preserve the source PNG and every other panel. This is nonuniform display scaling, not a metrically faithful geometry view.",
+      "verification": "Successful latexmk compilation and visual inspection of PDF page 19 at 140 dpi confirmed the lower local view fills the frame without white bands or label overlap. Source PNG unchanged; all other panels, caption, prose, numbers, and citations preserved. No Python executed. This local display check does not resolve I2 or I3."
+    },
+    {
+      "date": "2026-10-13",
+      "figure": "fig:e2_rivet_examples (a)",
+      "panel": "Before-rivet complete-aircraft view",
+      "decision": "By author instruction, slightly enlarge only the before-rivet overview from 85 to 92 mm width, preserving aspect ratio and its TikZ centre. The after-rivet overview stays 85 mm wide and both local views stay unchanged. This overrides the equal overview widths for this panel.",
+      "verification": "Successful latexmk compilation and inspection of PDF page 19 at 140 dpi confirmed the enlarged overview has no overlap with its title, the local inset, or the next row. Source images, prose, caption, results, and citations unchanged; no Python executed. This is a local layout check, not whole-manuscript release certification."
+    }
+  ],
+  "figure6_display_update": {
+    "date": "2026-10-13",
+    "decision": "Author clarified that equal sizing refers to the left side view and right oblique top view in each stage, not just the two top views. Supersede the previous 90/43 mm layout: all three side views and both top views now use 60 mm width, with original aspect ratios and existing whitespace crops preserved. Keep both local-view frames 23 by 23 mm and adjust stage spacing, arrows, and source-region marker. Original pixels, caption, prose, and all other figures unchanged.",
+    "verification": "Latexmk retry completed successfully after an initial transient compile failure; latest Figure 6 on PDF page 13 inspected at 140 dpi. Both main-view columns use equal 60 mm widths, all three left views align, and labels, operation arrows, and local-view callouts do not overlap. Different camera angles and aspect ratios still produce different heights and projected aircraft shapes; this is equal display width, not registered camera scale. Original screenshot edge clipping, low-resolution post-rivet inset, and unverified exact local correspondence remain. No Python executed; no claims, scientific numbers, citations, or geometric assets changed. This is a local layout check, not a manuscript release audit."
+  },
+  "figure6_source_replacement": {
+    "date": "2026-10-13",
+    "decision": "By author instruction, replace only the two top views and corresponding local views in Figure 6 using four supplied screenshots in order: original overview, original detail, post-rivet overview, post-rivet detail. Retain all three side views, 60 mm main-view widths, 23-by-23 mm inset frames, stage positions and operations, caption, and prose. Preserve source pixels; remove only outer whitespace and screenshot border through LaTeX cropping. Adjust callout coordinates for the replacement views. This supersedes the old screenshot and low-resolution crop used in D14 and the preceding Figure 6 display record; exact face correspondence is still unverified.",
+    "source_hashes": {
+      "figures/fig6_g280_before_top.png": "3F144A39F718BACDE8061A9ACCACEAAE9C8FE59668FD2F8AEBC6789792EB1CFF",
+      "figures/fig6_g280_before_rivets_detail.png": "5AEFD2BECA06AC7EDC0DD0671F1305C6288CC5E53B9050828CA4D4D6AAD12AF5",
+      "figures/fig6_g280_after_rivets_top.png": "0CCE512DD6C86647EB22F398C9126939BDA8EDED1C6755291E2A436E818F1745",
+      "figures/fig6_g280_after_rivets_detail.png": "B22A64673C4ABEA936B78C3F7942565DB4B5688DAC1EE4E11D045C09C56B3027"
+    },
+    "source_clipboards_in_order": [
+      "codex-clipboard-ebe66671-9921-4c53-8bb5-09037ad73e29.png",
+      "codex-clipboard-19a87cb8-a119-4310-ba6c-c8dfa7f981db.png",
+      "codex-clipboard-61797055-05b1-4b78-be83-9c3fb087b80e.png",
+      "codex-clipboard-cfe9dd62-51d9-44f1-b32f-d9feb58ed538.png"
+    ],
+    "verification": "All four copied assets match author-supplied SHA-256 values. Successful latexmk compilation and latest PDF page 13 reviewed at 140 dpi: new top views and independent details visible, no label overlap, aircraft noses and wingtips retained, screenshot border removed. Left-side image hashes unchanged; Figure 4 uses its existing close-up, not the new asset. Caption and prose unchanged, including differing-camera-angle and evidence-limit qualifications. No Python executed, geometry, quantitative results, or citations changed. Local details are illustrative and differ in viewing angle; no exact correspondence or complete-removal validation inferred. This is a bounded figure replacement, not a whole-manuscript release audit."
+  },
+  "figure6_callout_correction": {
+    "date": "2026-10-13",
+    "decision": "By author correction, move the post-rivet black source-region box closer to the engine inlet on the wing trailing edge, approximately matching the anatomical region highlighted in red in the original view. Change only the box and callout start coordinates; keep images, dimensions, layout, caption, and prose unchanged. Differing camera angles mean exact face registration remains unverified.",
+    "verification": "After transient auxiliary/PDF compile failures, the final latexmk check exited successfully and the complete PDF page 13 was visually inspected at 160 dpi. The box now encloses the trailing edge next to the engine inlet, with the line leading to the supplied post-rivet detail. No image pixels or geometry changed; no Python executed. This verifies the requested illustrative marker placement, not removal completeness or exact face correspondence."
+  },
+  "figure6_centered_transitions": {
+    "date": "2026-10-13",
+    "decision": "By author instruction, place both operation labels and downward transition arrows on the figure's horizontal centreline (x=4.5 mm), with the label above its arrow. Align stage headings on the same centreline. Increase inter-row spacing by shifting stage B and all its images/callouts down 12 mm, and stage C down 24 mm. Preserve image widths, inset frames, source-region correspondence, source pixels, operations, caption, and prose.",
+    "verification": "Successful latexmk compilation. Final PDF page 13 inspected at 160 dpi and following page 14 checked at 140 dpi: labels and arrows are centred without touching, wider row gaps visible, all panels and captions retained without overlap. Arrows use offsets from label node boundaries to preserve whitespace. Figure 6 remains page 13. Source images and scientific claims unchanged, no Python executed; this is a local layout check, not manuscript release certification."
+  },
+  "figure7_y20_addition": {
+    "date": "2026-10-13",
+    "checked_candidate_sha256": "7B33B30F0D9F4BE3001BEB48616B3BD7A0B86D7FE4D7B857BC4377B96D636F17",
+    "decision": "By author instruction, add four supplied Xian Y-20 screenshots as case (b) on a continued Figure 7 page, keeping Airbus (a) intact. Use two rows (before processing above, after processing below), equal 85 mm overview widths and 48-by-38 mm local-view frames, with source pixels and aspect ratios preserved. Do not add the author-rejected sentence about annotation-driven processing and four residual candidates to the manuscript. Use processing-stage labels without a complete-removal claim; identify case (b) as an additional geometric illustration outside the nine-aircraft quantitative comparison. Case (c) remains pending.",
+    "provenance": "Underlying Y-20 output was generated with the C++ remover from 48 annotated rivet faces, not new GNN predictions. Operation log records 357 to 313 faces and four residual candidates; preserve this source provenance internally without promoting the screenshots to recognition-performance or complete-removal evidence. Quantitative tables and formal test scope remain unchanged.",
+    "source_hashes": {
+      "figures/fig7_xian_y20_before_overview.png": "FD0BFDF4F124890C51E10E9E7605C7446B619A1D490D0ABDE3CD423E939743C4",
+      "figures/fig7_xian_y20_before_closeup.png": "97A2B285E897235DBBA6BECB3F894176D00A57440455B5F5D8037106D807803D",
+      "figures/fig7_xian_y20_after_overview.png": "9BCA3A702FAB00B589B9668F6EC370BF60B92487592936EB54A4DF33D6D9217A",
+      "figures/fig7_xian_y20_after_closeup.png": "3B00963951C0EE615CA6C420A7E447F28C7B00294FCA3BDBE774E99BBD90A34F"
+    },
+    "verification": "Successful latexmk compilation produced 27 pages. Exact revised paragraph and new caption manually checked against current scope, terminology, source evidence, prose flow, citation preservation, and author instruction; no citations or numerical results changed. Figure 7(a) remains page 19 and Figure 7(b) shares number 7 on page 20 using ContinuedFloat; Figure 8 is page 21. Pages 18-21 visually reviewed at 120 dpi, with the final Airbus page re-rendered after setting both cases to dedicated figure pages to avoid top-edge clipping. No panel or label overlap; all four new asset hashes match source screenshots and original Airbus assets remain unchanged. Lower Y-20 local view retains side whitespace to preserve aspect ratio. No Python executed for manuscript edits or checks. I2/I3 remain open; this is not a full release audit."
+  },
+  "y20_independent_figure_number": {
+    "date": "2026-10-13",
+    "decision": "By author instruction, make the former second Figure 7 an independent Figure 8. Remove ContinuedFloat and the caption's continued qualifier. Preserve case label (b), all images, layout, caption meaning, and label fig:e2_rivet_y20. This supersedes the continued-figure numbering in figure7_y20_addition. Later figure numbers and all automatic references advance normally.",
+    "verification": "Final latexmk check succeeded after a transient build failure. Figure 8 on PDF page 20 visually inspected at 120 dpi; Figure 7 remains page 19 and the surface-feature comparison is now Figure 9 on page 21. Automatic reference label values checked, no undefined-reference warnings in the final log, and git diff --check passed. No scientific numbers, source images, citations, geometry, or substantive claims changed; no Python executed. This is a local numbering check, not full release certification."
+  },
+  "framed_image_fill": {
+    "date": "2026-10-13",
+    "decision": "By explicit author request, make all framed screenshot insets fill their black frames, overriding prior aspect-ratio-preserving display choices. Figures 6, 7, and 8 use their existing fixed width and height without keepaspectratio. Figure 1 removes the 1.2 pt fbox inner padding and expands each inset's display width and height by 2.4 pt to preserve the original outer frame dimensions. Overview images, stage spacing, callouts, headings, captions, numbers, and source PNG files remain unchanged.",
+    "verification": "Successful latexmk compilation; final PDF pages 2, 13, 19, and 20 inspected at 120 dpi. Letterbox bands and fbox padding removed, frames filled and headings/callouts remain clear without overlap. Source images were not edited or resampled; nonuniform display scaling can alter visual proportions and must not be interpreted as metrically faithful geometry. No Python executed and no scientific claims or references changed. This is a bounded layout check, not whole-manuscript release certification."
+  },
+  "figure9_dc10_window_comparison": {
+    "date": "2026-10-13",
+    "checked_candidate_sha256": "555390DD8064AC1C430A2DC84F2A06851C0B82EAE1397769D95086D843A1BCEA",
+    "decision": "By author instruction, replace the old multi-model surface-feature gallery in Figure 9 with the two supplied DC-10 screenshots. Use an upper before-processing view and lower after-processing view, both 150 mm wide. Crop only outer whitespace and the screenshot border through LaTeX, preserving aircraft pixels, aspect ratios, genuine window outlines, and all other visible boundaries. Update the caption from a predicted-face multi-model gallery to a highlighted-window DC-10 processing comparison, and synchronise the adjacent figure callout. Retain the existing label fig:e2_window_examples and all quantitative results.",
+    "source_hashes": {
+      "figures/fig9_dc10_windows_before.png": "7DF2E2272B51A671C165AE550A987AA0CEAD80D761207A16F7C361686E98C8E1",
+      "figures/fig9_dc10_windows_after.png": "246CF3B8258DB2EE0B1DDDA166B5DD21619EABF0B8ECE35ABF57656F6637C8B6"
+    },
+    "verification": "Successful latexmk compilation produced 26 pages. Figure 9 remains on page 21 and Figure 10 on page 22; both pages visually inspected at 140 dpi. Aircraft display widths match to approximately 0.01 mm after whitespace cropping; noses, tailplanes, engines, and remaining window/door boundaries retained without overlap or distortion. Both copied image hashes match author sources. Exact new caption and revised callout checked manually for reader function, terminology, claim scope, source support, repetition, and unchanged citations; registered discouraged-phrase scan has no findings. The comparison does not assert complete removal or geometric validation. Old source gallery retained as unreferenced historical material. No Python executed, geometry or numerical results changed. I2/I3 remain open; this is a local figure revision, not whole-manuscript release certification."
+  },
+  "figure10_cessna_window_comparison": {
+    "date": "2026-10-13",
+    "checked_candidate_sha256": "8496B5EB7DADA03BA410C1F41A02533F0D3450A1F3DFCA84939DFAEC457153D9",
+    "decision": "By author instruction, add the supplied Cessna Citation 2 screenshots as independent Figure 10 immediately after the DC-10 window comparison. Use before processing above and after processing below, both 150 mm wide with a 10 mm row gap. Crop only top and bottom exterior whitespace through LaTeX; preserve original pixels, aspect ratios and genuine model boundaries. Update the adjacent automatic figure references; the former mesh comparison becomes Figure 11 without changing its content. No complete-removal or geometric-validation claim is added.",
+    "source_hashes": {
+      "figures/fig10_cessna_windows_before.png": "71D0B2A11F0AC7F377951146AC9E31D4E8B6FD7F6BBD334356C80C67C433400F",
+      "figures/fig10_cessna_windows_after.png": "48E0C2CB04BD130EA1275DA1D11564A34B80221A26A0DE64B5356D2C39C3E1E8"
+    },
+    "verification": "Latexmk succeeded; final PDF has 27 pages. Automatic labels confirm Figure 9 on page 21, Figure 10 on page 22 and Figure 11 on page 23. Pages 22 and 23 visually reviewed at 140 dpi: equal-width overview panels, full aircraft extents, clear stage headings, caption and downstream mesh figure without overlap or distortion. Source hashes match copied images. Exact revised paragraph and new caption manually checked for function, evidence scope, terminology, citation preservation, repetition and adjacent prose flow; registered discouraged and prohibited phrase scan has no findings. No Python executed and no quantitative data or geometry changed. Existing classifier-table overfull warning at lines 579-587 is unrelated and unchanged. I2/I3 remain open; checks cover this local figure addition, not whole-manuscript release certification."
+  },
+  "figure11_109_decal_comparison": {
+    "date": "2026-10-13",
+    "checked_candidate_sha256": "FAE8E7EEF95225906CC824A5087A60D3A597FFF43D4A142CC32980B92A0A518C",
+    "decision": "By author instruction, add the two supplied 109 standard E-1 screenshots as independent Figure 11 after the Cessna comparison. Use an upper before-processing panel and lower after-processing panel, both 150 mm wide, with source aspect ratios preserved and a 10 mm row gap. Crop only exterior top whitespace in LaTeX. Describe the highlighted star-shaped decal and its absence in the processed view, not operation-level completeness or geometric validation. Synchronise the adjacent callout; the existing mesh illustration becomes Figure 12 without content changes.",
+    "source_hashes": {
+      "figures/fig11_109_decal_before.png": "3215CEACA2B29F03FD0F4CC68AF19368553A6F0B1E8908F681D63BFF6FBDA6A1",
+      "figures/fig11_109_decal_after.png": "2C95A8B8457F1BB659E04C339B999418864371A9FA9DDEFE1540DD7300537924"
+    },
+    "verification": "Latexmk succeeded and produced 28 pages. Automatic labels confirm Figure 11 on page 23 and Figure 12 on page 24. Both pages visually reviewed at 140 dpi: whole-aircraft panels have matching display widths, headings and captions are clear, and no new clipping or overlap is introduced. Source hashes match copied assets; source pixels and actual face boundaries remain unchanged. The 623-by-340-pixel processed screenshot has visibly lower resolution at the requested display scale; no fabricated details or AI enhancement were applied. Exact revised paragraph and caption manually checked against source screenshots, locked scope, terminology, prose flow, citation preservation and inference limits; registered phrase scan has no findings. No Python executed and no numerical results or geometry changed. The pre-existing classifier-table overfull warning remains unrelated. I2/I3 remain open; this is a bounded figure addition, not whole-manuscript release certification."
+  },
+  "figure_label_regular_weight": {
+    "date": "2026-10-13",
+    "decision": "By author instruction, change model, processing-stage and local-view labels in the five Figure 7-11 layout snippets from bfseries to mdseries. Retain sffamily, small size, all wording, image paths, crop settings, dimensions and positions. No prose, captions, source images or quantitative results changed.",
+    "verification": "Exact before/after text comparison confirms only font-weight commands changed in five snippets. A separate five-page preview compiled successfully and all five pages were visually inspected, with the final page re-rendered at 100 dpi. No bold commands remain in these snippets; no new overlap or clipping. Main manuscript source hash 74C1A2F42256B45B9F28D8530EAB33895CE0360DE0D9B6E1965F76F4FD476022 remained unchanged during this edit. The current main.tex is an older manuscript variant that does not include these five snippets and still references legacy figure assets; its build failed and produced a 23-page output with undefined references. Integration into the paper PDF is therefore pending author direction on the active manuscript version. Do not restore the earlier 28-page variant or claim full-paper completion without authority. No Python executed. Existing I2/I3 remain open.",
+    "preview": "work/figure_labels_regular_preview.pdf"
+  },
+  "restore_figure11_28page_manuscript": {
+    "date": "2026-10-13",
+    "decision": "Author explicitly authorised restoration of the preceding 28-page manuscript containing Figure 11 and integration of the ordinary-weight labels. Restore only main.tex from the verified editor-history snapshot TR8x.tex saved at 14:41:02. Preserve the five current Figure 7-11 mdseries snippet changes, all other working files and existing uncommitted modifications. This resolves and supersedes the integration-pending status recorded in figure_label_regular_weight without deleting that historical diagnostic.",
+    "source_snapshot": "C:/Users/25117/AppData/Roaming/Code/User/History/-353fe0ed/TR8x.tex",
+    "checked_hashes": {
+      "main.tex": "0B926485074D6F5704E926F2F88DF2CD052A8C01079A541C3C206BCF40CDF7D5",
+      "main.pdf": "39E496DFDD500797990C8C2B7F21647BC864B5402A19241BE616331583E17CE7"
+    },
+    "backup_directory": "work/restore_28page_20261013",
+    "verification": "Restored main.tex has exactly the same SHA-256 as the historical source snapshot. The Figure 11 paragraph/caption candidate matches its prior checked hash FAE8E7EEF95225906CC824A5087A60D3A597FFF43D4A142CC32980B92A0A518C. Thirty-six source references were checked with no missing files. Latexmk succeeded and PDFinfo confirms 28 pages. Figures 7-11 remain on pages 19-23, and Figure 12 remains page 24; all six pages visually reviewed at 100 dpi, with Figure 11 re-rendered at 140 dpi. Ordinary-weight model, stage and local-view labels are integrated without changes to wording, fonts, sizes, source images, crops or positions. No undefined-reference or duplicate-label warnings in the final log. The existing classifier-table overfull warning and low-resolution 109 processed screenshot remain unchanged. Git diff --check passed. No Git reset, staging, commit or Python execution; existing old-source and PDF backups retained. This is a version restoration and local font/layout check, not whole-manuscript submission certification; I2/I3 remain open."
+  },
+  "figure34_table46_layout_corrections": {
+    "date": "2026-10-13",
+    "decision": "By author instruction, label all five graph nodes v_1 through v_5 and all six adjacencies e_12, e_23, e_34, e_45, e_15 and e_24 in Figure 3, preserving positions, colours and graph topology. In Figure 4, derive the three blue message arrows and black adjacency lines from the same named node coordinates; shorten arrow endpoints only to avoid covering node circles. Remove the Section 4.3.1 line from the final graph card, preserving class-specific GNNs and body references. Set Table 4 to linewidth using tabular*, 4 pt tabcolsep and wrapped long headings without scaling text or changing data. Make Table 6 Model span both header rows with multirow and a -0.5 ex correction for booktabs rule spacing. Add only the required multirow package.",
+    "checked_hashes": {
+      "main.tex": "733DF475808652074B23249574740C48A42CAAF81739B6A39F2D0EC5BAEDF977",
+      "main.pdf": "F8B998E7ADFCF66CA00D081A732915B71B4E3730A1D91AF742619D5779774636"
+    },
+    "verification": "Final latexmk retry succeeded after a transient auxiliary/PDF build failure. PDF remains 28 pages; Figure 3 is page 7, Figure 4 page 9, Table 4 page 16 and Table 6 page 17. All four pages visually reviewed at 140 dpi; final Table 6 offset additionally reviewed at 120 dpi. Node/edge identifiers are readable and consistent with existing notation, blue arrows lie on black edge centre-lines, the graph-only section label is absent, Table 4 rules align with text margins, and Model is vertically centred across the two-tier header. The previous 58.8011 pt table overfull warning is absent, with no undefined or duplicate references in the final log. Exact comparison with the restored snapshot confirms all 26 caption lines and nine table bodies are unchanged; the comparison excludes commented preamble examples of rule commands. No numerical results, citations, image sources or graph relationships changed. Git diff --check passed; no Python executed. This is a local visual/notation revision, not submission certification; I2/I3 remain open."
+  },
+  "figure5_detailed_architecture_redesign": {
+    "date": "2026-10-13",
+    "decision": "By author request, redraw Figure 5 as a detailed native TikZ architecture diagram, informed by the modular presentation of GNN architectures in Nature Machine Intelligence (2025, DOI 10.1038/s42256-025-01087-7) and Nature Communications (2026, DOI 10.1038/s41467-025-67802-5). Borrow only presentation principles, not KAN, attention, conservation constraints or published image assets. Use v5 instead of v4; retain the prior file. Show shared graph inputs, independent branch encoders, four NNConv layers, mean/max pooling, local/global concatenation, adapters, sigmoid heads and threshold fusion. Expand an edge-conditioned convolution unit with residual connections only in layers 2-4. Preserve the B-spline source image and existing branch colours. Update the caption and use a dedicated float page; keep the decision explanation and equation together with samepage.",
+    "implementation_evidence": {
+      "source": "python/train_rivet_gcn.py: RivetGNN and DualHeadRivetGNN",
+      "checkpoint": "model/final_detection_model/rivet_gnn_train17_rebuilt_20260921_50ep.pth",
+      "paired_statistics": "model/final_detection_model/rivet_gnn_train17_rebuilt_20260921_50ep_stats.npz",
+      "verified_parameters": "Four layers, hidden width 64, node input 48, edge input 6, local/global concatenation 192, adapter width 96, rivet threshold 0.90, surface threshold 0.50. Formal checkpoint key names confirm two node/edge encoders, fourth convolution layers, adapters and independent classifiers. Checkpoint and statistics ZIP contents were inspected read-only without executing pickle or Python."
+    },
+    "checked_hashes": {
+      "main.tex": "679B9C125985F5B45BC64A5320224C3D9EB95743A4AA9EEC2C4B2192D9A2E8C8",
+      "main.pdf": "9F6D53A8DC8CF4934C1AC0B8B19DC9F2A7404FDD0C99063574EDC9B317D665D9",
+      "figures/fig_class_specific_gnn_architecture_v5.tex": "E1BE6CB156E50D266794E067FFAD2539E8495B1A90B81BDD113457E4AAC1582B",
+      "caption_candidate": "72C125E4AE77C3C5679B4BA02DD48A0412DBDD98A191D566B11D95DBBA18979D"
+    },
+    "verification": "Latexmk succeeded; final PDF has 29 pages and Figure 5 remains on page 11. Final pages 11 and 12 visually inspected at 140 dpi: no overlapping blocks, crossed fusion routes, clipping or dangling decision-sentence fragment. No overfull, undefined-reference or duplicate-label warnings in the final log; minor mathematical font substitutions remain. Exact structural comparison with the restored 28-page snapshot confirms nine table bodies, twenty other active caption lines and citation-command sequences unchanged. Caption checked against code, formal checkpoint, paired statistics and manuscript notation; discouraged/prohibited phrase scan has no findings. No scientific results, geometry, citation bibliography or source raster pixels changed in this task; no Python executed. Git diff --check passed. This is a local architecture-figure revision, not whole-manuscript submission certification; release remains WORKING and I2/I3 remain open."
+  },
+  "figure5_cosmetic_refinement": {
+    "date": "2026-10-13",
+    "decision": "By author request, lightly refine the v5 diagram's appearance only: muted blue/orange branch colours, dark slate text and arrows, pale branch header strips, small panel-title accents, consistent rounded corners and border weights, and subtle convolution-module fills. Retain regular-weight labels, all wording, equations, parameters, node coordinates, flow routes, source image, caption and manuscript source. No network structure or scientific interpretation changes.",
+    "checked_hashes": {
+      "main.tex": "679B9C125985F5B45BC64A5320224C3D9EB95743A4AA9EEC2C4B2192D9A2E8C8",
+      "main.pdf": "6C50DA61FD26BCD66BA9D8B48906889CC06C5ED65255706236281075A198DBD6",
+      "figures/fig_class_specific_gnn_architecture_v5.tex": "119A88361D546B990649480820AC26F15D22D9C0D4679839406C1A269AD278D0"
+    },
+    "verification": "Latexmk succeeded. PDF remains 29 pages with Figure 5 on page 11. Latest page 11 rendered at 140 dpi and visually reviewed for legibility, alignment, line routing, clipping and overlap. Thirty node-text blocks and twenty flow paths match the pre-edit source exactly; manual source diff confirms all other changes are decorative styles only. Main source and B-spline image hashes remain unchanged. No overfull, undefined-reference or duplicate-label warnings in final log; minor mathematical font substitutions remain. Git diff --check and JSON parsing passed. Scope covered the requested local visual refinement and companion records; no Python executed and no scientific evidence, numbers or citations changed. This is not a full-paper release check; WORKING and open I2/I3 are retained.",
+    "preview": "work/figure5_cosmetic-11.png"
+  },
+  "figure5_reference_style_refinement": {
+    "date": "2026-10-13",
+    "decision": "By author request, adopt the visual language of the supplied reference image rather than only recolouring boxes. Create a native TikZ v6 with the reference's muted yellow, lavender, sage, rose and grey palette, schematic shallow-3D feature bars, miniature neighbourhood-message diagrams, local/mean/max feature groups, miniature adapter/head networks, a schematic edge-conditioned weight matrix, and dashed section frames. Retain blue/orange branch and score identities and ordinary-weight text. Preserve all actual architecture, dimensions, thresholds, first-layer/no-skip distinction and residual layers 2-4. Mark feature blocks and miniature networks as schematic; their bar, cell and node counts do not represent tensor dimensions, topology counts or measured activations. Switch only the Figure 5 input path in main.tex to v6; keep v5 as the earlier style version. No reference-model algorithms or assets are imported.",
+    "checked_hashes": {
+      "main.tex": "C396C422A371F41D0C37EA3DF9AFD9C2AE189D17E93083A6542023B320F74EFE",
+      "main.pdf": "96C3BD489D97467FB957B72C4DD5792FEF315213DA0097792C45BF41F6415D45",
+      "figures/fig_class_specific_gnn_architecture_v6.tex": "12FE0F6AF86D196F692499CE20F17AE9315222E5ADAE3E233D07C7CE1991C6BC"
+    },
+    "verification": "Latexmk retry succeeded after a transient build failure. Final PDF remains 29 pages, with Figure 5 on page 11. Latest pages 11 and 12 rendered at 140 dpi and visually reviewed: feature glyphs and message arrows are legible, local subpanels have no clipping or text overlap, score routes are clear, and the decision sentence/equation on the next page remains intact. Normalised source comparison confirms that reverting the v6 input-path string restores main.tex exactly to its pre-edit source: all captions, prose, equations, numerical results and citation commands are unchanged. Original B-spline source hash is unchanged. Figure wording and schematic meaning manually checked against the existing code-grounded v5, current Methods and RivetGNN/DualHeadRivetGNN implementation; registered prohibited/discouraged phrase scan has no findings. No overfull, float-too-large, undefined-reference or duplicate-label warnings in final log; mathematical font-size substitutions remain. Git diff --check and JSON parsing passed. Scope covers the requested visual-language redesign and companion records, not scientific revision or release certification. No Python executed; WORKING and open I2/I3 remain unchanged.",
+    "preview": "work/figure5_reference_verified-11.png"
+  },
+  "figure5_node_feature_semantic_correction": {
+    "date": "2026-10-13",
+    "decision": "Following the author's question about six feature bars versus five graph nodes and explicit approval to edit, replace the two branches' six-bar input glyphs with distinct node-feature and edge-feature matrices labelled X in R^(N x 48) and E in R^(M x 6). Define N as face nodes and M as graph edges; matrix cells are schematic. Replace each five-node neighbourhood star with the same four-node adjacency cycle and F1-F4 identities and colours as the input graph in panel (a). Explicitly state that encoding preserves graph connectivity. Retain the reference-inspired palette, all other modules, NNConv depth/width, dimensions, thresholds, first-layer/no-skip distinction, residual connections and fusion rule. This supersedes the earlier schematic-star choice in figure5_reference_style_refinement without altering the actual model or deleting its provenance.",
+    "checked_hashes": {
+      "main.tex": "C396C422A371F41D0C37EA3DF9AFD9C2AE189D17E93083A6542023B320F74EFE",
+      "main.pdf": "2D2D342D6E47CF9303E1158A26156BB0CE6B9D7B1128A636EC055D1BC8D96E3B",
+      "figures/fig_class_specific_gnn_architecture_v6.tex": "9853A3ECC015DDCF1ABB20F43568C16D34072DE2889E0F94EDE2324C06C8143C"
+    },
+    "verification": "Latexmk ultimately succeeded after transient overlapping-build/auxiliary-file failures. PDF remains 29 pages, with Figure 5 on page 11. Latest page 11 rendered at 160 dpi and visually reviewed: matrix labels, encoder equations, four named nodes and their links are clear without overlap or clipping. Deterministic check confirms four input and four encoding-node definitions, matching face identities and colours, and removal of the obsolete feature-bar helper. Both square-cycle edge sets manually checked as identical. Main.tex and original B-spline image SHA-256 values remain unchanged, so all body prose, captions, equations, results and citations are unchanged. Exact diagram wording/notation manually checked for input-feature versus node-count distinction, actual 48/6 attribute dimensions, preserved architecture and inference limits; registered prohibited/discouraged phrase scan has no findings. Final log has no overfull, float-too-large, undefined-reference or duplicate-label warnings; minor mathematical font-size substitutions remain. JSON parsing and git diff --check passed. Scope covers this local ambiguity correction and its companion records, not full release certification. No Python executed; WORKING and open I2/I3 remain unchanged.",
+    "preview": "work/figure5_node_feature_corrected-11.png"
+  },
+  "figure5_light_simplification": {
+    "date": "2026-10-13",
+    "decision": "By author request, lightly simplify the current v6 diagram without reverting to the earlier two-box architecture. Replace the encoder's decorative matrices and dense formulas with explicit Node: 48D and Edge: 6D chips and Independent weights. Replace pooling feature bars with a Mean + Max chip while retaining local/global concatenation dimensions. Remove the miniature adapter/head network, retaining 192-to-96, Linear 96-to-1 and sigmoid. Replace the edge-weight matrix grid with an Edge-conditioned weights block and its conditioning arrow. Keep all three matching F1-F4 graphs, two independent branches, four NNConv layers, hidden width 64, convolution-unit operations, first-layer/no-skip distinction, residual layers 2-4, thresholds and rivet-precedence fusion. Retain the muted palette and dashed section frames. This supersedes the matrix-display choice in figure5_node_feature_semantic_correction but preserves its node-identity/connectivity correction.",
+    "checked_hashes": {
+      "main.tex": "C396C422A371F41D0C37EA3DF9AFD9C2AE189D17E93083A6542023B320F74EFE",
+      "main.pdf": "96E884D766E3C776AB787F4AF03147A14DCF59B72893D895A3A4B8BFBED4EB16",
+      "figures/fig_class_specific_gnn_architecture_v6.tex": "C5A3EB116836F383824BC7BF9BC37D1980C73B7A7542635FB535FCD28C539B77"
+    },
+    "verification": "Latexmk succeeded. Final PDF remains 29 pages and Figure 5 remains on page 11. Latest page 11 rendered at 150 dpi and visually checked: the simplified chips, node identities, flow routes and convolution-unit details have no clipping or overlap. Exact main.tex hash remains unchanged, so no body prose, captions, equations, quantitative results or citations changed. Diagram inspected against the prior code-grounded structure: only visual encoding and local labels are simplified, not model operations or inference rules; matching four-node colour/identity definitions and square-cycle links are retained. Registered prohibited/discouraged phrase scan has no findings. Final log has no overfull, float-too-large, undefined-reference or duplicate-label warnings; minor mathematical font substitutions remain. JSON parsing and git diff --check passed. Scope covers the requested light diagram simplification and companion records only; no Python executed and no whole-paper release certification. WORKING and open I2/I3 remain unchanged.",
+    "preview": "work/figure5_light_simplified-11.png"
+  },
+  "architecture_description_clarification": {
+    "date": "2026-10-13",
+    "scope": "Author-approved clarification of Sections 4.3.1-4.3.2 and corresponding Figure 5 wording, with no implementation or experiment changes.",
+    "decision": "Separate Class-specific network architecture from Binary training objectives and fixed decision rule. Identify two parameter-disjoint GNN branches sharing only graph input and attributes. Explain the complete encoder-to-NNConv-to-pooling-to-adapter-to-scalar-head chain, with 48/6 input widths, hidden width 64, explicit first-layer/no-residual and layers 2-4 residual update, 128-dimensional mean/max global context, 192-dimensional local/global concatenation, adapter 192-to-96 and head 96-to-1. Show adapter composition explicitly in the existing score equation. Specify one-vs-rest target pairs and the averaged two-head weighted binary focal objective. State that the scores are not class-normalised, background has no separate prediction head, and the threshold decision has no trainable parameters. Preserve thresholds 0.90/0.50 and rivet precedence as a preset policy, not a claim of optimal conflict resolution. Explain independent representation/weighting/threshold settings as design motivation rather than guaranteed superiority. Change only Figure 5 panel (d) title to Threshold decision and its caption clause to Fixed threshold-based decision. Preserve the simplified diagram and all experiment results.",
+    "authority": "Current RivetGNN.encode, DualHeadRivetGNN.forward and dual_head_focal_loss/dual_head_decision in python/train_rivet_gcn.py; formal paired statistics rivet_gnn_train17_rebuilt_20260921_50ep_stats.npz; current code-grounded Figure 5 and manuscript contract.",
+    "checked_candidate_sha256": "17C92320F8E9039347F3A100D1B51358C92B6D78EBF614F7FB0E8F5052128429",
+    "checked_hashes": {
+      "main.tex": "66802FC2B2E9657BE24D83CEF6762862E624B279AA612528FDE14C298731006D",
+      "main.pdf": "750A20E36E74FBC96BD64C72CC8C2DE8AD86F02B2C992B028654FE39FC70ADC1",
+      "figures/fig_class_specific_gnn_architecture_v6.tex": "8E18911CFB858CDF47377EB66AB48DFADDC1C979164659B6E8DCCB25525C0AB1"
+    },
+    "verification": "Exact section candidate reviewed for paragraph functions, adjacent-section flow, source fidelity, notation, repetition, natural scholarly syntax, citation support and inference limits. Registered prohibited/discouraged phrase scan has no findings. The diagnostic first occurrence is retained as first-layer indexing rather than a novelty claim; Thus names the input-sharing versus parameter-sharing distinction. Original Simonovsky/Komodakis, Lin and Buda citations retained and checked against primary-source abstracts; Buda is used only for imbalance motivation, not as validation of the selected weights. The CVF focal-loss page was unavailable, so its author arXiv record was checked. Citation-key multiset including occurrence counts is unchanged. Exact normalised-source comparison confirms all content outside Sections 4.3.1-4.3.2 unchanged, including all numerical tables, other figure captions, results, limitations and bibliography commands. Formal stats rechecked read-only via .NET: four layers, width 64 and thresholds 0.90/0.50. Latexmk succeeded, PDF remains 29 pages, and equation labels/numbers 2-5 and Figure 5 numbering remain intact. Final PDF pages 10-13 visually inspected at 120 dpi; page 14 additionally inspected from the earlier build. Pooling explanation and equations are kept together across the full Figure 5 page. No overfull, float-too-large, undefined-reference or duplicate-label warnings; mathematical font substitutions and a minor underfull table line remain. JSON parsing and git diff --check passed. No Python, code, model weights, datasets or experiment outputs changed. Scope covers local method-description clarity and figure correspondence, not full-paper release certification; WORKING and open I2/I3 remain unchanged."
+  },
+  "binary_detection_rationale_integration": {
+    "date": "2026-10-13",
+    "scope": "Integrate the author-approved explanation into three existing paragraphs in Sections 4.3.1-4.3.2, without adding duplicate architecture descriptions.",
+    "decision": "Explain two class-specific one-vs-rest tasks as a choice for independently learned neighbourhood representations and separately assigned loss weights and thresholds, not inherent superiority over three-class learning. State that a unified three-class classifier is viable and the existing comparison evaluates implemented alternatives rather than isolating binary decomposition. Distinguish independent target detection from fixed label resolution required by mutually exclusive annotations and the face-level evaluation interface. Explicitly describe neither/one/both-threshold cases, retain rivet precedence and no trainable fusion parameters, and note that applications needing only independent candidate sets could omit label resolution.",
+    "authority": "Author-approved Chinese draft; current independent encoders, binary target pairs and fixed dual_head_decision in python/train_rivet_gcn.py; existing inference thresholds, architecture-comparison scope and manuscript contract.",
+    "checked_candidate_sha256": "BC3A665FAACB096B561B6900808FD08993D34F098DCEE3FC8697431754E07151",
+    "checked_hashes": {
+      "main.tex": "C992B2A30D18562A9258757343DE2A969D4BC224A667D90509D987A6AFAF8F20",
+      "main.pdf": "3041E11632F4D3B2A4E9588186D3BC8191F824909E303DAA03CB90BDE19A0674"
+    },
+    "verification": "Exact revised section reviewed for approved meaning, paragraph functions, adjacent-section flow, independent detection versus exclusive label resolution, source fidelity, natural scholarly syntax, repetition and claim scope. No registered prohibited/discouraged phrase findings. Existing citations remain in unchanged sentences; citation commands and occurrence counts are unchanged. Normalised source comparison confirms all content outside Sections 4.3.1-4.3.2 unchanged, including experimental tables, other captions, results and limitations. Equations and thresholds are unchanged. Latexmk succeeded; PDF remains 29 pages and Figure 5 remains on page 11. Final pages 10-13 rendered at 120 dpi and visually inspected without clipping or overlap. No overfull, undefined-reference or duplicate-label warnings; existing mathematical font substitutions and a minor underfull table line remain. JSON parsing and git diff --check passed. No Python execution, code, weights, data or experiment changes. This is a local explanatory revision, not whole-paper release certification; WORKING and open I2/I3 remain unchanged."
+  },
+  "architecture_comparison_evidence_link": {
+    "date": "2026-10-13",
+    "scope": "Author-requested academic-writing revision linking the design rationale in Section 4.3.1 to the completed unified three-class experiment in Section 6.1.1.",
+    "decision": "Replace the overly defensive rationale with an explicit statement that a unified three-class softmax GNN was trained and its comparison provides empirical support for retaining the dual-branch system under the reported protocol. Rewrite the results interpretation to report both target F1 comparisons and background false-positive counts, then state the supported system choice. Retain a concise boundary: the two systems differ in network structure, loss formulation and decision rules, so the single-seed fixed-test comparison does not isolate binary decomposition as the cause of improvement. This supersedes only the rationale phrasing in binary_detection_rationale_integration, not its independent-detection/fixed-label-resolution explanation or provenance.",
+    "authority": "results/e1_detection/formal_three_class_20261011/protocol.md and manifest.json; its postprocessed/three-class_h64_seed123/metrics/face_level_metrics.csv and summary.json; results/e1_detection/current_test_snapshot/face_level_metrics.csv and summary.json; current independent-encoder, binary-loss and decision implementations in python/train_rivet_gcn.py.",
+    "checked_candidate_sha256": "A4E561106E54C73289D5FBD9A6676C6050F7DE916A9094480D910A2762097499",
+    "checked_hashes": {
+      "main.tex": "63AC46471E0E66840088A71004900B2296AFA879E3F5AE73FEC3842F73E558E8",
+      "main.pdf": "C6F614A6F6B90D0706E533FC8C2EEF1E16DD721B99FFD6A563E0B27105EC711F"
+    },
+    "verification": "Bounded Methods-to-Results integration review completed using the academic-writing skill, computational/AI adapters and active contract/style profile. Paragraph contracts distinguish design motivation, empirical support and attribution limits. Exact candidate reviewed for natural syntax, functional transitions, protected terminology, citation alignment, repetition and adjacent paragraphs. Repeated empirical-support wording is retained as the Methods forward link and Results substantive conclusion; it is not a causal claim. No registered prohibited/discouraged phrase findings. Raw metric values and background confusion sums confirm F1 0.9312/0.8091 versus 0.1312/0.4589 and background false positives 190 versus 4762. Line comparison confirms only main.tex lines 439 and 633 changed; all other prose, table/equation blocks, captions and citation commands/counts remain identical. Abstract and Conclusion inspected for architecture-claim consistency; no stronger comparison claim required propagation. Latexmk succeeded, PDF remains 29 pages, and final pages 10, 17 and 18 rendered at 120 dpi and visually inspected without clipping or overlap. No overfull, undefined-reference or duplicate-label warnings; existing mathematical font substitutions and a minor underfull table line remain. JSON parsing and git diff --check passed. Skill Python audits were not executed under the no-Python constraint; bounded PowerShell/.NET checks and manual review were used instead, not a whole-state audit certification. No implementation, weights, data, experiment settings or results changed. Local requested integration is complete; WORKING and open I2/I3 remain unchanged, and no full-paper release certification is claimed."
+  },
+  "nnconv_body_font_correction": {
+    "date": "2026-10-13",
+    "scope": "Screenshot-requested font-only correction in Section 4.3.1.",
+    "decision": "Remove the sole texttt wrapper around NNConv in body prose so the layer name uses the surrounding ordinary-weight serif font. Retain the mathematical operatorname in the equation and all Figure 5 fonts. No wording, model, evidence, numeric, citation or scientific-meaning changes.",
+    "checked_hashes": {
+      "main.tex": "00D5F408429BB1FCF02883616D982C7170AD1FACFC290E34A45D9F275210F15F",
+      "main.pdf": "06CBF809ED2A64747ECC4CA9486DE53D2562B9C51B19CA19496D6DE291A743AD"
+    },
+    "verification": "Exact source comparison confirms that replacing only the previous texttt{NNConv} wrapper with plain NNConv reproduces the revised main.tex. The unchanged paragraph wording and adjacent context retain terminology, citations, function and meaning; no prose revision or new claim requires propagation. An initial build overlapped the editor's automatic build; after that finished, latexmk returned success and the final log had no overfull, undefined-reference or duplicate-label warnings. PDF remains 29 pages. Final page 10 rendered at 150 dpi and visually checked: NNConv matches the body serif font, without bold or typewriter styling, clipping or overlap. JSON parsing, hash checks and git diff --check passed. Scope covers the requested font-only fix and state record, not full-paper readiness; WORKING and open I2/I3 are unchanged."
+  },
+  "figure6_fixed_camera_rerender": {
+    "date": "2026-10-13",
+    "scope": "Author-requested replacement of manually captured Figure 6 images with reproducible side/top views for all three archived processing stages, followed by cleanup of superseded images.",
+    "decision": "Use the existing visualize_cad_targets.py style and add a noninteractive fixed-camera export mode. Render original 668-face G280, archived 608-face rivet-removed STEP, and archived 277-face window/decal-processed STEP with their paired display labels. All stages share the same orthographic centre, scale, direction and up vector within each column, and both whole-aircraft columns share a horizontal world span. Add the missing third-stage top view. Re-render both 900-by-900 insets at the same world-coordinate wing-edge location, showing original annotated face 506 and the corresponding spatial location after rivet removal. Figure labels use ordinary weight, images retain aspect ratio, and centred process labels/arrows preserve the staged workflow. Update only Figure 6 caption in main.tex to describe matched cameras and spatial insets while retaining nonclaims about removal completeness and geometric validity. This supersedes historical Figure 6 camera/crop/source-image choices in D13-D16 and figure6 display/source/callout records, not the workflow or their provenance.",
+    "authority": "Current original STEP/annotation pair; work/test_removal_pipeline/Gulfstream_G280_v17/Gulfstream_G280_v17_removed.step and after_rivet_render.labels.json; Gulfstream_G280_v17_embedded.step and after_surface_render.labels.json. Final-stage labels are display assignments, not verified semantic truth. Archived embedded.log retains the free-edge increase from 3 to 194; fixed views do not resolve I3.",
+    "camera_manifest": "figures/fig6_g280_fixed_camera_manifest.json",
+    "checked_caption_sha256": "A3373DBA2D7E86FF7A2395E539B5A498567F583F04D2BDE06D63DCE04A8130A4",
+    "render_sizes": {
+      "side": [
+        2400,
+        1100
+      ],
+      "top": [
+        2400,
+        2100
+      ],
+      "detail": [
+        900,
+        900
+      ]
+    },
+    "cleanup": "Seven old fig6_g280 screenshot PNGs had zero references in all active manuscript TeX files. Moved them out of figures into work/figure6_fixed_camera_backup, preserving their bytes and making cleanup recoverable. Source STEP, labels, other figures and existing unrelated working-tree changes were not deleted.",
+    "checked_hashes": {
+      "main.tex": "30581048816A4C61C92032963378B9FBA966A0AAB9547A9D59D4848A0960F7B6",
+      "main.pdf": "709F6101D9701F4F57EA4DEC1CAA36899162037E39390B26531521EBC7F22310",
+      "figures/fig_g280_staged_processing.tex": "258A1B27ED1F9A4FEF32347BCFB83A82F3882988F9390EA87CA5C218A4F69007",
+      "python/visualize_cad_targets.py": "5DDFF160CAA2CC35F157C1DD753B6A9142D0BB3158312D64628043602DFAACD9"
+    },
+    "verification": "Existing CAD renderer successfully generated eight real STEP views, with strict face-ID set alignment at all three stages. Camera records compared numerically: all cross-stage differences below 1e-9; same centre/scale/direction/up, identical aspect ratio per view and equal horizontal world span. PNG dimensions checked via .NET; source STEP/label hashes unchanged after export. Added regression tests for camera order/no fitting and noninteractive export dispatch; Python unittest and academic audit scripts were not executed under the existing restriction on non-renderer Python use. Actual renderer integration and PowerShell/.NET checks were used instead. Corrected loose bounding-box framing, SetAt-before-SetProj ordering and Windows hidden-window border dimensions through camera/window adjustments and re-rendering, not pixel editing. Initial oversized figure corrected before delivery; final latexmk succeeded with Figure 6 on page 14 in a 30-page PDF. Final pages 14-15 visually reviewed at 130 dpi for equal scale, matched angles, unclipped models, paired detail, callouts, ordinary-weight labels and centred transitions. No float-too-large, overfull, undefined-reference or duplicate-label warnings in final log; existing minor font/table warnings remain. Exact source comparison confirms only Figure 6 caption changed in main.tex. Caption checked against active contract, terminology, adjacent staged-processing prose and CAD evidence; no new numbers, citations or validation claims. JSON parsing, hash and git diff checks passed. Scope is the requested Figure 6 replacement, reproducible rendering and recoverable cleanup, not whole-paper release certification; WORKING and open I2/I3 remain unchanged."
+  },
+  "figure6_three_independent_detail_positions": {
+    "date": "2026-10-14",
+    "scope": "Author clarification: several separately selected detail positions, not several rivets inside one enlarged image.",
+    "decision": "Select three spatially distinct annotated rivet locations and render a separate 900-by-900 inset for each, paired with the exact same world-coordinate camera after rivet removal. Nearby projected component faces are treated as one display location; spatially separated selections are numbered from top to bottom. Original representative faces are 506, 573 and 578. Stack three independent numbered insets beside each of stages A and B, with source boxes and noncrossing callout arrows derived from the recorded cameras. Preserve whole-aircraft camera directions, scales, positions and staged workflow. Update the caption to describe three distinct paired locations. No enlargement of rivet geometry, generated rivets, pixel editing, classification or CAD-operation changes. This supersedes the single-location inset choice in figure6_fixed_camera_rerender, while retaining its whole-aircraft setup and historical provenance.",
+    "camera_manifest": "figures/fig6_g280_fixed_camera_manifest.json",
+    "checked_caption_sha256": "7383C2933CCCB329E9CCFF30AD29E7A4E0DE68141726B9B1E1FA4ED2C7746EC1",
+    "checked_hashes": {
+      "main.tex": "8C3745BFCC98E20C4A69D8BA70EADEDFF72414204467C7E7BB79F47EBF522786",
+      "main.pdf": "64174E0BE347B26ADCA79AE05AA72EB438A3E87F9227A9DBB7B98F1A85A2D28A",
+      "figures/fig_g280_staged_processing.tex": "26DCAD5DEF9600A9A4D0F81426BED2DCF44222475DCF6B1FE0B8CEFFD06C5264"
+    },
+    "verification": "Existing CAD exporter successfully generated six whole-aircraft views and six independent detail views. Visual review confirms one genuine original rivet at each separate position and the corresponding post-rivet location; all three before/after camera pairs match within 1e-9. Source STEP and label hashes remain unchanged, with face-ID alignment checked by the renderer. Five whole-aircraft PNGs remain byte-identical; the final-stage top PNG was re-exported with the same camera and geometry, with a minor raster difference. Added two selection regression tests for repeated component faces and insufficient distinct locations; not executed under the no-non-renderer-Python constraint. Actual renderer integration and PowerShell/.NET audits used instead. Caption checked for terminology, approved meaning, evidence scope, paragraph flow and citation preservation; no prohibited/discouraged phrase findings. Main source comparison confirms only the Figure 6 caption changed. Latexmk succeeded; Figure 6 remains on page 14 of the 30-page PDF. Latest page 14 rendered at 150 dpi and visually reviewed for distinct numbered regions, paired insets, noncrossing callouts, equal inset sizes, legibility, workflow alignment and clipping. No overfull, float-too-large, undefined-reference or duplicate-label warnings. Two superseded single-position PNGs removed from figures only after verifying zero active TeX references and byte-identical backups in work/figure6_multi_position_backup. JSON parsing, hash checks and git diff --check passed. Scope is this figure detail revision and companion records, not full-paper release certification; WORKING and open I2/I3 remain unchanged."
+  },
+  "figure7_fixed_camera_three_rivet_positions": {
+    "date": "2026-10-14",
+    "status": "LOCAL_REVISION_VERIFIED",
+    "decision": "By author instruction, replace the Airbus Figure 7 manual screenshots with direct CAD exports using matched orthographic top cameras, centres, scales and dimensions before and after the rivet stage. Use equal 92 mm overview widths and three separate numbered local views per row, each paired at the same world position. Original annotated faces 1584, 1588 and 393 identify the three locations; post-processing face identifiers are not assumed to survive. Exclude an initially selected occluded location after visual inspection. Read the existing original and archived post-rivet STEP/label pairs without rerunning removal or inference. Preserve opaque silver-grey CAD rendering, semantic colours, white background and face boundaries. Update only the Figure 7 caption in main.tex; preserve Figure 6, quantitative results, citations and surrounding prose. Prior source and screenshot assets are backed up in work/figure7_fixed_camera_backup.",
+    "checked_hashes": {
+      "main.tex": "1700BE119312E7D7A237CBAFD07EFEB8A8A550D8FAB532D1E6EDE1D82971F703",
+      "main.pdf": "02621D1C3D2CFB9E9EA7EDCB7EA0A20EA0547516EC226B2E4F154CC6F2E24E7F",
+      "figures/fig7_airbus_rivet_example.tex": "46DA80E87FC844FC1EC9F6C115233FDDB1B765E217B228E5E670D0F59012172E",
+      "figures/fig7_airbus_fixed_camera_manifest.json": "EFA6FD7BCF70B51847E38BF355CE0098BA71D3D1E330AA4B2D54C9694F5FEFA3",
+      "caption_line_including_label": "8F50634B1318D0ED6A850D29ECDCB109F577F3F7F998E30EDFACE488E68BF4C4"
+    },
+    "verification": "Existing renderer integration completed for Airbus original (1775 faces) and archived post-rivet model (1723 faces), checking exact STEP/label face-ID alignment. Two overview PNGs are 2400 by 2100 and six independent detail PNGs are 900 by 900; no pixel stretching, cropping or invented geometry. All four before/after camera pairs match to a maximum numerical difference of 5.6843418860808e-14; source STEP and label hashes match the manifest. All eight renders visually inspected, with genuine rivets visible at three distinct original positions and their absence in the matched post-rivet views. Figure 6 source and camera-manifest hashes unchanged. Added CLI routing and mutually exclusive export regression tests, not executed under the no-non-renderer-Python constraint; actual renderer integration and PowerShell/.NET checks used instead. Initial build encountered transient main.pdf write contention; after write access recovered, latexmk -g succeeded. Figure 7 on page 21 of the 30-page PDF rendered at 150 dpi and reviewed for camera/scale alignment, paired details, complete frame coverage, source-location markers, noncrossing arrows, ordinary-weight labels and clipping. No overfull, float-too-large, undefined-reference or duplicate-label warnings. Exact caption and adjacent prose checked for evidence scope, source support, British spelling, terminology, flow, repetition and unchanged citations; registered prohibited/discouraged phrase check and git diff --check passed. Main source comparison against the task backup confirms only the Figure 7 caption changed. This is a local figure revision, not full manuscript release certification; WORKING and open I2/I3 remain unchanged."
+  },
+  "figure8_fixed_camera_and_unlettered_model_titles": {
+    "date": "2026-10-14",
+    "status": "LOCAL_REVISION_VERIFIED",
+    "decision": "By author instruction, revise Figure 8 in the same style as Figure 7: matched orthographic top views before/after archived rivet processing, equal 92 mm overviews, and three independent numbered detail pairs. Select visually reviewed original rivet faces 83, 59 and 48 at three distinct world positions; use the same 0.1 detail scale and camera in both stages. Read the existing original and post-rivet STEP/label pairs without rerunning removal or inference. Remove model-case letters (a) and (b) from Figure 7 and 8 headings, captions and prose references, retaining Airbus and Xian Y-20 names. Preserve Figure 7 raster assets, Figure 6, numerical results, citations and the additional-illustration scope outside the nine-aircraft comparison. Old source and assets are backed up in work/figure8_fixed_camera_backup and not deleted.",
+    "checked_hashes": {
+      "main.tex": "09878FEB58C267502A7E38ADEF1F88DC47CDBF0078A535CD4570E800BB372E84",
+      "main.pdf": "822717DC2EA1D775366BAB75A3258769B1012AD70EC06020C47AFA78EB356AA6",
+      "figures/fig7_airbus_rivet_example.tex": "7278908CAEEBF2B9AFE0F132DF769B2E64725E1336A6B88ABA3CD4BF0C85C498",
+      "figures/fig7_xian_y20_rivet_example.tex": "6FFC6B19FA51D14FE7703562458A48265541582D561F61F1939447E4B901C8ED",
+      "figures/fig8_xian_y20_fixed_camera_manifest.json": "D3C3DBF8374EA43CB46637195AC4F67D6A57BB051EB72558BCABCF51A697DAC6",
+      "caption_lines_and_adjacent_paragraph": "1422808EED402702B20F94DBBD48DEC08944F53D815307F7BADD90E2F13358DC"
+    },
+    "verification": "Existing renderer exported Y-20 original (357 faces) and archived post-rivet model (313 faces) with exact STEP/label face-ID alignment. All eight final renders reviewed; three genuine original rivets are visible and absent in matched processed close-ups. Initial candidates with a residual rivet or occluded original location were replaced after inspection; no geometry or pixels were altered to hide them. This local selection does not establish complete removal. Two overview PNGs are 2400 by 2100 and six independent detail PNGs are 900 by 900. Camera centre, direction, up, scale and aspect match before/after within 5.6843418860808e-14. Source STEP and label hashes match the camera manifest. Figure 7 fixed PNGs and manifest match task-backup hashes; Figure 6 source and manifest hashes remain unchanged. Added Figure 8 CLI routing, selected-position, mutually exclusive export tests and a Figure 7 candidate-filter regression test; tests not executed under the no-non-renderer-Python constraint, using actual renderer integration and PowerShell/.NET checks instead. Latexmk succeeded and confirms the current build is up to date. Latest 30-page PDF pages 21 and 22 rendered at 150 dpi and reviewed: no model-case letters, matched whole-aircraft angles/scales, six filled detail frames per figure, distinct source markers, noncrossing arrows and no clipping or overlap. No overfull, float-too-large, undefined-reference or duplicate-label warnings. Exact captions and adjacent paragraph checked against author intent, source support, evidence scope, British spelling, terminology, flow, necessary repetition and unchanged citations; phrase/letter scans and git diff --check passed. Main source comparison confirms changes confined to the two captions and removal of corresponding prose suffixes. Functional coverage complete for this local figure revision; broader WORKING release status and open I2/I3 remain unchanged."
+  },
+  "figure78_compact_shared_page20": {
+    "date": "2026-10-14",
+    "status": "LOCAL_LAYOUT_VERIFIED",
+    "decision": "By author instruction, reduce Figure 7 and 8 and place both on one page; following the author's page-20 request, allow the shared figure block on a text page rather than a dedicated float page. Scale coordinates and raster display dimensions to 48 percent of the preceding layout: overview width 44.16 mm and square inset width 12.48 mm in both figures. Preserve readable 7 pt ordinary-weight stage/model labels and 6 pt identifiers rather than scaling text to half size. Keep separate captions/numbers 7 and 8 with unchanged wording, six detail images per figure and all source-location markers. Use 5 mm inter-figure spacing and locally smaller captions. No source images, camera parameters, renderer, geometry, numerical results or citations changed. Backup in work/figure78_one_page_backup.",
+    "checked_hashes": {
+      "main.tex": "A0413812DE6B46935CC20AFDE421B128574F39F9ADF314207B131213DA2064DD",
+      "main.pdf": "26A131C881A22B669FC91DB20D878447E82563E82DCC432FC5FCE4225B940425",
+      "figures/fig7_airbus_rivet_example.tex": "0EFC381F69020E2FB0EFB4DB404FBF9AB266A5A377DD27647E2F41B4A440CC46",
+      "figures/fig7_xian_y20_rivet_example.tex": "1887136D42A2DC80DCB266393AF69C95DE3A96B9A506AFAB26D76713B6E9B488"
+    },
+    "verification": "Bounded surface/layout edit reviewed with the academic-writing and PDF skills, active contract and unchanged inference limits. Source diff and exact caption-line comparison confirm no manuscript wording or scientific content changes. Initial explicit build overlapped the editor build; final latexmk succeeded and confirmed the current build is up to date. Initial 50-percent combined layout occupied page 21; page 20 contained two continued prose lines, not a truly empty page. Allowing text-page placement and adjusting the equal scale to 48 percent places both numbered figures on page 20 with those two lines preserved. Latest PDF is 28 pages; auxiliary labels confirm figures 7/8 both on page 20 and figure 9 on page 21. Pages 20 and 21 rendered at 150 dpi and visually reviewed for readability, complete original details, paired positioning, source labels, noncrossing callouts, caption separation, page margins and no overlap/clipping. No overfull, float-too-large, undefined-reference or duplicate-label warnings. Figure 6 source and both fixed-camera manifests have unchanged hashes. Configuration documentation synchronized to the actual display widths and current pagination. JSON parsing and git diff --check passed. Requested two-figure layout and page-20 relocation complete; not a full manuscript release audit. WORKING and open I2/I3 remain unchanged."
+  },
+  "figure6_intermediate_model_update_diagram": {
+    "date": "2026-10-14",
+    "status": "REVERTED_BY_AUTHOR",
+    "decision": "By author instruction, explain the intermediate-model update between stages B and C in Figure 6. Replace the stacked operation labels with three connected boxes: re-extract faces/new face identifiers, rebuild face graph/geometry plus adjacency, and surface-feature recognition. State that topology and face identifiers change, then connect recognition to the existing window/decal-processing step. Move stage C down 8 mm for separation while preserving all six whole-aircraft images, six rivet detail images, display widths and fixed cameras. Clarify the corresponding Methods paragraph and caption without changing the algorithm, predictions, scientific numbers or citations. Use a locally small caption and permit a float page so the enlarged figure remains in the Methods section. Backup in work/figure6_intermediate_update_backup.",
+    "checked_hashes": {
+      "main.tex": "36D443996E39FC185C16626ED262DF61DC87497D81D68244B502B89A7DB37D0B",
+      "main.pdf": "7580823C61EFD6619EBE503C136A651CEAEC7636D1971A893A3011D70013358A",
+      "figures/fig_g280_staged_processing.tex": "2F2673ABA241272F17FC12B4EA376C1ADE2A8B9B7ADA2284881A6F07E350ADA1",
+      "methods_paragraph_and_caption_line": "F990C244E629FFF19E1A20F6DE538A8D76CAFD59DABF1584E5CE6F205976DAFA"
+    },
+    "verification": "Diagram and exact revised prose checked with the academic-writing skill against the existing staged protocol, active contract/style profile and build_graph implementation, which maps current face identifiers and builds node/edge attributes from geometry and neighbour records. Functional contract explains why topology changes require a current-state graph; no new mechanism, validation claim or training procedure is inferred. Checked natural scholarly syntax, terminology, adjacent paragraphs, necessary repetition and retained citations; exact candidate phrase scan and hash recorded. Source diff confines main.tex changes to this Methods paragraph, Figure 6 caption and local float/caption settings. Figure 6 fixed-camera manifest and Figure 7/8 layout hashes remain unchanged; no renderer or image-editing code executed. Initial expanded figure exceeded page height by 6.772 pt and then floated too late; local caption sizing and !htp placement resolved both. Final latexmk succeeded with no overfull, float-too-large, undefined-reference or duplicate-label warnings. Latest 28-page PDF pages 13, 14 and 20 rendered and reviewed: Methods explanation remains readable; Figure 6 is on page 14 with non-overlapping causal note, sequential boxes, clear arrows, retained screenshots/insets and an unclipped caption; Figure 7 and 8 remain together on page 20. JSON/hash checks and git diff --check passed. Requested local update, caption/prose propagation and final layout verification complete; this is not full-paper release certification. WORKING and open I2/I3 remain unchanged."
+  },
+  "figure6_intermediate_update_author_revert": {
+    "date": "2026-10-14",
+    "status": "LOCAL_REVERT_VERIFIED",
+    "decision": "Author withdrew the immediately preceding Figure 6 intermediate-model update addition. Reverse only that diagram, associated Methods/caption wording, stage-C shift and local caption/float settings. Preserve the prior Figure 7/8 compact shared-page-20 layout and all unrelated working changes. Mark figure6_intermediate_model_update_diagram as REVERTED_BY_AUTHOR while retaining its historical evidence. The author's subsequent question about alternative diagram forms is advice only; no replacement schematic is implemented.",
+    "checked_hashes": {
+      "main.tex": "A0413812DE6B46935CC20AFDE421B128574F39F9ADF314207B131213DA2064DD",
+      "main.pdf": "F3766B0CED8E12068217C23C47B872EC431FDFFBA9A5414C46DDF81F3FA67C3C",
+      "figures/fig_g280_staged_processing.tex": "26DCAD5DEF9600A9A4D0F81426BED2DCF44222475DCF6B1FE0B8CEFFD06C5264"
+    },
+    "verification": "Scoped reverse patch applied, not a Git reset or whole-worktree restoration. Main.tex and Figure 6 source hashes exactly match their pre-addition backups. Academic-writing checks preserve the original staged-processing meaning, surrounding prose, terminology, citations and nonclaims. No images, model files, experiments or renderer changed. Latexmk succeeded; restored Figure 6 is page 14, Figure 7 and 8 remain page 20, and PDF remains 28 pages. Latest restored page 14 rendered and visually inspected; added boxes/note are absent and the original three-stage arrangement and six rivet insets remain. No overfull, float-too-large, undefined-reference or duplicate-label warnings. JSON/hash checks and git diff --check passed. Functional coverage complete for the requested local withdrawal; alternatives are proposed without external writes or new implementation. WORKING and open I2/I3 remain unchanged."
+  },
+  "figure6_horizontal_real_aircraft": {
+    "date": "2026-10-14",
+    "status": "LOCAL_REVISION_VERIFIED",
+    "decision": "Author requested a horizontal real-aircraft workflow inspired by the supplied composition reference, with small whole-aircraft views and enlarged local features above. Replace the pending schematic with three archived G280 states; preserve three different rivet positions across original/intermediate and add paired window/decal insets across all three states. Do not alter experiments, archived geometry, Figure 7/8 layout or release status.",
+    "active_figure_source": "figures/fig_g280_horizontal_processing.tex",
+    "render_manifest": "figures/fig6_g280_horizontal_fixed_camera_manifest.json",
+    "checked_hashes": {
+      "main.tex": "8954793197A85FCEA1C2C9D18780C90AA7833E498F1725541E663845DCE68CDC",
+      "main.pdf": "0E16DB10F3361977494646410A52FB4D1123476E27C02D8A643D2E21B17C0978",
+      "figures/fig_g280_horizontal_processing.tex": "72EF46BEE3578048D921ED039BA1137370D61D76B4BF1C10ED65A83EDA537965",
+      "figures/fig6_g280_horizontal_fixed_camera_manifest.json": "61FA8627B16376E7C599C4CD82FF63B46F5699132E9EFFC20AA54AC5EF71312A",
+      "python/visualize_cad_targets.py": "1E91D49B0BC58F4C0C86EA47FDC395884E686D545C0F551FE978C071C07FA1BC",
+      "python/tests/test_visualize_cad_targets.py": "ACDD452B94C106682C3227D78D89A9683AFC5A0CA3E77E90E5486973AEC61605"
+    },
+    "verification": "Existing CAD renderer extended with an exclusive horizontal export mode; default Figure 6/7/8 routes remain unchanged. Native integration export completed: stages have 668, 608 and 277 faces, with 6, 6 and 3 images. Whole-aircraft outputs are 2400x1100; all 12 local outputs are 900x900 without image editing. Rivet cameras use the prior three source positions with one-quarter view scale. The passenger window is original face 142; visible-side decals are 294, 327, 361 and 378. Camera numeric comparisons pass at tolerance 1e-10, maximum delta 2.274e-13. Source hashes are recorded; no geometry or inference rerun. An attempted final-stage rivet-detail export exited natively; the delivered composition confines rivet insets to the first transition and the final stage to window/decal results, as in the prior figure scope. Added CLI/selection tests but did not run Python tests under the existing renderer-only restriction; real export, PowerShell dimension/camera audits and LaTeX build were executed. Academic-writing checks synchronize the caption and directly dependent Methods paragraph with observed local changes, retain the staged host-relation explanation and existing nonclaims, and introduce no new empirical conclusion or citations. Latexmk succeeded; latest 28-page PDF pages 13, 14 and 20 and the independent figure preview were reviewed. Figure 6 is page 14, Figure 7/8 remain together on page 20, and their source hashes plus the prior Figure 6 camera-manifest hash are unchanged. No manuscript overfull, float-too-large, undefined-reference or duplicate-label warning. Pending schematic moved to work/figure6_mechanism_redesign_backup; original layout/assets retained recoverably. JSON, source/hash and git diff checks passed. This is a verified local revision, not full-paper release certification; WORKING and I2/I3 remain unchanged."
+  },
+  "figure6_horizontal_style_revision": {
+    "date": "2026-10-14",
+    "status": "LOCAL_STYLE_REVISION_VERIFIED",
+    "change_class": "D_surface",
+    "decision": "Author requested a less formulaic, more polished Figure 6. Retain the horizontal real-CAD workflow and all 15 source images. Arrange the six rivet views in a paired full-width strip, remove the upper-right explanatory block and colour legend, use ordinary serif typography, lighter frames and callouts, and enlarge the three equal-width aircraft slightly. This supersedes the layout in figure6_horizontal_real_aircraft, not its rendering provenance or scientific scope.",
+    "changed_files": [
+      "figures/fig_g280_horizontal_processing.tex",
+      "../../doc/CAD渲染配置.md",
+      "manuscript_state.json"
+    ],
+    "checked_hashes": {
+      "main.tex": "8954793197A85FCEA1C2C9D18780C90AA7833E498F1725541E663845DCE68CDC",
+      "main.pdf": "2EE1198215F85F7947FD4D80A3148E2CB48D64B51E249235D758A693473896B3",
+      "figures/fig_g280_horizontal_processing.tex": "5B3A5DFD902A27BB4F0B2AB2583FABB0DA9B724341AC40D7E275158AC7D7AD0E",
+      "figures/fig6_g280_horizontal_fixed_camera_manifest.json": "61FA8627B16376E7C599C4CD82FF63B46F5699132E9EFFC20AA54AC5EF71312A"
+    },
+    "verification": "Academic-writing checks classified this as local visual formatting: the manuscript source including caption, adjacent Methods paragraphs, numbers and citations is byte-for-byte unchanged. Stable terms, A/B/C stage meaning, the three distinct rivet locations and source-image provenance are preserved. Renderer, camera manifest and Figure 7/8 source hashes are unchanged; all 15 CAD screenshots retain their prior modification times and no raster-editing or CAD export command ran. Rivet inset widths are 20 mm, window/decal widths 22 mm, aircraft widths 48 mm; image aspect ratios remain native and callout coordinates are adjusted for the new overview display width. The initial 2.14 pt figure-width warning was resolved by removing stage-node inner padding and limiting the layout box to 159 mm. An overlapping automatic/manual build briefly failed; after the automatic build finished, latexmk returned success and the current manuscript/preview logs have no overfull, float-too-large, undefined-reference or duplicate-label warnings. Latest independent preview and PDF pages 14 and 20 were rendered and visually reviewed for frame fill, label readability, spacing, callout placement and unclipped caption. PDF remains 28 pages, Figure 6 is page 14 and Figure 7/8 remain together on page 20. JSON/hash and git diff checks passed. Prior style preserved in work/figure6_style_backup_20261014. Functional coverage is complete for the requested bounded style revision; no new evidence, geometry processing, experiment or full-paper certification is implied. WORKING and I2/I3 remain unchanged."
+  },
+  "figure6_rivet_callout_integration": {
+    "date": "2026-10-14",
+    "status": "LOCAL_LAYOUT_REVISION_VERIFIED",
+    "decision": "Author rejected the detached top rivet-comparison strip and authorized integrating those insets with stages A/B and connecting them to actual aircraft regions. Remove the independent strip, retain three distinct rivet positions, and group all local views under the corresponding A/B/C headings. Use archived matched top views for the small aircraft because the two wings overlap in side projection. Keep window/decal local cameras in side view and explain that distinction in the caption. This supersedes figure6_horizontal_style_revision as the active layout, not the archived rendering provenance.",
+    "display_rivet_number_to_source_file": {
+      "1": 2,
+      "2": 1,
+      "3": 3
+    },
+    "display_rivet_number_to_original_face": {
+      "1": 573,
+      "2": 506,
+      "3": 578
+    },
+    "checked_hashes": {
+      "main.tex": "C345EAE75B22389AE6DCF64FD432A17F4A522A14DBEB7DBD8DCF19405FA556E8",
+      "main.pdf": "DFCE58C2F44DF5031DF5BB049D96B95722C50DCF814B3F1F0A92F152DF48E886",
+      "figures/fig_g280_horizontal_processing.tex": "854908B7C9A83668535541D31AE57B47EE056EA48F209A81486205F3F3A6A812"
+    },
+    "verification": "The three paired top-view overview cameras have identical scale/aspect/direction/up and equal centres within floating-point tolerance. Source boxes are projected from the archived world-coordinate centres at 42 mm overview width. Inset presentation order changes to source files 2/1/3 in both A and B so their rivet leaders do not cross each other. Rivet insets are 14 mm, window/decal insets 20 mm; native proportions are retained. A/B window/decal leaders use frame gaps and outer margins, while C uses direct connections. Numbered boxes are annotations, not edited geometry. All 27 pre-existing Figure 6 PNG hashes are unchanged, including the three adopted top images; no CAD export, image editing or inference ran. Only main.tex line 528 changed, updating the Figure 6 caption to top-view overviews, linked rivet regions and side-view window/decal details. Adjacent Methods paragraphs, experiments, numbers and citations are unchanged. Academic-writing checks cover caption function, source support, terminology/profile, natural syntax, necessary comparison repetition, no added inference and local cross-artifact alignment; exact-caption PowerShell scan has no prohibited/discouraged phrase findings. Existing no-Python constraint is preserved; no whole-state Python audit certification is claimed. Latexmk completed successfully. Independent preview and latest PDF pages 14/20 were rendered and inspected for region pairing, clear numbering, intact frames, non-overlapping labels and unclipped caption; logs have no overfull, float-too-large, undefined-reference or duplicate-label warnings. PDF remains 28 pages, Figure 6 page 14 and Figure 7/8 together page 20; Figure 7/8 source hashes remain unchanged. Revision JSON/hash and git diff checks passed. Former detached-strip layout and PDF are recoverable in work/figure6_callout_integration_backup_20261014. Functional coverage is complete for this bounded layout/caption correction; no complete-removal or geometric-validation claim is introduced. WORKING and open I2/I3 remain unchanged."
+  },
+  "figure6_upper_lower_feature_layers": {
+    "date": "2026-10-14",
+    "status": "LOCAL_LAYOUT_REVISION_VERIFIED",
+    "change_class": "D_surface",
+    "decision": "Author requested clearer separation of rivet and surface-feature information in Figure 6. Retain all source images, cameras, selected regions, numbering, stage meanings and callout semantics, but place the A/B rivet insets above the whole-aircraft row and the A/B/C window and decal insets below it. Keep the three whole-aircraft top views and horizontal stage transitions in the middle row. Update only the caption wording needed to describe the lower surface-feature insets.",
+    "changed_files": [
+      "figures/fig_g280_horizontal_processing.tex",
+      "main.tex",
+      "../../doc/CAD渲染配置.md",
+      "manuscript_state.json"
+    ],
+    "checked_hashes": {
+      "main.tex": "CFE7CD0A230BF3804C35C77ABC3F338CBD893F0CDFB9B420B84754056D9DBDA3",
+      "main.pdf": "5121A92F4CDEE2525040AB270D8CF4345B26621D394781876A810C2E6EBD8348",
+      "figures/fig_g280_horizontal_processing.tex": "D40E0731E33C95E66AFE7EF7EABF3DB3FA93E178082A871E8206374743515F66",
+      "figures/fig6_g280_horizontal_fixed_camera_manifest.json": "61FA8627B16376E7C599C4CD82FF63B46F5699132E9EFFC20AA54AC5EF71312A"
+    },
+    "verification": "The layout now gives each feature family its own row: paired rivet details above A/B, registered whole-aircraft top views and arrows in the middle, and paired window/decal side-view details below A/B/C. The caption was locally updated from 'insets show' to 'insets below the whole-aircraft views show'; adjacent Methods prose, numbers, citations and scientific scope are unchanged. Existing screenshots and camera manifest were reused without CAD export, image editing or inference. After an editor build finished, forced latexmk compilation succeeded; page 14 and the independent figure preview were rendered and visually inspected. The Figure 6 caption is unclipped, frames and labels are legible, leaders connect to their intended regions, and no targeted overfull, float-too-large, undefined-reference or duplicate-label warnings remain. The PDF remains 28 pages; Figure 6 remains page 14. git diff --check and JSON parsing pass. This is a bounded visual revision, not complete-removal or geometric-validation evidence; WORKING and open I2/I3 remain unchanged."
+  },
+  "figure6_callout_line_simplification": {
+    "date": "2026-10-14",
+    "status": "LOCAL_LAYOUT_REVISION_VERIFIED",
+    "change_class": "D_surface",
+    "decision": "Author found the Figure 6 callout lines visually cluttered. Remove every long selection-to-inset leader while retaining the two horizontal stage-transition arrows. Preserve rivet correspondence through matching 1--3 labels in the overview selection boxes and the upper insets. Preserve window/decal correspondence through labelled, same-column insets beneath the matching stage. Do not alter images, camera settings, selected regions, caption meaning, methods prose, data or scientific claims.",
+    "changed_files": [
+      "figures/fig_g280_horizontal_processing.tex",
+      "../../doc/CAD渲染配置.md",
+      "manuscript_state.json"
+    ],
+    "checked_hashes": {
+      "main.tex": "CFE7CD0A230BF3804C35C77ABC3F338CBD893F0CDFB9B420B84754056D9DBDA3",
+      "main.pdf": "52E056AA40B78338D577130CE97F5476F687D8996B7E43AE18C60ED792E2053F",
+      "figures/fig_g280_horizontal_processing.tex": "F961599FFFFFB3BC881FD5CF7EE197424492E5E3042F5ADCA6B3125983230368",
+      "figures/fig6_g280_horizontal_fixed_camera_manifest.json": "61FA8627B16376E7C599C4CD82FF63B46F5699132E9EFFC20AA54AC5EF71312A"
+    },
+    "verification": "Forced latexmk compilation succeeded after confirming no competing LaTeX process; the independent Figure 6 preview and PDF page 14 were rendered and visually inspected. The result contains only the two A-to-B and B-to-C transition arrows. Insets, overview markers, labels, frame dimensions and caption remain unclipped and legible. All source CAD screenshots and the fixed-camera manifest are reused; no export, image processing, inference, geometry or scientific wording changed. The 28-page PDF keeps Figure 6 on page 14; targeted logs contain no overfull, float-too-large, undefined-reference or duplicate-label warnings. JSON parsing and git diff --check pass. This is a bounded readability change, not complete-removal or geometric-validation evidence; WORKING and open I2/I3 remain unchanged."
+  },
   "issues": [
     {
       "id": "I1",
@@ -336,9 +946,98 @@
       "required_action": "Do not cite the retired comparison or ablation results as formal paper evidence."
     }
   ],
+  "figure_revision_20261014": {
+    "date": "2026-10-14",
+    "status": "LOCAL_FIGURE_AND_TABLE_REVISION_COMPLETE",
+    "decision": "Author requested full-width tables, a clearer architecture and staged-processing flow, a combined rivet illustration, three paired CAD comparisons on one page, five real mesh comparisons and unused-image cleanup.",
+    "changed_files": [
+      "main.tex",
+      "figures/fig_class_specific_gnn_architecture_v7.tex",
+      "figures/fig_g280_horizontal_processing.tex",
+      "figures/fig7_airbus_rivet_example.tex",
+      "figures/fig7_xian_y20_rivet_example.tex",
+      "figures/fig9_dc10_window_comparison.tex",
+      "figures/fig10_cessna_window_comparison.tex",
+      "figures/fig11_109_decal_comparison.tex",
+      "figures/fig_mesh_five_models.tex",
+      "figure_comparison_sources.json",
+      "../../python/visualize_cad_targets.py",
+      "../../python/tests/test_visualize_cad_targets.py",
+      "../../doc/CAD渲染配置.md",
+      "../../doc/论文图表调整与清理-2026-10-14.md",
+      "figures/cad_{dc10,cessna,109}_{before,after}.png",
+      "figures/mesh_{airbus,y20,dc10,cessna,109}_{before,after}.png",
+      "figures/comparison_{airbus,y20,dc10,cessna,109}_manifest.json"
+    ],
+    "figure_numbering": {
+      "old Figure 7 + old Figure 8": "Figure 7",
+      "old Figure 9": "Figure 8",
+      "old Figure 10": "Figure 9",
+      "old Figure 11": "Figure 10",
+      "old Figure 12": "Figure 11"
+    },
+    "pages": {
+      "figure5": 11,
+      "figure6": 14,
+      "figure7": 20,
+      "figures8_9_10": 21,
+      "figure11": 23,
+      "total": 27
+    },
+    "mesh_counts": [
+      {
+        "model": "Airbus",
+        "before": 95610,
+        "after": 94006,
+        "scope": "Original and archived rivet-stage endpoint shown in the CAD figure; not the final surface-feature endpoint in the nine-pair table."
+      },
+      {
+        "model": "Xian Y-20",
+        "before": 20534,
+        "after": 19742,
+        "scope": "Additional archived geometric illustration, outside the nine-aircraft quantitative evaluation."
+      },
+      {
+        "model": "DC-10",
+        "before": 41914,
+        "after": 35496,
+        "scope": "Original and archived window-stage endpoint shown in the CAD figure."
+      },
+      {
+        "model": "Cessna Citation 2",
+        "before": 19696,
+        "after": 19037,
+        "scope": "Original and archived window-stage endpoint shown in the CAD figure."
+      },
+      {
+        "model": "109 standard E-1",
+        "before": 58692,
+        "after": 58357,
+        "scope": "Original and processed decal endpoint shown in the CAD figure."
+      }
+    ],
+    "evidence_boundary": "Airbus meshes use the archived rivet-stage endpoint (1723 faces), not the final 686-face endpoint in Table 8. Xian Y-20 is an additional illustration outside the nine-aircraft quantitative evaluation. Nine table data bodies and the citation sequence remain unchanged; no formal recognition metric, timing result or CAD geometry is modified.",
+    "cleanup": {
+      "retired_images": 27,
+      "remaining_active_images": 53,
+      "recoverable_archive": "work/figure_revision_20261014_retired",
+      "manifest": "work/figure_revision_20261014_retired/retired_images.json"
+    },
+    "verification": "24 renderer tests passed. All five render integrations completed. Native image sizes and paired CAD/mesh camera settings checked; STEP and label hashes unchanged. All triangle edges are rendered from the actual OCC triangulations without decimation. Final isolated latexmk build succeeded with no layout or reference warnings. Final PDF pages 11 and 14--24 inspected for figure/table alignment, matching cameras, captions, frame coverage and clipping. Nine table bodies and all citation commands preserved. Four exact-candidate prose diagnostics were manually reviewed as required stage-scope repetition and figure/table navigation; no forbidden terminology findings. Functional coverage of all seven requested items is complete. Existing I2/I3 remain open; this is not full-paper release certification.",
+    "checked_hashes": {
+      "main.tex": "0a867aef5cce42531750906dc19fa2085228a0dbac5d6f5b1b70819fd78a97ca",
+      "main.pdf": "691ff5256ce0d3f26a1626ff9684f312a1d258a35df9723e6d3e091fe8be5aa0",
+      "candidate_text": "680e58cb490bf7838083c51a4ae07b2a2fb3fad222ab15a2c29cea3ed85bc12a"
+    },
+    "figure11_superseded_by": "figure11_three_columns_20261014",
+    "mesh_counts_status": "HISTORICAL_PREVIOUS_FIGURE11_SNAPSHOT",
+    "checked_hashes_status": "HISTORICAL_PREVIOUS_FIGURE_REVISION_SNAPSHOT"
+  },
   "release": {
     "status": "WORKING",
-    "candidate_artifact_ids": ["main-tex"],
+    "candidate_artifact_ids": [
+      "main-tex"
+    ],
     "required_checks": [
       "argument_structure",
       "evidence_scope",
@@ -354,9 +1053,919 @@
       "functional_completeness"
     ],
     "checked_hashes": {
-      "main.tex": "74c1a2f42256b45b9f28d8530eab33895ce0360de0d9b6e1965f76f4fd476022",
-      "main.pdf": "03a0b7dc57d7e53e8941ad0767c480a15b21fa262338100935bc4f84617f959e"
+      "main.tex": "e3615042813a809b71c929301c88017334f6948b94c2b6efb919dcd11f400784",
+      "main.pdf": "772fc124dfea19d289e0d6be556ae25de21f66b3fa39aced402fd67f88a5b241",
+      "candidate": "e3615042813a809b71c929301c88017334f6948b94c2b6efb919dcd11f400784",
+      "main-tex": "e3615042813a809b71c929301c88017334f6948b94c2b6efb919dcd11f400784",
+      "repaired_step": "a958756e51ba37e98df26e6882c622f6a9e04b74a33c0dd460f4d34734663d8e"
     },
-    "visual_check": "FIGURE_3_PAGE_8_REVIEWED_2026-10-04"
+    "visual_check": "LOCAL_G280_OVERLAP_REPAIR_2026-10-15: final 26-page build; pages 14,21,22,23 and native G280 detail images visually inspected. Nine tables retain 10 TeX pt fonts. No layout/reference warnings; I2/I3 remain open.",
+    "last_check_scope": "G280 trimmed-host repair, native regression, five-run mesh/QEM measurements, paired-camera Figure 6/11 export, dependent Tables 8/9 and QEM median; no full-paper release certification."
+  },
+  "figure11_three_columns_20261014": {
+    "date": "2026-10-14",
+    "status": "SUPERSEDED_BY_DC10_REPLACEMENT",
+    "page": 23,
+    "total_pages": 27,
+    "models": [
+      {
+        "model": "AULIRA 2",
+        "before": 24519,
+        "after": 12589,
+        "scope": "Original and final STEP endpoints of Table 8"
+      },
+      {
+        "model": "747-400",
+        "before": 76017,
+        "after": 48959,
+        "scope": "Original and final STEP endpoints of Table 8"
+      },
+      {
+        "model": "Airbus",
+        "before": 95610,
+        "after": 63505,
+        "scope": "Original and final STEP endpoints of Table 8"
+      },
+      {
+        "model": "Gulfstream G280 v17",
+        "before": 17941,
+        "after": 14378,
+        "scope": "Original and final STEP endpoints of Table 8"
+      },
+      {
+        "model": "109 standard E-1",
+        "before": 58692,
+        "after": 58357,
+        "scope": "Original and final STEP endpoints of Table 8"
+      }
+    ],
+    "layout": "Five rows; original mesh -> final processed B-Rep -> final mesh; each column has overview and matching local detail at 48 mm width. Counts share each model heading. Orthographic side views; 109 slightly oblique toward the original labelled star side.",
+    "render_style": {
+      "body_rgb": [
+        0.94,
+        0.96,
+        0.98
+      ],
+      "edge_rgb": [
+        0.015,
+        0.02,
+        0.025
+      ],
+      "edge_width": 0.85,
+      "material": "plaster",
+      "transparency": 0
+    },
+    "original_109_decal": {
+      "original_face_id": 79,
+      "semantic": "decal",
+      "colored_nodes": 14,
+      "triangles": 12,
+      "purpose": "Location only; source-label color on existing mesh nodes.",
+      "geometry_unchanged": true,
+      "verification": "work/figure11_current_render/decal_color_verification.json"
+    },
+    "input_definition": "figure11_mesh_sources.json",
+    "changed_files": [
+      "main.tex",
+      "main.pdf",
+      "figure11_mesh_sources.json",
+      "figures/fig_mesh_five_models.tex",
+      "figures/fig11_{aulira,747,airbus,gulfstream,109}_*.png (30)",
+      "figures/fig11_{aulira,747,airbus,gulfstream,109}_manifest.json (5)",
+      "../../python/visualize_cad_targets.py",
+      "../../python/tests/test_visualize_cad_targets.py",
+      "manuscript_state.json",
+      "../../doc/CAD渲染配置.md",
+      "../../doc/论文图表调整与清理-2026-10-14.md",
+      "../../work/build_figure11_three_columns_20261014.cjs"
+    ],
+    "build_command": "latexmk -pdf -outdir=work/figure11_three_column_build -interaction=nonstopmode -halt-on-error -silent main.tex",
+    "checks": {
+      "renderer_tests": 28,
+      "rendered_images": 30,
+      "manifests": 5,
+      "paired_cameras": true,
+      "source_hashes_unchanged": true,
+      "table_blocks_unchanged": 9,
+      "citation_commands_unchanged": true,
+      "latex_warnings": 0,
+      "visual_pages": [
+        22,
+        23,
+        24
+      ],
+      "active_images": 73
+    },
+    "manual_audit": "work/figure11_current_render/manual_audit.json",
+    "checked_hashes": {
+      "main.tex": "b9444e469bab16363c22db7a9d1aad9764162797c6541bb2341c6ec5afd69d6f",
+      "main.pdf": "f0ffdc4ae85ee645e1a0c913e3cc73489e9010aeef302d8a421ebc6316287afb",
+      "candidate_text": "6d739a50844375ec3d593469b2c1cf5b0545b44ba5f9181bd1f080969295d958",
+      "figure_source": "d21697c30bba143a0df3c18572c4906e0923b618e655f3384dd0cc84b92b8349"
+    },
+    "cleanup": {
+      "retired_images": 10,
+      "remaining_active_images": 73,
+      "recoverable_archive": "work/figure11_three_column_retired_20261014",
+      "manifest": "work/figure11_three_column_retired_20261014/retired_images.json",
+      "previous_style_backup": "work/figure11_style_backup_20261014"
+    },
+    "evidence_boundary": "I2 and I3 remain open. Local mesh changes do not certify complete feature removal, geometry/physics equivalence, CAE response preservation or end-to-end speedup.",
+    "superseded_by": "figure11_dc10_replacement_20261014"
+  },
+  "figure11_dc10_replacement_20261014": {
+    "date": "2026-10-14",
+    "status": "LOCAL_FIGURE11_REVISION_COMPLETE",
+    "decision": "Author replaced the second-row 747-400 model with DC-10. Other four rows, layout, rendering style and 109 source-label color remain unchanged.",
+    "models": [
+      {
+        "model": "AULIRA 2",
+        "before": 24519,
+        "after": 12589
+      },
+      {
+        "model": "DC-10",
+        "before": 41914,
+        "after": 35496
+      },
+      {
+        "model": "Airbus",
+        "before": 95610,
+        "after": 63505
+      },
+      {
+        "model": "Gulfstream G280 v17",
+        "before": 17941,
+        "after": 14378
+      },
+      {
+        "model": "109 standard E-1",
+        "before": 58692,
+        "after": 58357
+      }
+    ],
+    "source_hashes_verified": true,
+    "paired_cameras": true,
+    "image_dimensions": [
+      2400,
+      800
+    ],
+    "other_four_model_images_unchanged": true,
+    "tables_unchanged": 9,
+    "citation_commands_unchanged": true,
+    "latex_warnings": 0,
+    "pages": 27,
+    "visual_pages": [
+      22,
+      23,
+      24
+    ],
+    "renderer_tests": 28,
+    "candidate_sha256": "a620a8d25afc552d2e7c133034038f2126e3ed3a72bd92d01a99556ff5857678",
+    "main_tex_sha256": "4d512294727630562f2818cdddde7c395652aadcacf4f370d74045f76dd86d61",
+    "compiled_pdf_sha256": "cd2ae9b2d75fd45d217b50ceece72118038e8a8e92c1bafdd473e5294b96707e",
+    "changed_files": [
+      "main.tex",
+      "main.pdf",
+      "figure11_mesh_sources.json",
+      "figures/fig_mesh_five_models.tex",
+      "figures/fig11_dc10_*.png (6)",
+      "figures/fig11_dc10_manifest.json",
+      "../../python/visualize_cad_targets.py",
+      "../../python/tests/test_visualize_cad_targets.py",
+      "../../work/build_figure11_three_columns_20261014.cjs",
+      "manuscript_state.json",
+      "../../doc/CAD渲染配置.md",
+      "../../doc/论文图表调整与清理-2026-10-14.md"
+    ],
+    "prose_review": "The paragraph names the current five examples and their observed reduction range. The former four-largest-reductions selection claim was removed from paragraph and caption. The figure remains a table-matched qualitative mesh illustration, with no claim of complete removal or downstream equivalence. Nine exact table blocks and all citation commands are unchanged.",
+    "audit_diagnostic_review": "Retain repeated Table 8 navigation for subset range, endpoint correspondence and self-contained caption. Retain mesh as the technical object of comparison.",
+    "functional_coverage": "Specified substitution, six paired renders, exact formal endpoints/counts, unchanged other 24 PNGs, prose/caption synchronization, 28 tests, warning-free build and final pages 22--24 visually checked. I2/I3 remain open; full-paper readiness is unchanged.",
+    "cleanup": {
+      "retired_images": 6,
+      "retired_manifests": 1,
+      "recoverable_archive": "work/figure11_dc10_backup_20261014",
+      "manifest": "work/figure11_dc10_backup_20261014/retired_747_images.json"
+    },
+    "build_command": "latexmk -pdf -outdir=work/figure11_dc10_build -interaction=nonstopmode -halt-on-error -silent main.tex",
+    "audit": "work/figure11_dc10_build/candidate_audit.json",
+    "layout_superseded_by": "figure11_row_spacing_20261014"
+  },
+  "figure11_row_spacing_20261014": {
+    "date": "2026-10-14",
+    "status": "LOCAL_FIGURE11_LAYOUT_REVISION_COMPLETE",
+    "page": 23,
+    "total_pages": 27,
+    "row_pitch_mm": {
+      "before": 39,
+      "after": 42
+    },
+    "header_center_offset_mm": {
+      "before": 3,
+      "after": 1.5
+    },
+    "model_titles_bold": true,
+    "panel_width_mm": 48,
+    "image_references_and_sizes_unchanged": 30,
+    "tables_unchanged": 9,
+    "citation_commands_unchanged": true,
+    "latex_warnings": 0,
+    "caption_review": "Removed repeated wording while retaining table linkage, original mesh -> processed B-Rep -> processed mesh, matched side views, boxed fuselage zooms, oblique 109 view, orange source decal, and complete-model triangle counts under identical OCC controls. The small-change interpretation remains in the unchanged adjacent paragraph and numeric labels.",
+    "checks": "Exact 30 includegraphics commands including widths/order unchanged; nine table blocks and citations unchanged. Page 23 visually reviewed for row-title grouping, image/detail pairing, caption and footer. Renderer and scientific data were not changed; prior 28 renderer tests remain applicable and were not rerun for this layout-only edit.",
+    "changed_files": [
+      "main.tex",
+      "main.pdf",
+      "figures/fig_mesh_five_models.tex",
+      "../../work/build_figure11_three_columns_20261014.cjs",
+      "manuscript_state.json",
+      "../../doc/CAD渲染配置.md",
+      "../../doc/论文图表调整与清理-2026-10-14.md"
+    ],
+    "audit": "work/figure11_row_spacing_build/candidate_audit.json",
+    "backup": "work/figure11_row_spacing_backup_20261014",
+    "audit_diagnostic_review": "Retain repeated Table 8 navigation for numerical range, endpoint correspondence and an independently readable caption; retain mesh as the technical object of the comparison. No forbidden-term finding. Previous/next paragraphs and all citation commands are unchanged.",
+    "build_command": "latexmk -pdf -outdir=work/figure11_row_spacing_build -interaction=nonstopmode -halt-on-error -silent main.tex",
+    "checked_hashes": {
+      "main.tex": "379e3f4b4ec673c829377f6cbdd187d12048a98318e6222b1b64671af9f0b52b",
+      "main.pdf": "147a52de94aa7deedde8503d7f67379e8f82727a423ccd2ac20dcc4b5c42c80c",
+      "candidate": "efe61a58bf86cec05836b781efce174fa15c8e92cf6a57000f68cc98161a2ded"
+    },
+    "functional_coverage": "All five model headings and their counts separated from the previous row without reducing any panel. Local figure readability revision complete. I2/I3 remain open; no full-paper release certification.",
+    "superseded_by": "figure11_g280_tail_20261014"
+  },
+  "figure11_g280_tail_20261014": {
+    "date": "2026-10-14",
+    "status": "LOCAL_FIGURE11_G280_TAIL_REVISION_COMPLETE",
+    "models": [
+      {
+        "model": "AULIRA 2",
+        "before": 24519,
+        "after": 12589
+      },
+      {
+        "model": "DC-10",
+        "before": 41914,
+        "after": 35496
+      },
+      {
+        "model": "Airbus",
+        "before": 95610,
+        "after": 63505
+      },
+      {
+        "model": "Gulfstream G280 v17",
+        "before": 17941,
+        "after": 14378
+      },
+      {
+        "model": "Airplane body",
+        "before": 51605,
+        "after": 42401
+      }
+    ],
+    "page": 23,
+    "total_pages": 27,
+    "added_images": [
+      "fig11_gulfstream_before_mesh_tail_decal.png",
+      "fig11_gulfstream_after_cad_tail_decal.png",
+      "fig11_gulfstream_after_mesh_tail_decal.png"
+    ],
+    "tail_detail": {
+      "name": "tail_decal",
+      "semantic": "decal",
+      "original_face_ids": [
+        294,
+        327,
+        361,
+        378
+      ],
+      "center": [
+        55.41114993175907,
+        19.991664623977208,
+        -0.8924576675076533
+      ],
+      "projection": [
+        0,
+        0,
+        1
+      ],
+      "up": [
+        0,
+        1,
+        0
+      ],
+      "scale": 10.496441811185877
+    },
+    "source_hashes_unchanged": true,
+    "prior_g280_six_cameras_unchanged": true,
+    "rerender_note": "Existing six G280 views regenerated with unchanged cameras and mesh controls. Pixel comparison against prior render found at most 84 differing pixels per 2400x800 panel; no image editing was performed.",
+    "image_count": 33,
+    "panel_size": [
+      2400,
+      800
+    ],
+    "panel_width_mm": 48,
+    "row_pitch_mm": 42,
+    "extra_row_pitch_mm": 18,
+    "tail_box": "dashed",
+    "window_box": "solid",
+    "caption": "10 pt, single-spaced, 3 pt skip; local to Figure 11",
+    "tests": 30,
+    "tables_unchanged": 9,
+    "citation_commands_unchanged": true,
+    "latex_warnings": 0,
+    "visual_pages": [
+      22,
+      23,
+      24
+    ],
+    "change_scope": "One additional three-column tail-decal close-up row below the G280 window row. Original/final formal STEP endpoints, full-model counts, cameras and source hashes verified. Existing 30 image references and widths unchanged; no pixels, geometry, mesh controls or scientific metrics edited.",
+    "prose_review": "Figure explanation explicitly names the second G280 detail row. Caption distinguishes solid window boxes and dashed tail-decal boxes; table endpoint/count correspondence and descriptive-only invalid Airplane body scope retained. Adjacent methods and nine-pair results remain aligned. Existing I2/I3 remain open.",
+    "diagnostics_review": "Retain repeated Table 8 navigation for selected range, exact endpoints and independent caption. Retain mesh as the technical object. Any additional candidate findings require contextual review before delivery.",
+    "functional_coverage": "Requested G280 decal row rendered from four verified original decal faces; paired original mesh/final CAD/final mesh views, projected callouts, unchanged panel widths and model-heading gaps, tests, build, exact table/citation checks, final pages 22--24 and documentation covered. Local figure revision complete; no full-paper readiness claim.",
+    "changed_files": [
+      "main.tex",
+      "main.pdf",
+      "figure11_mesh_sources.json",
+      "figures/fig_mesh_five_models.tex",
+      "figures/fig11_gulfstream_*_tail_decal.png (3)",
+      "figures/fig11_gulfstream_manifest.json",
+      "../../python/visualize_cad_targets.py",
+      "../../python/tests/test_visualize_cad_targets.py",
+      "../../work/build_figure11_three_columns_20261014.cjs",
+      "manuscript_state.json",
+      "../../doc/CAD渲染配置.md",
+      "../../doc/论文图表调整与清理-2026-10-14.md"
+    ],
+    "audit": "work/figure11_g280_tail_build/candidate_audit.json",
+    "backup": "work/figure11_g280_tail_backup_20261014",
+    "build_command": "latexmk -pdf -outdir=work/figure11_g280_tail_build -interaction=nonstopmode -halt-on-error -silent main.tex",
+    "checked_hashes": {
+      "main.tex": "27a03e03e93a023514a061603205d50196cc336bf4dfdd16d5ebe777f021d6d9",
+      "main.pdf": "7234a5758b6dd40b436bd36533d9655ad55e497300090d2d3c508c2c3270d75a",
+      "candidate": "731876ac884c6b16340a2d3acd0f993ef9dde9e2a3d3893ae87928f0a9c71a53"
+    }
+  },
+  "figure10_airplane_body_20261014": {
+    "date": "2026-10-14",
+    "status": "LOCAL_FIGURE10_AIRPLANE_BODY_REVISION_COMPLETE",
+    "models": [
+      "109 standard E-1",
+      "Airplane body"
+    ],
+    "page": 21,
+    "total_pages": 27,
+    "tests": 31,
+    "added_images": [
+      "cad_airplane_body_before.png",
+      "cad_airplane_body_after.png"
+    ],
+    "panel_size": [
+      2400,
+      1000
+    ],
+    "paired_cameras_equal": true,
+    "source_hashes_verified": true,
+    "same_endpoints_as_figure11": true,
+    "processed_labels": "Uniform grey display only; no new semantic ground truth.",
+    "change_scope": "Add one Airplane body original/processed CAD row below the existing 109 row; default opaque CAD styling, orange original windows and genuine face edges. Archived original/final STEP endpoints; no geometry processing.",
+    "evidence_scope": "Processed Airplane body B-Rep is invalid; explicitly descriptive in caption. I2/I3 remain open.",
+    "tables_unchanged": 9,
+    "citation_commands_unchanged": true,
+    "latex_warnings": 0,
+    "visual_pages": [
+      20,
+      21,
+      22,
+      23
+    ],
+    "prose_review": "Updated Figure 10 navigation and caption to distinguish two models and four panels. Paired cameras, orange original feature labels and invalid endpoint scope explicit; adjacent Figure 8/9 and Figure 11 descriptions remain aligned.",
+    "diagnostics_review": "Retain technical B-Rep and camera vocabulary for reproducibility; no new completeness claims.",
+    "changed_files": [
+      "main.tex",
+      "main.pdf",
+      "figure_comparison_sources.json",
+      "figures/fig11_109_decal_comparison.tex",
+      "figures/cad_airplane_body_before.png",
+      "figures/cad_airplane_body_after.png",
+      "figures/comparison_airplane_body_manifest.json",
+      "../../python/visualize_cad_targets.py",
+      "../../python/tests/test_visualize_cad_targets.py",
+      "manuscript_state.json",
+      "../../doc/CAD渲染配置.md",
+      "../../doc/论文图表调整与清理-2026-10-14.md"
+    ],
+    "audit": "work/figure10_airplane_body_build/candidate_audit.json",
+    "backup": "work/figure10_airplane_body_backup_20261014",
+    "build_command": "latexmk -pdf -outdir=work/figure10_airplane_body_build -interaction=nonstopmode -halt-on-error -silent main.tex",
+    "checked_hashes": {
+      "main.tex": "66dc87c01fd6c674e2d64a3fee69a103819e4ae1eb1fa407605f3b5b6a2f236b",
+      "main.pdf": "01e38ab71f04080e28903cb1c537b9a275d7640bfd6f2bc44aad89bd0e8722c0",
+      "candidate": "c303b86c1f0db34cc57edc8607ed4d43d7573356e0bcb4a1ff4fe45ea66ae8c9"
+    },
+    "layout_superseded_by": "figure10_row_order_20261014"
+  },
+  "figure10_row_order_20261014": {
+    "date": "2026-10-14",
+    "status": "LOCAL_FIGURE10_ROW_ORDER_COMPLETE",
+    "row_order": [
+      "Airplane body",
+      "109 standard E-1"
+    ],
+    "page": 21,
+    "total_pages": 27,
+    "images_and_layout_unchanged": true,
+    "main_tex_only_caption_changed": true,
+    "latex_warnings": 0,
+    "visual_pages": [
+      21
+    ],
+    "prose_review": "Caption upper/lower model names and orange window/star order match swapped rows. Original/processed labels remain a,c and b,d. Scientific scope and invalid endpoint limitation unchanged; adjacent prose and all citations unchanged.",
+    "tests": "No code changes; previous 31 renderer tests remain applicable. Exact row-order/layout assertions and PDF visual QA performed.",
+    "audit": "work/figure10_row_order_build/candidate_audit.json",
+    "backup": "work/figure10_row_order_backup_20261014",
+    "checked_hashes": {
+      "main.tex": "7e615f812969a4d384fdc67a953c3b8930b96954f693ccc4c9a7ba58ce8531c2",
+      "main.pdf": "899a407e4680d219e287be7c8bef9abf92d968f08b0e8681fa33d91d1f0420e4",
+      "candidate": "05db1f916b027f745579ec83038f9a7c25f8f599772c4d31ccbb1b22a5844328"
+    },
+    "pagination_superseded_by": "pages19_21_layout_20261014"
+  },
+  "pages19_21_layout_20261014": {
+    "date": "2026-10-14",
+    "status": "LOCAL_PAGES19_21_LAYOUT_COMPLETE",
+    "total_pages": 27,
+    "figure_pages": {
+      "7": 20,
+      "8": 20,
+      "9": 20,
+      "10": 21,
+      "11": 22
+    },
+    "table_pages": {
+      "7": 19,
+      "8": 23,
+      "9": 23
+    },
+    "change": "Remove forced page break after Figure 7; allow Figures 7--10 on float pages; replace forced break after Figure 10 with FloatBarrier so the next subsection can fill page 21.",
+    "source_content_unchanged": true,
+    "all_captions_unchanged": true,
+    "tables_unchanged": 9,
+    "images_sizes_and_order_unchanged": true,
+    "visual_pages": [
+      19,
+      20,
+      21,
+      22,
+      23,
+      24
+    ],
+    "latex_warnings": 0,
+    "verification": "Exact source equivalence after normalizing only float placement options and page/float barriers. No renderer code or image changes; previous 31 renderer tests remain applicable. No prose candidate changed; prior caption audit text remains identical.",
+    "functional_coverage": "Page 20 now holds Figures 7--9 without large top/bottom gaps; Figure 10 and following subsection share page 21. Table 7 and introduction retained on page 19. Neighboring Figure 11/table/discussion pages inspected. Existing I2/I3 remain open.",
+    "changed_files": [
+      "main.tex",
+      "main.pdf",
+      "manuscript_state.json",
+      "../../doc/CAD渲染配置.md",
+      "../../doc/论文图表调整与清理-2026-10-14.md"
+    ],
+    "backup": "work/pages19_21_layout_backup_20261014",
+    "checked_hashes": {
+      "main.tex": "441934e21b7dca4668b397bdf4a4cc7898f7a45cacbd904fda93e16b5f54d144",
+      "main.pdf": "4f601e989b57fe2dacbea409d15a9f713cf12cad3079f15d1a395588b9ab45e6"
+    }
+  },
+  "figure5_detail_removal_20261014": {
+    "date": "2026-10-14",
+    "status": "LOCAL_FIGURE5_DETAIL_REMOVAL_COMPLETE",
+    "page": 11,
+    "total_pages": 27,
+    "visual_pages": [
+      10,
+      11,
+      12
+    ],
+    "change": "Remove bottom NNConv detail box, shrink bounding box by 30 mm, remove corresponding caption sentence. Shared input, independent branches, pooling/heads and threshold decision unchanged.",
+    "main_tex_only_caption_sentence_removed": true,
+    "scientific_content_unchanged": true,
+    "latex_warnings": 0,
+    "prose_review": "Caption still explains panels a/b/c and face-node colours. No dangling lower-panel reference. Layer equations and architectural evidence remain in unchanged adjacent methods. No citation or metric changes.",
+    "tests": "No model/rendering behavior changed; exact source and diagram assertions plus PDF visual inspection used.",
+    "audit": "work/figure5_remove_detail_build/candidate_audit.json",
+    "backup": "work/figure5_remove_detail_backup_20261014",
+    "changed_files": [
+      "main.tex",
+      "main.pdf",
+      "figures/fig_class_specific_gnn_architecture_v7.tex",
+      "manuscript_state.json",
+      "../../doc/论文图表调整与清理-2026-10-14.md"
+    ],
+    "checked_hashes": {
+      "main.tex": "4f19accb0682c27239f40d1d32c0c6a543b7170712f624dc0888c86ad45bc67f",
+      "main.pdf": "f9842ca6b554794e8f1cfdd65a8c8b15eeeebc57d7f67e1c6618d4316f09aee1",
+      "candidate": "dad94bfe0e46a5011680430ec0444603cd38b3a87970f4a63281d3e10489341a"
+    }
+  },
+  "figure5_layer_style_20261015": {
+    "date": "2026-10-15",
+    "status": "LOCAL_FIGURE5_LAYER_STYLE_COMPLETE",
+    "page": 11,
+    "total_pages": 27,
+    "change": "Replace each branch NNConv text box with four shallow-3D slabs labelled L1-L4, using branch-colour shades and a dashed group frame. Retain the four-layer and hidden-width-64 label. Adjust downstream spacing by 9 mm and figure bounding box by 10 mm.",
+    "authority": "Current v7 figure and unchanged Methods/caption; author-supplied image used only as a visual reference.",
+    "scientific_content_unchanged": true,
+    "main_tex_unchanged": true,
+    "verification": "latexmk succeeded in an isolated work build after root auxiliary-cache truncation; valid PDF and auxiliary files restored to manuscript directory. Exact final main.pdf page 11 rendered and visually inspected: labels, four slabs per branch, arrows, pooling, heads, decision and caption have no clipping or overlap. PDF remains 27 pages. No Overfull, undefined-reference, duplicate-label or float-too-large warnings. Main source hash matches the pre-edit backup. Requested local visual coverage complete; existing release status and I2/I3 unchanged.",
+    "preview": "work/figure5_layer_style_20261015/preview.png",
+    "backup": "work/figure5_layer_style_20261015/before.tex",
+    "changed_files": [
+      "figures/fig_class_specific_gnn_architecture_v7.tex",
+      "main.pdf",
+      "manuscript_state.json"
+    ],
+    "checked_hashes": {
+      "main.tex": "4f19accb0682c27239f40d1d32c0c6a543b7170712f624dc0888c86ad45bc67f",
+      "main.pdf": "5dd82fc40cbe21339cf52516570a5d93eb772914f8d04ed422e95c918e9c3d44",
+      "figure": "993d8015c0e584292d0ef84e2ee24c596d29aab8add4139c56491643d9d7c968"
+    }
+  },
+  "figure5_vivid_layer_colours_20261015": {
+    "date": "2026-10-15",
+    "status": "LOCAL_FIGURE5_VIVID_LAYER_COLOURS_COMPLETE",
+    "page": 11,
+    "total_pages": 27,
+    "change": "Use vivid blue #55ADF0, orange #F6A159, green #39C59A and purple #A77AD0 for L1-L4 in both branches. Lighter top faces and darker side faces preserve the shallow-3D appearance. Branch framing, slab geometry, arrows, all labels and manuscript text unchanged.",
+    "verification": "latexmk succeeded using the existing isolated work build after a root auxiliary-file interruption. Exact final main.pdf page 11 rendered and visually inspected: layer labels remain legible, no overlap or clipping; 27 pages. No Overfull, undefined-reference, duplicate-label or float-too-large warnings. main.tex hash matches the pre-edit backup. Source comparison confirms colour-only changes. Requested local visual revision complete; release status and existing scientific boundaries unchanged.",
+    "preview": "work/figure5_vivid_layers_20261015/preview.png",
+    "backup": "work/figure5_vivid_layers_20261015/before.tex",
+    "changed_files": [
+      "figures/fig_class_specific_gnn_architecture_v7.tex",
+      "main.pdf",
+      "manuscript_state.json"
+    ],
+    "checked_hashes": {
+      "main.tex": "4f19accb0682c27239f40d1d32c0c6a543b7170712f624dc0888c86ad45bc67f",
+      "main.pdf": "b038eed43f1e6234bb8de4500531ff34924e82bd060a9dc11745b515dad41adf",
+      "figure": "d40729175be9cdd4e7f7de09f6ac8f0321da2a96e8c040de2df502159cca05cc"
+    }
+  },
+  "figure5_module_cards_20261015": {
+    "date": "2026-10-15",
+    "status": "LOCAL_FIGURE5_MODULE_CARDS_COMPLETE",
+    "page": 11,
+    "total_pages": 27,
+    "scope": "Beautify the four author-selected input, encoder, local/global-and-head, and fixed-decision regions in the current Figure 5.",
+    "change": "Shared-connectivity title strip plus separate 48D node/6D edge attribute cards; tinted branch-title strips; separate node/edge encoder cards feeding the NNConv group; Local 64D and Mean+Max Global 128D cards feeding Concatenate 192D; Adapter 192-to-96, Head 96-to-1 and Sigmoid score cards in sequence. Replace the bottom text strip with rivet, surface-feature and background conditional cards. Retain vivid L1-L4 slabs and input face colours. Enlarge the figure height by 16 mm for spacing.",
+    "authority": "Current main.tex Methods and caption, current v7 source, and four author-selected screenshots. Decorative colours and cards add no operations or learned fusion.",
+    "main_tex_unchanged": true,
+    "scientific_content_unchanged": true,
+    "verification": "latexmk succeeded in the existing isolated build. Exact final main.pdf page 11 rendered and visually inspected: input, both branches, layer slabs, merging arrows, adapter/head/score chain, threshold cards and unchanged caption have no clipping or overlap. PDF remains 27 pages with Figure 5 on page 11. No Overfull, undefined-reference, duplicate-label or float-too-large findings. Main source hash equals pre-edit backup. Nine combinations immediately below, at and above both thresholds confirm the expanded conditions are exclusive and match the original rivet-precedence decision. Source diff and manual review preserve dimensions, four layers, two independent branches, pooling, scores and fixed thresholds; no new architecture or quantitative claims. Requested four-region coverage and final visual check complete; release status and existing evidence limits unchanged.",
+    "preview": "work/figure5_module_cards_20261015/preview.png",
+    "backup": "work/figure5_module_cards_20261015",
+    "changed_files": [
+      "figures/fig_class_specific_gnn_architecture_v7.tex",
+      "main.pdf",
+      "manuscript_state.json"
+    ],
+    "checked_hashes": {
+      "main.tex": "4f19accb0682c27239f40d1d32c0c6a543b7170712f624dc0888c86ad45bc67f",
+      "main.pdf": "e635637304cae032895961bdc49408d63982388686ea3c622c6f7fea0aa5dc41",
+      "figure": "d87b4a4742850f8d5230a24c793ff5f264ea4ae05c42108871954e2a7514b983"
+    }
+  },
+  "figure5_input_connector_20261015": {
+    "date": "2026-10-15",
+    "status": "LOCAL_FIGURE5_INPUT_CONNECTOR_COMPLETE",
+    "page": 11,
+    "total_pages": 27,
+    "change": "Replace the shared-input staircase connector with a smooth cubic trunk and a symmetric rounded blue/orange fork. Add a small junction dot. Arrow tips terminate visibly just above each branch frame.",
+    "scope": "Only the shared-input-to-branches connector paths; labels, cards, layer geometry, graph image, caption, manuscript text and all model semantics unchanged.",
+    "verification": "latexmk succeeded in the existing isolated build; 27 pages, Figure 5 page 11. Rendered the latest page and inspected the connector crop for smooth curvature, symmetric fork arms, visible arrowheads and clearance from section heading and input/node labels. No Overfull, undefined-reference, duplicate-label or float-too-large findings. main.tex hash matches pre-edit backup. Final manuscript PDF hash matches the inspected build. Source diff confirms connector-only geometry/style changes. Requested local coverage complete; existing release status unchanged.",
+    "preview": "work/figure5_input_connector_20261015/connector.png",
+    "backup": "work/figure5_input_connector_20261015/before.tex",
+    "changed_files": [
+      "figures/fig_class_specific_gnn_architecture_v7.tex",
+      "main.pdf",
+      "manuscript_state.json"
+    ],
+    "checked_hashes": {
+      "main.tex": "4f19accb0682c27239f40d1d32c0c6a543b7170712f624dc0888c86ad45bc67f",
+      "main.pdf": "ae728a058e00892999a09eb98d093232622ad375b884b6034f779e8586bf7bb5",
+      "figure": "b1e91a66e2d8da3e961063ee1fcb39d5cfbb1cf102bb1278522687ec9e636aa8"
+    }
+  },
+  "figure5_vertical_layout_and_stage_balance_20261015": {
+    "date": "2026-10-15",
+    "status": "LOCAL_FIGURE5_VERTICAL_LAYOUT_AND_STAGE_BALANCE_COMPLETE",
+    "page": 11,
+    "total_pages": 27,
+    "authority": "Author requested removal of smooth connectors and layout rearrangement, then enlargement of panel a and reduction of panel b during the same revision.",
+    "change": "Centre B-Rep, face graph and shared input vertically on x=80 mm, with right-side annotations and straight downward arrows. Replace the input curve with a central vertical trunk and symmetric blue/orange orthogonal fork. Increase B-Rep display from intermediate 30 mm to 46 mm, graph square from 10 mm to 18 mm, graph node circles from 5.5 mm to 7 mm and input card width from 57 mm to 70 mm. Scale only the two branch diagrams to 0.88; keep section headings and panel c at the original font size. Reposition decision and output connections to fit a single page.",
+    "scientific_content_unchanged": true,
+    "main_tex_unchanged": true,
+    "verification": "latexmk succeeded in the existing isolated build. Latest full page 11 visually inspected: enlarged panel a and smaller panel b retain readable labels, preserved F1-F4 colours/identity/connectivity, centred straight split, unchanged branch internals and intact decision/caption without clipping or overlap. PDF remains 27 pages. No Overfull, undefined-reference, duplicate-label or float-too-large findings. Source search confirms no cubic or rounded flow connectors. main.tex hash matches pre-edit backup; final manuscript PDF hash matches the inspected build. All four-layer, 48/6/64/128/192/96/1 widths, score notation and thresholds preserved. Both layout and stage-proportion requests complete; no new operations, numbers, results or scientific claims. Existing release status unchanged.",
+    "preview": "work/figure5_stage_balance_20261015/preview.png",
+    "backup": "work/figure5_vertical_input_20261015/before.tex",
+    "intermediate_backup": "work/figure5_stage_balance_20261015/before.tex",
+    "changed_files": [
+      "figures/fig_class_specific_gnn_architecture_v7.tex",
+      "main.pdf",
+      "manuscript_state.json"
+    ],
+    "checked_hashes": {
+      "main.tex": "4f19accb0682c27239f40d1d32c0c6a543b7170712f624dc0888c86ad45bc67f",
+      "main.pdf": "84b0652395d4c9e8c4bf5e56f9dfb53fb90bf3768ea39a236016000ccf87d666",
+      "figure": "ce045e8cc74b47c22e9ebac87fd683a92a30fc571efed6f55352771872642b33"
+    }
+  },
+  "figure5_halfpage_layout_20261015": {
+    "date": "2026-10-15",
+    "status": "LOCAL_FIGURE5_HALF_PAGE_LAYOUT_COMPLETE",
+    "page": 11,
+    "total_pages": 27,
+    "change": "Change only Figure 5 placement from [!htbp] to [!t]. Place the existing approximately half-page figure and caption at the top of page 11, with body text continuing below instead of a vertically centred float-only page.",
+    "scientific_content_unchanged": true,
+    "figure_source_and_caption_unchanged": true,
+    "verification": "Exact source comparison confirms a single float-placement change. Isolated latexmk compilation succeeded without layout or reference warnings. Pages 10--12 inspected individually; pages 13--19 inspected for downstream text/table reflow. Figure/table pages 20--27 have identical extracted page text to the previous PDF. No clipping or overlap found. The final main.pdf is byte-identical to the inspected build. Existing release status and issues remain unchanged.",
+    "visual_pages": [
+      10,
+      11,
+      12,
+      13,
+      14,
+      15,
+      16,
+      17,
+      18,
+      19
+    ],
+    "backup": "../../work/figure5_halfpage_20261015",
+    "build": "work/figure5_halfpage_build_20261015",
+    "changed_files": [
+      "main.tex",
+      "main.pdf",
+      "manuscript_state.json"
+    ],
+    "checked_hashes": {
+      "main.tex": "5c8f6e1a9ab7cf585a24a27772ddfbeacf87b1f8b3def88730db80104f8ebcd7",
+      "main.pdf": "37b614017a6b2d0390e32f1ecb7dca0b01a1c7ed4288f1efdb30325d580594cd",
+      "figure": "ce290de36526ca8fa7f3994d0a6b9b9f1074d07d800990b6feb4fb3cf72bd881"
+    }
+  },
+  "figure5_input_arrow_20261015": {
+    "date": "2026-10-15",
+    "status": "LOCAL_FIGURE5_INPUT_ARROW_COMPLETE",
+    "page": 11,
+    "total_pages": 27,
+    "change": "Name the graph-input card graphInput and draw the rightward input arrow after the card, ending at graphInput.west with a 0.4 mm gap. The arrowhead is visible outside the card fill.",
+    "verification": "Exact source comparison confirms only the input connector target and draw order changed. main.tex is byte-identical to the backup. Latexmk succeeded without layout or reference warnings. Latest PDF page 11 visually inspected: clear rightward arrowhead; half-page top figure, caption and following body text preserved without clipping or overlap. Final main.pdf is byte-identical to the inspected build. No scientific meaning, dimensions, labels, data, citations or claims changed. Existing release status remains unchanged.",
+    "backup": "../../work/figure5_input_arrow_20261015",
+    "changed_files": [
+      "figures/fig_class_specific_gnn_architecture_v7.tex",
+      "main.pdf",
+      "manuscript_state.json"
+    ],
+    "checked_hashes": {
+      "main.tex": "5c8f6e1a9ab7cf585a24a27772ddfbeacf87b1f8b3def88730db80104f8ebcd7",
+      "main.pdf": "2c4649125dc2144bb491173f57ce0f667ed389ea32c67f626f8656ffb9c79f0a",
+      "figure": "faf11abdcefb9aa12e791f0392661107db107d3e75cee005ae10107512451777"
+    }
+  },
+  "figure6_compact_layout_20261015": {
+    "date": "2026-10-15",
+    "status": "LOCAL_FIGURE6_COMPACT_LAYOUT_COMPLETE",
+    "page": 14,
+    "total_pages": 27,
+    "change": "Replace three tall cards with a matched three-stage top-view workflow, two operation bands, and two aligned comparison matrices. Rivet regions 1--3 use paired A/B rows; window/decal rows retain stages A/B/C. Enlarge rivet details from 14 to 18 mm; surface details use 18 mm; whole-aircraft views retain 42 mm width and registered region-marker coordinates. Synchronize caption panel descriptions.",
+    "scientific_content_unchanged": true,
+    "source_images_reused": [
+      "fig6_g280_original_top_fixed.png",
+      "fig6_g280_horizontal_original_window_fixed.png",
+      "fig6_g280_horizontal_original_decal_fixed.png",
+      "fig6_g280_rivet_removed_top_fixed.png",
+      "fig6_g280_horizontal_rivet_removed_window_fixed.png",
+      "fig6_g280_horizontal_rivet_removed_decal_fixed.png",
+      "fig6_g280_surface_processed_top_fixed.png",
+      "fig6_g280_horizontal_surface_processed_window_fixed.png",
+      "fig6_g280_horizontal_surface_processed_decal_fixed.png",
+      "fig6_g280_horizontal_original_detail_2_fixed.png",
+      "fig6_g280_horizontal_original_detail_1_fixed.png",
+      "fig6_g280_horizontal_original_detail_3_fixed.png",
+      "fig6_g280_horizontal_rivet_removed_detail_2_fixed.png",
+      "fig6_g280_horizontal_rivet_removed_detail_1_fixed.png",
+      "fig6_g280_horizontal_rivet_removed_detail_3_fixed.png"
+    ],
+    "verification": "Exact main.tex comparison confirms only Figure 6 caption changed; all adjacent prose, citations, numbers, tables and Figure 5 settings unchanged. All 15 original displayed assets retained without CAD export, image modification or camera change. Caption checked against actual panels and Methods: stage order, topology/graph re-extraction, fixed comparison cameras, colours and incomplete-removal evidence boundary retained. Registered prohibited/discouraged phrase scan has no findings. Necessary stage/region repetition retained for independent caption readability. Latexmk succeeded without layout or reference warnings. Latest PDF pages 14 and 15 visually inspected: aligned panels, paired details, visible arrows, intact caption and downstream table text. Final PDF is byte-identical to inspected build. Existing WORKING status and I2/I3 remain unchanged; this is a local layout/caption check.",
+    "backup": "../../work/figure6_compact_layout_20261015",
+    "preview": "../../work/figure6_compact_layout_20261015/preview.png",
+    "visual_pages": [
+      14,
+      15
+    ],
+    "changed_files": [
+      "figures/fig_g280_horizontal_processing.tex",
+      "main.tex",
+      "main.pdf",
+      "manuscript_state.json"
+    ],
+    "checked_hashes": {
+      "main.tex": "636b5972cb177cecb485ba6f84fa4a9fa8617d5833ab98b99f2ee87dd706d116",
+      "main.pdf": "6daf57e23ac97d344714c2f934f54bfcf08636c3321c5c8a666aef059ceef986",
+      "figure": "2379e809941d28a052c726e70a556bff496ce29bd7d60a192607fc8a52f0be7f",
+      "candidate": "7137e8231178bed1ad980360913d43650457320622ae84bc2ea9aa2c49123e7c"
+    }
+  },
+  "figure4_graph_labels_20261015": {
+    "date": "2026-10-15",
+    "status": "LOCAL_FIGURE4_GRAPH_LABELS_COMPLETE",
+    "page": 9,
+    "total_pages": 27,
+    "change": "Add five node labels v_i, v_j, v_k, v_l, v_m and six corresponding edge labels to both graph panels. Use identical labels in both panels; v_i is the aggregation target. Preserve original graph geometry, colours, arrows and all prose/captions.",
+    "verification": "Exact source comparison confirms only two local TikZ styles and one shared label loop were added to Figure 4. Each edge subscript matches its endpoint labels; the shared loop translates labels by the same 6.54 cm as the original graph. Latest pages 9 and 10 visually inspected: all labels readable, arrowheads clear, no collisions with attribute card or notes. Latexmk succeeded without layout or reference warnings; PDF remains 27 pages. Final PDF byte-identical to inspected build. No scientific data, citations or text changed. Existing release status unchanged.",
+    "backup": "../../work/figure4_graph_labels_20261015",
+    "preview": "../../work/figure4_graph_labels_20261015/preview.png",
+    "visual_pages": [
+      9,
+      10
+    ],
+    "changed_files": [
+      "main.tex",
+      "main.pdf",
+      "manuscript_state.json"
+    ],
+    "checked_hashes": {
+      "main.tex": "eafa0a05a5f9f5a44051e771f601c435ea3710c3a27048c416edf16ea3762e19",
+      "main.pdf": "fef053084ebec540fd7ceef2f3cdfd21a0d25244fbd160b21af6d1ae48a23657",
+      "candidate": "e3388efc95920eb3fcc351fb8d22467fbae73117d92c8ae54e1cc524e35a372c"
+    }
+  },
+  "figures4_5_numeric_notation_20261015": {
+    "date": "2026-10-15",
+    "status": "SUPERSEDED_BY_LETTER_NOTATION",
+    "total_pages": 27,
+    "visual_pages": [
+      9,
+      11
+    ],
+    "change": "Unify graph-node notation to numeric subscripts. Figure 4 uses v_1--v_5 and e_12/e_23/e_34/e_45/e_15/e_24, matching the numbering and topology already used in Figure 3. Figure 5 graph nodes use v_1--v_4; geometric face labels F1--F4 remain colour- and number-matched.",
+    "verification": "Exact source assertions confirm only node/edge identifiers in Figure 4 and node labels in Figure 5 changed. Graph connectivity, geometry, colours, dimensions, captions, adjacent prose, citations and all scientific results unchanged. Latexmk succeeded without layout/reference warnings. Latest pages 9 and 11 visually checked: numeric labels clear, correct endpoint indices, preserved face-node colour correspondence and half-page Figure 5 layout. Final main.pdf byte-identical to inspected build. Existing WORKING status and I2/I3 remain unchanged.",
+    "backup": "../../work/figure4_5_numeric_labels_20261015",
+    "changed_files": [
+      "main.tex",
+      "figures/fig_class_specific_gnn_architecture_v7.tex",
+      "main.pdf",
+      "manuscript_state.json"
+    ],
+    "checked_hashes": {
+      "main.tex": "4d57fdad7e54de68a227a2952c1e67317a5c63a1b1c373d19163054365b82c44",
+      "main.pdf": "f52c5025745458fc098596cfd23895c70af00117430261d14263424f1645b82e",
+      "figure5": "5b1dc3ac0dbf5b573104dadaf3e5a2f8231a702630d50e61491aab1c3ea89302"
+    }
+  },
+  "figures4_5_letter_notation_20261015": {
+    "date": "2026-10-15",
+    "status": "LOCAL_FIGURES4_5_LETTER_NOTATION_COMPLETE",
+    "visual_pages": [
+      9,
+      11
+    ],
+    "total_pages": 27,
+    "change": "Use i/j/k/l/m subscripts for graph nodes and matching edges in Figures 4/5; Figure 5 geometric faces use F_i/F_j/F_k/F_l matching node colours and indices.",
+    "verification": "Exact label-source changes checked. Original OCC renderer validated all four trimmed B-spline faces. Zero changed pixels outside the four label regions; dimensions remain 1252x651. Latest pages 9/11 visually checked and latexmk succeeded without layout/reference warnings. Geometry, camera, connectivity, captions and prose unchanged.",
+    "backup": "../../work/figure4_5_letter_labels_20261015",
+    "changed_files": [
+      "main.tex",
+      "figures/fig_class_specific_gnn_architecture_v7.tex",
+      "figures/fig5_bspline_curved_sheet.png",
+      "../../work/render_figure5_curved_sheet.py",
+      "main.pdf",
+      "manuscript_state.json"
+    ],
+    "checked_hashes": {
+      "main.tex": "eafa0a05a5f9f5a44051e771f601c435ea3710c3a27048c416edf16ea3762e19",
+      "main.pdf": "30b1d26e00d9a2c7cff42d040fde77f3116cdf4257fa8f4adfb9bdee1891331d",
+      "figure5": "fd40769312e306bb7ab856158ffac9bddd136c5e205419b84f3f5d6e7a77ef78",
+      "sheet": "83c9ffe9a6053592c8e539f4a21bdc7bfa9f13e31e44fc579decd6ba387d0814",
+      "renderer": "f3c555faa88f3fc29c10d118388485724000757ba113cafb0fce27319e315841"
+    }
+  },
+  "table_font_layout_check_20261015": {
+    "date": "2026-10-15",
+    "status": "LOCAL_TABLE_FONT_AND_LAYOUT_CHECK_COMPLETE",
+    "total_pages": 26,
+    "table_body_font_tex_pt": 10,
+    "previous_table6_font_pdf_pt": 12.737,
+    "table_font_check": "../../work/table_font_layout_20261015/pdf_font_verification.json",
+    "change": "Set all nine table bodies and headers to footnotesize (10 TeX pt) and remove four resizebox wrappers. Tables 6/7 use tabular* spacing; Tables 8/9 use fixed-width wrapping columns with vertically centred cells. Table 8 percentage changes and long Table 9 headers wrap without scaling. Captions retain existing size and wording.",
+    "verification": "PDF character measurements confirm dominant and largest table-body size 9.963 PDF points (10 TeX pt) in every table; Table 5 mathematical exponents remain proportionally smaller. All table characters remain within horizontal margins. Exact source comparison preserves all non-table text, every caption, row delimiter count and all numeric body tokens. Figures 4/5 letter notation unchanged. Isolated latexmk succeeded without overfull/underfull, reference or float warnings. Entire 26-page PDF inspected through rendered contact sheets; all table pages 15/16/17/18/19/21/23 and reflowed figure pages 19/20/22 inspected at larger scale, plus Figures 4/5 checked earlier. No table clipping, overlap or mismatched font sizes found. Final main.pdf byte-identical to inspected build. This is a typography/layout check; existing WORKING status and I2/I3 remain open.",
+    "visual_overview_pages": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10,
+      11,
+      12,
+      13,
+      14,
+      15,
+      16,
+      17,
+      18,
+      19,
+      20,
+      21,
+      22,
+      23,
+      24,
+      25,
+      26
+    ],
+    "detailed_pages": [
+      9,
+      11,
+      15,
+      16,
+      17,
+      18,
+      19,
+      20,
+      21,
+      22,
+      23
+    ],
+    "backup": "../../work/table_font_layout_20261015",
+    "changed_files": [
+      "main.tex",
+      "main.pdf",
+      "manuscript_state.json"
+    ],
+    "checked_hashes": {
+      "main.tex": "4109e3acd451c2f8350f369e820ba5f6c05863829631ca61a4e1545a9a11b320",
+      "main.pdf": "052ba5ab470e660ed28defdcacbb9d2d7a4b060c2805a1ed87982c4e4b1324f8",
+      "font_report": "1144f2240a5900bb16b180cd15f56ef9a18aee88964d9f75d39a72314cb2d261"
+    }
+  },
+  "figure11_g280_overlap_repair_20261015": {
+    "date": "2026-10-15",
+    "root_cause": "G280 narrow window removal expanded trimmed host surfaces to UV rectangles, creating coincident skin layers and mesh occlusion.",
+    "fix": "Keep original outer host wires and remove matched inner wires through the existing reshape path; retain other aircraft profile behavior.",
+    "metrics": {
+      "faces": 277,
+      "nodes": 8727,
+      "triangles": 11084,
+      "mesh_seconds_median": 0.09608590003335848,
+      "qem_total_seconds": 0.18752290005795658,
+      "qem_relative_difference_percent": 48.76044472239828,
+      "nine_model_qem_median_percent": 48.08364426429172
+    },
+    "validation": {
+      "native_build": "PASS",
+      "relevant_tests": "4 passed: G280 geometry integration (2), removal-pipeline contract (2)",
+      "front_layer_probe": {
+        "triangles": 11084,
+        "sampled_rays_with_two_or_more_hits": 171,
+        "rays_with_near_front_layers": 0,
+        "near_threshold": 0.21882818005633864,
+        "front_face_pairs": {},
+        "near_samples": []
+      },
+      "brep_valid": true,
+      "free_edges": {
+        "original": 2,
+        "simplified": 89
+      },
+      "table_count": 9,
+      "table_font_tex_pt": 10,
+      "pdf_pages": 26,
+      "visual_pages": [
+        14,
+        21,
+        22,
+        23
+      ],
+      "source_scope": "Exactly two G280 table rows, one QEM median, and the G280 Figure 11 triangle label changed against pre-repair manuscript backup.",
+      "pdf_matches_inspected_build": true
+    },
+    "checked_hashes": {
+      "main.tex": "e3615042813a809b71c929301c88017334f6948b94c2b6efb919dcd11f400784",
+      "main.pdf": "772fc124dfea19d289e0d6be556ae25de21f66b3fa39aced402fd67f88a5b241",
+      "repaired_step": "a958756e51ba37e98df26e6882c622f6a9e04b74a33c0dd460f4d34734663d8e"
+    },
+    "limitations": "Local front-skin overlap is removed. The processed STEP retains 89 free edges under the formal geometry counter. This does not certify watertightness, geometric equivalence or CAE performance.",
+    "provenance": {
+      "backup": "work/figure11_g280_repair_20261015/backup",
+      "measurement": "results/e3_mesh/per_model/gulfstream_simplified.json",
+      "geometry": "results/e3_mesh/per_model/gulfstream_geometry.json",
+      "qem_replay": "work/figure11_g280_repair_20261015/remeasure_qem.py",
+      "regression": "python/tests/test_g280_rebuild_geometry.py"
+    },
+    "supersedes": "Earlier G280 final-stage geometry, measurements, Figure 6 C-stage assets and Figure 11(d) images/counts are historical snapshots; current authority is this repair and its source manifests. Prior camera/layout records remain applicable."
   }
 }

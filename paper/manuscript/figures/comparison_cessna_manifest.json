@@ -1,0 +1,140 @@
+{
+  "model": "Cessna Citation 2",
+  "endpoint_scope": "Original and archived window-stage endpoint shown in the CAD figure.",
+  "projection": "orthographic",
+  "size": [
+    2400,
+    1000
+  ],
+  "camera": {
+    "center": [
+      -7273.409050755,
+      0.0,
+      1580.386852229318
+    ],
+    "projection": [
+      0,
+      1,
+      0
+    ],
+    "up": [
+      0,
+      0,
+      1
+    ],
+    "scale": 6546.068145769501
+  },
+  "geometry_modified": false,
+  "relative_deflection": 0.0005,
+  "angular_deflection_rad": 0.5,
+  "stages": [
+    {
+      "stage": "before",
+      "step": "D:\\projects\\gjy_byproject\\data\\plane_model\\after_two\\Cessna Citation 2_wing_rivets.step",
+      "labels": "D:\\projects\\gjy_byproject\\data\\plane_model\\label\\Cessna Citation 2_wing_rivets.labels.json",
+      "step_sha256": "4d879b94232623e614d51770d916c28debfcaa41a45ac52d4c10c09c58b56b86",
+      "labels_sha256": "f2f57eafc95ca328fb4d885e1447b6d67567843502f3c0020cbd46826c840ce4",
+      "cad_image": "cad_cessna_before.png",
+      "cad_camera": {
+        "center": [
+          -7273.409050755,
+          0.0,
+          1580.386852229318
+        ],
+        "direction": [
+          -0.0,
+          -1.0,
+          -0.0
+        ],
+        "up": [
+          0.0,
+          0.0,
+          1.0
+        ],
+        "scale": 6546.068145769501,
+        "aspect": 2.4
+      },
+      "mesh": {
+        "faces": 312,
+        "nodes": 13756,
+        "triangles": 19696,
+        "linear_deflection": 10.797144645364892,
+        "mesh_decimated": false
+      },
+      "mesh_image": "mesh_cessna_before.png",
+      "mesh_camera": {
+        "center": [
+          -7273.409050755,
+          0.0,
+          1580.386852229318
+        ],
+        "direction": [
+          -0.0,
+          -1.0,
+          -0.0
+        ],
+        "up": [
+          0.0,
+          0.0,
+          1.0
+        ],
+        "scale": 6546.068145769501,
+        "aspect": 2.4
+      }
+    },
+    {
+      "stage": "after",
+      "step": "D:\\projects\\gjy_byproject\\work\\test_removal_pipeline\\Cessna_Citation_2\\Cessna_Citation_2_surface_removed.step",
+      "labels": "D:\\projects\\gjy_byproject\\work\\cessna_window_visualization\\after_render.labels.json",
+      "step_sha256": "442c92df7f77bb45c9ae571d1f5b982c4626bd9f76e8e5c4dfeb0387a9c48514",
+      "labels_sha256": "2727ef85db9b6e09bab5ae024ae142f21c09b588182e45a0fb4cd02d3ca52318",
+      "cad_image": "cad_cessna_after.png",
+      "cad_camera": {
+        "center": [
+          -7273.409050755,
+          0.0,
+          1580.386852229318
+        ],
+        "direction": [
+          -0.0,
+          -1.0,
+          -0.0
+        ],
+        "up": [
+          0.0,
+          0.0,
+          1.0
+        ],
+        "scale": 6546.068145769501,
+        "aspect": 2.4
+      },
+      "mesh": {
+        "faces": 231,
+        "nodes": 12838,
+        "triangles": 19037,
+        "linear_deflection": 10.797144546664613,
+        "mesh_decimated": false
+      },
+      "mesh_image": "mesh_cessna_after.png",
+      "mesh_camera": {
+        "center": [
+          -7273.409050755,
+          0.0,
+          1580.386852229318
+        ],
+        "direction": [
+          -0.0,
+          -1.0,
+          -0.0
+        ],
+        "up": [
+          0.0,
+          0.0,
+          1.0
+        ],
+        "scale": 6546.068145769501,
+        "aspect": 2.4
+      }
+    }
+  ]
+}

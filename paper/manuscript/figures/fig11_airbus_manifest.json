@@ -1,0 +1,221 @@
+{
+  "model": "Airbus",
+  "scope": "Original and final STEP endpoints of Table 8",
+  "size": [
+    2400,
+    800
+  ],
+  "camera": {
+    "center": [
+      35.481186394382604,
+      7.738677002706912,
+      1.0018652574217413e-12
+    ],
+    "projection": [
+      0,
+      0,
+      1
+    ],
+    "up": [
+      0,
+      1,
+      0
+    ],
+    "scale": 25.546454465042746
+  },
+  "detail": {
+    "original_face_id": 592,
+    "semantic": "window",
+    "center": [
+      23.866726681658506,
+      2.348938053196188,
+      3.7333601231189997
+    ],
+    "projection": [
+      0,
+      0,
+      1
+    ],
+    "up": [
+      0,
+      1,
+      0
+    ],
+    "scale": 3.7846599207470732
+  },
+  "render_style": {
+    "body_rgb": [
+      0.94,
+      0.96,
+      0.98
+    ],
+    "edge_rgb": [
+      0.015,
+      0.02,
+      0.025
+    ],
+    "edge_width": 0.85,
+    "material": "plaster",
+    "transparency": 0.0
+  },
+  "relative_deflection": 0.0005,
+  "angular_deflection_rad": 0.5,
+  "geometry_modified": false,
+  "stages": [
+    {
+      "stage": "before",
+      "step": "D:\\projects\\gjy_byproject\\data\\plane_model\\after_two\\Airbus_wing_rivets.step",
+      "step_sha256": "8574a354f15b0b3ab7925ac9d058db29a3aec31f73954b1e58013c8db5f075f5",
+      "metric_source": "D:\\projects\\gjy_byproject\\results\\e3_mesh\\per_model\\airbus_original.json",
+      "mesh": {
+        "faces": 1775,
+        "nodes": 69556,
+        "triangles": 95610,
+        "linear_deflection": 0.050616151149192656,
+        "mesh_decimated": false
+      },
+      "images": {
+        "mesh_overview": "fig11_airbus_before_mesh_overview.png",
+        "mesh_detail": "fig11_airbus_before_mesh_detail.png"
+      },
+      "cameras": {
+        "mesh_overview": {
+          "center": [
+            35.481186394382576,
+            7.738677002706936,
+            1.0231815394945443e-12
+          ],
+          "direction": [
+            -0.0,
+            -0.0,
+            -1.0
+          ],
+          "up": [
+            0.0,
+            1.0,
+            0.0
+          ],
+          "scale": 25.546454465042746,
+          "aspect": 3.0
+        },
+        "mesh_detail": {
+          "center": [
+            23.866726681658506,
+            2.3489380531961874,
+            3.7333601231189846
+          ],
+          "direction": [
+            -0.0,
+            -0.0,
+            -1.0
+          ],
+          "up": [
+            0.0,
+            1.0,
+            0.0
+          ],
+          "scale": 3.7846599207470732,
+          "aspect": 3.0
+        }
+      }
+    },
+    {
+      "stage": "after",
+      "step": "D:\\projects\\gjy_byproject\\data\\plane_model\\ending\\Airbus_wing_rivets.step",
+      "step_sha256": "873b7466030edc38638dcfe9f89f163aaf47db9ec6ba4c7895a7390956844815",
+      "metric_source": "D:\\projects\\gjy_byproject\\results\\e3_mesh\\per_model\\airbus_simplified.json",
+      "mesh": {
+        "faces": 686,
+        "nodes": 43042,
+        "triangles": 63505,
+        "linear_deflection": 0.050616151149192656,
+        "mesh_decimated": false
+      },
+      "images": {
+        "mesh_overview": "fig11_airbus_after_mesh_overview.png",
+        "mesh_detail": "fig11_airbus_after_mesh_detail.png",
+        "cad_overview": "fig11_airbus_after_cad_overview.png",
+        "cad_detail": "fig11_airbus_after_cad_detail.png"
+      },
+      "cameras": {
+        "mesh_overview": {
+          "center": [
+            35.481186394382604,
+            7.738677002706912,
+            1.0231815394945443e-12
+          ],
+          "direction": [
+            -0.0,
+            -0.0,
+            -1.0
+          ],
+          "up": [
+            0.0,
+            1.0,
+            0.0
+          ],
+          "scale": 25.546454465042746,
+          "aspect": 3.0
+        },
+        "mesh_detail": {
+          "center": [
+            23.866726681658506,
+            2.3489380531961883,
+            3.7333601231189846
+          ],
+          "direction": [
+            -0.0,
+            -0.0,
+            -1.0
+          ],
+          "up": [
+            0.0,
+            1.0,
+            0.0
+          ],
+          "scale": 3.7846599207470732,
+          "aspect": 3.0
+        },
+        "cad_overview": {
+          "center": [
+            35.481186394382604,
+            7.738677002706912,
+            1.0231815394945443e-12
+          ],
+          "direction": [
+            -0.0,
+            -0.0,
+            -1.0
+          ],
+          "up": [
+            0.0,
+            1.0,
+            0.0
+          ],
+          "scale": 25.546454465042746,
+          "aspect": 3.0
+        },
+        "cad_detail": {
+          "center": [
+            23.866726681658506,
+            2.348938053196188,
+            3.7333601231189846
+          ],
+          "direction": [
+            -0.0,
+            -0.0,
+            -1.0
+          ],
+          "up": [
+            0.0,
+            1.0,
+            0.0
+          ],
+          "scale": 3.7846599207470732,
+          "aspect": 3.0
+        }
+      }
+    }
+  ],
+  "original_labels_sha256": "7dd7249fb61f2cb673f87e5a490a8bf2279675db2d050a80d8b3ea55858776cc"
+}

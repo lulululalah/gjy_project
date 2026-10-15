@@ -1,0 +1,33 @@
+\begingroup
+\setlength{\fboxsep}{0pt}
+\setlength{\fboxrule}{0.35pt}
+\newsavebox{\targetInsetBox}
+\newcommand{\targetInset}[1]{%
+  \sbox{\targetInsetBox}{\includegraphics[height=2.35cm]{#1}}%
+  \fbox{\includegraphics[width=\dimexpr\wd\targetInsetBox+2.4pt\relax,height=\dimexpr2.35cm+2.4pt\relax]{#1}}%
+}
+\centering
+\begin{minipage}[t]{0.58\linewidth}
+  \centering
+  \includegraphics[width=0.99\linewidth]{figures/fig4_gulfstream_overview_main.png}
+\end{minipage}\hfill
+\begin{minipage}[t]{0.38\linewidth}
+  \centering
+  \includegraphics[width=0.99\linewidth]{figures/fig4_gulfstream_overview_top.png}
+\end{minipage}\\[1mm]
+\begin{minipage}[t]{0.30\linewidth}
+  \centering
+  \textbf{Decal}\\[1.5mm]
+  \targetInset{figures/fig4_gulfstream_decal_inset.png}
+\end{minipage}\hfill
+\begin{minipage}[t]{0.32\linewidth}
+  \centering
+  \textbf{Window}\\[1.5mm]
+  \targetInset{figures/fig4_gulfstream_window_inset.png}
+\end{minipage}\hfill
+\begin{minipage}[t]{0.30\linewidth}
+  \centering
+  \textbf{Rivet}\\[1.5mm]
+  \targetInset{figures/fig4_gulfstream_rivet_closeup.png}
+\end{minipage}
+\endgroup

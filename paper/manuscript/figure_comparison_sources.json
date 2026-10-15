@@ -1,0 +1,56 @@
+[
+  {
+    "key": "airbus", "name": "Airbus",
+    "scope": "Original and archived rivet-stage endpoint shown in the CAD figure; not the final surface-feature endpoint in the nine-pair table.",
+    "camera_manifest": "paper/manuscript/figures/fig7_airbus_fixed_camera_manifest.json",
+    "stages": [
+      {"name": "before", "step": "data/plane_model/after_two/Airbus_wing_rivets.step", "labels": "data/plane_model/label/Airbus_wing_rivets.labels.json"},
+      {"name": "after", "step": "work/test_removal_pipeline/Airbus/Airbus_removed.step", "labels": "work/test_removal_pipeline/Airbus/after_rivet_render.labels.json"}
+    ]
+  },
+  {
+    "key": "y20", "name": "Xian Y-20",
+    "scope": "Additional archived geometric illustration, outside the nine-aircraft quantitative evaluation.",
+    "camera_manifest": "paper/manuscript/figures/fig8_xian_y20_fixed_camera_manifest.json",
+    "stages": [
+      {"name": "before", "step": "data/plane_model/new_data/4-20 xi-an y20 STP STL_Xian Y-20 v3_wing_rivets.step", "labels": "data/plane_model/label/4-20 xi-an y20 STP STL_Xian Y-20 v3_wing_rivets.labels.json"},
+      {"name": "after", "step": "work/xian_y20_rivet_removal/Xian_Y20_after_rivets.step", "labels": "work/xian_y20_rivet_removal/after_rivet_render.labels.json"}
+    ]
+  },
+  {
+    "key": "dc10", "name": "DC-10",
+    "scope": "Original and archived window-stage endpoint shown in the CAD figure.",
+    "projection": [1, 0, 0], "up": [0, 1, 0],
+    "stages": [
+      {"name": "before", "step": "data/plane_model/after_two/27- DC-10 SolidWorks stp igs_DC 10_wing_rivets.step", "labels": "data/plane_model/label/27- DC-10 SolidWorks stp igs_DC 10_wing_rivets.labels.json"},
+      {"name": "after", "step": "work/test_removal_pipeline/27-_DC-10_SolidWorks_stp_igs_DC_10/27-_DC-10_SolidWorks_stp_igs_DC_10_bridged.step", "labels": "work/dc10_window_visualization/after_render.labels.json"}
+    ]
+  },
+  {
+    "key": "cessna", "name": "Cessna Citation 2",
+    "scope": "Original and archived window-stage endpoint shown in the CAD figure.",
+    "projection": [0, 1, 0], "up": [0, 0, 1],
+    "stages": [
+      {"name": "before", "step": "data/plane_model/after_two/Cessna Citation 2_wing_rivets.step", "labels": "data/plane_model/label/Cessna Citation 2_wing_rivets.labels.json"},
+      {"name": "after", "step": "work/test_removal_pipeline/Cessna_Citation_2/Cessna_Citation_2_surface_removed.step", "labels": "work/cessna_window_visualization/after_render.labels.json"}
+    ]
+  },
+  {
+    "key": "airplane_body", "name": "Airplane body",
+    "scope": "Original and final endpoints of Table 8; final B-Rep invalid, descriptive CAD comparison only.",
+    "projection": [1, 0, 0], "up": [0, 0, 1], "export_mesh": false,
+    "stages": [
+      {"name": "before", "step": "data/plane_model/after_two/Airplane body_wing_rivets.step", "labels": "data/plane_model/label/Airplane body_wing_rivets.labels.json"},
+      {"name": "after", "step": "data/plane_model/ending/Airplane body_wing_rivets.step", "labels": null}
+    ]
+  },
+  {
+    "key": "109", "name": "109 standard E-1",
+    "scope": "Original and processed decal endpoint shown in the CAD figure.",
+    "projection": [0.12, -1, 0.2], "up": [0, 0, 1],
+    "stages": [
+      {"name": "before", "step": "data/plane_model/after_two/109-ww1-standart-e-1-aircraft CATIA STP_standart-e1_wing_rivets_decals.step", "labels": "data/plane_model/label/109-ww1-standart-e-1-aircraft CATIA STP_standart-e1_wing_rivets_decals.labels.json"},
+      {"name": "after", "step": "data/plane_model/ending/109-ww1-standart-e-1-aircraft CATIA STP_standart-e1_wing_rivets_decals.step", "labels": "work/109_after_visualization/after_render.labels.json"}
+    ]
+  }
+]

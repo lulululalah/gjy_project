@@ -1,0 +1,100 @@
+{
+  "model": "Airbus",
+  "endpoint_scope": "Original and archived rivet-stage endpoint shown in the CAD figure; not the final surface-feature endpoint in the nine-pair table.",
+  "projection": "orthographic",
+  "size": [
+    2400,
+    2100
+  ],
+  "camera": {
+    "center": [
+      35.481186394382604,
+      7.738677002706912,
+      1.0018652574217413e-12
+    ],
+    "scale": 73.52068531666536,
+    "projection": [
+      0,
+      1,
+      0
+    ],
+    "up": [
+      0,
+      0,
+      -1
+    ]
+  },
+  "geometry_modified": false,
+  "relative_deflection": 0.0005,
+  "angular_deflection_rad": 0.5,
+  "stages": [
+    {
+      "stage": "before",
+      "step": "D:\\projects\\gjy_byproject\\data\\plane_model\\after_two\\Airbus_wing_rivets.step",
+      "labels": "D:\\projects\\gjy_byproject\\data\\plane_model\\label\\Airbus_wing_rivets.labels.json",
+      "step_sha256": "8574a354f15b0b3ab7925ac9d058db29a3aec31f73954b1e58013c8db5f075f5",
+      "labels_sha256": "7dd7249fb61f2cb673f87e5a490a8bf2279675db2d050a80d8b3ea55858776cc",
+      "mesh": {
+        "faces": 1775,
+        "nodes": 69556,
+        "triangles": 95610,
+        "linear_deflection": 0.050616151149192656,
+        "mesh_decimated": false
+      },
+      "mesh_image": "mesh_airbus_before.png",
+      "mesh_camera": {
+        "center": [
+          35.481186394382576,
+          7.738677002706936,
+          1.0231815394945443e-12
+        ],
+        "direction": [
+          0.0,
+          -1.0,
+          -0.0
+        ],
+        "up": [
+          0.0,
+          0.0,
+          -1.0
+        ],
+        "scale": 73.52068531666536,
+        "aspect": 1.1428571428571428
+      }
+    },
+    {
+      "stage": "after",
+      "step": "D:\\projects\\gjy_byproject\\work\\test_removal_pipeline\\Airbus\\Airbus_removed.step",
+      "labels": "D:\\projects\\gjy_byproject\\work\\test_removal_pipeline\\Airbus\\after_rivet_render.labels.json",
+      "step_sha256": "5e35869cde721572fdd513f4e9670f054123b1b5db5695b1dcbcf879f57d2801",
+      "labels_sha256": "f2edbb21af01e1b8ef97eed6d9f60ed9c01db216edfe7b19c78c3a40f31d3515",
+      "mesh": {
+        "faces": 1723,
+        "nodes": 67995,
+        "triangles": 94006,
+        "linear_deflection": 0.050616151149192656,
+        "mesh_decimated": false
+      },
+      "mesh_image": "mesh_airbus_after.png",
+      "mesh_camera": {
+        "center": [
+          35.481186394382576,
+          7.738677002706936,
+          1.0231815394945443e-12
+        ],
+        "direction": [
+          -0.0,
+          -1.0,
+          0.0
+        ],
+        "up": [
+          0.0,
+          -0.0,
+          -1.0
+        ],
+        "scale": 73.52068531666536,
+        "aspect": 1.1428571428571428
+      }
+    }
+  ]
+}

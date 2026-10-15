@@ -1,0 +1,221 @@
+{
+  "model": "DC-10",
+  "scope": "Original and final STEP endpoints of Table 8",
+  "size": [
+    2400,
+    800
+  ],
+  "camera": {
+    "center": [
+      2.638955720613012e-11,
+      38.807116861520235,
+      -222.21795229003413
+    ],
+    "projection": [
+      1,
+      0,
+      0
+    ],
+    "up": [
+      0,
+      1,
+      0
+    ],
+    "scale": 159.99704481588168
+  },
+  "detail": {
+    "original_face_id": 146,
+    "semantic": "window",
+    "center": [
+      23.800495148521872,
+      9.079478607649879,
+      -186.94904145869998
+    ],
+    "projection": [
+      1,
+      0,
+      0
+    ],
+    "up": [
+      0,
+      1,
+      0
+    ],
+    "scale": 25.184720017314714
+  },
+  "render_style": {
+    "body_rgb": [
+      0.94,
+      0.96,
+      0.98
+    ],
+    "edge_rgb": [
+      0.015,
+      0.02,
+      0.025
+    ],
+    "edge_width": 0.85,
+    "material": "plaster",
+    "transparency": 0.0
+  },
+  "relative_deflection": 0.0005,
+  "angular_deflection_rad": 0.5,
+  "geometry_modified": false,
+  "stages": [
+    {
+      "stage": "before",
+      "step": "D:\\projects\\gjy_byproject\\data\\plane_model\\after_two\\27- DC-10 SolidWorks stp igs_DC 10_wing_rivets.step",
+      "step_sha256": "074d09a8d2ead427d0051020baf12a3150ab7db740cd618be4809b589ae11b23",
+      "metric_source": "D:\\projects\\gjy_byproject\\results\\e3_mesh\\per_model\\dc10_original.json",
+      "mesh": {
+        "faces": 287,
+        "nodes": 27041,
+        "triangles": 41914,
+        "linear_deflection": 0.3010565958197343,
+        "mesh_decimated": false
+      },
+      "images": {
+        "mesh_overview": "fig11_dc10_before_mesh_overview.png",
+        "mesh_detail": "fig11_dc10_before_mesh_detail.png"
+      },
+      "cameras": {
+        "mesh_overview": {
+          "center": [
+            2.637534635141492e-11,
+            38.80711686152023,
+            -222.21795229003413
+          ],
+          "direction": [
+            -1.0,
+            0.0,
+            -0.0
+          ],
+          "up": [
+            0.0,
+            1.0,
+            0.0
+          ],
+          "scale": 159.99704481588168,
+          "aspect": 3.0
+        },
+        "mesh_detail": {
+          "center": [
+            23.800495148521918,
+            9.07947860764989,
+            -186.94904145869998
+          ],
+          "direction": [
+            -1.0,
+            0.0,
+            0.0
+          ],
+          "up": [
+            0.0,
+            1.0,
+            0.0
+          ],
+          "scale": 25.184720017314714,
+          "aspect": 3.0
+        }
+      }
+    },
+    {
+      "stage": "after",
+      "step": "D:\\projects\\gjy_byproject\\data\\plane_model\\ending\\27- DC-10 SolidWorks stp igs_DC 10_wing_rivets.step",
+      "step_sha256": "7a363fa82a0ee84bb94bdef8de68a26f1cac2d3ccb13bc90ad4ec646379d2b78",
+      "metric_source": "D:\\projects\\gjy_byproject\\results\\e3_mesh\\per_model\\dc10_simplified.json",
+      "mesh": {
+        "faces": 170,
+        "nodes": 20608,
+        "triangles": 35496,
+        "linear_deflection": 0.3010565958197343,
+        "mesh_decimated": false
+      },
+      "images": {
+        "mesh_overview": "fig11_dc10_after_mesh_overview.png",
+        "mesh_detail": "fig11_dc10_after_mesh_detail.png",
+        "cad_overview": "fig11_dc10_after_cad_overview.png",
+        "cad_detail": "fig11_dc10_after_cad_detail.png"
+      },
+      "cameras": {
+        "mesh_overview": {
+          "center": [
+            2.637534635141492e-11,
+            38.80711686152023,
+            -222.21795229003413
+          ],
+          "direction": [
+            -1.0,
+            -0.0,
+            0.0
+          ],
+          "up": [
+            0.0,
+            1.0,
+            0.0
+          ],
+          "scale": 159.99704481588168,
+          "aspect": 3.0
+        },
+        "mesh_detail": {
+          "center": [
+            23.800495148521918,
+            9.07947860764989,
+            -186.94904145869998
+          ],
+          "direction": [
+            -1.0,
+            0.0,
+            0.0
+          ],
+          "up": [
+            0.0,
+            1.0,
+            0.0
+          ],
+          "scale": 25.184720017314714,
+          "aspect": 3.0
+        },
+        "cad_overview": {
+          "center": [
+            2.637534635141492e-11,
+            38.80711686152017,
+            -222.21795229003413
+          ],
+          "direction": [
+            -1.0,
+            -0.0,
+            0.0
+          ],
+          "up": [
+            0.0,
+            1.0,
+            0.0
+          ],
+          "scale": 159.99704481588168,
+          "aspect": 3.0
+        },
+        "cad_detail": {
+          "center": [
+            23.800495148521918,
+            9.07947860764989,
+            -186.94904145869998
+          ],
+          "direction": [
+            -1.0,
+            0.0,
+            0.0
+          ],
+          "up": [
+            0.0,
+            1.0,
+            0.0
+          ],
+          "scale": 25.184720017314714,
+          "aspect": 3.0
+        }
+      }
+    }
+  ],
+  "original_labels_sha256": "d4614cb1490608f27bef80e4c93c3f0f063f49c251a749ea6e3e9085e27250bc"
+}

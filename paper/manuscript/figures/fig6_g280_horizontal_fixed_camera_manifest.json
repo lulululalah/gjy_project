@@ -1,0 +1,411 @@
+{
+  "projection": "orthographic",
+  "model_geometry_modified": false,
+  "reference_bounds": [
+    -78.16510664302,
+    -6.555471615121001,
+    -73.35014989441956,
+    81.30602734589087,
+    35.971572271931514,
+    70.98259678592376
+  ],
+  "center": [
+    1.570460351435436,
+    14.708050328405257,
+    -1.183776554247899
+  ],
+  "views": {
+    "side": {
+      "size": [
+        2400,
+        1100
+      ],
+      "scale": 81.65109669345136
+    }
+  },
+  "details": [
+    {
+      "number": 1,
+      "original_face_id": 506,
+      "center": [
+        8.252036336677,
+        -1.323430085451,
+        -49.6466933381
+      ],
+      "scale": 0.3519564627248428
+    },
+    {
+      "number": 2,
+      "original_face_id": 573,
+      "center": [
+        -8.289405860398,
+        -2.305280267198,
+        18.934251687434
+      ],
+      "scale": 0.3519564627248428
+    },
+    {
+      "number": 3,
+      "original_face_id": 578,
+      "center": [
+        8.14147288782,
+        -1.325975827425,
+        47.090314762734
+      ],
+      "scale": 0.3519564627248428
+    }
+  ],
+  "surface_details": [
+    {
+      "name": "window",
+      "view": "side",
+      "original_face_ids": [
+        142
+      ],
+      "center": [
+        -22.01376657373126,
+        7.459990005801954,
+        6.926174039992395
+      ],
+      "scale": 4.7793935012575455
+    },
+    {
+      "name": "decal",
+      "view": "side",
+      "original_face_ids": [
+        294,
+        327,
+        361,
+        378
+      ],
+      "center": [
+        55.41114993175907,
+        19.991664623977208,
+        -0.8924576675076533
+      ],
+      "scale": 29.854400491128164
+    }
+  ],
+  "stages": [
+    {
+      "stage": "original",
+      "step": "D:\\projects\\gjy_byproject\\data\\plane_model\\new_data\\Gulfstream G280 v17_wing_rivets.step",
+      "labels": "D:\\projects\\gjy_byproject\\data\\plane_model\\label\\Gulfstream G280 v17_wing_rivets.labels.json",
+      "step_sha256": "6f22774ee215b073c3cf6ce137fc810e09701ccffca48b0349ae996d312d22bc",
+      "labels_sha256": "13dd9fd1080f740668ce0b35602eb518aa41bba1c27c1d79b5620c13b25ab447",
+      "faces": 668,
+      "images": [
+        "fig6_g280_horizontal_original_side_fixed.png",
+        "fig6_g280_horizontal_original_detail_1_fixed.png",
+        "fig6_g280_horizontal_original_detail_2_fixed.png",
+        "fig6_g280_horizontal_original_detail_3_fixed.png",
+        "fig6_g280_horizontal_original_window_fixed.png",
+        "fig6_g280_horizontal_original_decal_fixed.png"
+      ],
+      "cameras": {
+        "side": {
+          "center": [
+            1.570460351435429,
+            14.70805032840525,
+            -1.1837765542479133
+          ],
+          "direction": [
+            -0.0,
+            -0.0,
+            -1.0
+          ],
+          "up": [
+            0.0,
+            1.0,
+            0.0
+          ],
+          "scale": 81.65109669345136,
+          "aspect": 2.1818181818181817
+        },
+        "detail_1": {
+          "center": [
+            8.252036336676998,
+            -1.3234300854510366,
+            -49.64669333809991
+          ],
+          "direction": [
+            0.0,
+            -1.0,
+            -0.0
+          ],
+          "up": [
+            0.0,
+            0.0,
+            -1.0
+          ],
+          "scale": 0.3519564627248428,
+          "aspect": 1.0
+        },
+        "detail_2": {
+          "center": [
+            -8.289405860398,
+            -2.3052802671978725,
+            18.934251687434013
+          ],
+          "direction": [
+            0.0,
+            -1.0,
+            0.0
+          ],
+          "up": [
+            0.0,
+            0.0,
+            -1.0
+          ],
+          "scale": 0.3519564627248428,
+          "aspect": 1.0
+        },
+        "detail_3": {
+          "center": [
+            8.141472887819996,
+            -1.3259758274249407,
+            47.090314762733996
+          ],
+          "direction": [
+            0.0,
+            -1.0,
+            0.0
+          ],
+          "up": [
+            0.0,
+            0.0,
+            -1.0
+          ],
+          "scale": 0.3519564627248428,
+          "aspect": 1.0
+        },
+        "window": {
+          "center": [
+            -22.013766573731257,
+            7.459990005801843,
+            6.926174039992361
+          ],
+          "direction": [
+            0.0,
+            0.0,
+            -1.0
+          ],
+          "up": [
+            0.0,
+            1.0,
+            0.0
+          ],
+          "scale": 4.7793935012575455,
+          "aspect": 1.0
+        },
+        "decal": {
+          "center": [
+            55.411149931759084,
+            19.99166462397721,
+            -0.892457667507756
+          ],
+          "direction": [
+            -0.0,
+            -0.0,
+            -1.0
+          ],
+          "up": [
+            0.0,
+            1.0,
+            0.0
+          ],
+          "scale": 29.854400491128164,
+          "aspect": 1.0
+        }
+      }
+    },
+    {
+      "stage": "rivet_removed",
+      "step": "D:\\projects\\gjy_byproject\\work\\test_removal_pipeline\\Gulfstream_G280_v17\\Gulfstream_G280_v17_removed.step",
+      "labels": "D:\\projects\\gjy_byproject\\work\\test_removal_pipeline\\Gulfstream_G280_v17\\after_rivet_render.labels.json",
+      "step_sha256": "c800ce75f4cf9de62c32d36ed47512bcfcb67c1fdef233a9fc8d8bc603c8915b",
+      "labels_sha256": "d78288ade26b347c645d8bc4e12f953969f74607f13dfc337c3fc5aa797e55bf",
+      "faces": 608,
+      "images": [
+        "fig6_g280_horizontal_rivet_removed_side_fixed.png",
+        "fig6_g280_horizontal_rivet_removed_detail_1_fixed.png",
+        "fig6_g280_horizontal_rivet_removed_detail_2_fixed.png",
+        "fig6_g280_horizontal_rivet_removed_detail_3_fixed.png",
+        "fig6_g280_horizontal_rivet_removed_window_fixed.png",
+        "fig6_g280_horizontal_rivet_removed_decal_fixed.png"
+      ],
+      "cameras": {
+        "side": {
+          "center": [
+            1.570460351435429,
+            14.708050328405257,
+            -1.1837765542478564
+          ],
+          "direction": [
+            0.0,
+            -0.0,
+            -1.0
+          ],
+          "up": [
+            0.0,
+            1.0,
+            0.0
+          ],
+          "scale": 81.65109669345136,
+          "aspect": 2.1818181818181817
+        },
+        "detail_1": {
+          "center": [
+            8.252036336676998,
+            -1.3234300854510366,
+            -49.64669333809991
+          ],
+          "direction": [
+            0.0,
+            -1.0,
+            -0.0
+          ],
+          "up": [
+            0.0,
+            0.0,
+            -1.0
+          ],
+          "scale": 0.3519564627248428,
+          "aspect": 1.0
+        },
+        "detail_2": {
+          "center": [
+            -8.289405860398007,
+            -2.3052802671981,
+            18.934251687434
+          ],
+          "direction": [
+            0.0,
+            -1.0,
+            0.0
+          ],
+          "up": [
+            0.0,
+            0.0,
+            -1.0
+          ],
+          "scale": 0.3519564627248428,
+          "aspect": 1.0
+        },
+        "detail_3": {
+          "center": [
+            8.14147288782,
+            -1.3259758274250544,
+            47.09031476273401
+          ],
+          "direction": [
+            0.0,
+            -1.0,
+            0.0
+          ],
+          "up": [
+            0.0,
+            0.0,
+            -1.0
+          ],
+          "scale": 0.3519564627248428,
+          "aspect": 1.0
+        },
+        "window": {
+          "center": [
+            -22.01376657373126,
+            7.45999000580207,
+            6.926174039992361
+          ],
+          "direction": [
+            0.0,
+            0.0,
+            -1.0
+          ],
+          "up": [
+            0.0,
+            1.0,
+            0.0
+          ],
+          "scale": 4.7793935012575455,
+          "aspect": 1.0
+        },
+        "decal": {
+          "center": [
+            55.41114993175907,
+            19.991664623977208,
+            -0.8924576675076423
+          ],
+          "direction": [
+            -0.0,
+            -0.0,
+            -1.0
+          ],
+          "up": [
+            0.0,
+            1.0,
+            0.0
+          ],
+          "scale": 29.854400491128164,
+          "aspect": 1.0
+        }
+      }
+    },
+    {
+      "stage": "surface_processed",
+      "step": "D:\\projects\\gjy_byproject\\work\\test_removal_pipeline\\Gulfstream_G280_v17\\Gulfstream_G280_v17_embedded.step",
+      "labels": "D:\\projects\\gjy_byproject\\work\\test_removal_pipeline\\Gulfstream_G280_v17\\after_surface_render.labels.json",
+      "step_sha256": "a958756e51ba37e98df26e6882c622f6a9e04b74a33c0dd460f4d34734663d8e",
+      "labels_sha256": "ec1414cba73e8a60b773ce08a7396c3531c4c97e612cfe6a12553ae8e270f4af",
+      "faces": 277,
+      "images": [
+        "fig6_g280_horizontal_surface_processed_window_fixed.png",
+        "fig6_g280_horizontal_surface_processed_decal_fixed.png"
+      ],
+      "cameras": {
+        "window": {
+          "center": [
+            -22.01376657373127,
+            7.459990005801957,
+            6.926174039992361
+          ],
+          "direction": [
+            0.0,
+            0.0,
+            -1.0
+          ],
+          "up": [
+            0.0,
+            1.0,
+            0.0
+          ],
+          "scale": 4.7793935012575455,
+          "aspect": 1.0
+        },
+        "decal": {
+          "center": [
+            55.411149931759056,
+            19.991664623977208,
+            -0.892457667507756
+          ],
+          "direction": [
+            0.0,
+            0.0,
+            -1.0
+          ],
+          "up": [
+            0.0,
+            1.0,
+            0.0
+          ],
+          "scale": 29.854400491128164,
+          "aspect": 1.0
+        }
+      },
+      "historical_unavailable_images": [
+        "fig6_g280_horizontal_surface_processed_side_fixed.png"
+      ],
+      "geometry_revision": "G280 outer trimming boundary retained; matched inner loops removed, 2026-10-15."
+    }
+  ]
+}

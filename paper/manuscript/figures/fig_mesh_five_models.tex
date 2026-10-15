@@ -1,0 +1,105 @@
+\begingroup
+\centering\singlespacing
+\begin{tikzpicture}[x=1mm,y=1mm,
+  font=\sffamily\fontsize{8}{9}\selectfont,
+  image/.style={inner sep=0pt},
+  flow/.style={-{Latex[length=1.6mm]},line width=.6pt,draw=black!75},
+  frame/.style={draw=black!50,line width=.4pt},
+  region/.style={draw=orange!80!black,line width=.5pt},
+  label/.style={align=center},
+  modeltitle/.style={anchor=west,font=\sffamily\bfseries\fontsize{8.5}{10}\selectfont}]
+\path[use as bounding box] (0,8.5) rectangle (160,-219.6);
+\node[label] at (25,6) {Original mesh};
+\node[label] at (80,6) {Processed B-Rep};
+\node[label] at (135,6) {Processed mesh};
+\node[modeltitle] at (1,1.5) {(a) AULIRA 2};
+\node[image] at (25,-8.5) {\includegraphics[width=48mm]{figures/fig11_aulira_before_mesh_overview.png}};
+\draw[region] (11.3849,-10.9370) rectangle (21.1626,-7.6777);
+\node[image] (detail) at (25,-25.5) {\includegraphics[width=48mm]{figures/fig11_aulira_before_mesh_detail.png}};
+\draw[region] (detail.south west) rectangle (detail.north east);
+\node[image] at (80,-8.5) {\includegraphics[width=48mm]{figures/fig11_aulira_after_cad_overview.png}};
+\draw[region] (66.3849,-10.9370) rectangle (76.1626,-7.6777);
+\node[image] (detail) at (80,-25.5) {\includegraphics[width=48mm]{figures/fig11_aulira_after_cad_detail.png}};
+\draw[region] (detail.south west) rectangle (detail.north east);
+\node[image] at (135,-8.5) {\includegraphics[width=48mm]{figures/fig11_aulira_after_mesh_overview.png}};
+\draw[region] (121.3849,-10.9370) rectangle (131.1626,-7.6777);
+\node[image] (detail) at (135,-25.5) {\includegraphics[width=48mm]{figures/fig11_aulira_after_mesh_detail.png}};
+\draw[region] (detail.south west) rectangle (detail.north east);
+\draw[flow] (50,-8.5) -- (55,-8.5);
+\draw[flow] (105,-8.5) -- (110,-8.5);
+\node[anchor=east] at (159,1.5) {Triangles: 24,519 $\rightarrow$ 12,589 ($-48.66\%$)};
+\node[modeltitle] at (1,-40.5) {(b) DC-10};
+\node[image] at (25,-50.5) {\includegraphics[width=48mm]{figures/fig11_dc10_before_mesh_overview.png}};
+\draw[region] (17.6953,-54.7321) rectangle (25.2508,-52.2136);
+\node[image] (detail) at (25,-67.5) {\includegraphics[width=48mm]{figures/fig11_dc10_before_mesh_detail.png}};
+\draw[region] (detail.south west) rectangle (detail.north east);
+\node[image] at (80,-50.5) {\includegraphics[width=48mm]{figures/fig11_dc10_after_cad_overview.png}};
+\draw[region] (72.6953,-54.7321) rectangle (80.2508,-52.2136);
+\node[image] (detail) at (80,-67.5) {\includegraphics[width=48mm]{figures/fig11_dc10_after_cad_detail.png}};
+\draw[region] (detail.south west) rectangle (detail.north east);
+\node[image] at (135,-50.5) {\includegraphics[width=48mm]{figures/fig11_dc10_after_mesh_overview.png}};
+\draw[region] (127.6953,-54.7321) rectangle (135.2508,-52.2136);
+\node[image] (detail) at (135,-67.5) {\includegraphics[width=48mm]{figures/fig11_dc10_after_mesh_detail.png}};
+\draw[region] (detail.south west) rectangle (detail.north east);
+\draw[flow] (50,-50.5) -- (55,-50.5);
+\draw[flow] (105,-50.5) -- (110,-50.5);
+\node[anchor=east] at (159,-40.5) {Triangles: 41,914 $\rightarrow$ 35,496 ($-15.31\%$)};
+\node[modeltitle] at (1,-82.5) {(c) Airbus};
+\node[image] at (25,-92.5) {\includegraphics[width=48mm]{figures/fig11_airbus_before_mesh_overview.png}};
+\draw[region] (14.1702,-97.0608) rectangle (21.2813,-94.6905);
+\node[image] (detail) at (25,-109.5) {\includegraphics[width=48mm]{figures/fig11_airbus_before_mesh_detail.png}};
+\draw[region] (detail.south west) rectangle (detail.north east);
+\node[image] at (80,-92.5) {\includegraphics[width=48mm]{figures/fig11_airbus_after_cad_overview.png}};
+\draw[region] (69.1702,-97.0608) rectangle (76.2813,-94.6905);
+\node[image] (detail) at (80,-109.5) {\includegraphics[width=48mm]{figures/fig11_airbus_after_cad_detail.png}};
+\draw[region] (detail.south west) rectangle (detail.north east);
+\node[image] at (135,-92.5) {\includegraphics[width=48mm]{figures/fig11_airbus_after_mesh_overview.png}};
+\draw[region] (124.1702,-97.0608) rectangle (131.2813,-94.6905);
+\node[image] (detail) at (135,-109.5) {\includegraphics[width=48mm]{figures/fig11_airbus_after_mesh_detail.png}};
+\draw[region] (detail.south west) rectangle (detail.north east);
+\draw[flow] (50,-92.5) -- (55,-92.5);
+\draw[flow] (105,-92.5) -- (110,-92.5);
+\node[anchor=east] at (159,-82.5) {Triangles: 95,610 $\rightarrow$ 63,505 ($-33.58\%$)};
+\node[modeltitle] at (1,-124.5) {(d) Gulfstream G280 v17};
+\node[image] at (25,-134.5) {\includegraphics[width=48mm]{figures/fig11_gulfstream_before_mesh_overview.png}};
+\draw[region] (17.2156,-138.0015) rectangle (26.1045,-135.0385);
+\node[image] (detail) at (25,-151.5) {\includegraphics[width=48mm]{figures/fig11_gulfstream_before_mesh_detail.png}};
+\draw[region] (detail.south west) rectangle (detail.north east);
+\node[image] at (80,-134.5) {\includegraphics[width=48mm]{figures/fig11_gulfstream_after_cad_overview.png}};
+\draw[region] (72.2156,-138.0015) rectangle (81.1045,-135.0385);
+\node[image] (detail) at (80,-151.5) {\includegraphics[width=48mm]{figures/fig11_gulfstream_after_cad_detail.png}};
+\draw[region] (detail.south west) rectangle (detail.north east);
+\node[image] at (135,-134.5) {\includegraphics[width=48mm]{figures/fig11_gulfstream_after_mesh_overview.png}};
+\draw[region] (127.2156,-138.0015) rectangle (136.1045,-135.0385);
+\node[image] (detail) at (135,-151.5) {\includegraphics[width=48mm]{figures/fig11_gulfstream_after_mesh_detail.png}};
+\draw[region] (detail.south west) rectangle (detail.north east);
+\draw[region,dashed] (35.6173,-134.4901) rectangle (44.3934,-131.5648);
+\node[image] (extra) at (25,-169.5) {\includegraphics[width=48mm]{figures/fig11_gulfstream_before_mesh_tail_decal.png}};
+\draw[region,dashed] (extra.south west) rectangle (extra.north east);
+\draw[region,dashed] (90.6173,-134.4901) rectangle (99.3934,-131.5648);
+\node[image] (extra) at (80,-169.5) {\includegraphics[width=48mm]{figures/fig11_gulfstream_after_cad_tail_decal.png}};
+\draw[region,dashed] (extra.south west) rectangle (extra.north east);
+\draw[region,dashed] (145.6173,-134.4901) rectangle (154.3934,-131.5648);
+\node[image] (extra) at (135,-169.5) {\includegraphics[width=48mm]{figures/fig11_gulfstream_after_mesh_tail_decal.png}};
+\draw[region,dashed] (extra.south west) rectangle (extra.north east);
+\draw[flow] (50,-134.5) -- (55,-134.5);
+\draw[flow] (105,-134.5) -- (110,-134.5);
+\node[anchor=east] at (159,-124.5) {Triangles: 17,941 $\rightarrow$ 11,084 ($-38.22\%$)};
+\node[modeltitle] at (1,-184.5) {(e) Airplane body};
+\node[image] at (25,-194.5) {\includegraphics[width=48mm]{figures/fig11_airplane_body_before_mesh_overview.png}};
+\draw[region] (14.0211,-198.4856) rectangle (22.9100,-195.5226);
+\node[image] (detail) at (25,-211.5) {\includegraphics[width=48mm]{figures/fig11_airplane_body_before_mesh_detail.png}};
+\draw[region] (detail.south west) rectangle (detail.north east);
+\node[image] at (80,-194.5) {\includegraphics[width=48mm]{figures/fig11_airplane_body_after_cad_overview.png}};
+\draw[region] (69.0211,-198.4856) rectangle (77.9100,-195.5226);
+\node[image] (detail) at (80,-211.5) {\includegraphics[width=48mm]{figures/fig11_airplane_body_after_cad_detail.png}};
+\draw[region] (detail.south west) rectangle (detail.north east);
+\node[image] at (135,-194.5) {\includegraphics[width=48mm]{figures/fig11_airplane_body_after_mesh_overview.png}};
+\draw[region] (124.0211,-198.4856) rectangle (132.9100,-195.5226);
+\node[image] (detail) at (135,-211.5) {\includegraphics[width=48mm]{figures/fig11_airplane_body_after_mesh_detail.png}};
+\draw[region] (detail.south west) rectangle (detail.north east);
+\draw[flow] (50,-194.5) -- (55,-194.5);
+\draw[flow] (105,-194.5) -- (110,-194.5);
+\node[anchor=east] at (159,-184.5) {Triangles: 51,605 $\rightarrow$ 42,401 ($-17.84\%$)};
+\end{tikzpicture}
+\endgroup

@@ -1,0 +1,241 @@
+{
+  "projection": "orthographic",
+  "view": "top",
+  "model_geometry_modified": false,
+  "reference_bounds": [
+    -3.626212138087473e-07,
+    -3.571978849817557,
+    -34.03735431327,
+    70.96237315138642,
+    19.04933285523138,
+    34.037354313272004
+  ],
+  "center": [
+    35.481186394382604,
+    7.738677002706912,
+    1.0018652574217413e-12
+  ],
+  "scale": 73.52068531666536,
+  "size": [
+    2400,
+    2100
+  ],
+  "details": [
+    {
+      "number": 1,
+      "original_face_id": 1584,
+      "center": [
+        20.097879901958,
+        -0.387369414405,
+        -4.21173597318
+      ],
+      "scale": 1.248001943109216
+    },
+    {
+      "number": 2,
+      "original_face_id": 1588,
+      "center": [
+        31.974544137856,
+        0.995382168284,
+        -4.151155277976
+      ],
+      "scale": 1.248001943109216
+    },
+    {
+      "number": 3,
+      "original_face_id": 393,
+      "center": [
+        30.219197086401998,
+        1.038833999561096,
+        4.108806043370566
+      ],
+      "scale": 1.248001943109216
+    }
+  ],
+  "stages": [
+    {
+      "stage": "original",
+      "step": "D:\\projects\\gjy_byproject\\data\\plane_model\\after_two\\Airbus_wing_rivets.step",
+      "labels": "D:\\projects\\gjy_byproject\\data\\plane_model\\label\\Airbus_wing_rivets.labels.json",
+      "step_sha256": "8574a354f15b0b3ab7925ac9d058db29a3aec31f73954b1e58013c8db5f075f5",
+      "labels_sha256": "7dd7249fb61f2cb673f87e5a490a8bf2279675db2d050a80d8b3ea55858776cc",
+      "faces": 1775,
+      "images": [
+        "fig7_airbus_original_overview_fixed.png",
+        "fig7_airbus_original_detail_1_fixed.png",
+        "fig7_airbus_original_detail_2_fixed.png",
+        "fig7_airbus_original_detail_3_fixed.png"
+      ],
+      "cameras": {
+        "overview": {
+          "center": [
+            35.481186394382576,
+            7.738677002706936,
+            1.0231815394945443e-12
+          ],
+          "direction": [
+            -0.0,
+            -1.0,
+            -0.0
+          ],
+          "up": [
+            0.0,
+            0.0,
+            -1.0
+          ],
+          "scale": 73.52068531666536,
+          "aspect": 1.1428571428571428
+        },
+        "detail_1": {
+          "center": [
+            20.097879901958,
+            -0.3873694144049864,
+            -4.2117359731800015
+          ],
+          "direction": [
+            0.0,
+            -1.0,
+            0.0
+          ],
+          "up": [
+            0.0,
+            0.0,
+            -1.0
+          ],
+          "scale": 1.248001943109216,
+          "aspect": 1.0
+        },
+        "detail_2": {
+          "center": [
+            31.974544137856,
+            0.9953821682839248,
+            -4.151155277975999
+          ],
+          "direction": [
+            0.0,
+            -1.0,
+            0.0
+          ],
+          "up": [
+            0.0,
+            0.0,
+            -1.0
+          ],
+          "scale": 1.248001943109216,
+          "aspect": 1.0
+        },
+        "detail_3": {
+          "center": [
+            30.21919708640199,
+            1.0388339995611204,
+            4.108806043370569
+          ],
+          "direction": [
+            0.0,
+            -1.0,
+            0.0
+          ],
+          "up": [
+            0.0,
+            0.0,
+            -1.0
+          ],
+          "scale": 1.248001943109216,
+          "aspect": 1.0
+        }
+      }
+    },
+    {
+      "stage": "rivet_removed",
+      "step": "D:\\projects\\gjy_byproject\\work\\test_removal_pipeline\\Airbus\\Airbus_removed.step",
+      "labels": "D:\\projects\\gjy_byproject\\work\\test_removal_pipeline\\Airbus\\after_rivet_render.labels.json",
+      "step_sha256": "5e35869cde721572fdd513f4e9670f054123b1b5db5695b1dcbcf879f57d2801",
+      "labels_sha256": "f2edbb21af01e1b8ef97eed6d9f60ed9c01db216edfe7b19c78c3a40f31d3515",
+      "faces": 1723,
+      "images": [
+        "fig7_airbus_rivet_removed_overview_fixed.png",
+        "fig7_airbus_rivet_removed_detail_1_fixed.png",
+        "fig7_airbus_rivet_removed_detail_2_fixed.png",
+        "fig7_airbus_rivet_removed_detail_3_fixed.png"
+      ],
+      "cameras": {
+        "overview": {
+          "center": [
+            35.481186394382604,
+            7.738677002706936,
+            1.0018652574217413e-12
+          ],
+          "direction": [
+            0.0,
+            -1.0,
+            0.0
+          ],
+          "up": [
+            0.0,
+            0.0,
+            -1.0
+          ],
+          "scale": 73.52068531666536,
+          "aspect": 1.1428571428571428
+        },
+        "detail_1": {
+          "center": [
+            20.097879901958,
+            -0.3873694144049864,
+            -4.211735973180001
+          ],
+          "direction": [
+            0.0,
+            -1.0,
+            0.0
+          ],
+          "up": [
+            0.0,
+            0.0,
+            -1.0
+          ],
+          "scale": 1.248001943109216,
+          "aspect": 1.0
+        },
+        "detail_2": {
+          "center": [
+            31.974544137856004,
+            0.9953821682839248,
+            -4.151155277976001
+          ],
+          "direction": [
+            0.0,
+            -1.0,
+            0.0
+          ],
+          "up": [
+            0.0,
+            0.0,
+            -1.0
+          ],
+          "scale": 1.248001943109216,
+          "aspect": 1.0
+        },
+        "detail_3": {
+          "center": [
+            30.219197086401994,
+            1.0388339995610636,
+            4.1088060433705635
+          ],
+          "direction": [
+            0.0,
+            -1.0,
+            0.0
+          ],
+          "up": [
+            0.0,
+            0.0,
+            -1.0
+          ],
+          "scale": 1.248001943109216,
+          "aspect": 1.0
+        }
+      }
+    }
+  ]
+}

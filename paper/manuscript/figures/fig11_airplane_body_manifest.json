@@ -1,0 +1,221 @@
+{
+  "model": "Airplane body",
+  "scope": "Original and final STEP endpoints of Table 8",
+  "size": [
+    2400,
+    800
+  ],
+  "camera": {
+    "center": [
+      -9.094947017729282e-13,
+      6395.953684907929,
+      1381.5707178779735
+    ],
+    "projection": [
+      1,
+      0,
+      0
+    ],
+    "up": [
+      0,
+      0,
+      1
+    ],
+    "scale": 7600.661053213626
+  },
+  "detail": {
+    "original_face_id": 630,
+    "semantic": "window",
+    "center": [
+      1326.1016486050505,
+      3291.84,
+      192.0240134851017
+    ],
+    "projection": [
+      1,
+      0,
+      0
+    ],
+    "up": [
+      0,
+      0,
+      1
+    ],
+    "scale": 1407.52982466919
+  },
+  "render_style": {
+    "body_rgb": [
+      0.94,
+      0.96,
+      0.98
+    ],
+    "edge_rgb": [
+      0.015,
+      0.02,
+      0.025
+    ],
+    "edge_width": 0.85,
+    "material": "plaster",
+    "transparency": 0.0
+  },
+  "relative_deflection": 0.0005,
+  "angular_deflection_rad": 0.5,
+  "geometry_modified": false,
+  "stages": [
+    {
+      "stage": "before",
+      "step": "D:\\projects\\gjy_byproject\\data\\plane_model\\after_two\\Airplane body_wing_rivets.step",
+      "step_sha256": "31b6276eafad2a2af1b79d1efaafd9bb5f6e0ea1ba25ac84f06b706a7b13f73f",
+      "metric_source": "D:\\projects\\gjy_byproject\\results\\e3_mesh\\per_model\\airplane_body_original.json",
+      "mesh": {
+        "faces": 708,
+        "nodes": 34721,
+        "triangles": 51605,
+        "linear_deflection": 14.475071581991111,
+        "mesh_decimated": false
+      },
+      "images": {
+        "mesh_overview": "fig11_airplane_body_before_mesh_overview.png",
+        "mesh_detail": "fig11_airplane_body_before_mesh_detail.png"
+      },
+      "cameras": {
+        "mesh_overview": {
+          "center": [
+            -9.094947017729282e-13,
+            6395.953684907929,
+            1381.5707178779735
+          ],
+          "direction": [
+            -1.0,
+            -0.0,
+            -0.0
+          ],
+          "up": [
+            0.0,
+            0.0,
+            1.0
+          ],
+          "scale": 7600.661053213626,
+          "aspect": 3.0
+        },
+        "mesh_detail": {
+          "center": [
+            1326.1016486050503,
+            3291.84,
+            192.0240134851017
+          ],
+          "direction": [
+            -1.0,
+            -0.0,
+            -0.0
+          ],
+          "up": [
+            0.0,
+            0.0,
+            1.0
+          ],
+          "scale": 1407.52982466919,
+          "aspect": 3.0
+        }
+      }
+    },
+    {
+      "stage": "after",
+      "step": "D:\\projects\\gjy_byproject\\data\\plane_model\\ending\\Airplane body_wing_rivets.step",
+      "step_sha256": "14a68afb7eb3726bb37ada8caf94c478edb6895a68bb57f6d32aba2feccb20dc",
+      "metric_source": "D:\\projects\\gjy_byproject\\results\\e3_mesh\\per_model\\airplane_body_simplified.json",
+      "mesh": {
+        "faces": 450,
+        "nodes": 27114,
+        "triangles": 42401,
+        "linear_deflection": 14.475071264339038,
+        "mesh_decimated": false
+      },
+      "images": {
+        "mesh_overview": "fig11_airplane_body_after_mesh_overview.png",
+        "mesh_detail": "fig11_airplane_body_after_mesh_detail.png",
+        "cad_overview": "fig11_airplane_body_after_cad_overview.png",
+        "cad_detail": "fig11_airplane_body_after_cad_detail.png"
+      },
+      "cameras": {
+        "mesh_overview": {
+          "center": [
+            -1.8189894035458565e-12,
+            6395.953684907929,
+            1381.5707178779737
+          ],
+          "direction": [
+            -1.0,
+            0.0,
+            0.0
+          ],
+          "up": [
+            0.0,
+            0.0,
+            1.0
+          ],
+          "scale": 7600.661053213626,
+          "aspect": 3.0
+        },
+        "mesh_detail": {
+          "center": [
+            1326.1016486050503,
+            3291.84,
+            192.0240134851017
+          ],
+          "direction": [
+            -1.0,
+            0.0,
+            0.0
+          ],
+          "up": [
+            0.0,
+            0.0,
+            1.0
+          ],
+          "scale": 1407.52982466919,
+          "aspect": 3.0
+        },
+        "cad_overview": {
+          "center": [
+            -1.8189894035458565e-12,
+            6395.953684907929,
+            1381.5707178779735
+          ],
+          "direction": [
+            -1.0,
+            0.0,
+            0.0
+          ],
+          "up": [
+            0.0,
+            0.0,
+            1.0
+          ],
+          "scale": 7600.661053213626,
+          "aspect": 3.0
+        },
+        "cad_detail": {
+          "center": [
+            1326.1016486050503,
+            3291.84,
+            192.0240134851017
+          ],
+          "direction": [
+            -1.0,
+            -0.0,
+            -0.0
+          ],
+          "up": [
+            0.0,
+            0.0,
+            1.0
+          ],
+          "scale": 1407.52982466919,
+          "aspect": 3.0
+        }
+      }
+    }
+  ],
+  "original_labels_sha256": "a9858d986ab4f68cc6797c9ba377792457bc273af4f74ee0ab87616be553549e"
+}
