@@ -261,6 +261,14 @@ class ViewerInputTests(unittest.TestCase):
         export6.assert_not_called()
         export7.assert_not_called()
 
+    def test_retired_y20_is_not_a_paper_comparison_model(self):
+        with patch.object(sys, "argv", ["viewer", "--export-paper-comparisons", "output",
+                                        "--comparison-model", "y20"]), \
+             patch.object(viewer, "export_paper_comparisons") as export, \
+             self.assertRaises(SystemExit):
+            viewer.main()
+        export.assert_not_called()
+
     def test_figure8_export_does_not_open_interactive_window(self):
         with patch.object(sys, "argv", ["viewer", "--export-figure8", "output"]), \
              patch.object(viewer, "export_figure8") as export, \
@@ -284,6 +292,38 @@ class ViewerInputTests(unittest.TestCase):
         self.assertTrue(candidate_filter((0, -0.4, 0, 0.01, -0.3, 0.01)))
         self.assertFalse(candidate_filter((0, -1.8, 0, 0.01, -1.7, 0.01)))
         self.assertEqual(export.call_args.kwargs, {})
+
+    def test_figure7_cessna_uses_test_endpoint_and_rivet_stage(self):
+        with patch.object(viewer, "export_paired_rivet_views") as export:
+            viewer.export_figure7(Path("output"), "cessna")
+        cases = export.call_args.args[1]
+        self.assertEqual(cases[0][1], viewer.ROOT / "data/plane_model/after_two/Cessna Citation 2_wing_rivets.step")
+        self.assertEqual(cases[1][1].name, "Cessna_Citation_2_removed.step")
+        self.assertEqual(export.call_args.args[2], "fig7_cessna")
+        candidate_filter = export.call_args.args[3]
+        self.assertTrue(candidate_filter((0, 1, 0, 1, 2, 1)))
+        self.assertFalse(candidate_filter((0, -2, 0, 1, -1, 1)))
+        self.assertEqual(export.call_args.kwargs["detail_scale_factor"], 0.25)
+        self.assertEqual(export.call_args.kwargs["camera_up"], (0, 0, 1))
+
+    def test_figure7_model_selector_routes_without_gui(self):
+        with patch.object(sys, "argv", ["viewer", "--export-figure7", "output", "--figure7-model", "cessna"]), \
+             patch.object(viewer, "export_figure7") as export, \
+             patch.object(viewer, "init_display") as init_display:
+            viewer.main()
+        export.assert_called_once_with(Path("output"), "cessna")
+        init_display.assert_not_called()
+
+    def test_figure7_model_selector_requires_its_export(self):
+        with patch.object(sys, "argv", ["viewer", "--figure7-model", "cessna"]), \
+             patch.object(viewer, "export_figure7") as export, \
+             self.assertRaises(SystemExit):
+            viewer.main()
+        export.assert_not_called()
+
+    def test_figure7_rejects_unknown_model(self):
+        with self.assertRaisesRegex(ValueError, "Unsupported Figure 7 model"):
+            viewer.export_figure7(Path("output"), "unknown")
 
     def test_figure8_cannot_be_combined_with_other_exports(self):
         for other in ("--export-figure6", "--export-figure7"):

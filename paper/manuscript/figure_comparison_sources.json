@@ -9,15 +9,6 @@
     ]
   },
   {
-    "key": "y20", "name": "Xian Y-20",
-    "scope": "Additional archived geometric illustration, outside the nine-aircraft quantitative evaluation.",
-    "camera_manifest": "paper/manuscript/figures/fig8_xian_y20_fixed_camera_manifest.json",
-    "stages": [
-      {"name": "before", "step": "data/plane_model/new_data/4-20 xi-an y20 STP STL_Xian Y-20 v3_wing_rivets.step", "labels": "data/plane_model/label/4-20 xi-an y20 STP STL_Xian Y-20 v3_wing_rivets.labels.json"},
-      {"name": "after", "step": "work/xian_y20_rivet_removal/Xian_Y20_after_rivets.step", "labels": "work/xian_y20_rivet_removal/after_rivet_render.labels.json"}
-    ]
-  },
-  {
     "key": "dc10", "name": "DC-10",
     "scope": "Original and archived window-stage endpoint shown in the CAD figure.",
     "projection": [1, 0, 0], "up": [0, 1, 0],

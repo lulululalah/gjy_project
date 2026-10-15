@@ -1,4 +1,16 @@
-# 当前论文渲染说明（2026-10-14）
+# 当前论文渲染说明（2026-10-15）
+
+## Figure 7 测试集示例与类别显示名称（2026-10-15）
+
+旧 Y-20 论文图片、图源、相机清单及论文工作目录中的同名备份已按作者要求删除，批量论文出图配置也已移除该项。下文 Y-20 配置仅保留为历史记录；原始 CAD、训练数据和标签不属于此次清理范围。
+
+Figure 7 当前左侧为 Airbus，右侧为九架测试飞机中的 Cessna Citation 2，替换此前作为流程示例的训练集 Y-20。Cessna 使用 `after_two` 中的原始 312 面模型及存档的 `Cessna_Citation_2_removed.step`（260 面），两阶段共用正交相机和三个不同铆钉位置。其模型坐标采用正 Z 朝上，输入图、处理后图及近景都由现有 CAD 渲染器重新导出，未重新执行几何处理。
+
+```powershell
+& 'D:\Anaconda\envs\cad_graph_env\python.exe' python/visualize_cad_targets.py --export-figure7 paper/manuscript/figures --figure7-model cessna
+```
+
+当前论文统一显示 `background / rivet / small-feature` 三类；`small-feature` 指非铆钉目标，仍与 `rivet` 分开。原始数据中的 `surface_feature` 标识、window/decal 来源记录、训练标签和数值结果保持原样。正文、表头和在用图内标签使用新的显示名称；下文旧图号、旧用词及 Y-20 配置属于历史记录。
 
 ## 第 19–21 页最新分页
 

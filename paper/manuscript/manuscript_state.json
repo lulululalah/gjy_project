@@ -133,7 +133,7 @@
   ],
   "contract": {
     "gap": "Existing CAD feature-recognition work provides limited evidence for risk-sensitive small-feature recognition and downstream geometry processing on complete heterogeneous aircraft B-Rep models.",
-    "task": "Recognize rivets and surface-features at B-Rep face level and use predictions as candidate inputs to staged CAD processing.",
+    "task": "Recognize rivets and small-features at B-Rep face level and use predictions as candidate inputs to staged CAD processing.",
     "outcomes": [
       "face-level recognition on complete aircraft",
       "per-aircraft error and background false-positive analysis",
@@ -143,7 +143,7 @@
     "questions": [
       {
         "id": "RQ1",
-        "text": "Can face geometry and adjacency topology support rivet and surface-feature recognition across complete aircraft models?",
+        "text": "Can face geometry and adjacency topology support rivet and small-feature recognition across complete aircraft models?",
         "lock": "SEMANTIC"
       },
       {
@@ -166,7 +166,7 @@
     {
       "id": "three-class-schema",
       "kind": "SEMANTIC",
-      "canonical": "background=0, rivet=1, surface_feature=2; decal and window provenance remains in JSON"
+      "canonical": "background=0, rivet=1, surface_feature=2 in stored data; manuscript display labels are background, rivet, small-feature. Small-feature denotes annotated non-rivet target faces. Native decal/window provenance remains in JSON."
     },
     {
       "id": "model-level-split",
@@ -176,20 +176,25 @@
     {
       "id": "no-area-hard-filter",
       "kind": "SEMANTIC",
-      "canonical": "The rivet-stage guard rejects predicted rivet faces with relative area greater than 5e-6; no corresponding global area threshold is applied to the surface-feature branch."
+      "canonical": "The rivet-stage guard rejects predicted rivet faces with relative area greater than 5e-6; no corresponding global area threshold is applied to the small-feature branch."
     }
   ],
   "terminology": [
     {
-      "concept": "surface target class in manuscript prose",
-      "preferred": "surface-feature",
+      "concept": "non-rivet target class in manuscript prose",
+      "preferred": "small-feature",
       "prohibited": [
+        "surface-feature",
+        "surface-features",
         "surface feature",
         "surface features"
+      ],
+      "scope_roles": [
+        "main_manuscript"
       ]
     },
     {
-      "concept": "surface target class",
+      "concept": "internal non-rivet target identifier; displayed as small-feature in the manuscript",
       "preferred": "surface_feature",
       "prohibited": [
         "four-class decal/window output"
@@ -216,7 +221,7 @@
     "protected_terms": [
       "B-Rep",
       "face identifier",
-      "surface-feature",
+      "small-feature",
       "surface_feature",
       "dual-specialist GNN",
       "smooth-shell guard"
@@ -278,7 +283,7 @@
     },
     {
       "id": "formal-three-class-comparison-result",
-      "value": "On 34162 fixed test faces after the documented two-stage CAD screening, the unified three-class classifier obtained background F1=0.9168, rivet F1=0.1312, surface-feature F1=0.4589, mIoU=0.4048, and 4762 background false positives.",
+      "value": "On 34162 fixed test faces after the documented two-stage CAD screening, the unified three-class classifier obtained background F1=0.9168, rivet F1=0.1312, small-feature F1=0.4589, mIoU=0.4048, and 4762 background false positives.",
       "source_id": "formal-three-class-comparison",
       "expected_strings": [
         "34162",
@@ -295,7 +300,7 @@
       "question_id": "RQ1",
       "method": "B-Rep face graph with geometric and topological attributes",
       "evidence": "Complete-aircraft test evaluation, per-aircraft target-class counts and F1, and background false-positive risk",
-      "result": "Across 34162 test faces from nine aircraft, rivet F1=0.9312 and surface-feature F1=0.8091; 28 rivet and 122 surface-feature faces were missed in total, including 103 surface-feature faces on Airbus; Air Plane Idea A contributes 82 of 190 background false positives",
+      "result": "Across 34162 test faces from nine aircraft, rivet F1=0.9312 and small-feature F1=0.8091; 28 rivet and 122 small-feature faces were missed in total, including 103 small-feature faces on Airbus; Air Plane Idea A contributes 82 of 190 background false positives",
       "interpretation": "Face-level recognition is feasible in the reported partition, but pooled metrics do not establish uniform target-class performance across aircraft and residual background false-positive risk remains relevant to downstream processing",
       "limitation": "Some test aircraft may have been used during historical development; limited aircraft and CAD-source diversity",
       "contribution": "Complete-aircraft face-level recognition protocol",
@@ -1053,14 +1058,14 @@
       "functional_completeness"
     ],
     "checked_hashes": {
-      "main.tex": "e3615042813a809b71c929301c88017334f6948b94c2b6efb919dcd11f400784",
-      "main.pdf": "772fc124dfea19d289e0d6be556ae25de21f66b3fa39aced402fd67f88a5b241",
-      "candidate": "e3615042813a809b71c929301c88017334f6948b94c2b6efb919dcd11f400784",
-      "main-tex": "e3615042813a809b71c929301c88017334f6948b94c2b6efb919dcd11f400784",
+      "main.tex": "3d35d94327d94a86128dd409572beb0cb58158622e02dbbb96ef091e4fd28597",
+      "main.pdf": "732d7b402df91d659af3e1813de51d7675741393edb40f044e3ea1076b82b36b",
+      "candidate": "3d35d94327d94a86128dd409572beb0cb58158622e02dbbb96ef091e4fd28597",
+      "main-tex": "3d35d94327d94a86128dd409572beb0cb58158622e02dbbb96ef091e4fd28597",
       "repaired_step": "a958756e51ba37e98df26e6882c622f6a9e04b74a33c0dd460f4d34734663d8e"
     },
-    "visual_check": "LOCAL_G280_OVERLAP_REPAIR_2026-10-15: final 26-page build; pages 14,21,22,23 and native G280 detail images visually inspected. Nine tables retain 10 TeX pt fonts. No layout/reference warnings; I2/I3 remain open.",
-    "last_check_scope": "G280 trimmed-host repair, native regression, five-run mesh/QEM measurements, paired-camera Figure 6/11 export, dependent Tables 8/9 and QEM median; no full-paper release certification."
+    "visual_check": "LOCAL_FIGURE7_TERMINOLOGY_REVISION_2026-10-15: 26-page PDF contact sheets and detailed pages 2,11,14,19 inspected. Native Cessna paired views and inset leaders checked. Nine tables retain 10 TeX pt. No layout/reference warnings; I2/I3 remain open.",
+    "last_check_scope": "Author-authorized Figure 7 Y-20 replacement with test-set Cessna Citation 2 and reader-visible non-rivet class naming as small-feature; Figure 1 category clarification. Training, inference, labels, numeric results and citations unchanged. No full-paper release certification."
   },
   "figure11_three_columns_20261014": {
     "date": "2026-10-14",
@@ -1967,5 +1972,229 @@
       "regression": "python/tests/test_g280_rebuild_geometry.py"
     },
     "supersedes": "Earlier G280 final-stage geometry, measurements, Figure 6 C-stage assets and Figure 11(d) images/counts are historical snapshots; current authority is this repair and its source manifests. Prior camera/layout records remain applicable."
+  },
+  "figure7_test_model_and_small_feature_terminology_20261015": {
+    "date": "2026-10-15",
+    "scope": "Author-authorized Figure 7 test-model replacement and manuscript class-name revision",
+    "model": "Cessna Citation 2",
+    "partition": "Nine-aircraft test set",
+    "native_export": {
+      "manifest": "paper/manuscript/figures/fig7_cessna_fixed_camera_manifest.json",
+      "faces_before": 312,
+      "faces_after_rivet_processing": 260,
+      "paired_camera_tolerance": 1e-09,
+      "three_distinct_regions": true,
+      "images": 8,
+      "geometry_modified": false
+    },
+    "terminology": {
+      "labels": [
+        "background",
+        "rivet",
+        "small-feature"
+      ],
+      "stored_identifiers": [
+        "background",
+        "rivet",
+        "surface_feature"
+      ],
+      "definition": "Small-feature is the non-rivet target class; rivet remains a separate class. Decal/window subtypes are not separate manuscript classes.",
+      "figure1_correction": "Two small-feature examples and one rivet example, not three distinct annotation categories."
+    },
+    "verification": {
+      "citations_unchanged": true,
+      "nine_tables_numeric_tokens_unchanged": true,
+      "training_inference_and_truth_unchanged": true,
+      "test_count": 39,
+      "test_failures": 0,
+      "pdf_pages": 26,
+      "table_body_font_tex_pt": 10,
+      "pdf_font_pt": 9.963,
+      "layout_or_reference_warnings": [],
+      "visible_terminology_scan": "PASS",
+      "visual_check": "All 26 pages inspected as contact sheets; detailed checks on pages 2, 11, 14 and 19. Cessna matched views, rivet disappearance and inset leaders inspected."
+    },
+    "backups": "work/terminology_figure7_revision_20261015/backup",
+    "checked_source_hash": "3d35d94327d94a86128dd409572beb0cb58158622e02dbbb96ef091e4fd28597",
+    "supersedes": "Prior Y-20 right-hand Figure 7 example and surface-feature prose convention. Historical source paths, renderer semantics and experiment field names remain provenance records.",
+    "checked_hashes": {
+      "paper/manuscript/main.tex": "3d35d94327d94a86128dd409572beb0cb58158622e02dbbb96ef091e4fd28597",
+      "paper/manuscript/main.pdf": "e36779d117eaa76396443f11d393b7acc749eff8ff03a8ecbfd337775e115ecb",
+      "python/visualize_cad_targets.py": "48cdce66e0ed44f4760361910fcaac37d8d458dafe0cd4e1cf3733b57e9ff6f6",
+      "python/tests/test_visualize_cad_targets.py": "8b6a0fd55c43fb821ae57a7c4d4e102b9cc4c0959e9bec4fff9647c4cefe208b",
+      "paper/manuscript/figures/fig7_cessna_rivet_example.tex": "0034688ef2c44907b4a04687dbee925587ab5530a5bf229864acaf4efbdee523",
+      "paper/manuscript/figures/fig7_cessna_fixed_camera_manifest.json": "fdbe3b1cf4e3447d4c2501be3869e5a439d04e721612d627a16562faf8af44db",
+      "paper/manuscript/figures/fig_class_specific_gnn_architecture_v7.tex": "99d924c57027cf538d884975d3b0105980178b6e9ff1e26f3c5223ce6f7b1424",
+      "paper/manuscript/figures/fig_g280_horizontal_processing.tex": "50cc4e6af211c2074179f076c758fe64f3d672db5fddbd9c4cd4fdcdf005821a",
+      "paper/manuscript/figures/fig_gulfstream_target_examples.tex": "7c4f47a4ff97796d20ab0cc422daea61f3bec36d118fab45a38cf293a8240142"
+    },
+    "candidate_diagnostics": {
+      "status": "FINDINGS",
+      "codes": [
+        "PROSE001",
+        "PROSE002",
+        "PROSE004",
+        "PROSE009",
+        "PROSE010"
+      ],
+      "contextual_disposition": "Retain author-requested small-feature class terminology, established B-Rep and architecture terms, technical LaTeX/TikZ hyphenation, and the substantive reported Overall accuracy sentence. Diagnostics do not imply new scientific errors; no full-paper prose certification is claimed."
+    },
+    "remaining_release_issues": [
+      "I2: historical test-aircraft use",
+      "I3: incomplete quantitative geometry, mesh and CAE validation"
+    ]
+  },
+  "retired_y20_figure_cleanup_20261015": {
+    "date": "2026-10-15",
+    "scope": "Author-requested deletion of replaced Y-20 manuscript assets, including same-name retired/backup files under paper/manuscript.",
+    "deleted_files": [
+      {
+        "path": "D:\\projects\\gjy_byproject\\paper\\manuscript\\figures\\comparison_y20_manifest.json",
+        "bytes": 2789,
+        "sha256": "ca3053c68fcb365d6b51b543277981aedd3d6f0653f757d0631bbe039ea93111"
+      },
+      {
+        "path": "D:\\projects\\gjy_byproject\\paper\\manuscript\\figures\\fig7_xian_y20_rivet_example.tex",
+        "bytes": 1651,
+        "sha256": "16b96544d14b923de13518310d8153760fed624ab4fa9c171ad3bbcdcf88d514"
+      },
+      {
+        "path": "D:\\projects\\gjy_byproject\\paper\\manuscript\\figures\\fig8_xian_y20_fixed_camera_manifest.json",
+        "bytes": 5855,
+        "sha256": "d3c3dbf8374ea43cb46637195ac4f67d6a57bb051eb72558bcabcf51a697dac6"
+      },
+      {
+        "path": "D:\\projects\\gjy_byproject\\paper\\manuscript\\figures\\fig8_xian_y20_original_detail_1_fixed.png",
+        "bytes": 6375,
+        "sha256": "e2f3cc41e156b451db405152c8080fe62eb40ad0d924c6043de278bf97918d14"
+      },
+      {
+        "path": "D:\\projects\\gjy_byproject\\paper\\manuscript\\figures\\fig8_xian_y20_original_detail_2_fixed.png",
+        "bytes": 5623,
+        "sha256": "6fb9c581a48aa9b85dd9660ddee7001b00d4d44c94431beb0a06f4e5fdbfde11"
+      },
+      {
+        "path": "D:\\projects\\gjy_byproject\\paper\\manuscript\\figures\\fig8_xian_y20_original_detail_3_fixed.png",
+        "bytes": 5685,
+        "sha256": "d3622df37c2538ccafe6a3dc4a2a39b7877601d5dfd073698ddf7168ffbf7fe8"
+      },
+      {
+        "path": "D:\\projects\\gjy_byproject\\paper\\manuscript\\figures\\fig8_xian_y20_original_overview_fixed.png",
+        "bytes": 169919,
+        "sha256": "e4384f1bef8b0838380b0572d7d553639b7fd11c3fc84b160365c81e1d8cdbe4"
+      },
+      {
+        "path": "D:\\projects\\gjy_byproject\\paper\\manuscript\\figures\\fig8_xian_y20_rivet_removed_detail_1_fixed.png",
+        "bytes": 6538,
+        "sha256": "d465030ee506a2f185edee1bf991ffe5d790251cb3719f28c72cabfcfe846dc3"
+      },
+      {
+        "path": "D:\\projects\\gjy_byproject\\paper\\manuscript\\figures\\fig8_xian_y20_rivet_removed_detail_2_fixed.png",
+        "bytes": 5051,
+        "sha256": "405e68955da55d0c2dd98cb9060ab8a1f8b964220c33a804f01dccc13b4c5800"
+      },
+      {
+        "path": "D:\\projects\\gjy_byproject\\paper\\manuscript\\figures\\fig8_xian_y20_rivet_removed_detail_3_fixed.png",
+        "bytes": 5132,
+        "sha256": "15e8dfc2e76afb797c2aefc3f2d21fd6f364d0cb2de9af1fd02d28bbfd1ebb49"
+      },
+      {
+        "path": "D:\\projects\\gjy_byproject\\paper\\manuscript\\figures\\fig8_xian_y20_rivet_removed_overview_fixed.png",
+        "bytes": 170375,
+        "sha256": "0d1cd2a8d991d39769ac9ca13b131057f4b0336cb4c87aa0f684a830581688df"
+      },
+      {
+        "path": "D:\\projects\\gjy_byproject\\paper\\manuscript\\work\\figure11_three_column_retired_20261014\\mesh_y20_after.png",
+        "bytes": 1047682,
+        "sha256": "e8650c625cca044905192c35d926690752a02d7f44d9eab1d86ca9a5d4e32120"
+      },
+      {
+        "path": "D:\\projects\\gjy_byproject\\paper\\manuscript\\work\\figure11_three_column_retired_20261014\\mesh_y20_before.png",
+        "bytes": 1080790,
+        "sha256": "fa279f865c19ef564700ca5d2c35f8012ffc7c722dfd77960fb87d7ffc6893a2"
+      },
+      {
+        "path": "D:\\projects\\gjy_byproject\\paper\\manuscript\\work\\figure78_one_page_backup\\fig7_xian_y20_rivet_example.tex",
+        "bytes": 1613,
+        "sha256": "6ffc6b19fa51d14fe7703562458a48265541582d561f61f1939447e4b901c8ed"
+      },
+      {
+        "path": "D:\\projects\\gjy_byproject\\paper\\manuscript\\work\\figure8_fixed_camera_backup\\fig7_xian_y20_after_closeup.png",
+        "bytes": 662,
+        "sha256": "3b00963951c0ee615ca6c420a7e447f28c7b00294fca3bdbe774e99bbd90a34f"
+      },
+      {
+        "path": "D:\\projects\\gjy_byproject\\paper\\manuscript\\work\\figure8_fixed_camera_backup\\fig7_xian_y20_after_overview.png",
+        "bytes": 69216,
+        "sha256": "9bca3a702fab00b589b9668f6ec370bf60b92487592936eb54a4df33d6d9217a"
+      },
+      {
+        "path": "D:\\projects\\gjy_byproject\\paper\\manuscript\\work\\figure8_fixed_camera_backup\\fig7_xian_y20_before_closeup.png",
+        "bytes": 1101,
+        "sha256": "97a2b285e897235dbba6becb3f894176d00a57440455b5f5d8037106d807803d"
+      },
+      {
+        "path": "D:\\projects\\gjy_byproject\\paper\\manuscript\\work\\figure8_fixed_camera_backup\\fig7_xian_y20_before_overview.png",
+        "bytes": 118704,
+        "sha256": "fd0bfdf4f124890c51e10e9e7605c7446b619a1d490d0abde3cd423e939743c4"
+      },
+      {
+        "path": "D:\\projects\\gjy_byproject\\paper\\manuscript\\work\\figure8_fixed_camera_backup\\fig7_xian_y20_rivet_example.tex",
+        "bytes": 1174,
+        "sha256": "68d352797553b8b0a46efe76f250e0bf46c39001611802060a95378d232cb6ad"
+      },
+      {
+        "path": "D:\\projects\\gjy_byproject\\paper\\manuscript\\work\\figure_revision_20261014_backup\\figures\\fig7_xian_y20_rivet_example.tex",
+        "bytes": 1647,
+        "sha256": "1887136d42a2dc80dcb266393af69c95de3a96b9a506afab26d76713b6e9b488"
+      },
+      {
+        "path": "D:\\projects\\gjy_byproject\\paper\\manuscript\\work\\figure_revision_20261014_retired\\fig7_xian_y20_after_closeup.png",
+        "bytes": 662,
+        "sha256": "3b00963951c0ee615ca6c420a7e447f28c7b00294fca3bdbe774e99bbd90a34f"
+      },
+      {
+        "path": "D:\\projects\\gjy_byproject\\paper\\manuscript\\work\\figure_revision_20261014_retired\\fig7_xian_y20_after_overview.png",
+        "bytes": 69216,
+        "sha256": "9bca3a702fab00b589b9668f6ec370bf60b92487592936eb54a4df33d6d9217a"
+      },
+      {
+        "path": "D:\\projects\\gjy_byproject\\paper\\manuscript\\work\\figure_revision_20261014_retired\\fig7_xian_y20_before_closeup.png",
+        "bytes": 1101,
+        "sha256": "97a2b285e897235dbba6becb3f894176d00a57440455b5f5d8037106d807803d"
+      },
+      {
+        "path": "D:\\projects\\gjy_byproject\\paper\\manuscript\\work\\figure_revision_20261014_retired\\fig7_xian_y20_before_overview.png",
+        "bytes": 118704,
+        "sha256": "fd0bfdf4f124890c51e10e9e7605c7446b619a1d490d0abde3cd423e939743c4"
+      }
+    ],
+    "deleted_count": 24,
+    "deleted_bytes": 2897265,
+    "remaining_y20_manuscript_filenames": 0,
+    "paper_comparison_sources": [
+      "airbus",
+      "dc10",
+      "cessna",
+      "airplane_body",
+      "109"
+    ],
+    "verification": {
+      "tests": 40,
+      "failures": 0,
+      "latexmk": "up to date; no deleted asset appears in build recorder",
+      "main_tex_unchanged": true,
+      "main_pdf_content_unchanged": true,
+      "pdf_metadata_note": "Canonical PDF differs from prior inspected build only in creation/modification dates and PDF document IDs; existing canonical PDF retained.",
+      "remaining_source_inputs_exist": true
+    },
+    "preserved_scope": "Original CAD, training data, labels, model weights and scientific evidence are retained. Historical records are preserved as records; their former asset paths no longer identify retained files. The optional historical --export-figure8 native renderer is retained and is not invoked by the current manuscript or batch comparison export.",
+    "checked_hashes": {
+      "paper/manuscript/figure_comparison_sources.json": "d995c3384ca6f2d8f2705e2904070c63758d1292f5ed92da6c41269a414e4b21",
+      "python/visualize_cad_targets.py": "384567ccbb2e8b3eb13a82fd00a885355dfae7c0bca5b66a93ff2be7a38fec0f",
+      "python/tests/test_visualize_cad_targets.py": "c4e9ab3cacc5c3b684386a466b3b595e0320b7404e326e0e1646d6ad3325e35b",
+      "paper/manuscript/main.tex": "3d35d94327d94a86128dd409572beb0cb58158622e02dbbb96ef091e4fd28597",
+      "paper/manuscript/main.pdf": "732d7b402df91d659af3e1813de51d7675741393edb40f044e3ea1076b82b36b"
+    }
   }
 }

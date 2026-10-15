@@ -296,8 +296,24 @@ def export_figure6(output_dir, horizontal=False):
     print(f"Camera manifest: {manifest_path}", flush=True)
 
 
-def export_figure7(output_dir):
-    """Export matched Airbus top views and three independent rivet locations."""
+def export_figure7(output_dir, model="airbus"):
+    """Export a test-aircraft pair and three independent rivet locations."""
+    if model == "cessna":
+        name = "Cessna Citation 2_wing_rivets"
+        stage_dir = ROOT / "work/test_removal_pipeline/Cessna_Citation_2"
+        cases = (
+            ("original", ROOT / f"data/plane_model/after_two/{name}.step",
+             ROOT / f"data/plane_model/label/{name}.labels.json"),
+            ("rivet_removed", stage_dir / "Cessna_Citation_2_removed.step",
+             stage_dir / "after_rivet_render.labels.json"),
+        )
+        # The positive-Y side faces the paired orthographic camera.
+        export_paired_rivet_views(output_dir, cases, "fig7_cessna",
+                                 lambda box: (box[1] + box[4]) / 2 > 0,
+                                 detail_scale_factor=0.25, camera_up=(0, 0, 1))
+        return
+    if model != "airbus":
+        raise ValueError(f"Unsupported Figure 7 model: {model}")
     stage_dir = ROOT / "work/test_removal_pipeline/Airbus"
     cases = (
         ("original", ROOT / "data/plane_model/after_two/Airbus_wing_rivets.step",
@@ -327,7 +343,7 @@ def export_figure8(output_dir):
 
 
 def export_paired_rivet_views(output_dir, cases, prefix, detail_filter,
-                             detail_scale_factor=1.0, detail_face_ids=None):
+                             detail_scale_factor=1.0, detail_face_ids=None, camera_up=None):
     """Share exact before/after cameras; keep each model's candidate rule explicit."""
     from OCC.Display.OCCViewer import Viewer3d
 
@@ -362,6 +378,9 @@ def export_paired_rivet_views(output_dir, cases, prefix, detail_filter,
         display.SetSize(*requested)
         display.OnResize()
         apply_camera(display, "top", at, view_scale)
+        if camera_up is not None:
+            display.View.SetUp(*camera_up)
+            display.Repaint()
         for _ in range(3):
             if not display.View.Dump(str(path)):
                 raise RuntimeError(f"CAD export failed: {path}")
@@ -379,7 +398,7 @@ def export_paired_rivet_views(output_dir, cases, prefix, detail_filter,
             display.Repaint()
         raise RuntimeError(f"Unable to export size {image_size}: {actual}")
 
-    manifest = {"projection": "orthographic", "view": "top", "model_geometry_modified": False,
+    manifest = {"projection": "orthographic", "view": "top" if camera_up is None else "custom", "model_geometry_modified": False,
                 "reference_bounds": bounds, "center": center, "scale": scale,
                 "size": size, "details": regions, "stages": []}
     for stage, step_path, label_path, faces, labels in loaded:
@@ -599,7 +618,7 @@ def export_paper_comparisons(output_dir, model=None):
                       "labels_sha256": hashlib.sha256(labels_path.read_bytes()).hexdigest() if labels_path else None}
             if labels_path is None:
                 record["label_scope"] = "Uniform background display only; no processed semantic ground truth."
-            if case["key"] not in ("airbus", "y20"):
+            if case["key"] != "airbus":
                 display.EraseAll()
                 show_faces(display, faces, labels)
                 image_path = output_dir / f"cad_{case['key']}_{stage['name']}.png"
@@ -759,9 +778,10 @@ def main():
     parser.add_argument("--export-figure6", type=Path, metavar="DIRECTORY")
     parser.add_argument("--export-figure6-horizontal", type=Path, metavar="DIRECTORY")
     parser.add_argument("--export-figure7", type=Path, metavar="DIRECTORY")
+    parser.add_argument("--figure7-model", choices=("airbus", "cessna"))
     parser.add_argument("--export-figure8", type=Path, metavar="DIRECTORY")
     parser.add_argument("--export-paper-comparisons", type=Path, metavar="DIRECTORY")
-    parser.add_argument("--comparison-model", choices=("airbus", "y20", "dc10", "cessna", "109", "airplane_body"))
+    parser.add_argument("--comparison-model", choices=("airbus", "dc10", "cessna", "109", "airplane_body"))
     parser.add_argument("--export-figure11", type=Path, metavar="DIRECTORY")
     parser.add_argument("--figure11-model", choices=("aulira", "dc10", "airbus", "gulfstream", "airplane_body"))
     args = parser.parse_args()
@@ -776,6 +796,8 @@ def main():
         parser.error("--comparison-model requires --export-paper-comparisons")
     if args.figure11_model and args.export_figure11 is None:
         parser.error("--figure11-model requires --export-figure11")
+    if args.figure7_model and args.export_figure7 is None:
+        parser.error("--figure7-model requires --export-figure7")
     if args.export_figure11 is not None:
         export_figure11(args.export_figure11, args.figure11_model)
         return
@@ -786,7 +808,10 @@ def main():
         export_figure8(args.export_figure8)
         return
     if args.export_figure7 is not None:
-        export_figure7(args.export_figure7)
+        if args.figure7_model is None:
+            export_figure7(args.export_figure7)
+        else:
+            export_figure7(args.export_figure7, args.figure7_model)
         return
     if args.export_figure6 is not None:
         export_figure6(args.export_figure6)

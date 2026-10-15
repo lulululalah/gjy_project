@@ -7,27 +7,26 @@
   title/.style={font=\sffamily\fontsize{7}{8}\selectfont\mdseries, anchor=south},
   callout/.style={-{Latex[length=1.2mm]}, draw=black, line width=.4pt}
 ]
-  \node[title] at (0,54mm) {(b) Xian Y-20};
-  \node[title] at (-32mm,42mm) {Before processing};
+  \node[title] at (0,54mm) {(b) Cessna Citation 2};
+  \node[title] at (-32mm,42mm) {Before rivet removal};
   \node[title] at (54mm,42mm) {Local views};
-  \node[title] at (-32mm,-55mm) {After processing};
+  \node[title] at (-32mm,-55mm) {After rivet removal};
   \node[title] at (54mm,-55mm) {Local views};
 
   \foreach \stage/\row in {original/0,rivet_removed/-97} {
-    \node[image] at (-32mm,\row mm) {\includegraphics[width=44.16mm]{figures/fig8_xian_y20_\stage_overview_fixed.png}};
+    \node[image] at (-32mm,\row mm) {\includegraphics[width=44.16mm]{figures/fig7_cessna_\stage_overview_fixed.png}};
     % Source markers project the three world coordinates in the camera manifest.
     \foreach \detailnum/\offset/\markerx/\markery in {
-      1/28/-41.9362/22.5799,
-      2/0/-38.7470/19.0383,
-      3/-28/-41.0003/-6.7144
+      1/28/-67.4266/-8.0082,
+      2/0/-65.2455/-7.5565,
+      3/-28/-64.1980/-5.9378
     } {
-      \node[detail] (inset) at (54mm,\row mm+\offset mm) {\includegraphics[width=12.48mm]{figures/fig8_xian_y20_\stage_detail_\detailnum_fixed.png}};
+      \node[detail] (inset) at (54mm,\row mm+\offset mm) {\includegraphics[width=12.48mm]{figures/fig7_cessna_\stage_detail_\detailnum_fixed.png}};
       \draw[black,line width=.5pt] (inset.south west) rectangle (inset.north east);
       \node[font=\sffamily\tiny,anchor=north west,fill=white,inner sep=.5pt] at (inset.north west) {\detailnum};
       \coordinate (source) at (\markerx mm,\row mm+\markery mm);
-      \draw[black,line width=.5pt] ($(source)+(-1.5mm,-1.5mm)$) rectangle ($(source)+(1.5mm,1.5mm)$);
-      \node[font=\sffamily\tiny,anchor=east,fill=white,inner sep=.3pt] at ($(source)+(-1.8mm,0)$) {\detailnum};
-      \draw[callout] ($(source)+(1.5mm,0)$) -- (inset.west);
+      \draw[black,line width=.35pt] ($(source)+(-.6mm,-.6mm)$) rectangle ($(source)+(.6mm,.6mm)$);
+      \draw[callout] ($(source)+(.6mm,0)$) -- (inset.west);
     }
   }
 \end{tikzpicture}

@@ -1,0 +1,241 @@
+{
+  "projection": "orthographic",
+  "view": "custom",
+  "model_geometry_modified": false,
+  "reference_bounds": [
+    -14546.81810161,
+    -7716.084930956999,
+    -441.0367467163639,
+    1.0000011368683772e-07,
+    7716.084930956999,
+    3601.810451175
+  ],
+  "center": [
+    -7273.409050755,
+    0.0,
+    1580.386852229318
+  ],
+  "scale": 13746.743106115953,
+  "size": [
+    2400,
+    2100
+  ],
+  "details": [
+    {
+      "number": 1,
+      "original_face_id": 30,
+      "center": [
+        -1223.706525447,
+        704.29248624161,
+        212.84940264631
+      ],
+      "scale": 1.5999066197787215
+    },
+    {
+      "number": 2,
+      "original_face_id": 3,
+      "center": [
+        -1596.178916541,
+        771.97703515477,
+        289.98780018242
+      ],
+      "scale": 1.5999066197787215
+    },
+    {
+      "number": 3,
+      "original_face_id": 32,
+      "center": [
+        -1775.047952862,
+        545.22304140403,
+        566.413251272
+      ],
+      "scale": 1.5999066197787215
+    }
+  ],
+  "stages": [
+    {
+      "stage": "original",
+      "step": "D:\\projects\\gjy_byproject\\data\\plane_model\\after_two\\Cessna Citation 2_wing_rivets.step",
+      "labels": "D:\\projects\\gjy_byproject\\data\\plane_model\\label\\Cessna Citation 2_wing_rivets.labels.json",
+      "step_sha256": "4d879b94232623e614d51770d916c28debfcaa41a45ac52d4c10c09c58b56b86",
+      "labels_sha256": "f2f57eafc95ca328fb4d885e1447b6d67567843502f3c0020cbd46826c840ce4",
+      "faces": 312,
+      "images": [
+        "fig7_cessna_original_overview_fixed.png",
+        "fig7_cessna_original_detail_1_fixed.png",
+        "fig7_cessna_original_detail_2_fixed.png",
+        "fig7_cessna_original_detail_3_fixed.png"
+      ],
+      "cameras": {
+        "overview": {
+          "center": [
+            -7273.409050755,
+            0.0,
+            1580.386852229318
+          ],
+          "direction": [
+            -0.0,
+            -1.0,
+            -0.0
+          ],
+          "up": [
+            0.0,
+            -0.0,
+            1.0
+          ],
+          "scale": 13746.743106115953,
+          "aspect": 1.1428571428571428
+        },
+        "detail_1": {
+          "center": [
+            -1223.706525446999,
+            704.2924862416094,
+            212.84940264630973
+          ],
+          "direction": [
+            -0.0,
+            -1.0,
+            0.0
+          ],
+          "up": [
+            0.0,
+            0.0,
+            1.0
+          ],
+          "scale": 1.5999066197787215,
+          "aspect": 1.0
+        },
+        "detail_2": {
+          "center": [
+            -1596.178916541,
+            771.9770351547704,
+            289.98780018242
+          ],
+          "direction": [
+            -0.0,
+            -1.0,
+            -0.0
+          ],
+          "up": [
+            0.0,
+            -0.0,
+            1.0
+          ],
+          "scale": 1.5999066197787215,
+          "aspect": 1.0
+        },
+        "detail_3": {
+          "center": [
+            -1775.047952862,
+            545.2230414040296,
+            566.413251272
+          ],
+          "direction": [
+            -0.0,
+            -1.0,
+            0.0
+          ],
+          "up": [
+            0.0,
+            0.0,
+            1.0
+          ],
+          "scale": 1.5999066197787215,
+          "aspect": 1.0
+        }
+      }
+    },
+    {
+      "stage": "rivet_removed",
+      "step": "D:\\projects\\gjy_byproject\\work\\test_removal_pipeline\\Cessna_Citation_2\\Cessna_Citation_2_removed.step",
+      "labels": "D:\\projects\\gjy_byproject\\work\\test_removal_pipeline\\Cessna_Citation_2\\after_rivet_render.labels.json",
+      "step_sha256": "a10a3095c3c63c7771b3f09548bed211d3d48f56efcbaa7a6adf0c02f30a7186",
+      "labels_sha256": "7a251a0b1f5ae44619eadb36ae3736c5cfa54d310cf1a65c45ffbbb5ead9a286",
+      "faces": 260,
+      "images": [
+        "fig7_cessna_rivet_removed_overview_fixed.png",
+        "fig7_cessna_rivet_removed_detail_1_fixed.png",
+        "fig7_cessna_rivet_removed_detail_2_fixed.png",
+        "fig7_cessna_rivet_removed_detail_3_fixed.png"
+      ],
+      "cameras": {
+        "overview": {
+          "center": [
+            -7273.409050755,
+            0.0,
+            1580.386852229318
+          ],
+          "direction": [
+            -0.0,
+            -1.0,
+            -0.0
+          ],
+          "up": [
+            0.0,
+            -0.0,
+            1.0
+          ],
+          "scale": 13746.743106115953,
+          "aspect": 1.1428571428571428
+        },
+        "detail_1": {
+          "center": [
+            -1223.706525446999,
+            704.2924862416075,
+            212.84940264630973
+          ],
+          "direction": [
+            -0.0,
+            -1.0,
+            -0.0
+          ],
+          "up": [
+            0.0,
+            -0.0,
+            1.0
+          ],
+          "scale": 1.5999066197787215,
+          "aspect": 1.0
+        },
+        "detail_2": {
+          "center": [
+            -1596.178916541,
+            771.9770351547668,
+            289.9878001824201
+          ],
+          "direction": [
+            -0.0,
+            -1.0,
+            -0.0
+          ],
+          "up": [
+            0.0,
+            -0.0,
+            1.0
+          ],
+          "scale": 1.5999066197787215,
+          "aspect": 1.0
+        },
+        "detail_3": {
+          "center": [
+            -1775.047952862,
+            545.2230414040296,
+            566.413251272
+          ],
+          "direction": [
+            -0.0,
+            -1.0,
+            -0.0
+          ],
+          "up": [
+            0.0,
+            -0.0,
+            1.0
+          ],
+          "scale": 1.5999066197787215,
+          "aspect": 1.0
+        }
+      }
+    }
+  ]
+}

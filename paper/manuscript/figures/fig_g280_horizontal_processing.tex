@@ -14,7 +14,7 @@
   \foreach \state/\x/\title in {
     original/25/{(A) Original model},
     rivet_removed/80/{(B) After rivet removal},
-    surface_processed/135/{(C) After window/decal processing}
+    surface_processed/135/{(C) After small-feature processing}
   } {
     \node[stage] at (\x,-7) {\title};
     \node[image] (aircraft) at (\x,-30)
@@ -28,9 +28,9 @@
     {A $\rightarrow$ B: rivet recognition,\\screening and removal};
   \node[smalllabel,fill=orange!7,text width=77mm,minimum height=10mm,
         inner sep=1mm] at (120,-56)
-    {B $\rightarrow$ C: re-extract faces/graph,\\recognise surface-features, process windows/decals};
+    {B $\rightarrow$ C: re-extract faces/graph,\\recognise and process small-features};
   \node[heading] at (0,-68) {(b) Rivet regions: A versus B};
-  \node[heading] at (83,-68) {(c) Window/decal regions across A--C};
+  \node[heading] at (83,-68) {(c) Small-feature regions across A--C};
   \draw[black!20,line width=.4pt] (79,-66) -- (79,-114);
   \foreach \number/\x in {1/26,2/46,3/66} {
     \node[smalllabel] at (\x,-75) {Region \number};
@@ -51,8 +51,8 @@
       \draw[frame] (surface.south west) rectangle (surface.north east);
     }
   }
-  \node[smalllabel] at (89,-86) {Window};
-  \node[smalllabel] at (89,-106) {Decal};
+  \node[smalllabel] at (89,-86) {Region 1};
+  \node[smalllabel] at (89,-106) {Region 2};
   \foreach \state/\x in {original/25,rivet_removed/80} {
     \foreach \number/\sourcex/\sourcey in {
       1/-2.3246/-4.7430,
