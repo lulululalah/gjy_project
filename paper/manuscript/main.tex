@@ -549,11 +549,9 @@ Removal or reconstruction changes topology and face enumeration. The workflow th
 
 Figure~\ref{fig:geometry_protocol} illustrates the staged workflow on the Gulfstream G280 model. The horizontal sequence provides whole-aircraft context, while the enlarged local views show the selected feature regions at matched camera settings. The selected small-feature regions remain visible after the rivet stage and are addressed in the subsequent small-feature stage. For a second-stage small-feature candidate, the local host relation determines whether to remove, reconstruct, or repair the affected region.
 
-For each original--simplified pair, we use the same OpenCASCADE surface mesher at both endpoints, with relative linear deflection 0.0005 and angular deflection 0.5 rad \parencite{occt_mesh_2026}. We record node and triangle counts and use the median generation time from five meshing runs per model. Measurements were obtained on Windows 10 Pro 25H2 with an Intel Core i7-14700KF, an NVIDIA GeForce RTX 4060 (8~GB), Python 3.10.20, OpenCASCADE 7.9.0, and PyTorch 2.12.1+cu130. These mesh-scale and timing measures do not test finite-element accuracy or physical-response equivalence.
+For each original--simplified pair, surface meshes were generated using OpenCASCADE 7.9.0 with identical relative linear and angular deflections of 0.0005 and 0.5 rad, respectively \parencite{occt_mesh_2026}. Node and triangle counts were recorded, and meshing time was reported as the median of five runs per model.
 
-For the post-meshing baseline, the original B-Rep is first meshed with the same OpenCASCADE settings and then simplified by quadric error metrics (QEM) edge collapse \parencite{garland1997qem}. For each model, the QEM target is the final triangle count produced by the B-Rep processing route. We use fast-simplification version 0.2.0 with aggregation factor 7.0 and border preservation disabled \parencite{fast_simplification_2026}. The reported baseline component is the recorded median time for meshing the original B-Rep plus the median of five QEM-kernel runs. It excludes mesh extraction and array conversion, file I/O, recognition, candidate filtering, and CAD operations. Thus, the comparison is a matched-triangle timing-component comparison, not an end-to-end workflow comparison.
-
-The paired models support comparison of CAD-face and surface-mesh scale under fixed meshing controls. Removal completeness, reconstruction success, geometric fidelity, and physical-response equivalence require additional evidence.
+The paired models support comparison of CAD-face and surface-mesh scale under fixed meshing controls. Removal completeness, reconstruction success, geometric fidelity, finite-element accuracy, and physical-response equivalence require additional evidence.
 
 \subsection{Data Annotation and Training Protocol}\label{sec:data_training}
 
@@ -606,6 +604,8 @@ Surface type & Categorical B-Rep surface representation & 8 \\
 \section{Experimental Results}\label{sec:results}
 
 This section reports face-level recognition results, CAD-processing outputs, and surface-mesh comparisons before and after simplification. Recognition results use aligned prediction and truth records. The CAD table reports processing inputs at their respective stages; candidate outputs and visual examples do not measure operation-level completeness.
+
+Mesh measurements used Windows 10 Pro 25H2, Intel Core i7-14700KF, NVIDIA GeForce RTX 4060 (8~GB), Python 3.10.20, and PyTorch 2.12.1+cu130.
 
 \subsection{Face-level recognition and background-risk characterisation}\label{sec:e1_results}
 
@@ -807,7 +807,9 @@ Air Plane Idea A & 27,366 $\rightarrow$ 27,278 & 443,054 $\rightarrow$ 433,184 &
 \end{tabularx}
 \end{table}
 
-To compare with post-meshing simplification at matched output scale, the original B-Rep meshes were simplified using QEM edge collapse. For each pair, the QEM target was the final triangle count of the B-Rep processing route. Table~\ref{tab:qem_matched_time} reports the two timing components under the accounting convention defined above.
+For the post-meshing baseline, the original B-Rep was first meshed with the same OpenCASCADE settings and then simplified by quadric error metrics (QEM) edge collapse \parencite{garland1997qem}. For each model, the QEM target was the final triangle count produced by the B-Rep processing route. We used fast-simplification version 0.2.0 with aggregation factor 7.0 and border preservation disabled \parencite{fast_simplification_2026}.
+
+The baseline component is the median time for meshing the original B-Rep plus the median of five QEM-kernel runs. It excludes mesh extraction and array conversion, file I/O, recognition, candidate filtering, and CAD operations. Table~\ref{tab:qem_matched_time} compares this component with final meshing after B-Rep processing at matched triangle targets; it does not compare end-to-end workflows.
 
 \begin{table}[!ht]
 \centering
