@@ -2,19 +2,18 @@
 \centering
 \begin{tikzpicture}[x=1mm,y=1mm,
   label/.style={font=\rmfamily\fontsize{8}{9.5}\selectfont,align=center},
-  heading/.style={font=\rmfamily\fontsize{8.5}{10}\selectfont,anchor=west},
+  heading/.style={font=\rmfamily\fontsize{8.5}{10}\selectfont,align=center},
   smalllabel/.style={label,font=\rmfamily\fontsize{7.5}{9}\selectfont},
   stage/.style={label,text width=46mm},
   image/.style={inner sep=0pt},
   transition/.style={-{Latex[length=1.8mm]},draw=black!75,line width=.65pt},
   frame/.style={draw=black!45,line width=.4pt},
   callout/.style={draw=black!55,line width=.35pt}]
-  \path[use as bounding box] (0,5) rectangle (160,-115);
-  \node[heading] at (0,2) {(a) Staged B-Rep workflow};
+  \path[use as bounding box] (0,1) rectangle (160,-123);
   \foreach \state/\x/\title in {
-    original/25/{(A) Original model},
-    rivet_removed/80/{(B) After rivet removal},
-    surface_processed/135/{(C) After small-feature processing}
+    original/25/{A: Original model},
+    rivet_removed/80/{B: After rivet removal},
+    surface_processed/135/{C: After cosmetic-feature processing}
   } {
     \node[stage] at (\x,-7) {\title};
     \node[image] (aircraft) at (\x,-30)
@@ -28,9 +27,8 @@
     {A $\rightarrow$ B: rivet recognition,\\screening and removal};
   \node[smalllabel,fill=orange!7,text width=77mm,minimum height=10mm,
         inner sep=1mm] at (120,-56)
-    {B $\rightarrow$ C: re-extract faces/graph,\\recognise and process small-features};
-  \node[heading] at (0,-68) {(b) Rivet regions: A versus B};
-  \node[heading] at (83,-68) {(c) Small-feature regions across A--C};
+    {B $\rightarrow$ C: re-extract faces/graph,\\recognise and process cosmetic features};
+  \node[heading] at (80,-65) {(A) Staged B-Rep workflow};
   \draw[black!20,line width=.4pt] (79,-66) -- (79,-114);
   \foreach \number/\x in {1/26,2/46,3/66} {
     \node[smalllabel] at (\x,-75) {Region \number};
@@ -53,6 +51,8 @@
   }
   \node[smalllabel] at (89,-86) {Region 1};
   \node[smalllabel] at (89,-106) {Region 2};
+  \node[heading] at (39,-120) {(B) Rivet regions: A versus B};
+  \node[heading] at (121,-120) {(C) Cosmetic-feature regions across A--C};
   \foreach \state/\x in {original/25,rivet_removed/80} {
     \foreach \number/\sourcex/\sourcey in {
       1/-2.3246/-4.7430,

@@ -16,9 +16,8 @@
     line width=.5pt,align=center,inner sep=1mm},
   chip/.style={box,font=\sffamily\fontsize{7}{8.5}\selectfont},
   flow/.style={-{Latex[length=1.4mm]},draw=archInk!80,line width=.6pt},
-  heading/.style={anchor=west,font=\sffamily\fontsize{8.5}{10}\selectfont}]
-  \path[use as bounding box] (0,3) rectangle (160,-108);
-  \node[heading] at (0,0) {(a) Shared graph input};
+  heading/.style={align=center,font=\sffamily\fontsize{8.5}{10}\selectfont}]
+  \path[use as bounding box] (0,-2) rectangle (160,-114);
   \node[inner sep=0] at (24,-14)
     {\includegraphics[width=36mm]{figures/fig5_bspline_curved_sheet.png}};
   \node[box,fill=archLayerPurple!5,text width=86mm,minimum height=20mm]
@@ -33,12 +32,12 @@
     text width=20mm,minimum height=9mm] at (112,-14) {Node attributes\\48D};
   \node[chip,draw=archLayerGreen!65!black,fill=archLayerGreen!15,
     text width=20mm,minimum height=9mm] at (140,-14) {Edge attributes\\6D};
-  \node[heading] at (0,-28) {(b) Independent GNN branches};
-  \draw[draw=archInk!65,line width=.6pt] (80,-24) -- (80,-31);
-  \draw[flow,draw=archBlue!85] (80,-31) -- (39,-31) -- (39,-35.7);
-  \draw[flow,draw=archOrange!85] (80,-31) -- (121,-31) -- (121,-35.7);
-  \fill[archInk!75] (80,-31) circle[radius=.35mm];
-  \foreach \x/\col/\title/\score in {39/archBlue/Rivet branch/{p_{r,i}},121/archOrange/Small-feature branch/{p_{s,i}}} {
+  \node[heading] at (80,-28) {(A) Shared graph input};
+  \draw[draw=archInk!65,line width=.6pt] (110,-24) -- (110,-32) -- (80,-32);
+  \draw[flow,draw=archBlue!85] (80,-32) -- (39,-32) -- (39,-35.7);
+  \draw[flow,draw=archOrange!85] (80,-32) -- (121,-32) -- (121,-35.7);
+  \fill[archInk!75] (80,-32) circle[radius=.35mm];
+  \foreach \x/\col/\title/\score in {39/archBlue/Rivet branch/{p_{r,i}},121/archOrange/Cosmetic-feature branch/{p_{s,i}}} {
     \draw[draw=\col!65,fill=\col!4,rounded corners=1.5mm]
       (\x-37,-36) rectangle (\x+37,-88);
     \node[rounded corners=.8mm,fill=\col!16,text width=61mm,minimum height=5mm,
@@ -79,17 +78,17 @@
       (pool.south) -- (\x,-77) -- (\x-22,-77) -- (adapter.north);
     \draw[flow,-{Latex[length=.9mm]}] (adapter.east) -- (head.west);
     \draw[flow,-{Latex[length=.9mm]}] (head.east) -- (score.west);
-    \draw[flow] (score.south) -- (\x+23,-92) -- (80,-92);
+    \draw[flow] (score.south) -- (\x+23,-89) -- (\x,-89) -- (\x,-97);
   }
-  \node[heading] at (0,-96) {(c) Fixed threshold decision};
+  \node[heading] at (80,-92) {(B) Independent GNN branches};
   \node[box,fill=archInk!3,text width=142mm,minimum height=10mm]
     (decision) at (80,-102) {};
   \node[chip,draw=archBlue!75,fill=archBlue!18,text width=43mm,
     minimum height=8mm] at (31,-102) {$p_{r,i}\geq0.90$\\Rivet};
   \node[chip,draw=archOrange!75,fill=archOrange!18,text width=43mm,
-    minimum height=8mm] at (80,-102) {Otherwise, $p_{s,i}\geq0.50$\\Small-feature};
+    minimum height=8mm] at (80,-102) {Otherwise, $p_{s,i}\geq0.50$\\Cosmetic feature};
   \node[chip,draw=archInk!55,fill=archInk!9,text width=43mm,
     minimum height=8mm] at (129,-102) {Otherwise\\Background};
-  \draw[flow,-{Latex[length=1mm]}] (80,-92) -- (decision.north);
+  \node[heading] at (80,-111) {(C) Fixed threshold decision};
 \end{tikzpicture}
 \endgroup

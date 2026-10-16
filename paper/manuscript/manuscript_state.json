@@ -2,7 +2,7 @@
   "schema_version": "1.1",
   "project": {
     "id": "aircraft-brep-small-feature-paper",
-    "title": "飞机 B-Rep 模型小特征识别的面级图学习方法",
+    "title": "飞机 B-Rep 模型铆钉与外观特征识别的面级图学习方法",
     "archetype": "empirical methods paper",
     "study_designs": [
       "computational model",
@@ -132,8 +132,8 @@
     }
   ],
   "contract": {
-    "gap": "Existing CAD feature-recognition work provides limited evidence for risk-sensitive small-feature recognition and downstream geometry processing on complete heterogeneous aircraft B-Rep models.",
-    "task": "Recognize rivets and small-features at B-Rep face level and use predictions as candidate inputs to staged CAD processing.",
+    "gap": "Existing CAD feature-recognition work provides limited evidence for risk-sensitive rivet and cosmetic-feature recognition and downstream geometry processing on complete heterogeneous aircraft B-Rep models.",
+    "task": "Recognize rivets and cosmetic features at B-Rep face level and use predictions as candidate inputs to staged CAD processing.",
     "outcomes": [
       "face-level recognition on complete aircraft",
       "per-aircraft error and background false-positive analysis",
@@ -143,7 +143,7 @@
     "questions": [
       {
         "id": "RQ1",
-        "text": "Can face geometry and adjacency topology support rivet and small-feature recognition across complete aircraft models?",
+        "text": "Can face geometry and adjacency topology support rivet and cosmetic-feature recognition across complete aircraft models?",
         "lock": "SEMANTIC"
       },
       {
@@ -152,7 +152,7 @@
         "lock": "SEMANTIC"
       }
     ],
-    "contribution": "A face-level graph-learning framework for small-feature recognition on complete-aircraft B-Rep models, with staged CAD-processing candidates and paired mesh comparisons.",
+    "contribution": "A face-level graph-learning framework for rivet and cosmetic-feature recognition on complete-aircraft B-Rep models, with staged CAD-processing candidates and paired mesh comparisons.",
     "nonclaims": [
       "No universal generalization claim across all aircraft or CAD sources.",
       "Geometric comparison does not establish physics equivalence.",
@@ -166,7 +166,7 @@
     {
       "id": "three-class-schema",
       "kind": "SEMANTIC",
-      "canonical": "background=0, rivet=1, surface_feature=2 in stored data; manuscript display labels are background, rivet, small-feature. Small-feature denotes annotated non-rivet target faces. Native decal/window provenance remains in JSON."
+      "canonical": "background=0, rivet=1, surface_feature=2 in stored data; manuscript display labels are background, rivet, cosmetic feature. Cosmetic feature denotes annotated non-rivet target faces, including window and decal regions, considered for simplification or reconstruction. Native decal/window provenance remains in JSON."
     },
     {
       "id": "model-level-split",
@@ -176,25 +176,35 @@
     {
       "id": "no-area-hard-filter",
       "kind": "SEMANTIC",
-      "canonical": "The rivet-stage guard rejects predicted rivet faces with relative area greater than 5e-6; no corresponding global area threshold is applied to the small-feature branch."
+      "canonical": "The rivet-stage guard rejects predicted rivet faces with relative area greater than 5e-6; no corresponding global area threshold is applied to the cosmetic-feature branch."
     }
   ],
   "terminology": [
     {
       "concept": "non-rivet target class in manuscript prose",
-      "preferred": "small-feature",
+      "preferred": "cosmetic feature",
       "prohibited": [
+        "small-feature",
+        "small-features",
+        "small feature",
+        "small features",
         "surface-feature",
         "surface-features",
         "surface feature",
-        "surface features"
+        "surface features",
+        "surface detail",
+        "surface details",
+        "surface-detail",
+        "surface-details"
       ],
       "scope_roles": [
         "main_manuscript"
-      ]
+      ],
+      "modifier_form": "cosmetic-feature",
+      "definition": "Annotated non-rivet target B-Rep faces, including window and decal regions, considered for simplification or reconstruction."
     },
     {
-      "concept": "internal non-rivet target identifier; displayed as small-feature in the manuscript",
+      "concept": "internal non-rivet target identifier; displayed as cosmetic feature in the manuscript",
       "preferred": "surface_feature",
       "prohibited": [
         "four-class decal/window output"
@@ -221,10 +231,11 @@
     "protected_terms": [
       "B-Rep",
       "face identifier",
-      "small-feature",
       "surface_feature",
       "dual-specialist GNN",
-      "smooth-shell guard"
+      "smooth-shell guard",
+      "cosmetic feature",
+      "cosmetic-feature"
     ],
     "discouraged_phrases": [
       "universally applicable",
@@ -283,7 +294,7 @@
     },
     {
       "id": "formal-three-class-comparison-result",
-      "value": "On 34162 fixed test faces after the documented two-stage CAD screening, the unified three-class classifier obtained background F1=0.9168, rivet F1=0.1312, small-feature F1=0.4589, mIoU=0.4048, and 4762 background false positives.",
+      "value": "On 34162 fixed test faces after the documented two-stage CAD screening, the unified three-class classifier obtained background F1=0.9168, rivet F1=0.1312, cosmetic-feature F1=0.4589, mIoU=0.4048, and 4762 background false positives.",
       "source_id": "formal-three-class-comparison",
       "expected_strings": [
         "34162",
@@ -300,7 +311,7 @@
       "question_id": "RQ1",
       "method": "B-Rep face graph with geometric and topological attributes",
       "evidence": "Complete-aircraft test evaluation, per-aircraft target-class counts and F1, and background false-positive risk",
-      "result": "Across 34162 test faces from nine aircraft, rivet F1=0.9312 and small-feature F1=0.8091; 28 rivet and 122 small-feature faces were missed in total, including 103 small-feature faces on Airbus; Air Plane Idea A contributes 82 of 190 background false positives",
+      "result": "Across 34162 test faces from nine aircraft, rivet F1=0.9312 and cosmetic-feature F1=0.8091; 28 rivet and 122 cosmetic-feature faces were missed in total, including 103 cosmetic-feature faces on Airbus; Air Plane Idea A contributes 82 of 190 background false positives",
       "interpretation": "Face-level recognition is feasible in the reported partition, but pooled metrics do not establish uniform target-class performance across aircraft and residual background false-positive risk remains relevant to downstream processing",
       "limitation": "Some test aircraft may have been used during historical development; limited aircraft and CAD-source diversity",
       "contribution": "Complete-aircraft face-level recognition protocol",
@@ -455,6 +466,19 @@
       "date": "2026-10-13",
       "decision": "By author instruction, replace the three-column Airbus comparison with two rows under model label (a): before removal above, after removal below. Each row pairs an 85 mm complete-aircraft view with the corresponding author-supplied local screenshot in an equal 48-by-38 mm frame. Preserve image aspect ratios and original pixels; do not use the pre-removal close-up as the post-removal close-up. Update caption and adjacent prose accordingly, retaining the camera-angle and operation-completeness qualifications. Aircraft examples (b) and (c) remain pending.",
       "verification": "Successful latexmk compilation and visual review of Figure 7 on PDF page 19 at 140 dpi. The two rows contain four distinct source screenshots; model label (a), stage labels, and local-view labels are visible without overlap. Overview widths and inset frame dimensions match between rows, and keepaspectratio preserves the differently shaped close-ups using whitespace rather than distortion. The new close-up SHA-256 matches the user source. Exact caption and adjacent prose manually checked for evidence boundaries, terminology, repetition, British spelling, and unchanged citation coverage; registered-phrase scan and git diff --check run. No numerical results, citations, geometry, or source image pixels changed; no Python executed. The requested Airbus pair is complete; the full three-aircraft Figure 7 remains in progress."
+    },
+    {
+      "id": "D-surface-detail-20261016",
+      "date": "2026-10-16",
+      "decision": "By explicit author approval, replace the manuscript display term small-feature with surface detail (surface-detail before faces, regions and branch names). This supersedes prior display-term decisions while retaining stored surface_feature=2, class membership, code/data identifiers and all numerical evidence. Title explicitly names rivet and surface detail recognition."
+    },
+    {
+      "date": "2026-10-16",
+      "decision": "User explicitly selected Cosmetic features as the displayed non-rivet target class name, superseding surface detail. Singular cosmetic feature; modifier cosmetic-feature. Annotated window/decal targets and stored surface_feature=2 remain unchanged; the name adds no assertion of physical insignificance."
+    },
+    {
+      "date": "2026-10-16",
+      "decision": "Introduction contribution list should emphasise representation, class-specific learning and the CAD/mesh-preparation connection without specific numerical results; retain quantitative results in their existing evidence sections."
     }
   ],
   "figure_asset_updates": [
@@ -1058,14 +1082,17 @@
       "functional_completeness"
     ],
     "checked_hashes": {
-      "main.tex": "dd06b2d75d139d4b058d230fa87327e17767a3cee577034a14d4654f0fc5e711",
-      "main.pdf": "2694a20c498bbea322c869df84f611fdcbdd283fe9974e565243354b0fe9c1fa",
-      "candidate": "dd06b2d75d139d4b058d230fa87327e17767a3cee577034a14d4654f0fc5e711",
-      "main-tex": "dd06b2d75d139d4b058d230fa87327e17767a3cee577034a14d4654f0fc5e711",
-      "repaired_step": "a958756e51ba37e98df26e6882c622f6a9e04b74a33c0dd460f4d34734663d8e"
+      "main.tex": "aa33b847ac4d92384b13be953f08e2577eaa1beb674d0935c6f8b5c429b69060",
+      "main.pdf": "9bc1759264d39ee49d2e9f577eeb38fd3bc228e4c154f438be47ca05c9eebfae",
+      "candidate": "aa33b847ac4d92384b13be953f08e2577eaa1beb674d0935c6f8b5c429b69060",
+      "main-tex": "aa33b847ac4d92384b13be953f08e2577eaa1beb674d0935c6f8b5c429b69060",
+      "repaired_step": "a958756e51ba37e98df26e6882c622f6a9e04b74a33c0dd460f4d34734663d8e",
+      "figures/fig_gulfstream_target_examples.tex": "a1e8593a8ccd2cafc0caede710e90ddaf69cca08a99c462ee92ef2dbe572a62b",
+      "figures/fig_class_specific_gnn_architecture_v7.tex": "a91fefa1d8bcab090342562d37ec11f8e4240537adfeafc28c594cf1eca5a442",
+      "figures/fig_g280_horizontal_processing.tex": "13222e108f35c93644f9cd003d8bfb9a93ab03db9b0a4a689bbd7eb3c519ec14"
     },
-    "visual_check": "LOCAL_QEM_PLACEMENT_2026-10-15: 26 pages; affected pages 13-26 inspected, including Section 5.2 transition and QEM protocol/Table 9. Nine tables retain 10 TeX pt. No layout/reference warnings. I2/I3 remain open.",
-    "last_check_scope": "Author-approved relocation and deduplication of QEM baseline protocol from Section 5.2 to Section 6.2.2 immediately before Table 9. Prior mesh-paragraph concision retained. No numeric/table changes or full-paper release certification."
+    "visual_check": "FIGURE2_ROW_SPACING_2026-10-16: 26 pages. Figure 2/page 6 at 155dpi and pages 7-10 overview inspected. Lower row moved down 6mm; baseline separation from A caption measured 4.8 -> 10.8mm. Adjacent paragraph widow corrected; no clipping/overlap or overfull/underfull boxes. I2/I3 remain open.",
+    "last_check_scope": "Author-requested recoverable cleanup: four unused figure sources, 549 work images and 49 work PDF copies recycled; active manuscript/PDF/formal-image hashes unchanged and all current compiler-recorded inputs retained."
   },
   "figure11_three_columns_20261014": {
     "date": "2026-10-14",
@@ -2366,5 +2393,1089 @@
       "main.pdf": "2694a20c498bbea322c869df84f611fdcbdd283fe9974e565243354b0fe9c1fa"
     },
     "diagnostic_disposition": "Technical QEM/B-Rep terms and explicit timing-scope wording retained under author-approved comparison; remaining whole-paper diagnostics are inherited and not a whole-paper prose certification."
+  },
+  "jcde_format_alignment_20261016": {
+    "scope": "Author-requested JCDE figure-reference, subfigure-label, heading-case and source/PDF synchronisation corrections; author metadata and declarations deferred.",
+    "changed_files": [
+      "main.tex",
+      "figures/fig_gulfstream_target_examples.tex",
+      "figures/fig_class_specific_gnn_architecture_v7.tex",
+      "figures/fig_g280_horizontal_processing.tex",
+      "figures/fig7_airbus_rivet_example.tex",
+      "figures/fig7_cessna_rivet_example.tex",
+      "figures/fig9_dc10_window_comparison.tex",
+      "figures/fig10_cessna_window_comparison.tex",
+      "figures/fig11_109_decal_comparison.tex",
+      "figures/fig_mesh_five_models.tex"
+    ],
+    "figure_references": "All 11 figures are cited in the manuscript before their figure environments; Figure 1 and Figure 3 citations added; Figure 6 introduction moved before the figure.",
+    "panel_labels": "Figure 1 panels A-E added; Figure 5 and Figure 6 panels A-C, Figure 7 panels A-B, Figures 8-9 panels A-B, Figure 10 panels A-D, and Figure 11 panels A-E set in uppercase and centred below their panels; captions synchronised.",
+    "figure11_scale": 0.95,
+    "headings": "Section and subsection headings use sentence case with CAD, B-Rep and GNN abbreviations preserved.",
+    "pdf_pages": 26,
+    "checks": {
+      "build": "latexmk -pdf -interaction=nonstopmode -halt-on-error -silent main.tex; successful clean build",
+      "layout_and_reference_warnings": 0,
+      "all_figure_references_before_figures": true,
+      "lowercase_labels_in_active_figures": 0,
+      "tables_equations_citations_author_metadata_and_geometry_assets_unchanged": true
+    },
+    "visual_check": "All 26 pages inspected in contact sheets; Figures 5-10 inspected in full-page renders; final Figure 11 and adjacent Table 8 checked after scaling; labels/captions clear with no clipping or overlap.",
+    "candidate_sha256": "ad410a5f25768b1e717b6ac49343f29648a1fd11c9a368ae2c18564da8f28a8a",
+    "candidate_diagnostics": [
+      {
+        "code": "PROSE010",
+        "artifact": "candidate",
+        "match": "complete-aircraft, Three-dimensional, B-Rep, B-Rep, face-adjacency",
+        "count": 5,
+        "message": "dense lexical hyphenation in one sentence; inspect clarity and field convention"
+      },
+      {
+        "code": "PROSE010",
+        "artifact": "candidate",
+        "match": "Face-level, Class-specific, Face-level, class-specific",
+        "count": 4,
+        "message": "dense lexical hyphenation in one sentence; inspect clarity and field convention"
+      },
+      {
+        "code": "PROSE010",
+        "artifact": "candidate",
+        "match": "B-Rep, B-Rep, B-Rep, small-feature",
+        "count": 4,
+        "message": "dense lexical hyphenation in one sentence; inspect clarity and field convention"
+      }
+    ],
+    "diagnostic_disposition": "Three PROSE010 hyphen-density diagnostics reviewed and retained: established B-Rep, small-feature, face-level and class-specific terminology and sentence-case technical headings; no new scientific or bibliographic claims.",
+    "inherited_font_warnings": "mathrsfs substitutes unavailable 7.5pt and 3.75pt script font sizes; no layout/reference warnings remain.",
+    "checked_hashes": {
+      "main.tex": "33803df70926947c5ee0f9954a8f34418f914b21e7fc5b37c4ebbb113bd3252b",
+      "main.pdf": "44fdcd9541fe01f2472f8b70f4751b86c2f83dede6986ca634a536feafed7606",
+      "figures/fig_gulfstream_target_examples.tex": "6f6805d26404ae4f0136cf79d8c5d1b27a6e2d799da3f17fbc5f28dc4765ac58",
+      "figures/fig_class_specific_gnn_architecture_v7.tex": "29c1852a8c9869425adb5d7bdb88cd3aa906070f14bc381f3e4ca79256105b71",
+      "figures/fig_g280_horizontal_processing.tex": "953946e7561cedb5f6535407e048e0312889c69aeae04fc62e93b1a0fca0f6b4",
+      "figures/fig7_airbus_rivet_example.tex": "7a2ba2a63ec2bbea72676a8ed7d33239129cbf6f9b65f1d3bfbdc92005d8eb7e",
+      "figures/fig7_cessna_rivet_example.tex": "3aa7682fa07e636b63633059ca87b892e2fb1c1d12c035f37050a7cf1a47971e",
+      "figures/fig9_dc10_window_comparison.tex": "0520aef7e27fec40bc7f1d1080240d471a5ea6f756f6761a45d2fce5ec82c878",
+      "figures/fig10_cessna_window_comparison.tex": "0fac57d8ebe4be6210587e7b9586e0cf31c028ea9602dd56e6c0ed9afa8f5854",
+      "figures/fig11_109_decal_comparison.tex": "ac606af61092590b196dabe4e1611ffcfaba019dbf83953079f6d0c427cbf948",
+      "figures/fig_mesh_five_models.tex": "f68ec545508a693a4cf6d7683846a91757b5430b20ef37f59971afc6250a0431"
+    },
+    "release_scope": "Formatting verification only; existing I2/I3 issues and deferred author/declaration metadata unchanged."
+  },
+  "nomenclature_addition_20261016": {
+    "scope": "Author-requested Nomenclature compiled from existing manuscript symbols and inserted between Keywords and Introduction; author information deferred.",
+    "location": "main.tex immediately after Keywords; unnumbered section and non-floating two-column tabularx at 10 TeX pt; no new table number.",
+    "entries": 32,
+    "source_map": [
+      {
+        "entries": "Graph, faces, nodes, edges, neighbourhood and attributes",
+        "sources": [
+          "sec:face_graph_preliminary",
+          "fig:face_graph_preliminary",
+          "eq:class_specific_input_encoding"
+        ]
+      },
+      {
+        "entries": "Layer/branch indices, node states, messages, update functions, encoders and convolution operators",
+        "sources": [
+          "eq:generic_message_passing",
+          "eq:class_specific_input_encoding",
+          "eq:class_specific_message_update",
+          "sec:dual_gnn"
+        ]
+      },
+      {
+        "entries": "Global context, local/global vector, adapter, head, pooling, sigmoid and concatenation",
+        "sources": [
+          "sec:dual_gnn",
+          "eq:class_specific_scores"
+        ]
+      },
+      {
+        "entries": "Binary targets, scores, thresholds, label, focal losses and gamma",
+        "sources": [
+          "sec:training_inference",
+          "eq:dual_head_decision"
+        ]
+      },
+      {
+        "entries": "Precision, recall, F1 and background false-positive transitions",
+        "sources": [
+          "sec:e1_results",
+          "tab:e1_risk"
+        ]
+      }
+    ],
+    "checks": {
+      "build": "latexmk -pdf -interaction=nonstopmode -halt-on-error -silent main.tex; successful",
+      "pdf_pages": 27,
+      "nomenclature_page": 2,
+      "introduction_page": 3,
+      "existing_manuscript_outside_insertion_unchanged": true,
+      "author_information_and_declarations_unchanged": true,
+      "existing_equations_tables_figures_data_and_citations_unchanged": true,
+      "layout_and_reference_warnings": 0
+    },
+    "visual_check": "Page 2 inspected at full-page resolution for glyphs, row spacing, alignment and complete table. All 27 pages reviewed in contact sheets for reflow, headings, figures, captions and tables. No clipping or overlap observed.",
+    "candidate_audit": {
+      "status": "FINDINGS",
+      "candidate_sha256": "716226db5ca5677aa6dca98f02139587cf71c7f899f6a1efa1910265afa15217",
+      "profile_loaded": true,
+      "findings": [
+        {
+          "code": "PROSE005",
+          "artifact": "candidate",
+          "match": "mathbf",
+          "count": 9,
+          "message": "candidate nontechnical word overuse; preserve it if conceptually required"
+        }
+      ],
+      "manual_checks_required": [
+        "paragraph contract and adjacent-paragraph flow",
+        "claim scope and preservation of locked meaning",
+        "functional transitions and cumulative information flow",
+        "literature-example ordering from broad context to the closest precedent and gap, or another explicit evidentiary logic",
+        "function-preserving concision and sentence rhythm",
+        "natural scholarly subjects, syntax, and disciplinary accessibility",
+        "reader accessibility, including nonessential field shorthand, transition templates, and indirect verbs",
+        "claim-to-citation support and reference-list changes",
+        "observable stock or AI-like prose features without authorship inference",
+        "dash and hyphen style, including grammatical role, established open compounds, density, and suspended compounds",
+        "necessary technical repetition versus avoidable restatement"
+      ]
+    },
+    "diagnostic_disposition": "PROSE005 for \"mathbf\" is a LaTeX-command extraction diagnostic. Bold vector notation is required to match the body and is retained.",
+    "checked_hashes": {
+      "main.tex": "26710224b13d6de902a134d7bbe0f7b40a7248f9d59f1fb2a18f8c2a37e9275d",
+      "main.pdf": "8c78e31c5f833adb6d14b64ed9c942fc8ee6a9760420b24dddfa1adb9864a94f"
+    },
+    "release_scope": "Local nomenclature addition only; I2/I3 issues and deferred author/declaration metadata unchanged.",
+    "status": "REMOVED_BY_AUTHOR",
+    "superseded_by": "nomenclature_removal_20261016"
+  },
+  "nomenclature_removal_20261016": {
+    "scope": "Removed the entire Nomenclature section on author request; author metadata and previously approved formatting changes preserved.",
+    "pdf_pages": 26,
+    "checks": {
+      "source_matches_pre_nomenclature_snapshot": true,
+      "all_26_pdf_pages_match_pre_nomenclature_text": true,
+      "nomenclature_absent_from_source_and_pdf": true,
+      "layout_and_reference_warnings": 0,
+      "build": "latexmk -pdf -interaction=nonstopmode -halt-on-error -silent main.tex; successful"
+    },
+    "visual_check": "Rendered pages 2-3 inspected; Keywords now followed by Introduction and Figure 1, with no clipping or overlap. All pages match the previously inspected pre-nomenclature version in extracted text.",
+    "checked_hashes": {
+      "main.tex": "33803df70926947c5ee0f9954a8f34418f914b21e7fc5b37c4ebbb113bd3252b",
+      "main.pdf": "aea41f1bea7946f3b369522385c4feaf26cc8a3d8ff0148ac20f45aedefafad0"
+    },
+    "release_scope": "Nomenclature removal only; inherited I2/I3 issues unchanged."
+  },
+  "chapter5_title_update_20261016": {
+    "old_title": "Feature-processing and training protocol",
+    "new_title": "CAD processing and experimental setup",
+    "scope": "Author-approved change of the Section 5 heading only; section label, body, author information and all other manuscript content unchanged.",
+    "checks": {
+      "candidate_title_audit": "PASS; no findings",
+      "only_heading_changed_in_source_and_pdf": true,
+      "pdf_pages": 26,
+      "heading_page": 12,
+      "build": "latexmk -pdf -interaction=nonstopmode -halt-on-error -silent main.tex; successful",
+      "layout_and_reference_warnings": 0
+    },
+    "visual_check": "PDF page 12 rendered and inspected: heading fits on one line, with clear spacing before subsection 5.1 and no clipping or overlap.",
+    "checked_hashes": {
+      "main.tex": "db5fd34e52348b0f76f75c05281c8e14a122963db07567c2d62e6759ea4a97e2",
+      "main.pdf": "efb12f493739f191656d0adb5cbdcdc190db0e918d22ec357f11b8711140818f"
+    }
+  },
+  "figure3_letter_notation_20261016": {
+    "scope": "Correct Figure 3 numeric node/edge labels to author-requested letter subscripts, matching the same five-node graph in Figure 4.",
+    "node_map": {
+      "v1": "v_k",
+      "v2": "v_j",
+      "v3": "v_l",
+      "v4": "v_i",
+      "v5": "v_m"
+    },
+    "edge_labels": [
+      "e_jk",
+      "e_jl",
+      "e_il",
+      "e_im",
+      "e_km",
+      "e_ij"
+    ],
+    "supersedes": "Earlier numeric labelling decision for Figure 3 only; historical Figures 4/5 letter-notation record remains valid.",
+    "preserved": "All node/face colours, coordinates, graph connectivity, arrows, text outside rendered graph labels, figures, data, author metadata and previously approved revisions.",
+    "checks": {
+      "exact_source_change": "Only five node labels and six edge labels changed",
+      "edge_labels_match_endpoint_node_letters": true,
+      "pdf_pages": 26,
+      "only_pdf_page_with_changed_text": 7,
+      "build": "latexmk -pdf -outdir=work/figure3_letter_labels_20261016/build -interaction=nonstopmode -halt-on-error -silent main.tex; successful",
+      "layout_and_reference_warnings": 0,
+      "published_pdf_matches_inspected_build": true
+    },
+    "visual_check": "Pages 7 and 9 rendered and inspected. Figure 3 letter indices and edge endpoints match Figure 4 by node colour and position; labels readable with no clipping or overlap.",
+    "checked_hashes": {
+      "main.tex": "3a869dab5fbaecbeb779c37724f6bc11dd79185b7e10ca0ee0bd6d343eb4a391",
+      "main.pdf": "d6dc932a2a25c82e4f075191abc4578d5df3e80f1a0e238f28fd5aea1fe8b7de"
+    },
+    "release_scope": "Local Figure 3 notation correction only; I2/I3 and author metadata remain unchanged."
+  },
+  "figure2_topology_geometry_20261016": {
+    "scope": "Author-approved extension of Figure 2 to show geometric supports beneath the existing topological hierarchy; body figure reference and caption synchronised.",
+    "panels": {
+      "A": "Existing Body-Shell-Face-Loop-Edge-Vertex hierarchy, with original paths, colours, positions and connectivity preserved.",
+      "B": "Schematic smooth support surface with a blue trimmed region, a grey support curve with a blue bounded edge and endpoint markers, and a point; dashed arrows link Face-Surface, Edge-Curve and Vertex-Point."
+    },
+    "representation": "Editable native TikZ schematic in main.tex; no raster image generation or empirical CAD/mesh result used for the conceptual diagram.",
+    "layout": "Moved geometry drawings upward by 6 mm and tightened panel-label spacing without reducing font sizes; final manuscript stays at 26 pages and avoids a lone reference on an extra page.",
+    "checks": {
+      "build": "latexmk -pdf -outdir=work/figure2_topology_geometry_20261016/build -interaction=nonstopmode -halt-on-error -silent main.tex; successful",
+      "pdf_pages": 26,
+      "figure2_page": 6,
+      "changes_limited_to_figure2_and_its_body_reference": true,
+      "original_topology_panel_preserved": true,
+      "equations_numbered_tables_citations_and_author_metadata_preserved": true,
+      "figure_numbering_and_previously_approved_edits_preserved": true,
+      "layout_and_reference_warnings": 0,
+      "published_pdf_matches_inspected_build": true
+    },
+    "candidate_audit": {
+      "status": "PASS",
+      "candidate_sha256": "4b3e95deb98097653515c0508d2c9d245df170fa4fd7ccdc13eb3ccbbc881156",
+      "profile_loaded": true,
+      "findings": [],
+      "manual_checks_required": [
+        "paragraph contract and adjacent-paragraph flow",
+        "claim scope and preservation of locked meaning",
+        "functional transitions and cumulative information flow",
+        "literature-example ordering from broad context to the closest precedent and gap, or another explicit evidentiary logic",
+        "function-preserving concision and sentence rhythm",
+        "natural scholarly subjects, syntax, and disciplinary accessibility",
+        "reader accessibility, including nonessential field shorthand, transition templates, and indirect verbs",
+        "claim-to-citation support and reference-list changes",
+        "observable stock or AI-like prose features without authorship inference",
+        "dash and hyphen style, including grammatical role, established open compounds, density, and suspended compounds",
+        "necessary technical repetition versus avoidable restatement"
+      ]
+    },
+    "manual_review": "Caption and body reference checked against unchanged Section 3.1 definitions and figure contents; no added evidence, scientific result, citation or metadata claim.",
+    "visual_check": "Final Figure 2 on page 6 and final references page 26 inspected at full-page resolution. All 26 final pages inspected in contact sheets for text reflow, figures, labels, captions, tables and numbering. No clipping or overlap found.",
+    "checked_hashes": {
+      "main.tex": "c6c52e9ac5292cdc68aeb51bef2c8e746cc47e98e78a28e0c90d5e817e6e2a95",
+      "main.pdf": "493f82a3fbaa5880d5752664c59c5e11032804c9c47f674c6d675bf6df89b206"
+    },
+    "release_scope": "Local conceptual figure revision only; existing I2/I3 issues and deferred author metadata unchanged.",
+    "lower_row_superseded_by": "figure2_support_pairs_20261016"
+  },
+  "figure2_trimming_clarity_20261016": {
+    "scope": "Author-requested clarification of trimming in Figure 2, followed by removal of the angular face-to-surface connector.",
+    "changes": [
+      "Original topology row retained exactly.",
+      "Panel B now contrasts a full support patch with an orange closed outer loop against the translated matching blue face region. Grey exterior is outside the face.",
+      "Panel C retains the edge--curve and vertex--point relationships. Face--surface association uses one straight diagonal dashed arrow without elbows.",
+      "Caption and adjacent paragraph explain restricted face domain and unchanged supporting surface."
+    ],
+    "candidate_audit": {
+      "status": "PASS",
+      "profile_loaded": true,
+      "findings": [],
+      "sha256": "810c68b1d1387b047523ccfa2d58a7f2df3a8dc75d27cd538ebef535f078aae3",
+      "path": "work/figure2_trim_clarity_20261016/candidate.tex"
+    },
+    "manual_candidate_check": "Exact caption and paragraph checked for reader function, outer-loop domain interpretation, unchanged underlying surface, adjacent-paragraph flow, claim scope, citation preservation and terminology. This is a conceptual illustration, not a geometric-processing result.",
+    "verification": {
+      "build": "latexmk -pdf -outdir=work/figure2_trim_clarity_20261016/build -interaction=nonstopmode -halt-on-error -silent main.tex; successful",
+      "page_count": 26,
+      "figure2_page": 6,
+      "visual_check": "Latest pages 6--8 inspected at full-page resolution. Trimming views and labels legible, diagonal connector clear of titles, no clipping or overlap. Pages 1--5 and 9--26 have unchanged extracted page text relative to prior inspected PDF.",
+      "source_scope": "Only Figure 2 and its Section 3.1 introductory paragraph differ from backup. Original topology row, all remaining source including equations, tables, citations, figure numbering and author metadata unchanged.",
+      "warnings": "No overfull, undefined-reference, duplicate-label or float-too-large warnings.",
+      "published_pdf": "main.pdf byte-identical to inspected isolated build."
+    },
+    "checked_hashes": {
+      "main.tex": "21f6ca17ec89fe14cdb3a4789c5cf15e9459442f2e01b227db244c9f4c62080d",
+      "main.pdf": "1c5db90c194f2e3a5d0a40aac8085524b866abcf0daab07a36d86eadbc630264"
+    },
+    "backups": "work/figure2_trim_clarity_20261016/backup",
+    "release_scope": "Bounded Figure 2 clarity and connector revision only; inherited I2/I3 issues, WORKING status and deferred author metadata unchanged.",
+    "lower_row_superseded_by": "figure2_support_pairs_20261016"
+  },
+  "figure2_badge_supports_20261016": {
+    "scope": "Author requested a cleaner way to show geometric-support correspondences without cross-panel lines.",
+    "changes": [
+      "Three cross-panel dashed connectors removed.",
+      "Paired circular badges: 1 blue for Face/Surface; 2 teal for Edge/Curve; 3 violet for Vertex/Point. Labels and geometry remain legible without cross-panel connectors.",
+      "Supporting-surface heading shortened to Surface + loop; caption now describes matching numbered badges."
+    ],
+    "candidate_audit": {
+      "status": "PASS",
+      "profile_loaded": true,
+      "findings": [],
+      "sha256": "6efee648e4c27cbed15a47cd5ec7f2e9b0cfba6586cf2b2be2e4a1068c50a63d",
+      "path": "work/figure2_badge_supports_20261016/candidate.tex"
+    },
+    "manual_check": "Caption matches the final diagram; numbers identify paired correspondences, not entity counts or face identifiers. No claims, evidence, trimming geometry, equations, tables, citations or author metadata changed.",
+    "verification": {
+      "build": "latexmk -pdf -outdir=work/figure2_badge_supports_20261016/build -interaction=nonstopmode -halt-on-error -silent main.tex; successful",
+      "page_count": 26,
+      "visual_check": "Latest PDF page 6 inspected at full-page resolution: badges paired, labels clear, no overlap or clipping; all cross-panel lines absent. Other 25 pages have identical extracted page text to the prior inspected PDF.",
+      "source_scope": "Only the Figure 2 environment changed from backup; six badges form exactly three matching pairs.",
+      "warnings": "No overfull, undefined-reference, duplicate-label or float-too-large warnings.",
+      "published_pdf": "main.pdf byte-identical to inspected build."
+    },
+    "checked_hashes": {
+      "main.tex": "c82be827808d5708e2312eba6ab895f06a6df778de5b533a5c13c22102112d11",
+      "main.pdf": "4bf49e218e58b29c1912e9b6e2c4e3f947f30e2345afcfb3734920de12d5a613"
+    },
+    "backups": "work/figure2_badge_supports_20261016/backup",
+    "release_scope": "Local figure styling and caption update only; inherited I2/I3 issues and WORKING release status retained.",
+    "lower_row_superseded_by": "figure2_support_pairs_20261016"
+  },
+  "abstract_application_value_revision_20261016": {
+    "scope": "Author requested Abstract revision following two screenshot comments: broaden the motivation beyond complete-aircraft industrial simulation and end with application value.",
+    "changes": [
+      "Motivation now concerns CAD preparation for numerical simulation; locating editable B-Rep faces supports removal and local surface reconstruction.",
+      "Evaluation explicitly names nine aircraft models; existing 34,162-face scope, class-specific GNNs, F1 values and paired mesh ranges retained.",
+      "Closing sentence now states targeted CAD simplification and more efficient mesh preparation for numerical simulation. Detailed limitations remain in the unchanged body."
+    ],
+    "claim_boundary": "General motivation does not claim validation beyond aircraft. Efficiency refers to surface-mesh preparation, not measured solver speed or preserved simulation response. No operation-completeness or geometric-fidelity claim added.",
+    "evidence_checks": {
+      "recognition": "current_test_snapshot/face_level_metrics.csv: support sums to 34162; rivet and small-feature F1 round to 0.9312 and 0.8091. Manifest contains nine models.",
+      "mesh": "results/e3_mesh/E3_表面网格汇总.csv: nine pairs; triangle reductions 0.57--48.66 percent, median mesh-generation-time reductions 2.49--58.29 percent.",
+      "preservation": "Only Abstract source changed. All figures, tables, keywords, citations, author metadata and body limitations preserved exactly."
+    },
+    "candidate_audit": {
+      "status": "PASS",
+      "profile_loaded": true,
+      "findings": [],
+      "sha256": "a1ca89596d6077340db33051d8a2df2df812566a92b94cd1331d4a84bfdcebc3",
+      "path": "work/abstract_revision_20261016/candidate.tex"
+    },
+    "manual_candidate_check": "Exact candidate reviewed for motivation--method--evaluation--application flow, natural scholarly wording, technical terminology, numeric fidelity and evidence-bounded application claims. No citations added or removed; no new literature or superiority claim. Fixed-tolerance statement retains the original meshing mechanism with conditional can. End-point comparisons do not become individual-operation causal estimates.",
+    "verification": {
+      "build": "latexmk -pdf -outdir=work/abstract_revision_20261016/build -interaction=nonstopmode -halt-on-error -silent main.tex; successful",
+      "page_count": 26,
+      "visual_check": "Pages 1--3 inspected individually; affected pages 4--10 inspected in contact sheets. Abstract and Keywords remain clear; no clipping, overlap or broken figure placement. Other pages have identical extracted page text to the prior inspected PDF.",
+      "warnings": "No overfull, undefined-reference, duplicate-label or float-too-large warnings.",
+      "published_pdf": "main.pdf byte-identical to inspected isolated build."
+    },
+    "checked_hashes": {
+      "main.tex": "f3ad21ef3ed135c71d57e6f8cdd6f30c0f5dc606cb3d4a91a53a096e37d76967",
+      "main.pdf": "d10a61bde6bdab382383f2b615126bf3f4c91443fa680717ee7395d3231cb40c"
+    },
+    "backups": "work/abstract_revision_20261016/backup",
+    "release_scope": "Local abstract revision only; WORKING status, inherited I2/I3 and deferred author metadata retained."
+  },
+  "abstract_remove_f1_20261016": {
+    "scope": "Author requested omission of F1 from the Abstract because the metric is not explained there.",
+    "change": "Remove the semicolon clause reporting rivet and small-feature F1 scores. End the evaluation sentence after nine aircraft models. All other source text unchanged.",
+    "author_abstract_preference": "Do not report unexplained F1 metrics or F1 numbers in the Abstract; retain formal definitions and evaluation metrics in the body.",
+    "candidate_audit": {
+      "status": "PASS",
+      "profile_loaded": true,
+      "findings": [],
+      "sha256": "ec514411ab89d33d876b079e9dd8023e5b06bda15dfbc81178931e67395a2634",
+      "path": "work/abstract_remove_f1_20261016/candidate.tex"
+    },
+    "manual_check": "Exact Abstract reviewed for motivation, method, evaluation and application-value flow. Removal avoids an unexplained metric without substituting an unsupported qualitative accuracy claim. Test scope, paired mesh results, body F1 definitions/results, citations and author metadata preserved.",
+    "verification": {
+      "source": "Exact replacement check confirms only the requested F1 clause removed.",
+      "build": "latexmk -pdf -outdir=work/abstract_remove_f1_20261016/build -interaction=nonstopmode -halt-on-error -silent main.tex; successful",
+      "page_count": 26,
+      "visual_check": "Latest pages 1 and 2 inspected individually; Abstract and Keywords clear, no clipping or overlap. Other 24 pages have identical extracted text to prior inspected PDF.",
+      "warnings": "No overfull, undefined-reference, duplicate-label or float-too-large warnings.",
+      "published_pdf": "main.pdf byte-identical to inspected build."
+    },
+    "checked_hashes": {
+      "main.tex": "68200c267c3f0f8c568ecd46df2c38f495ee745ff7a24955f59171c3f970b20f",
+      "main.pdf": "b9b1cbc64dc351c5c906541f22eff0a7a3546bb1f2c617d790e1b56894cc5761"
+    },
+    "backups": "work/abstract_remove_f1_20261016/backup",
+    "release_scope": "Local Abstract metric omission only; WORKING status and inherited I2/I3 unchanged."
+  },
+  "abstract_expand_conclusion_20261016": {
+    "scope": "Author approved expanding the Abstract conclusion and requested reporting only the face count, without nine aircraft models.",
+    "changes": [
+      "Evaluation sentence now reports only the full test set of 34,162 faces.",
+      "Closing expanded to three sentences covering localisation/inspection, candidate inputs to feature removal and local reconstruction, observed paired mesh reductions and a traceable CAD/mesh preparation workflow.",
+      "F1 remains absent from Abstract; paired mesh ranges unchanged."
+    ],
+    "manual_candidate_check": "Exact Abstract checked for motivation--method--evaluation--application progression, technical terminology, natural scholarly wording, scope, repetition and unchanged underlying evidence. Candidate inputs are not operation-success counts. Paired comparisons are limited to tested models/settings, without solver acceleration, cross-CAD generalisation or preserved simulation-response claims. No citations added or removed; body and metadata unchanged.",
+    "candidate_audit": {
+      "status": "PASS",
+      "profile_loaded": true,
+      "findings": [],
+      "sha256": "d91e6fc28af6abf4192b77cee09bab6d46b13f9df8190b4891cfe81565829966",
+      "path": "work/abstract_expand_conclusion_20261016/candidate.tex"
+    },
+    "verification": {
+      "source": "Only Abstract differs from backup; all other prose, figures, tables, equations, keywords, citations and author metadata unchanged.",
+      "build": "latexmk -pdf -outdir=work/abstract_expand_conclusion_20261016/build -interaction=nonstopmode -halt-on-error -silent main.tex; successful",
+      "page_count": 26,
+      "visual_check": "Latest pages 1--3 inspected individually; affected pages 4--10 inspected in contact sheets. Abstract and Keywords clear, figures and equations retained without clipping or overlap. Remaining pages have unchanged extracted page text.",
+      "warnings": "No overfull, undefined-reference, duplicate-label or float-too-large warnings.",
+      "published_pdf": "main.pdf byte-identical to inspected build."
+    },
+    "checked_hashes": {
+      "main.tex": "cc1a47b1aef78255ce9395b27ba390eac8370b2032541f4de737bbc3f5338516",
+      "main.pdf": "b4a5985adc5886436da8662d246b7832d5e4a1b62c44b515832e91a83264880c"
+    },
+    "backups": "work/abstract_expand_conclusion_20261016/backup",
+    "release_scope": "Local author-approved Abstract expansion and scope wording only; WORKING status, I2/I3 issues and deferred author information retained."
+  },
+  "introduction_opening_figure1_revision_20261016": {
+    "scope": "Author requested Introduction edits following three screenshot comments and removal of complete from Complete-aircraft B-Rep models.",
+    "changes": [
+      "Opening now says Aircraft B-Rep models; numerous removed. Corresponding framework-description phrase in Introduction now says aircraft B-Rep models.",
+      "First-paragraph Figure 1 reference names rivet, window and decal faces.",
+      "Figure 1 panels C/D now say Decal region and Window region; caption names decal, window and rivet.",
+      "Removed the caption sentence explaining why the rivet is enlarged."
+    ],
+    "terminology_decision": "Use concrete object names for the Figure 1 examples. The existing small-feature class definition, stored schema, training/evaluation labels and metrics are retained. Complete-aircraft wording that defines the partitioning unit remains unchanged.",
+    "candidate_audit": {
+      "status": "FINDINGS",
+      "profile_loaded": true,
+      "sha256": "8011eb951ee9fc10b48d3c06618a46cfd6f2dc81ef4fff348f98e32a13102457",
+      "path": "work/introduction_opening_20261016/candidate.tex",
+      "findings": [
+        "PROSE010: dense lexical hyphenation in the framework sentence."
+      ],
+      "disposition": "Reviewed and retained established face-level, graph-learning, geometry-processing, small-feature and B-Rep terms already present before this revision; no automatic word replacement or scientific renaming."
+    },
+    "manual_candidate_check": "Revised opening, caption, framework sentence and panel labels reviewed for reader clarity, local paragraph flow, object-specific terminology and evidence scope. No citation added, removed or reassigned. Decal/window identities verified against the existing named source assets and Figure 1 rendering.",
+    "verification": {
+      "source_scope": "Changes confined to Introduction opening, one corresponding framework phrase, Figure 1 caption and two panel-label replacements. All source outside Introduction unchanged. All citation commands unchanged. Figure image paths and display settings unchanged.",
+      "build": "latexmk -pdf -outdir=work/introduction_opening_20261016/build -interaction=nonstopmode -halt-on-error -silent main.tex; successful",
+      "page_count": 26,
+      "visual_check": "Latest pages 2--3 inspected individually, reflow pages 4--8 inspected in contact sheets. Figure 1 labels and caption clear; no clipping or overlap. Page 1 and pages 9--26 have unchanged extracted page text relative to previous inspected PDF.",
+      "warnings": "No overfull, undefined-reference, duplicate-label or float-too-large warnings.",
+      "published_pdf": "main.pdf byte-identical to inspected isolated build."
+    },
+    "checked_hashes": {
+      "main.tex": "a091440c65c1dd339482f5c65b843d529928c30b030510342ffd997f7cebbf5b",
+      "main.pdf": "f4d2b2eb17cb604e7724717e19e198849e601d058e5b601b9cbd4b429c70f0ec",
+      "figures/fig_gulfstream_target_examples.tex": "7a69453cbd5a7af86f6da7a57f3b922ccdedc96592fbabffc24ab6f305322807"
+    },
+    "backups": "work/introduction_opening_20261016/backup",
+    "release_scope": "Local Introduction/Figure 1 revision only; WORKING status, I2/I3 issues, scientific data and deferred author metadata preserved."
+  },
+  "surface_detail_terminology_20261016": {
+    "scope": "Explicit author approval to replace small-feature with surface detail as the non-rivet target display term throughout the active manuscript.",
+    "forms": {
+      "class_label": "surface detail",
+      "plural_noun": "surface details",
+      "adjectival_form": "surface-detail",
+      "face_term": "surface-detail faces",
+      "definition": "Annotated non-rivet target B-Rep faces, including window and decal regions, considered for simplification or reconstruction."
+    },
+    "changes": [
+      "Title now explicitly names Rivet and Surface Detail Recognition; keywords, abstract, Introduction, Methods, Results, Discussion, Conclusion, equation class text and table headers synchronised.",
+      "Figures 5 and 6 active labels synchronised. Figure 1 keeps concrete Decal region and Window region labels.",
+      "Definitions supplied in Abstract and Introduction; formal class definition in Section 4.1 retained under new display term.",
+      "Title set locally to 20.74 pt with a deliberate two-line break to avoid an isolated final word; residual-layer explanation and its equation kept together after terminology-driven reflow.",
+      "Active state contract, terminology, semantic display lock, style profile and alignment wording synchronised. Prior decisions/history retained and superseded by D-surface-detail-20261016."
+    ],
+    "preserved": [
+      "background=0, rivet=1, surface_feature=2 and existing class membership",
+      "code/data/config identifiers, source authority records and file paths",
+      "all scientific numeric tokens from Abstract onward, including thresholds, model dimensions and data counts",
+      "mathematical expressions except the renamed class text in the decision equation",
+      "all citation commands, labels/references, input/image paths and geometry assets",
+      "author header and deferred author/declaration block"
+    ],
+    "candidate_audit": {
+      "status": "FINDINGS",
+      "profile_loaded": true,
+      "sha256": "00f51ace833e2d64d9ff7cb7013bf5d57f2bbdb8a01b31d8fe1cdc99fe0f737c",
+      "path": "work/surface_detail_terminology_20261016/candidate.tex",
+      "finding_counts": {
+        "PROSE009": 1,
+        "PROSE010": 12,
+        "PROSE002": 3,
+        "PROSE004": 17
+      },
+      "contextual_disposition": "All findings manually reviewed: retain established B-Rep, surface-detail, face-level and class-specific technical hyphens; retain substantive Overall accuracy sentence and necessary repeated result/invalid-B-Rep qualifications; LaTeX environment/format commands are not prose repetition. No terminology or forbidden-variant findings. This is not a full-paper prose certification."
+    },
+    "manual_candidate_check": "Exact post-edit passages checked for reader definitions, grammatical noun/modifier forms, unchanged target membership, paragraph flow, source fidelity and inference limits. No new literature claims or citations. No fixed small-size requirement or generalised validation is inferred from the new class name.",
+    "verification": {
+      "build": "latexmk -pdf -outdir=work/surface_detail_terminology_20261016/build -interaction=nonstopmode -halt-on-error -silent main.tex; successful",
+      "page_count": 27,
+      "source_old_term_scan": "No small-feature/surface-feature variants in main.tex or any active input. Historical unreferenced diagram versions are preserved.",
+      "pdf_old_term_scan": "No retired class names in extracted text across all final pages.",
+      "visual_check": "All final pages inspected in contact sheets; detailed checks on title/Abstract, Figure 1, Figures 5/6, classification tables and decision equation. Latest pages 10--12 inspected individually after keeping the residual explanation with its equation. No clipping or overlap. Longer terminology and definitions reflow the references to page 27.",
+      "warnings": "No overfull, undefined-reference, duplicate-label or float-too-large warnings.",
+      "published_pdf": "main.pdf byte-identical to inspected isolated build."
+    },
+    "checked_hashes": {
+      "main.tex": "0951606f302c60273a22df1b6915d7cac9d18d981c2743afc2be719a8ad3da48",
+      "main.pdf": "e61ce5971505507bd4b9354653b8b159da1c139b7a5355c69585e70c2ad0161b",
+      "figures/fig_class_specific_gnn_architecture_v7.tex": "5b5ea3d4f27a6c06acebddc35a7d0991800027f06958051f7367d751bbd00481",
+      "figures/fig_g280_horizontal_processing.tex": "8d3be0b5ad98e2f6264c47d42d692004d4efd8efb0ee4db896424cf6a0e4c44e"
+    },
+    "backups": "work/surface_detail_terminology_20261016/backup",
+    "release_scope": "Author-approved display terminology and accompanying layout update only; inherited I2/I3 remain open and release stays WORKING.",
+    "figure1_label_followup": "See figure1_surface_detail_labels_20261016 for the subsequent author-requested unified panel labels."
+  },
+  "figure1_surface_detail_labels_20261016": {
+    "scope": "Author noted Figure 1 had not adopted the unified class labels; synchronise panel labels C/D with surface detail.",
+    "changes": [
+      "Panel C: Surface detail 1; panel D: Surface detail 2.",
+      "Caption explicitly maps example 1 to decal region and example 2 to window region; panel E remains Rivet."
+    ],
+    "supersedes": "The prior surface_detail_terminology_20261016 decision to keep concrete Decal region and Window region panel labels is superseded for Figure 1. Object identities remain in the caption.",
+    "candidate_audit": {
+      "status": "PASS",
+      "profile_loaded": true,
+      "findings": [],
+      "sha256": "f6d1772f51da5d8ebc27158416ae156e37ba60350ff50bb3c5902f19d205d767",
+      "path": "work/figure1_surface_detail_labels_20261016/candidate.tex"
+    },
+    "manual_check": "Exact caption and labels checked against current surface-detail definition, source images and neighbouring Introduction paragraph. The two example numbers identify displayed details, not class IDs or counts. No new claims or citations.",
+    "verification": {
+      "source_scope": "Exact comparison confirms only the caption sentence and two panel-label strings changed. All other manuscript source, image paths, display dimensions, numerical results and author metadata unchanged.",
+      "build": "latexmk -pdf -outdir=work/figure1_surface_detail_labels_20261016/build -interaction=nonstopmode -halt-on-error -silent main.tex; successful",
+      "page_count": 27,
+      "visual_check": "Latest page 2 rendered at 1800 px and inspected: both unified labels and caption visible without overlap or clipping. Other 26 pages have identical extracted page text to prior inspected PDF.",
+      "warnings": "No overfull, undefined-reference, duplicate-label or float-too-large warnings.",
+      "published_pdf": "main.pdf byte-identical to inspected build."
+    },
+    "checked_hashes": {
+      "main.tex": "773c1938aa7d434033d5b22b9d56c07523889a442d625b73a0e31ebbce0c19fc",
+      "main.pdf": "15006c3e23fe0c27a8efb2fc2d24d55a84b205764d9d25c503f091eca7c36b11",
+      "figures/fig_gulfstream_target_examples.tex": "6cc7265181564dccd2d420fd7c00f121c5c7d9c6f06d8ab136e8e92fa1ad34a6"
+    },
+    "backups": "work/figure1_surface_detail_labels_20261016/backup",
+    "release_scope": "Local Figure 1 label/caption follow-up only; inherited I2/I3 and WORKING status retained."
+  },
+  "cosmetic_feature_terminology_20261016": {
+    "scope": "Author-directed display terminology across active manuscript and Figures 1, 5, 6.",
+    "changed_files": [
+      "main.tex",
+      "figures/fig_gulfstream_target_examples.tex",
+      "figures/fig_class_specific_gnn_architecture_v7.tex",
+      "figures/fig_g280_horizontal_processing.tex",
+      "manuscript_state.json"
+    ],
+    "preserved": "Class membership, internal identifiers, equations except displayed class string, numbers, citations, image assets, author information and claim boundaries unchanged.",
+    "backups": "D:\\projects\\gjy_byproject\\paper\\manuscript\\work\\cosmetic_feature_terminology_20261016\\before",
+    "status": "COMPLETED_BOUNDED_TERMINOLOGY_REVISION",
+    "date": "2026-10-16",
+    "forms": {
+      "plural": "cosmetic features",
+      "singular": "cosmetic feature",
+      "modifier": "cosmetic-feature"
+    },
+    "layout": "Balanced two-line title; local emergency stretch on the Discussion opening paragraph to avoid a new 2.35pt overfull line without changing wording.",
+    "candidate_audit": {
+      "status": "FINDINGS",
+      "candidate_sha256": "607ce7ddb1bfc5accab46883c3897e861069ac673e85b97f3fa8e2b9fcb752a8",
+      "diagnostic_codes": [
+        "PROSE002",
+        "PROSE004",
+        "PROSE009",
+        "PROSE010"
+      ],
+      "disposition": {
+        "PROSE009": "Retained empirical sentence reports overall accuracy and background F1, not an empty transition.",
+        "PROSE010": "Retained technical compounds and class modifiers; this request changes terminology only.",
+        "PROSE002_PROSE004": "Retained LaTeX environments/cross references and repeated invalid-B-Rep qualification where locally needed in independent captions."
+      }
+    },
+    "manual_candidate_check": "Exact source equals controlled terminology substitution plus title break and local paragraph line-breaking adjustment. No scientific assertions, class membership, numbers, citations, equation symbols, internal identifiers, source image paths or author metadata changed.",
+    "verification": {
+      "build_exit_code": 0,
+      "build_command": "latexmk -pdf -outdir=work/cosmetic_feature_terminology_20261016/build -interaction=nonstopmode -halt-on-error -silent main.tex",
+      "pdf_pages": 27,
+      "retired_terms_in_active_sources_and_pdf": 0,
+      "overfull_underfull_warnings": 0,
+      "inherited_warnings": "rsfs font size substitutions only",
+      "source_protection_checks": "preservation_checks.json plus final exact-substitution assertions",
+      "visual_check": "All-page contact sheets reviewed, then final pages 1, 2, 11, 14, 16, 18, 19 and 23 inspected at 115dpi. Figure 1 C/D labels, Figure 5 branch/decision, Figure 6 stages and expanded table headers fit without clipping or overlap.",
+      "final_pdf_identical_to_inspected_build": true
+    },
+    "release_scope": "Terminology revision complete; manuscript WORKING with prior I2/I3 evidence issues open.",
+    "checked_hashes": {
+      "main.tex": "5a9010773bf1c5872b5b0021b9594dec79fe1dda0826131b889cf89a9096cc92",
+      "figures/fig_gulfstream_target_examples.tex": "bea9a667c885c703d729011cf5dfb0a228f360a78c74cae78395ead2311b7ef1",
+      "figures/fig_class_specific_gnn_architecture_v7.tex": "a91fefa1d8bcab090342562d37ec11f8e4240537adfeafc28c594cf1eca5a442",
+      "figures/fig_g280_horizontal_processing.tex": "13222e108f35c93644f9cd003d8bfb9a93ab03db9b0a4a689bbd7eb3c519ec14",
+      "main.pdf": "68bb812758de8a02709427c0a5796f6e187667c0a47dadb0d2404aabb7ed810e"
+    }
+  },
+  "figure1_roman_label_font_20261016": {
+    "date": "2026-10-16",
+    "scope": "Figure 1 panel-label font only, per author screenshot.",
+    "change": "Changed five explicit sffamily switches to rmfamily; retained small size, regular weight, label text, images and panel layout.",
+    "changed_files": [
+      "figures/fig_gulfstream_target_examples.tex",
+      "manuscript_state.json"
+    ],
+    "verification": {
+      "build": "latexmk -pdf -outdir=work/figure1_font_20261016/build -interaction=nonstopmode -halt-on-error -silent main.tex",
+      "exit_code": 0,
+      "pages": 27,
+      "all_page_text_identical_to_previous_pdf": true,
+      "main_tex_identical": true,
+      "font_before": "LMSans10-Regular",
+      "font_after": "LMRoman10-Regular",
+      "label_pdf_size_pt": 10.91,
+      "font_verified_for_all_five_labels": true,
+      "visual_check": "Page 2 rendered at 160 dpi and inspected: all labels use matching roman font and remain centred, without clipping or overlap.",
+      "overfull_underfull_boxes": 0,
+      "inherited_warning": "Existing rsfs size substitutions."
+    },
+    "candidate_audit": {
+      "status": "FINDINGS",
+      "candidate_sha256": "a1e8593a8ccd2cafc0caede710e90ddaf69cca08a99c462ee92ef2dbe572a62b",
+      "disposition": "PROSE005 minipage is a repeated LaTeX environment, not manuscript prose; retained for five panels. No wording or claim changes."
+    },
+    "checked_hashes": {
+      "figures/fig_gulfstream_target_examples.tex": "a1e8593a8ccd2cafc0caede710e90ddaf69cca08a99c462ee92ef2dbe572a62b",
+      "main.pdf": "7f735d200ea84884154f1f8c3a0275ecca8d179d9762c66c374c78d841dfbf58"
+    },
+    "backups": "D:\\projects\\gjy_byproject\\paper\\manuscript\\work\\figure1_font_20261016\\before",
+    "release_scope": "Bounded Figure 1 typography repair; I2/I3 unchanged and WORKING status retained."
+  },
+  "introduction_opening_problem_20261016": {
+    "date": "2026-10-16",
+    "scope": "Author requested entire Rare target faces paragraph removed and recognition problem added to Introduction first paragraph.",
+    "changed_files": [
+      "main.tex",
+      "manuscript_state.json"
+    ],
+    "changes": [
+      "Removed the whole paragraph on aggregate accuracy, isolated-face ambiguity, background-face risk, per-aircraft metrics and partition unit.",
+      "Added difficulty of distinguishing sparse target faces amid local-shape and face-partition variations, plus prediction correspondence to editable CAD faces for removal or reconstruction."
+    ],
+    "preserved": "Title, abstract, author metadata, figure sources/labels/captions, contribution list, Methods, results, numerical evidence and all later scientific text unchanged.",
+    "citation_check": "Removed he2009learning and the local kapoor2023leakage citation with their deleted claims. Kapoor remains cited in the dataset-partition Methods paragraph; He is no longer cited and is naturally excluded by biber. references.bib unchanged. No new citations or literature-absence claims introduced.",
+    "candidate_audit": {
+      "status": "PASS",
+      "candidate_sha256": "be89882bd0e7ce4fde11bb3c656882cd822d0301e2f10c037797103019569472",
+      "findings": []
+    },
+    "manual_candidate_check": "Task context -> annotated classes and rarity -> concrete recognition challenge -> editable-face correspondence -> Figure 1. The following literature paragraph identifies the difference from existing tasks, and now leads directly to the framework paragraph. Retained noun modifiers match terminology profile. Added difficulty is grounded in existing feature/partition descriptions; no claim that every existing method fails, no guaranteed resolution or generalisation claim.",
+    "verification": {
+      "exact_source_scope": "Only first paragraph replacement and complete specified paragraph deletion; verified reconstruction against backup.",
+      "build_command": "latexmk -pdf -outdir=work/introduction_problem_20261016/build -interaction=nonstopmode -halt-on-error -silent main.tex",
+      "exit_code": 0,
+      "pdf_pages": 27,
+      "visual_check": "All 27 pages rendered at 65dpi and inspected in contact sheets; Introduction pages 2/3 also inspected at 125dpi. Opening paragraph and Figure 1 fit on page 2; literature, framework and contributions flow on page 3. No new clipping or overlap.",
+      "overfull_underfull_boxes": 0,
+      "undefined_citations_references": 0,
+      "inherited_warnings": "rsfs font size substitutions only.",
+      "published_pdf_identical_to_inspected_build": true
+    },
+    "checked_hashes": {
+      "main.tex": "b79969741a09e4fb7c83c43e7391f5980f5e003ee103c235cd89f411035836eb",
+      "main.pdf": "46bbd6a6a0f2cdfbff296625c54b78e6a472d091e9ee16d0b292ee5e454658ea"
+    },
+    "backups": "D:\\projects\\gjy_byproject\\paper\\manuscript\\work\\introduction_problem_20261016\\before",
+    "release_scope": "Bounded Introduction revision complete. WORKING retained; I2/I3 evidence blockers unchanged."
+  },
+  "contribution_experimental_results_20261016": {
+    "date": "2026-10-16",
+    "scope": "Author screenshot: merge contribution items 3/4 into one experimental-results contribution.",
+    "changed_files": [
+      "main.tex",
+      "manuscript_state.json"
+    ],
+    "change": "Contribution list reduced from four items to three. New item 3 reports recognition on 34,162 faces (rivet F1 0.9312, cosmetic-feature F1 0.8091) and paired surface-triangle-count reductions 0.57%-48.66% / median meshing-time reductions 2.49%-58.29% under fixed settings.",
+    "claim_boundary": "Classification F1 is reported separately from paired mesh/timing results. No geometric-error, simulation-accuracy-loss, physical-equivalence or solver-speed claim added, since corresponding quantitative validation is unavailable. No implication that the recognition and meshing evaluations use the same face enumeration.",
+    "evidence": "Existing Table 3 classification results and Table 8 original-simplified surface-mesh comparison; exact numeric strings verified against Results. No new results computed.",
+    "candidate_audit": {
+      "status": "PASS",
+      "candidate_sha256": "6ac4db88071f84fffd6754b24aaedec75980405e8fa0dd38a09b13bebc0b9616",
+      "findings": []
+    },
+    "manual_candidate_check": "First two contributions and surrounding framework paragraph retained. The combined final contribution now reports empirical outcomes with stated meshing conditions. Exact wording, terminology, sentence flow, claim limits and evidence alignment reviewed. No new or removed citation commands.",
+    "verification": {
+      "exact_scope": "Only the two item lines replaced with one result item. All text outside that span identical, including abstract/authors/results/tables/equations/figure inputs and references.",
+      "build_command": "latexmk -pdf -outdir=work/contribution_results_20261016/build -interaction=nonstopmode -halt-on-error -silent main.tex",
+      "exit_code": 0,
+      "pages": 27,
+      "changed_text_pages": [
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9
+      ],
+      "visual_check": "Pages 1-9 overview inspected; contribution page 3 and following page 4 also inspected at 125dpi. All three contributions fit on page 3. No clipped/overlapping labels or text. Pages 1/2 and 10-27 have identical extracted text to prior PDF.",
+      "overfull_underfull_boxes": 0,
+      "unresolved_references_citations": 0,
+      "inherited_warnings": "rsfs size substitutions only.",
+      "published_pdf_matches_inspected_build": true
+    },
+    "checked_hashes": {
+      "main.tex": "18fb535b01020fc128b56b4da17ce788c794fa5a0c229a857e716df727cb9927",
+      "main.pdf": "f6d68da8691092fa42a656863f5bd147a903223c907b4db9ad0372f66b899d11"
+    },
+    "backups": "D:\\projects\\gjy_byproject\\paper\\manuscript\\work\\contribution_results_20261016\\before",
+    "release_scope": "Bounded contribution-list revision complete; I2/I3 unchanged and WORKING retained.",
+    "superseded_by": "contribution_emphasis_20261016"
+  },
+  "contribution_emphasis_20261016": {
+    "date": "2026-10-16",
+    "authority": "Explicit author request to invoke academic-writing-skills, omit specific numerical results and emphasise contributions.",
+    "scope": "Three Introduction contribution items rewritten; manuscript outside the list unchanged.",
+    "changed_files": [
+      "main.tex",
+      "manuscript_state.json"
+    ],
+    "contribution_functions": [
+      "Face graph: local geometry and shared-boundary topology with editable-face correspondence.",
+      "Class-specific learning: distinct neighbourhood representations/decision functions and fixed mutually exclusive score fusion.",
+      "Practical integration: screened staged CAD processing, intermediate face re-extraction, and paired evidence for lower mesh complexity and shorter median meshing times under tested conditions."
+    ],
+    "author_preference": "No sample counts, metric scores or percentage reductions in Introduction contribution list. Existing numerical evidence remains in Abstract/Results/Conclusion.",
+    "evidence_alignment": {
+      "item_1": "Sections 3.2, 4.1 and 4.2 retain B-Rep faces and adjacency attributes with source-face identity.",
+      "item_2": "Sections 4.3 and 6.1.1 describe independent class-specific branches and comparison evidence. Difference in target geometry is a design rationale; no ablation-based causal or general superiority claim.",
+      "item_3": "Section 5.2 documents source/intermediate-face references and topology-change re-extraction; Section 6.2.2/Table 8 and Discussion report bounded paired mesh and timing changes."
+    },
+    "manual_candidate_check": "Reader-facing sequence: representation and CAD identity -> category-specific learning and decision -> operational link and observed mesh-preparation benefit. Concrete functions replace class-definition bookkeeping and raw score repetition. Natural subject/verb flow, terminology, hyphens, scope, surrounding paragraph and Related Work bridge reviewed; no new citations, novelty/priority claims, complete-removal success or physical-accuracy preservation claims.",
+    "candidate_audit": {
+      "status": "PASS",
+      "candidate_sha256": "16a455a17699c2b1f1e82264d0493878c6175a3151097921dbdc969810e769f6",
+      "findings": []
+    },
+    "verification": {
+      "only_contribution_list_changed": true,
+      "list_items": 3,
+      "specific_numeric_results_in_list": false,
+      "build_command": "latexmk -pdf -outdir=work/contribution_emphasis_20261016/build -interaction=nonstopmode -halt-on-error -silent main.tex",
+      "exit_code": 0,
+      "pdf_pages": 27,
+      "overfull_underfull_boxes": 0,
+      "unresolved_citations_references": 0,
+      "inherited_warning": "rsfs font size substitutions only.",
+      "visual_check": "Final pages 1-9 overview inspected, plus final contribution page 3 and following page 4 at 125dpi. Three items remain together, without clipping/overlap. Only pages 3-9 differ in extracted text; pages 1/2 and 10-27 are unchanged in extracted text.",
+      "published_pdf_identical_to_inspected_build": true
+    },
+    "functional_coverage": "Author request fulfilled across contribution text, exact-candidate gate, evidence alignment, final PDF and project state. No remaining task-specific work; prior I2/I3 evidence issues remain separate.",
+    "checked_hashes": {
+      "main.tex": "97c061f3e3f1911818ec0895572e951abe96c42eadd5a05575ab547e00f6ee82",
+      "main.pdf": "549aeb60053098a7177fb5cbefe1cc4e89058d130d5b0f0d36ef595814d8a8e3"
+    },
+    "backups": "D:\\projects\\gjy_byproject\\paper\\manuscript\\work\\contribution_emphasis_20261016\\before",
+    "release_scope": "Bounded contribution rewrite complete; full manuscript WORKING, with I2/I3 unchanged."
+  },
+  "contribution_simulation_context_20261016": {
+    "date": "2026-10-16",
+    "scope": "Contribution item 3 ending only, per author request to briefly mention simulation.",
+    "change": "Added in numerical simulation after mesh preparation.",
+    "changed_files": [
+      "main.tex",
+      "manuscript_state.json"
+    ],
+    "claim_boundary": "Simulation is the application context for CAD/mesh preparation; no solver speed, simulation accuracy or physical-response preservation assertion. No numerical results introduced.",
+    "verification": {
+      "only_four_words_added": true,
+      "candidate_audit": "PASS",
+      "candidate_sha256": "71a24bbabbb7d1999d879506e4cb9671abf2c3662159e7b4228226075876153e",
+      "manual_review": "Application context matches Abstract and existing task; evidence remains paired CAD/mesh comparisons. No citations changed.",
+      "build_exit_code": 0,
+      "pdf_pages": 27,
+      "changed_text_pages": [
+        3
+      ],
+      "visual_check": "Final page 3 rendered at 125dpi and inspected; no clipping or overlap; no overfull/underfull boxes; all other pages identical in extracted text.",
+      "inspected_build_matches_published_pdf": true
+    },
+    "checked_hashes": {
+      "main.tex": "ffc1063191d0f04d26607357a65c30b5f0000fecb17a6f4e5d77761ae9ea0f79",
+      "main.pdf": "af8fe52cda9761b9f45d9f7e45648e1389c9a9dc8dba50ad891b2a14b17d6327"
+    },
+    "backups": "D:\\projects\\gjy_byproject\\paper\\manuscript\\work\\contribution_simulation_20261016\\before",
+    "release_scope": "Bounded application-context addition complete; WORKING and existing I2/I3 unchanged."
+  },
+  "conclusion_concision_20261016": {
+    "date": "2026-10-16",
+    "authority": "Author screenshot requested result-summary paragraph shortened to about half and limitations consolidated into three or four points.",
+    "scope": "Conclusions results summary and limitations/future-work paragraphs only; opening method summary preserved.",
+    "changed_files": [
+      "main.tex",
+      "manuscript_state.json"
+    ],
+    "word_counts_whitespace_tokens": {
+      "results": {
+        "before": 112,
+        "after": 51,
+        "retained_fraction": 0.455
+      },
+      "limitations": {
+        "before": 96,
+        "after": 50,
+        "retained_fraction": 0.521
+      }
+    },
+    "limitations": [
+      "Transferability to other CAD sources.",
+      "CAD-operation success and geometric-fidelity validation, including matched-quality comparisons and complete timing.",
+      "Downstream CAE accuracy and computational-cost validation."
+    ],
+    "content_decisions": "Retained test-face count, class F1 and paired surface-triangle/median-meshing-time ranges. Removed repeated applications/nonclaims and QEM component numerical comparison from Conclusion; all detailed QEM evidence and precise boundaries remain unchanged in Results/Discussion. Future work now maps to the three limitation groups.",
+    "claim_boundary": "Practical value remains CAD simplification and mesh preparation for numerical simulation; no generalisation, complete-removal, end-to-end timing superiority, geometric fidelity, solver acceleration or simulation-accuracy preservation claim added.",
+    "candidate_audit": {
+      "status": "PASS",
+      "candidate_sha256": "463e848bc22fa158a7db7e0ada254d49a557d2cc6ced237e4b5f662db0709736",
+      "findings": []
+    },
+    "manual_candidate_check": "Reviewed method-summary -> recognition/mesh findings -> application value -> three limitations/future-work sequence. Retained numerical strings verified in unchanged Results. Citation commands unchanged. Concision retains outcome, conditions and inference limits; no unsupported novelty or causal mechanism added.",
+    "verification": {
+      "only_two_requested_paragraphs_changed": true,
+      "other_manuscript_content_and_author_information_unchanged": true,
+      "build_command": "latexmk -pdf -outdir=work/conclusion_concision_20261016/build -interaction=nonstopmode -halt-on-error -silent main.tex",
+      "build_exit_code": 0,
+      "pages_before": 27,
+      "pages_after": 26,
+      "changed_text_pages": [
+        24,
+        25,
+        26
+      ],
+      "visual_check": "Final pages 24-26 rendered at 115dpi and inspected. Conclusion paragraphs fit, Author contributions and References flow without clipping or overlap. Pages 1-23 unchanged in extracted text.",
+      "overfull_underfull_boxes": 0,
+      "unresolved_citations_references": 0,
+      "inherited_warning": "rsfs font size substitutions only.",
+      "published_pdf_identical_to_inspected_build": true
+    },
+    "checked_hashes": {
+      "main.tex": "26ea791b47151b09015e5eed51c5b69598e4e98bf5699ea1f6cf6c558290f677",
+      "main.pdf": "4d9ca1f02b1b1a71568e737cfc8946868ac363d80fbe63388b06175cb9ce57ec"
+    },
+    "backups": "D:\\projects\\gjy_byproject\\paper\\manuscript\\work\\conclusion_concision_20261016\\before",
+    "functional_coverage": "Requested compression and three-point limitation grouping complete, with evidence preservation, exact-candidate gate, final PDF checks and state synchronisation.",
+    "release_scope": "Bounded Conclusion revision complete; WORKING and existing I2/I3 evidence issues retained."
+  },
+  "discussion_conclusion_deduplication_20261016": {
+    "date": "2026-10-16",
+    "authority": "Author requested appropriate reduction of repetition between Discussion and evidence boundaries and Conclusions.",
+    "scope": "Discussion body reduced to two interpretive paragraphs. Previously shortened Conclusions retained verbatim.",
+    "changed_files": [
+      "main.tex",
+      "manuscript_state.json"
+    ],
+    "word_counts_whitespace_tokens": {
+      "before": 257,
+      "after": 123,
+      "retained_fraction": 0.479
+    },
+    "removed": "Repeated F1/result synopsis, repeated overall mesh-reduction synopsis, candidate-count definitions, intermediate-face extraction procedure and generic validation-limit list.",
+    "retained": "Per-aircraft variation in target support/missed faces, cosmetic-feature precision/recall trade-off and implications for reviewing CAD candidates; non-proportional mesh/timing changes; explicit component-level QEM timing scope.",
+    "section_functions": {
+      "discussion": "Interpret observed differences and implications for CAD decisions; explain scope of timing evidence.",
+      "conclusion": "Summarise framework, major findings and practical CAD/mesh-preparation value; retain three grouped limitations and corresponding future work."
+    },
+    "evidence_alignment": "Target support/missed-face variation from Table 6; cosmetic-feature precision/recall and background errors from preceding recognition results. Triangle/time non-proportionality from Table 8. QEM component scope/excluded costs from unchanged protocol preceding Table 9. All three existing discussion table references preserved.",
+    "candidate_audit": {
+      "status": "PASS",
+      "candidate_sha256": "9e28058ea0c269176e5935c06c807c22132ab2810b631683dc25088faeda872b",
+      "findings": []
+    },
+    "manual_candidate_check": "Removed duplicate functions while retaining distinct interpretation and essential conditions. Reviewed preceding QEM result -> recognition interpretation -> timing interpretation -> Conclusions. No new quantitative, novelty, physical-equivalence, removal-completeness or total-workflow-speed claims; only discussion wording changed.",
+    "verification": {
+      "exact_scope": "All source before Discussion body and from Conclusions onward identical to pre-edit source; table references/citation commands/labels/figure inputs unchanged.",
+      "build_command": "latexmk -pdf -outdir=work/discussion_deduplication_20261016/build -interaction=nonstopmode -halt-on-error -silent main.tex",
+      "exit_code": 0,
+      "pdf_pages": 26,
+      "changed_text_pages": [
+        23,
+        24,
+        25,
+        26
+      ],
+      "visual_check": "Final pages 23-26 rendered at 115dpi and inspected; discussion/conclusion transition and following author/reference sections flow without clipping or overlap. Pages 1-22 identical in extracted text.",
+      "overfull_underfull_boxes": 0,
+      "unresolved_citations_references": 0,
+      "inherited_warning": "rsfs font size substitutions only.",
+      "published_pdf_matches_inspected_build": true
+    },
+    "checked_hashes": {
+      "main.tex": "33dca454eb93c6112a5bbefbce0f5d57ff68764ce6df03be69c6a376b07d03d0",
+      "main.pdf": "1e68c3d8916bd34a116c790d5a081f09e65977e798dbfdab13c6033fef88d00b"
+    },
+    "backups": "D:\\projects\\gjy_byproject\\paper\\manuscript\\work\\discussion_deduplication_20261016\\before",
+    "functional_coverage": "Requested deduplication complete across discussion, conclusion-role review, evidence/candidate checks, final PDF and state; original scientific limitations remain represented.",
+    "release_scope": "Bounded deduplication complete. WORKING status and previous I2/I3 evidence issues unchanged.",
+    "superseded_by": "discussion_section_removal_20261016"
+  },
+  "discussion_section_removal_20261016": {
+    "date": "2026-10-16",
+    "authority": "Explicit author instruction: delete the Discussion and evidence boundaries section.",
+    "changed_files": [
+      "main.tex",
+      "manuscript_state.json"
+    ],
+    "change": "Deleted subsection title, unused sec:experimental_boundaries label and both paragraphs. Removed a stale same-title suffix from the line-spacing comment. Experimental results now lead directly to Conclusions.",
+    "preserved": "All scientific prose outside the deleted section remains verbatim, including Conclusions, Methods/Results, author information, tables/figures and numeric evidence. Existing model-wise error analysis, operation-success qualification, non-proportional mesh/time discussion and QEM timing exclusions remain in their original sections.",
+    "layout": "Applied local widowpenalty=10000 around Conclusion result paragraph after deletion left its last line alone on the next page; no wording changed.",
+    "candidate_audit": {
+      "status": "PASS",
+      "candidate_sha256": "43e623d2801f94076555db97615b6915c764e757b326cde9157a64cc822b3b59",
+      "scope": "Unchanged preceding result paragraph and Conclusions at the new junction.",
+      "findings": [],
+      "manual_review": "New result-to-conclusion transition is coherent. No prose, claim, metric or citation introduced. Removed subsection had no incoming source references; core interpretations and limitations remain in Results, Methods and Conclusions."
+    },
+    "verification": {
+      "exact_source_scope": "Verified exact section deletion plus stale comment cleanup and paragraph-local widow formatting.",
+      "removed_label_references": 0,
+      "section_absent_from_pdf_and_bookmarks": true,
+      "build_command": "latexmk -pdf -outdir=work/discussion_removal_20261016/build -interaction=nonstopmode -halt-on-error -silent main.tex",
+      "exit_code": 0,
+      "pdf_pages": 26,
+      "changed_text_pages": [
+        23,
+        24,
+        25,
+        26
+      ],
+      "visual_check": "Final pages 23/24 rendered at 115dpi and 25/26 at 100dpi and inspected. Results/Conclusions transition, continuation and reference pages have no clipping or overlap; Conclusion result paragraph no longer ends in a lone line on next page. Pages 1-22 unchanged in extracted text.",
+      "overfull_underfull_boxes": 0,
+      "unresolved_references_citations": 0,
+      "inherited_warning": "rsfs font size substitutions only.",
+      "published_pdf_identical_to_inspected_build": true
+    },
+    "checked_hashes": {
+      "main.tex": "4341788852d94ad81cb4e97bf37654e2729b051a1f5bca8ae228f1293fd66447",
+      "main.pdf": "d4640ce4ac0d55bcc074a83943f17713cfc97b970bdb949a9a4cfc79662b4310"
+    },
+    "backups": "D:\\projects\\gjy_byproject\\paper\\manuscript\\work\\discussion_removal_20261016\\before",
+    "functional_coverage": "Requested section removed from source/PDF/bookmarks, dangling-reference check complete, scientific boundaries retained elsewhere, final formatting checked and project state synchronised.",
+    "release_scope": "Bounded deletion complete; WORKING and pre-existing I2/I3 evidence issues unchanged."
+  },
+  "figure2_support_pairs_20261016": {
+    "date": "2026-10-16",
+    "authority": "Author reported Figure 2 lower row unclear; clarify geometry/topology relationships.",
+    "changed_files": [
+      "main.tex",
+      "manuscript_state.json"
+    ],
+    "scope": "Inline Figure 2 lower row and caption only. Upper entity hierarchy, numbered badges and all manuscript prose preserved.",
+    "panels": {
+      "A": "Unchanged Body -> Shell -> Face -> Loop -> Edge -> Vertex hierarchy.",
+      "B": "Surface/face: orange boundary bounds blue retained domain on unchanged grey supporting surface; face labelled directly.",
+      "C": "Curve/edge: blue bounded segment on continuing grey curve, with explicitly labelled start/end vertices.",
+      "D": "Point/vertex: point P and vertex relationship, spatial coordinates P=(x,y,z)."
+    },
+    "design": "Three geometry-support pairs aligned across lower row; no cross-panel leader lines. Blue retained-region and bounded-edge highlights, orange face loop, neutral geometric extensions; existing typography and badge scheme retained.",
+    "scientific_check": "Definitions match existing Section 3.1: topology bounds geometric supports; face trimming restricts domain without altering supporting surface; illustrated open edge is bounded by its end vertices; vertex is associated with a point. No new empirical results or scientific performance claims.",
+    "candidate_audit": {
+      "full_source_status": "FINDINGS",
+      "full_source_sha256": "132d7e6036a749b5b93e1ce227664483b98bfeeb470eb3364bee099fa4fdccd3",
+      "diagnostic_disposition": "PROSE005 matches black/blue/draw/entity/domain/text inside TikZ styling/plot code and necessary diagram colour keys. Retained as code and technical labels; no prose overuse implied.",
+      "caption_status": "PASS",
+      "caption_sha256": "e9dca7b6a213e6b99d630d571a949b171b96b94afb90bba255cdab99b70ec4f7",
+      "manual_review": "Visible labels, four panel references, badge correspondence and exact caption read with surrounding Section 3.1; meanings and terminology aligned."
+    },
+    "verification": {
+      "exact_scope": "Verified unchanged source prefix including entire upper row; unchanged source suffix after Figure 2. Citation/label/ref/input/image command sequence unchanged. All data, equations outside figure, other figures and author information preserved.",
+      "build_command": "latexmk -pdf -outdir=work/figure2_geometry_clarity_20261016/build -interaction=nonstopmode -halt-on-error -silent main.tex",
+      "exit_code": 0,
+      "pdf_pages": 26,
+      "figure2_page": 6,
+      "changed_text_pages": [
+        6,
+        7,
+        8,
+        9,
+        10
+      ],
+      "visual_check": "Final page 6 rendered at 155dpi and inspected; diagram-only crop inspected for label legibility and separation. Changed pages 6-10 overview inspected; no clipping or overlap. Other PDF pages identical in extracted text.",
+      "overfull_underfull_boxes": 0,
+      "unresolved_citations_references": 0,
+      "inherited_warning": "rsfs font size substitutions only.",
+      "published_pdf_identical_to_inspected_build": true
+    },
+    "preview": "D:\\projects\\gjy_byproject\\paper\\manuscript\\work\\figure2_geometry_clarity_20261016\\figure2_preview.png",
+    "backups": "D:\\projects\\gjy_byproject\\paper\\manuscript\\work\\figure2_geometry_clarity_20261016\\before",
+    "checked_hashes": {
+      "main.tex": "8966709b9b4dff71cc3f98137ff0c1161c67d312697e15ffa6bdb11c79869b24",
+      "main.pdf": "4cec3ed154d29bff6adea44f01c12b57bf421fc730eb3ef0e7c9cb4706fb6ba9"
+    },
+    "functional_coverage": "Lower-row visual ambiguity addressed in vector source, text labels and synchronised caption; build, evidence/candidate scope and final rendering reviewed.",
+    "release_scope": "Bounded Figure 2 clarification complete; WORKING and I2/I3 unchanged.",
+    "spacing_followup": "figure2_row_spacing_20261016"
+  },
+  "figure2_row_spacing_20261016": {
+    "date": "2026-10-16",
+    "scope": "Author screenshot: panel A caption too close to lower-row geometry titles.",
+    "changed_files": [
+      "main.tex",
+      "manuscript_state.json"
+    ],
+    "change": "Changed Figure 2 lower-row yshift from +2mm to -4mm, moving it down by 6mm; geometry, wording, fonts, sizes, colours and caption unchanged.",
+    "layout_followup": "Applied local widowpenalty=10000 to paragraph following Figure 2, preventing its last line from appearing alone on page 7. Paragraph wording unchanged.",
+    "measured_baseline_gap_mm": {
+      "before": 4.8,
+      "after": 10.8,
+      "increase": 6.0
+    },
+    "verification": {
+      "exact_source_diff": "Verified precisely one Figure 2 position-parameter replacement plus local paragraph widow-control wrapper; all displayed content unchanged.",
+      "build_command": "latexmk -pdf -outdir=work/figure2_row_spacing_20261016/build -interaction=nonstopmode -halt-on-error -silent main.tex",
+      "exit_code": 0,
+      "pdf_pages": 26,
+      "figure2_page": 6,
+      "changed_text_pages": [
+        6,
+        7,
+        8,
+        9,
+        10
+      ],
+      "visual_check": "Final page 6 and figure crop at 155dpi inspected; row separation is clear, no text clipping/overlap. Pages 7-10 rendered at 80dpi and overview inspected; lone-line continuation resolved. Other pages identical in extracted text.",
+      "overfull_underfull_boxes": 0,
+      "unresolved_references_citations": 0,
+      "inherited_warning": "rsfs font size substitutions only.",
+      "published_pdf_identical_to_inspected_build": true
+    },
+    "preview": "D:\\projects\\gjy_byproject\\paper\\manuscript\\work\\figure2_row_spacing_20261016\\figure2_preview.png",
+    "backups": "D:\\projects\\gjy_byproject\\paper\\manuscript\\work\\figure2_row_spacing_20261016\\before",
+    "checked_hashes": {
+      "main.tex": "aa33b847ac4d92384b13be953f08e2577eaa1beb674d0935c6f8b5c429b69060",
+      "main.pdf": "9bc1759264d39ee49d2e9f577eeb38fd3bc228e4c154f438be47ca05c9eebfae"
+    },
+    "functional_coverage": "Requested row-spacing correction complete with unchanged figure content, local page-flow repair and final source/PDF/state synchronisation.",
+    "release_scope": "Layout-only revision; WORKING and prior I2/I3 unchanged."
+  },
+  "unused_figure_and_work_cleanup_20261016": {
+    "date": "2026-10-16",
+    "authority": "Author explicitly requested deletion of four unused figure sources and all 549 work preview/backup images plus 49 PDF copies.",
+    "method": "Windows Recycle Bin via Microsoft.VisualBasic.FileIO.FileSystem.DeleteFile; recoverable deletion.",
+    "deleted_old_figure_sources": [
+      "figures/fig_class_specific_gnn_architecture_v4.tex",
+      "figures/fig_class_specific_gnn_architecture_v5.tex",
+      "figures/fig_class_specific_gnn_architecture_v6.tex",
+      "figures/fig_g280_staged_processing.tex"
+    ],
+    "work_scope": "All image and PDF files recursively under paper/manuscript/work; no directories, source backups, logs, manifests or compiler recorder files removed.",
+    "recycled_counts": {
+      "old_figure_sources": 4,
+      "work_png": 509,
+      "work_jpg": 40,
+      "work_pdf": 49,
+      "total_files": 602
+    },
+    "recycled_bytes": 1207182048,
+    "verification": {
+      "resolved_paths_checked_within_approved_directories": true,
+      "reparse_points_found": 0,
+      "old_sources_not_referenced_by_active_tex_graph": true,
+      "remaining_work_images_and_pdfs": 0,
+      "formal_png_files_retained": 78,
+      "formal_png_hashes_unchanged": true,
+      "current_main_tex_and_pdf_hashes_unchanged": true,
+      "all_78_recorded_active_png_inputs_still_exist": true,
+      "all_9_recorded_active_figure_tex_inputs_still_exist": true
+    },
+    "historical_artifact_note": "Preview and backup image/PDF paths in earlier state entries were deliberately retired by the author. Retain those historical entries as provenance; the current root main.pdf and all active inputs remain available.",
+    "release_scope": "Cleanup only. No manuscript/PDF rebuild or scientific changes. Existing WORKING status and I2/I3 remain unchanged."
   }
 }

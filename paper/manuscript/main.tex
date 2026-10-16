@@ -64,7 +64,7 @@
 
 % Customize line spacing
 \usepackage{setspace}
-\onehalfspacing % 1.5 line spacing5.3 Discussion and evidence boundaries
+\onehalfspacing % 1.5 line spacing
 
 % Redefine section and subsection numbering format
 \usepackage{titlesec}
@@ -122,7 +122,7 @@
 
 
 \begin{center}
-{\Huge Face-Level Graph Learning for Small-Feature Recognition in Aircraft B-Rep Models}
+{\fontsize{20.74}{24.5}\selectfont Face-Level Graph Learning for Rivet and Cosmetic\\Feature Recognition in Aircraft B-Rep Models}
 \\[5ex]
 
 {\large First Author} \\
@@ -161,11 +161,11 @@ user\_id@univ.edu \\
 \end{center}
 
 \begin{abstract}
-  B-Rep geometric feature recognition underpins CAD editing and analysis and has been widely studied for shape-defined features such as fillets, chamfers, and holes. In complete-aircraft industrial simulation, recognising rivet and small-feature faces remains important because their small radii, boundaries, and local curvature trigger local mesh refinement under fixed deflection tolerances, increasing triangle counts and generation time. Their removal must remain associated with editable B-Rep faces to support local surface reconstruction and more continuous exterior surfaces for mesh preparation. This paper presents a face-level graph-learning framework for rivet and small-feature recognition. Each B-Rep face is represented as a graph node, and shared boundaries define neighbourhood relations. Two class-specific graph neural networks learn separate decision functions for the rivet and small-feature classes, while exported predictions remain associated with their source B-Rep faces for staged processing and inspection. The framework was evaluated on the full test set of 34,162 faces; rivet and small-feature F1 scores were 0.9312 and 0.8091. Under fixed meshing settings, original--simplified pairs showed reductions of 0.57\%--48.66\% in surface-triangle count and 2.49\%--58.29\% in median mesh-generation time. These results document face-level recognition, CAD-processing candidates, and paired mesh changes under the tested conditions; operation-level completeness, transferability to other CAD sources, and preservation of simulation response require further validation.
+  B-Rep geometric feature recognition underpins CAD editing and analysis and has been widely studied for shape-defined features such as fillets, chamfers, and holes. In CAD preparation for numerical simulation, rivets and other small geometric details can trigger local mesh refinement under fixed deflection tolerances, increasing triangle counts and generation time. In this study, cosmetic-feature faces denote annotated non-rivet target faces, including window and decal regions, considered for CAD simplification. This paper presents a face-level graph-learning framework for rivet and cosmetic-feature recognition. Each B-Rep face is represented as a graph node, and shared boundaries define neighbourhood relations. Two class-specific graph neural networks learn separate decision functions for the rivet and cosmetic-feature classes, while exported predictions remain associated with their source B-Rep faces for staged processing and inspection. The framework was evaluated on the full test set of 34,162 faces. Under fixed meshing settings, original--simplified pairs showed reductions of 0.57\%--48.66\% in surface-triangle count and 2.49\%--58.29\% in median mesh-generation time. By retaining links to editable B-Rep faces, the framework supports the localisation and inspection of rivet and cosmetic-feature faces and provides candidate inputs for feature removal and local surface reconstruction. The paired comparisons show lower surface-mesh complexity and shorter mesh-generation times for the tested models and settings. The framework thus connects feature recognition with targeted CAD simplification and provides a traceable route for mesh preparation in numerical simulation.
 %\lipsum[1]
 \end{abstract}
 
-{\small\textbf{Keywords}: B-Rep feature recognition, graph learning, rivet recognition, small-features, geometric processing.}
+{\small\textbf{Keywords}: B-Rep feature recognition, graph learning, rivet recognition, cosmetic features, geometric processing.}
 
 %-------------------------------------------
 % Paper Body
@@ -173,46 +173,43 @@ user\_id@univ.edu \\
 %--- Section ---%
 \section{Introduction}
 
-Complete-aircraft B-Rep models retain the geometric and topological entities needed for design and analysis, but they also contain numerous local structures that may need to be inspected or processed separately. In the evaluated aircraft, rivet and small-feature faces account for a small fraction of the faces, while background surfaces dominate the face count. Recognising these rare targets also requires each prediction to remain linked to the CAD entity on which any subsequent geometric operation would act.
+Aircraft B-Rep models retain the geometric and topological entities needed for design and analysis, but they also contain local structures that may need to be inspected or processed separately. Cosmetic-feature faces are annotated non-rivet target faces, including window and decal regions. In the evaluated aircraft, rivet and cosmetic-feature faces account for a small fraction of the faces, while background surfaces dominate the face count. Reliable recognition remains difficult because sparse rivet and cosmetic-feature faces must be distinguished from background surfaces despite differences in local shape and face partitioning. Each prediction must also remain linked to the editable CAD face on which subsequent removal or reconstruction would act. Figure~\ref{fig:gulfstream_target_examples} shows annotated rivet, window and decal faces on the Gulfstream G280 model.
 
 \begin{figure}[H]
 \input{figures/fig_gulfstream_target_examples.tex}
-\caption{Annotated target faces on the fixed-test Gulfstream G280 v17 B-Rep model. The side and top views show the spatial distribution of the marked regions, and the local views show two small-feature examples and one rivet example. The rivet is enlarged because it is not visually discernible in the complete-aircraft views.}
+\caption{Annotated target faces on the fixed-test Gulfstream G280 v17 B-Rep model. (A) Side and (B) top views show the spatial distribution of the marked regions. Panels (C) and (D) show cosmetic-feature examples 1 (decal region) and 2 (window region), respectively; panel (E) shows a rivet.}
 \label{fig:gulfstream_target_examples}
 \end{figure}
 
-Traditional CAD feature-recognition methods use geometric rules, attributed adjacency graphs, decomposition, or hint-based reasoning to identify manufacturing features \parencite{han2000manufacturing,shah2001discourse}. More recently, learning methods have operated directly on B-Rep geometry and topology, enabling face-level prediction without relying exclusively on intermediate meshes or point clouds \parencite{jayaraman2021uvnet,lambourne2021brepnet,colligan2022hierarchical,wu2024aagnet}. These studies establish the value of B-Rep-aware representations, but their typical objects and labels are mechanical parts, modelling-operation semantics, or machining features rather than rivets and heterogeneous small-features on complete aircraft.
+Traditional CAD feature-recognition methods use geometric rules, attributed adjacency graphs, decomposition, or hint-based reasoning to identify manufacturing features \parencite{han2000manufacturing,shah2001discourse}. More recently, learning methods have operated directly on B-Rep geometry and topology, enabling face-level prediction without relying exclusively on intermediate meshes or point clouds \parencite{jayaraman2021uvnet,lambourne2021brepnet,colligan2022hierarchical,wu2024aagnet}. These studies establish the value of B-Rep-aware representations, but their typical objects and labels are mechanical parts, modelling-operation semantics, or machining features rather than rivets and heterogeneous cosmetic features on complete aircraft.
 
-Rare target faces make class-level errors easy to overlook in aggregate accuracy \parencite{he2009learning}. Free-form surfaces and differences in B-Rep face partitioning also limit what an isolated face reveals. When predictions guide removal or reconstruction, a false positive on a large smooth background face can carry greater geometric risk than a missed local target. These conditions call for per-aircraft error counts and the area of misclassified background faces. The complete aircraft is used as the partitioning unit so that related faces and local subgraphs remain together \parencite{kapoor2023leakage}.
-
-We develop a face-level graph-learning and geometry-processing framework for recognising rivet and small-feature faces in complete-aircraft B-Rep models. It combines geometric and topological face attributes in two class-specific GNNs, fuses the branch scores into a three-class prediction, applies conservative structural constraints to high-risk candidates, and supplies the retained candidates to staged feature removal and local reconstruction.
+We develop a face-level graph-learning and geometry-processing framework for recognising rivet and cosmetic-feature faces in aircraft B-Rep models. It combines geometric and topological face attributes in two class-specific GNNs, fuses the branch scores into a three-class prediction, applies conservative structural constraints to high-risk candidates, and supplies the retained candidates to staged feature removal and local reconstruction.
 
 This study contributes:
 \begin{enumerate}[label=(\arabic*)]
-  \item A face-level B-Rep graph representation is constructed for three-class prediction: \textit{background}, \textit{rivet}, and \textit{small-feature}. The \textit{small-feature} class groups the annotated non-rivet target faces.
-  \item Two class-specific GNNs use separate parameters for rivet and small-feature prediction and fuse their scores into a three-class label with rivet precedence.
-  \item Training and testing are partitioned by complete aircraft rather than by randomly selected faces. In addition to pooled classification measures, the evaluation reports target-class support, missed target faces, and F1 for each aircraft, alongside background false-positive counts and their maximum relative face area.
-  \item Conservative candidate checks restrict which predicted faces enter geometry processing, while the evaluation reports remaining background false positives for each aircraft.
+  \item A face-level graph representation is developed for rivet and cosmetic-feature recognition in aircraft B-Rep models. It combines local geometric attributes with shared-boundary topology, retaining the correspondence between predicted labels and editable CAD faces.
+  \item Class-specific GNNs learn separate decision functions and neighbourhood representations for rivets and cosmetic features. A fixed fusion rule combines their scores into mutually exclusive face labels, addressing the different geometric patterns of the target classes.
+  \item A staged workflow connects face-level recognition to CAD feature removal and local reconstruction through candidate screening and re-extraction of faces after topology changes. Paired comparisons show lower surface-mesh complexity and shorter median mesh-generation times under the tested settings, supporting targeted CAD simplification for mesh preparation in numerical simulation.
 \end{enumerate}
 
 %--- Section ---%
-\section{Related Work}\label{sec2}
+\section{Related work}\label{sec2}
 
-For small-feature processing in complete aircraft B-Rep models, relevant studies mainly arise from two directions: three-dimensional scene segmentation and CAD feature recognition. The former focuses on locating semantic or instance regions in sampled 3D data, whereas the latter concerns recognising, within editable models, entities that can support subsequent geometric operations. For industrial CAD models, obtaining only region-level recognition results is insufficient to directly support feature removal or reconstruction; the results must also correspond to parametric faces and their topological relations. The following review therefore considers three-dimensional scene segmentation, CAD feature recognition, and the requirements of small-geometry recognition for downstream simulation processing.
+For cosmetic-feature processing in complete aircraft B-Rep models, relevant studies mainly arise from two directions: three-dimensional scene segmentation and CAD feature recognition. The former focuses on locating semantic or instance regions in sampled 3D data, whereas the latter concerns recognising, within editable models, entities that can support subsequent geometric operations. For industrial CAD models, obtaining only region-level recognition results is insufficient to directly support feature removal or reconstruction; the results must also correspond to parametric faces and their topological relations. The following review therefore considers three-dimensional scene segmentation, CAD feature recognition, and the requirements of small-geometry recognition for downstream simulation processing.
 
-\subsection{Three-Dimensional Deep Learning and Scene Segmentation}
+\subsection{Three-dimensional deep learning and scene segmentation}
 
 Three-dimensional deep learning has developed several representations for semantic and instance segmentation, including voxels, point clouds, polygon meshes, and multi-view images. PointNet established a direct route to point-level segmentation by learning from unordered point sets \parencite{qi2017pointnet}. Later open-vocabulary methods incorporated image evidence into reconstructed 3D scenes. OpenMask3D fuses features from multiple views for each 3D instance proposal, whereas Open3DIS lifts two-dimensional instance masks to point-cloud regions and merges proposals across views \parencite{takmaz2023openmask3d,nguyen2024open3dis}. Together, these approaches illustrate how image features and multi-view projection can extend recognition beyond a fixed set of training labels.
 
 The output of OpenMask3D and Open3DIS is a semantic or instance region derived from reconstructed point clouds and posed RGB-D images, typically in indoor or otherwise reconstructed scenes \parencite{takmaz2023openmask3d,nguyen2024open3dis}. Such a region is not, by itself, a reference to the parametric faces or topological relations of an editable CAD solid. Consequently, using a scene-segmentation result for local geometry removal would require an additional mapping from the detected region back to the B-Rep. CAD feature-recognition methods are designed around this entity-level requirement and provide a more direct starting point for editable-model operations.
 
-\subsection{CAD Feature Recognition from Rules to B-Rep Learning}
+\subsection{CAD feature recognition from rules to B-Rep learning}
 
 CAD feature-recognition research has traditionally focused on extracting manufacturing information and supporting computer-aided process planning. Within this line of work, geometric rules, attributed adjacency graphs, volumetric decomposition and recomposition, and feature hints have been used to identify local structures such as holes, slots, and bosses \parencite{han2000manufacturing,shah2001discourse,babic2008review}. Their main advantage is interpretability when feature definitions and topological templates are explicit. Their transfer becomes more difficult, however, when features interact, thresholds are domain specific, surfaces are free-form, or the same design intent is represented by different face partitions \parencite{shah2001discourse}. Attributed adjacency graphs offer a natural bridge to learning-based recognition because they preserve faces together with their topological relationships. However, conventional subgraph matching remains tied to predefined patterns, which limits its adaptability when topology varies or features interact.
 
-Recent CAD-learning methods retain B-Rep entities and their relations as part of the learning representation, thereby moving beyond recognition based solely on hand-crafted templates. UV-Net combines parametric surface and curve information with adjacency-graph topology, while BRepNet performs message passing over faces, edges, and oriented coedges for modelling-operation segmentation \parencite{jayaraman2021uvnet,lambourne2021brepnet}. Hierarchical CADNet augments a B-Rep face-adjacency graph with a surface-mesh level and edge convexity for machining-feature recognition, and AAGNet investigates multi-task machining-feature recognition on attributed adjacency graphs \parencite{colligan2022hierarchical,wu2024aagnet}. These studies establish several effective ways to expose B-Rep geometry and topology to face-level learning. The problem setting remains different from the one considered here: their datasets and labels focus mainly on mechanical parts, synthetic CAD collections, modelling-operation semantics, or machining features, rather than distinguishing \textit{background} faces, \textit{rivet} faces, and diverse \textit{small-feature} faces in complete-aircraft models.
+Recent CAD-learning methods retain B-Rep entities and their relations as part of the learning representation, thereby moving beyond recognition based solely on hand-crafted templates. UV-Net combines parametric surface and curve information with adjacency-graph topology, while BRepNet performs message passing over faces, edges, and oriented coedges for modelling-operation segmentation \parencite{jayaraman2021uvnet,lambourne2021brepnet}. Hierarchical CADNet augments a B-Rep face-adjacency graph with a surface-mesh level and edge convexity for machining-feature recognition, and AAGNet investigates multi-task machining-feature recognition on attributed adjacency graphs \parencite{colligan2022hierarchical,wu2024aagnet}. These studies establish several effective ways to expose B-Rep geometry and topology to face-level learning. The problem setting remains different from the one considered here: their datasets and labels focus mainly on mechanical parts, synthetic CAD collections, modelling-operation semantics, or machining features, rather than distinguishing \textit{background} faces, \textit{rivet} faces, and diverse \textit{cosmetic feature} faces in complete-aircraft models.
 
-\subsection{Gap for Small Geometry in Industrial Simulation Workflows}
+\subsection{Gap for small geometry in industrial simulation workflows}
 
 In industrial simulation workflows, recognising a local feature is only an intermediate step: the result may determine whether that feature is retained, removed, or reconstructed before meshing and analysis. CAD simplification and analysis-aware defeaturing have examined the geometric consequences of feature removal \parencite{thakur2009cad_simplification,antolin2024analysis_aware_defeaturing}, and B-Rep learning has shown that face-based predictions can remain linked to their source entities \parencite{jayaraman2021uvnet,lambourne2021brepnet,yeo2021machining}. These two strands address complementary requirements, but the literature provides limited documentation of a route that identifies small, heterogeneous local geometry on complete industrial models and carries face-level predictions into CAD processing.
 
@@ -224,7 +221,7 @@ Aggregate segmentation accuracy does not indicate which background faces may be 
 
 \subsection{B-Rep topology and geometry}\label{sec:brep_preliminary}
 
-A boundary representation (B-Rep) describes a solid by linking topological entities---vertices, edges, wires (or loops), faces, shells, and solids---to their underlying geometric entities \parencite{iso10303_42_2025,li2026robust_tessellation}. A face commonly uses a parametric surface as its support, while an outer loop and any inner loops trim that support to a finite visible region. The trimming boundaries may be analytic or B-spline curves, and the supporting surface may likewise be a B-spline surface. Neighbouring faces can consequently lie on similar surfaces while differing in trimming loops and adjacency relations. B-Rep topology retains these relations and keeps each face associated with a specific entity in the editable solid, whereas an unstructured point set does not directly preserve either property. Figure~\ref{fig:brep_preliminary} illustrates the entity hierarchy used in the subsequent graph formulation.
+A boundary representation (B-Rep) describes a solid by linking topological entities---vertices, edges, wires (or loops), faces, shells, and solids---to their underlying geometric entities \parencite{iso10303_42_2025,li2026robust_tessellation}. An outer loop and any inner loops bound a face on its supporting surface. Trimming restricts the face domain without changing that surface. The trimming boundaries may be analytic or B-spline curves, and the supporting surface may likewise be a B-spline surface. Neighbouring faces can consequently lie on similar surfaces while differing in trimming loops and adjacency relations. B-Rep topology retains these relations and keeps each face associated with a specific entity in the editable solid, whereas an unstructured point set does not directly preserve either property. Figure~\ref{fig:brep_preliminary} summarises the topological hierarchy, geometric supports and surface trimming.
 
 Geometry and topology have different roles in this representation. Geometry supplies the point, curve, and surface descriptions from which positions, lengths, curvatures, and normals can be evaluated. Topology records how those geometric entities are bounded, oriented, and assembled: vertices bound edges, ordered edges form loops, loops bound faces, and connected faces form shells. A shared topological edge therefore indicates adjacency even when the two incident faces use different supporting surfaces or parameterisations. Conversely, similar surface geometry does not by itself imply that two faces are adjacent. This distinction is central to a face-level graph because node information is associated with individual faces, whereas graph connectivity follows topological incidence.
 
@@ -235,7 +232,11 @@ Geometry and topology have different roles in this representation. Geometry supp
   >=Latex,
   entity/.style={font=\sffamily\bfseries\small, text=black!85},
   outline/.style={draw=black!78, line width=.65pt, line join=round},
-  relation/.style={-{Latex[length=1.5mm]}, draw=blue!65!black, line width=.6pt}
+  relation/.style={-{Latex[length=1.5mm]}, draw=blue!65!black, line width=.6pt},
+  supportbadge/.style={circle, draw=none, text=white, font=\sffamily\bfseries\tiny,
+    minimum size=3.2mm, inner sep=0pt},
+  gridline/.style={draw=black!27, line width=.35pt},
+  panellabel/.style={font=\sffamily\small, align=center}
 ]
   % Body, shell, face, loop, edge, and vertex are shown as peer B-Rep entities.
   \node[entity] at (-5.55,2.45) {Body};
@@ -255,7 +256,8 @@ Geometry and topology have different roles in this representation. Geometry supp
     -- (-2.16,1.84) .. controls (-2.45,2.25) and (-3.05,2.31) .. (-3.58,1.98) -- cycle;
   \path[fill=black!3, draw=black!78, line width=.65pt] (-2.42,.52) -- (-2.10,.74) -- (-2.10,1.75) -- (-2.42,1.53) -- cycle;
 
-  \node[entity] at (.00,2.45) {Face};
+  \node[entity] (brepFace) at (.00,2.45) {Face};
+  \node[supportbadge, fill=blue!65!black, left=1mm of brepFace] {1};
   \path[fill=blue!20, draw=blue!70!black, line width=.7pt] (-.68,.67)
     .. controls (-.53,1.28) and (-.02,1.55) .. (.62,1.40)
     -- (.51,.75) .. controls (-.02,.61) and (-.38,.56) .. (-.68,.67) -- cycle;
@@ -268,13 +270,15 @@ Geometry and topology have different roles in this representation. Geometry supp
   \foreach \p in {(1.76,.65),(3.20,1.42),(3.08,.72)}
     {\filldraw[fill=white, draw=black!75] \p circle (1.05pt);}
 
-  \node[entity] at (4.88,2.45) {Edge};
+  \node[entity] (brepEdge) at (4.88,2.45) {Edge};
+  \node[supportbadge, fill=teal!70!black, left=1mm of brepEdge] {2};
   \draw[draw=blue!70!black, line width=1.05pt] (4.15,.78)
     .. controls (4.55,1.40) and (5.12,1.58) .. (5.62,1.23);
   \filldraw[fill=white, draw=blue!70!black] (4.15,.78) circle (1.05pt);
   \filldraw[fill=white, draw=blue!70!black] (5.62,1.23) circle (1.05pt);
 
-  \node[entity] at (6.75,2.45) {Vertex};
+  \node[entity] (brepVertex) at (6.75,2.45) {Vertex};
+  \node[supportbadge, fill=violet!70!black, left=1mm of brepVertex] {3};
   \filldraw[fill=black!78, draw=black!80] (6.75,1.02) circle (2.1pt);
 
   % Arrows indicate the whole-to-part hierarchy between adjacent entities.
@@ -284,14 +288,77 @@ Geometry and topology have different roles in this representation. Geometry supp
   \draw[relation] (3.45,1.08) -- (3.92,1.08);
   \draw[relation] (5.88,1.08) -- (6.46,1.08);
 
+  \node[panellabel] at (.25,-.10) {(A) Topological entity hierarchy};
+
+  % Matching badges associate topology with geometry without cross-panel lines.
+
+  % Each geometric support is paired with its bounded topological entity.
+  \begin{scope}[yshift=-4mm]
+  \node[entity] (brepSurface) at (-4.7,-.78) {Surface (geometry)};
+  \node[supportbadge, fill=blue!65!black, left=1mm of brepSurface] {1};
+  \path[fill=black!8, draw=black!45, line width=.45pt]
+    plot[domain=0:1,samples=25,variable=\u]
+      ({-6.6+3.2*\u},{-2.8+1.6*\u*(1-\u)})
+    -- plot[domain=1:0,samples=25,variable=\u]
+      ({-6+3.2*\u},{-1.6+1.6*\u*(1-\u)}) -- cycle;
+  \foreach \gridv in {.2,.4,.6,.8} {
+    \draw[gridline] plot[domain=0:1,samples=25,variable=\u]
+      ({-6.6+3.2*\u+.6*\gridv},{-2.8+1.2*\gridv+1.6*\u*(1-\u)});
+  }
+  \foreach \gridu in {.2,.4,.6,.8} {
+    \draw[gridline]
+      ({-6.6+3.2*\gridu},{-2.8+1.6*\gridu*(1-\gridu)})
+      -- ({-6+3.2*\gridu},{-1.6+1.6*\gridu*(1-\gridu)});
+  }
+  \path[fill=blue!23, draw=orange!85!black, line width=1pt]
+    plot[domain=.18:.8,samples=25,variable=\u]
+      ({-6.468+3.2*\u},{-2.536+1.6*\u*(1-\u)})
+    -- plot[domain=.8:.18,samples=25,variable=\u]
+      ({-6.132+3.2*\u},{-1.864+1.6*\u*(1-\u)}) -- cycle;
+  \node[entity,text=blue!70!black] at (-4.7,-1.96) {Face};
+  \node[text=orange!85!black] at (-4.7,-3.15) {Loop: boundary of the face};
+  \node[text=blue!70!black] at (-4.7,-3.47) {Trimming retains the blue region};
+  \node[text=black!65] at (-4.7,-3.79) {Supporting surface is unchanged};
+  \node[panellabel] at (-4.7,-4.30) {(B) Surface and face};
+
+  \node[entity] (brepCurve) at (.55,-.78) {Curve (geometry)};
+  \node[supportbadge, fill=teal!70!black, left=1mm of brepCurve] {2};
+  \draw[draw=black!45,line width=.65pt]
+    plot[domain=0:1,samples=30,variable=\t]
+      ({-1.7+4.5*\t},{-2.6+3.6*\t*(1-\t)});
+  \draw[draw=blue!70!black,line width=1.3pt]
+    plot[domain=.2:.8,samples=25,variable=\t]
+      ({-1.7+4.5*\t},{-2.6+3.6*\t*(1-\t)});
+  \foreach \curvepos in {.2,.8} {
+    \filldraw[fill=black!78,draw=black!80]
+      ({-1.7+4.5*\curvepos},{-2.6+3.6*\curvepos*(1-\curvepos)}) circle (1.5pt);
+  }
+  \node[entity,text=blue!70!black] at (.55,-2.34) {Edge};
+  \node at (-.8,-2.85) {Start vertex};
+  \node at (1.9,-2.85) {End vertex};
+  \node[text=blue!70!black] at (.55,-3.15) {Blue: edge bounded by vertices};
+  \node[text=black!65] at (.55,-3.47) {Grey: curve continues beyond edge};
+  \node[panellabel] at (.55,-4.30) {(C) Curve and edge};
+
+  \node[entity] (brepPoint) at (5.45,-.78) {Point (geometry)};
+  \node[supportbadge, fill=violet!70!black, left=1mm of brepPoint] {3};
+  \filldraw[fill=black!78,draw=black!80] (5.45,-1.98) circle (2.1pt);
+  \node[above=4pt] at (5.45,-1.98) {$P$};
+  \node[entity] at (5.45,-2.60) {Vertex};
+  \node at (5.45,-3.15) {Vertex refers to point $P$};
+  \node[text=black!65] at (5.45,-3.47) {$P=(x,y,z)$};
+  \node[panellabel] at (5.45,-4.30) {(D) Point and vertex};
+  \end{scope}
+
 \end{tikzpicture}
-\caption{Main topological entities in a B-Rep and their hierarchical relationships. From left to right, the panels proceed from the complete model to its constituent entities. The body represents the complete model, whose boundary is formed by one or more shells. A shell consists of faces connected along shared edges; the faces are shown slightly separated for clarity. A face is bounded by a loop, a loop is formed by a closed sequence of edges, and the endpoints of an edge are vertices.}\label{fig:brep_preliminary}
+\caption{Topology and geometric supports in a B-Rep. (A) Entity hierarchy; numbered badges link topology to its supporting geometry. (B) The orange loop bounds the blue face region; grey areas belong to the same supporting surface but lie outside the face. Trimming restricts the face domain while preserving the surface geometry. (C) End vertices bound the blue edge on its supporting curve, which continues in grey. (D) A vertex is associated with a geometric point $P$, which provides its spatial coordinates.}\label{fig:brep_preliminary}
 \end{figure}
 \FloatBarrier
 
 \subsection{Face-adjacency graphs}\label{sec:face_graph_preliminary}
 
-The topology of a B-Rep induces a face-adjacency graph $G=(V,E)$. Each node $v_i\in V$ corresponds to one B-Rep face $f_i$, and an edge $(v_i,v_j)\in E$ indicates that faces $f_i$ and $f_j$ share a boundary. This construction converts the incidence relations of the solid into a graph without replacing the underlying CAD entities. Consecutive node indices may be introduced for tensor operations while the one-to-one correspondence with the source faces is maintained.
+{\widowpenalty=10000
+The topology of a B-Rep induces a face-adjacency graph $G=(V,E)$. Each node $v_i\in V$ corresponds to one B-Rep face $f_i$, and an edge $(v_i,v_j)\in E$ indicates that faces $f_i$ and $f_j$ share a boundary. Figure~\ref{fig:face_graph_preliminary} illustrates this face-to-node and shared-boundary-to-edge correspondence. This construction converts the incidence relations of the solid into a graph without replacing the underlying CAD entities. Consecutive node indices may be introduced for tensor operations while the one-to-one correspondence with the source faces is maintained.\par}
 
 An attributed face graph associates a node vector $\mathbf{x}_i$ with each face and an edge vector $\mathbf{e}_{ij}$ with each adjacency. Node attributes can describe the geometry, scale, boundary organisation, or surface type of an individual face. Edge attributes describe relations between neighbouring faces, such as the length or type of their shared boundary, their relative scale, or their local angular relation. The graph representation thus separates properties of one face from properties of its connection to another face. Face-level graph constructions of this kind have been used to expose B-Rep geometry and topology to learning models \parencite{yeo2021machining,zhang2024brep2seq}.
 
@@ -323,19 +390,19 @@ The graph is independent of the order in which faces are enumerated. Renumbering
   \coordinate (v3) at (7.15,.35);
   \coordinate (v4) at (6.65,-1.10);
   \coordinate (v5) at (5.30,-.85);
-  \draw[graph] (v1) -- node[graphlabel, above, sloped] {$e_{12}$} (v2);
-  \draw[graph] (v2) -- node[graphlabel, above, sloped] {$e_{23}$} (v3);
-  \draw[graph] (v3) -- node[graphlabel, above, sloped] {$e_{34}$} (v4);
-  \draw[graph] (v4) -- node[graphlabel, below, sloped] {$e_{45}$} (v5);
-  \draw[graph] (v5) -- node[graphlabel, below, sloped] {$e_{15}$} (v1);
-  \draw[graph] (v2) -- node[graphlabel, above, sloped] {$e_{24}$} (v4);
+  \draw[graph] (v1) -- node[graphlabel, above, sloped] {$e_{jk}$} (v2);
+  \draw[graph] (v2) -- node[graphlabel, above, sloped] {$e_{jl}$} (v3);
+  \draw[graph] (v3) -- node[graphlabel, above, sloped] {$e_{il}$} (v4);
+  \draw[graph] (v4) -- node[graphlabel, below, sloped] {$e_{im}$} (v5);
+  \draw[graph] (v5) -- node[graphlabel, below, sloped] {$e_{km}$} (v1);
+  \draw[graph] (v2) -- node[graphlabel, above, sloped] {$e_{ij}$} (v4);
   \foreach \x/\y/\c in {4.92/.32/cyan!72,5.95/.90/orange!80,7.15/.35/violet!66,6.65/-1.10/blue!62,5.30/-.85/green!67}
     {\filldraw[fill=\c, draw=black!65, line width=.5pt] (\x,\y) circle (3pt);}
-  \node[graphlabel, left=3pt] at (v1) {$v_1$};
-  \node[graphlabel, above=3pt] at (v2) {$v_2$};
-  \node[graphlabel, right=3pt] at (v3) {$v_3$};
-  \node[graphlabel, below=3pt] at (v4) {$v_4$};
-  \node[graphlabel, below left=3pt] at (v5) {$v_5$};
+  \node[graphlabel, left=3pt] at (v1) {$v_k$};
+  \node[graphlabel, above=3pt] at (v2) {$v_j$};
+  \node[graphlabel, right=3pt] at (v3) {$v_l$};
+  \node[graphlabel, below=3pt] at (v4) {$v_i$};
+  \node[graphlabel, below left=3pt] at (v5) {$v_m$};
   \node[note] at (6.10,-1.93) {$v_i$: face \quad $e_{ij}$: shared boundary};
 \end{tikzpicture}
 \caption{Face-adjacency graph construction. Each trimmed B-Rep face becomes one graph node, and each shared topological boundary between two faces becomes one graph edge. The colours only maintain the face--node correspondence in the schematic.}\label{fig:face_graph_preliminary}
@@ -361,13 +428,13 @@ Message passing and graph pooling serve different purposes. Message passing pres
 
 \FloatBarrier
 %--- Section ---%
-\section{Face-Level Graph Learning}\label{sec:methods}
+\section{Face-level graph learning}\label{sec:methods}
 
 \subsection{Supervised face-level task}\label{sec:data_preparation}
 
-The supervised task uses three mutually exclusive face labels: \textit{background}, \textit{rivet}, and \textit{small-feature}. In this class convention, \textit{small-feature} denotes annotated non-rivet target faces considered for subsequent simplification or reconstruction. Rivets retain their own target label. Annotation records associate each label with its original B-Rep face, as described in Section~\ref{sec:data_partition}.
+The supervised task uses three mutually exclusive face labels: \textit{background}, \textit{rivet}, and \textit{cosmetic feature}. In this class convention, \textit{cosmetic feature} denotes annotated non-rivet target faces considered for subsequent simplification or reconstruction. Rivets retain their own target label. Annotation records associate each label with its original B-Rep face, as described in Section~\ref{sec:data_partition}.
 
-For a complete-aircraft B-Rep, the learning objective is to assign one of three classes---\textit{background}, \textit{rivet}, or \textit{small-feature}---to every original face $v_i$. The predicted class and score can then be aligned with truth labels, inspected on the source model, and passed to later geometry processing. Intermediate removal models are treated separately in the staged processing workflow of Section~\ref{sec:geometry_protocol} because geometric operations change their topology and face enumeration.
+For a complete-aircraft B-Rep, the learning objective is to assign one of three classes---\textit{background}, \textit{rivet}, or \textit{cosmetic feature}---to every original face $v_i$. The predicted class and score can then be aligned with truth labels, inspected on the source model, and passed to later geometry processing. Intermediate removal models are treated separately in the staged processing workflow of Section~\ref{sec:geometry_protocol} because geometric operations change their topology and face enumeration.
 
 \subsection{Face graph and input attributes}\label{sec:face_graph}
 
@@ -439,9 +506,9 @@ Figure~\ref{fig:face_graph_attributes} illustrates node and edge attributes and 
 \caption{Attributed face graph and neighbour aggregation. Each graph node represents an original B-Rep face, and each graph edge represents a shared boundary. Node attributes describe individual faces, edge attributes describe face relations, and both are used in message passing. Colours distinguish face nodes and do not represent prediction classes.}\label{fig:face_graph_attributes}
 \end{figure}
 
-The current implementation assigns 48 node attributes to each B-Rep face. The attributes are grouped by information source rather than used as hand-coded recognition rules: face scale and shape include relative area, perimeter, compactness, and relations to neighbouring-face areas; surface information includes curvature, radius availability, and surface type; boundary organisation includes wire, inner-wire, and edge counts; and local-neighbourhood statistics describe adjacent surface types, convex, concave, or smooth relations, normal similarity, and same-surface connectivity. Model-scale-normalised geometric quantities and relative positional descriptors are also included. The resulting vector characterises the local state of a B-Rep face, but no single area, surface type, or curvature value prescribes a \textit{rivet} or \textit{small-feature} label.
+The current implementation assigns 48 node attributes to each B-Rep face. The attributes are grouped by information source rather than used as hand-coded recognition rules: face scale and shape include relative area, perimeter, compactness, and relations to neighbouring-face areas; surface information includes curvature, radius availability, and surface type; boundary organisation includes wire, inner-wire, and edge counts; and local-neighbourhood statistics describe adjacent surface types, convex, concave, or smooth relations, normal similarity, and same-surface connectivity. Model-scale-normalised geometric quantities and relative positional descriptors are also included. The resulting vector characterises the local state of a B-Rep face, but no single area, surface type, or curvature value prescribes a \textit{rivet} or \textit{cosmetic feature} label.
 
-Rivets often have repeated local patterns, whereas small-feature instances vary in scale, surface form, and attachment mode. Neither face area nor surface type alone is therefore a reliable class rule. Aircraft models also differ in physical scale and face partitioning; without normalisation, geometric magnitudes may reflect model size or export conventions. We normalise quantities that require scale consistency and reuse the feature order and statistics computed from the training set. The evaluation in Section~\ref{sec:results} tests this representation on the fixed aircraft partition, not on arbitrary CAD sources.
+Rivets often have repeated local patterns, whereas cosmetic-feature instances vary in scale, surface form, and attachment mode. Neither face area nor surface type alone is therefore a reliable class rule. Aircraft models also differ in physical scale and face partitioning; without normalisation, geometric magnitudes may reflect model size or export conventions. We normalise quantities that require scale consistency and reuse the feature order and statistics computed from the training set. The evaluation in Section~\ref{sec:results} tests this representation on the fixed aircraft partition, not on arbitrary CAD sources.
 
 Each face adjacency is associated with six edge attributes: connection type, area ratio, neighbouring surface type, shared-edge length, mean dihedral angle, and dihedral-angle standard deviation. These attributes describe the boundary relation between two B-Rep faces rather than either face in isolation. For example, shared-edge length characterises the local scale of an adjacency, dihedral-angle statistics describe local turning or continuity, and neighbouring surface type and area ratio provide relational information unavailable from a single node. Following the edge-conditioned formulation in Section~\ref{sec:message_passing_preliminary}, these attributes condition the learned message transformations defined in Section~\ref{sec:class_specific_learning}.
 
@@ -449,22 +516,22 @@ Message passing combines each face's attributes with those of adjacent faces and
 
 The three class labels define the prediction target, while node and edge attributes supply the learning input. The one-to-one node--face correspondence allows the resulting labels to be compared with annotations, visualised on the B-Rep model, and passed to geometry processing.
 
-\subsection{Class-Specific Graph Learning}\label{sec:class_specific_learning}
+\subsection{Class-specific graph learning}\label{sec:class_specific_learning}
 
 \subsubsection{Class-specific network architecture}\label{sec:dual_gnn}
 
-The recognition model comprises two class-specific, edge-conditioned GNNs: a rivet branch and a small-feature branch. Both receive the same B-Rep face graph and attributes, but each has its own node encoder, edge encoder, graph-convolution layers, adapter, and scalar output head. Thus, they share the input representation and graph connectivity, not a learned graph encoder. The network produces two binary scores; the fixed decision rule in Section~\ref{sec:training_inference} converts them into one of the three face labels.
+The recognition model comprises two class-specific, edge-conditioned GNNs: a rivet branch and a cosmetic-feature branch. Both receive the same B-Rep face graph and attributes, but each has its own node encoder, edge encoder, graph-convolution layers, adapter, and scalar output head. Thus, they share the input representation and graph connectivity, not a learned graph encoder. The network produces two binary scores; the fixed decision rule in Section~\ref{sec:training_inference} converts them into one of the three face labels.
 
-Rivets and small-features differ in local geometry and attachment patterns. We therefore formulate recognition as two class-specific one-vs-rest detection tasks. Independent branches allow each target category to learn its own neighbourhood representation, with separately assigned loss weights and decision thresholds. To assess this design against direct three-class prediction, we trained a unified three-class softmax GNN as a comparison model. Section~\ref{sec:architecture_comparison} reports higher F1 scores for both target classes and fewer background false positives for the dual-branch system, providing empirical support for retaining this design under the reported training and evaluation protocol. Figure~\ref{fig:class_specific_gnn} separates the learned network components from the fixed threshold decision.
+Rivets and cosmetic features differ in local geometry and attachment patterns. We therefore formulate recognition as two class-specific one-vs-rest detection tasks. Independent branches allow each target category to learn its own neighbourhood representation, with separately assigned loss weights and decision thresholds. To assess this design against direct three-class prediction, we trained a unified three-class softmax GNN as a comparison model. Section~\ref{sec:architecture_comparison} reports higher F1 scores for both target classes and fewer background false positives for the dual-branch system, providing empirical support for retaining this design under the reported training and evaluation protocol. Figure~\ref{fig:class_specific_gnn} separates the learned network components from the fixed threshold decision.
 
 \begin{figure}[!t]
 \centering
 \input{figures/fig_class_specific_gnn_architecture_v7.tex}
-\caption{Face-level prediction with two class-specific GNNs. (a) Shared B-Rep face graph with 48-dimensional node and six-dimensional edge attributes; colours link faces to nodes. (b) Independent branches produce rivet and small-feature sigmoid scores. (c) Fixed thresholds yield one label per face, with rivet precedence.}
+\caption{Face-level prediction with two class-specific GNNs. (A) Shared B-Rep face graph with 48-dimensional node and six-dimensional edge attributes; colours link faces to nodes. (B) Independent branches produce rivet and cosmetic-feature sigmoid scores. (C) Fixed thresholds yield one label per face, with rivet precedence.}
 \label{fig:class_specific_gnn}
 \end{figure}
 
-For class-specific branch $k\in\{r,s\}$, where $r$ denotes rivet and $s$ denotes small-feature, the raw node and edge attributes are first transformed by separate encoders:
+For class-specific branch $k\in\{r,s\}$, where $r$ denotes rivet and $s$ denotes cosmetic feature, the raw node and edge attributes are first transformed by separate encoders:
 \begin{equation}
 \mathbf{h}_{i,k}^{(0)}=\phi_{x,k}(\mathbf{x}_i), \qquad
 \tilde{\mathbf{e}}_{ij,k}=\phi_{e,k}(\mathbf{e}_{ij}).
@@ -483,6 +550,7 @@ Each branch applies four NNConv layers with hidden width 64. Layer-specific edge
 \right)\right)\right).
 \label{eq:class_specific_message_update}
 \end{equation}
+\begin{samepage}
 The first layer maps 48 features to 64 and has no residual addition. Layers 2--4 retain width 64 and add their input states:
 \[
 \mathbf{h}_{i,k}^{(\ell+1)}=
@@ -491,6 +559,7 @@ The first layer maps 48 features to 64 and has no residual addition. Layers 2--4
 \mathbf{u}_{i,k}^{(\ell+1)}+\mathbf{h}_{i,k}^{(\ell)}, & \ell=1,2,3.
 \end{cases}
 \]
+\end{samepage}
 
 \begin{samepage}
 After the fourth layer, each face has a 64-dimensional local representation. Element-wise mean and max pooling over the current aircraft's face nodes $V$ each yield 64 features. Their concatenation supplies 128-dimensional global context, which is appended to every local representation:
@@ -511,7 +580,7 @@ p_{s,i}=\sigma\!\left(g_s(A_s(\mathbf{z}_{i,s}))\right).
 
 \subsubsection{Binary training objectives and fixed decision rule}\label{sec:training_inference}
 
-The rivet branch is trained against all non-rivet faces, including small-features and background; the small-feature branch is trained against all non-small-feature faces, including rivets and background. The binary target pairs $(t_{i,r},t_{i,s})$ are $(1,0)$ for rivets, $(0,1)$ for small-features, and $(0,0)$ for background. This decomposes the mutually exclusive labels into two one-vs-rest learning tasks, without a separate background prediction head.
+The rivet branch is trained against all non-rivet faces, including cosmetic-feature and background faces; the cosmetic-feature branch is trained against all faces outside the cosmetic feature class, including rivet and background faces. The binary target pairs $(t_{i,r},t_{i,s})$ are $(1,0)$ for rivets, $(0,1)$ for cosmetic features, and $(0,0)$ for background. This decomposes the mutually exclusive labels into two one-vs-rest learning tasks, without a separate background prediction head.
 
 Target/non-target imbalance motivates loss weighting \parencite{buda2018imbalance}. Each branch uses a weighted binary focal loss with $\gamma=2.0$ to reduce the contribution of well-classified negative faces \parencite{lin2017focal}. Both branches are jointly optimised on the same complete-aircraft graphs, with objective $\mathcal{L}=(\mathcal{L}_r+\mathcal{L}_s)/2$, where each $\mathcal{L}_k$ is the mean weighted focal loss for that branch over the supervised faces. Their learned parameters remain separate; the threshold decision is not part of the training loss.
 
@@ -521,7 +590,7 @@ At inference, each branch independently tests whether a face belongs to its targ
 \hat{y}_i =
 \begin{cases}
 \textit{rivet}, & p_{r,i} \geq \tau_r, \\
-\textit{small-feature}, & p_{r,i} < \tau_r \ \text{and} \ p_{s,i} \geq \tau_s, \\
+\textit{cosmetic feature}, & p_{r,i} < \tau_r \ \text{and} \ p_{s,i} \geq \tau_s, \\
 \textit{background}, & \text{otherwise},
 \end{cases}
 \label{eq:dual_head_decision}
@@ -529,35 +598,35 @@ At inference, each branch independently tests whether a face belongs to its targ
 \end{samepage}
 The stored inference contract fixes $\tau_r=0.9$ and $\tau_s=0.5$. Under this rule, a face is background when neither threshold is met and receives the corresponding target label when only one is met. When both are met, the preset rivet-precedence policy resolves the conflict; it is not a learned comparison of score magnitudes. This policy follows the rivet-first processing order in Section~\ref{sec:geometry_protocol}, rather than asserting that it is optimal for every conflict. Applications requiring only two independent candidate sets could retain the branch detections without label resolution. Here, a single label is used to match the three-class annotations and face-level evaluation interface. Inference reuses the paired checkpoint's feature order, normalisation statistics, and thresholds. The branch scores and final label remain linked to the source face identifier for evaluation and staged CAD processing.
 
-\section{Feature-Processing and Training Protocol}\label{sec:processing_pipeline}
+\section{CAD processing and experimental setup}\label{sec:processing_pipeline}
 
 \subsection{Conservative candidate filtering}\label{sec:risk_filtering}
 
-Conservative post-processing examines only faces predicted as targets and returns a rejected candidate to \textit{background}; it never promotes a background prediction. The rivet guard rejects a predicted rivet when its relative face area exceeds $5\times10^{-6}$. The small-feature guard rejects specified wing or shell topologies computed from face geometry and local adjacency; for the original-model small-feature stage, an exterior-visibility check also rejects a candidate when none of its sampled face points has an unblocked ray along any of the six Cartesian directions. The reported face-level recognition labels additionally undergo a planar-patch rivet check and a small-feature screening pass, while the small-feature-only processing route uses a separate topology check. These checks define the reported labels and processing candidates, but do not measure operation success.
+Conservative post-processing examines only faces predicted as targets and returns a rejected candidate to \textit{background}; it never promotes a background prediction. The rivet guard rejects a predicted rivet when its relative face area exceeds $5\times10^{-6}$. The cosmetic-feature guard rejects specified wing or shell topologies computed from face geometry and local adjacency; for the original-model cosmetic-feature stage, an exterior-visibility check also rejects a candidate when none of its sampled face points has an unblocked ray along any of the six Cartesian directions. The reported face-level recognition labels additionally undergo a planar-patch rivet check and a cosmetic-feature screening pass, while the cosmetic-feature-only processing route uses a separate topology check. These checks define the reported labels and processing candidates, but do not measure operation success.
 
 \subsection{Staged removal, reconstruction, and validation}\label{sec:geometry_protocol}
 
 Each retained candidate carries the face identifier of the B-Rep state on which it was predicted; the processing stage uses this reference to locate the corresponding face for removal or local reconstruction. Prediction accuracy, operation success, and suitability for a particular engineering analysis nevertheless require separate checks; acceptance for simulation depends on the task, loads, boundary conditions, and regions that must remain intact \parencite{thakur2009cad_simplification,antolin2024analysis_aware_defeaturing}.
 
-Removal or reconstruction changes topology and face enumeration. The workflow therefore first removes rivet candidates, re-extracts faces from the intermediate model, and then predicts small-features on that model. The second-stage predictions refer to this intermediate model rather than to the original model.
+Removal or reconstruction changes topology and face enumeration. The workflow therefore first removes rivet candidates, re-extracts faces from the intermediate model, and then predicts cosmetic features on that model. The second-stage predictions refer to this intermediate model rather than to the original model.
+
+Figure~\ref{fig:geometry_protocol} illustrates the staged workflow on the Gulfstream G280 model. The horizontal sequence provides whole-aircraft context, while the enlarged local views show the selected feature regions at matched camera settings. The selected cosmetic-feature regions remain visible after the rivet stage and are addressed in the subsequent cosmetic-feature stage. For a second-stage cosmetic-feature candidate, the local host relation determines whether to remove, reconstruct, or repair the affected region.
 
 \begin{figure}[!ht]
 \centering
 \input{figures/fig_g280_horizontal_processing.tex}
-\caption{Staged feature processing on the Gulfstream G280. (a) Matched top views follow the original B-Rep (A), the intermediate B-Rep after rivet removal (B), and the B-Rep after small-feature processing (C). Faces and the graph are re-extracted from B before small-feature recognition. (b) Paired views compare three numbered rivet regions in A and B. (c) Side views track the same two small-feature regions across A--C. Cameras are fixed within each comparison. Blue and orange identify displayed rivet and small-feature regions, respectively; selected local views do not establish complete removal.}\label{fig:geometry_protocol}
+\caption{Staged feature processing on the Gulfstream G280. (A) Matched top views follow the original B-Rep (model A), the intermediate B-Rep after rivet removal (model B), and the B-Rep after cosmetic-feature processing (model C). Faces and the graph are re-extracted from model B before cosmetic-feature recognition. (B) Paired views compare three numbered rivet regions in models A and B. (C) Side views track the same two cosmetic-feature regions across models A--C. Cameras are fixed within each comparison. Blue and orange identify displayed rivet and cosmetic-feature regions, respectively; selected local views do not establish complete removal.}\label{fig:geometry_protocol}
 \end{figure}
-
-Figure~\ref{fig:geometry_protocol} illustrates the staged workflow on the Gulfstream G280 model. The horizontal sequence provides whole-aircraft context, while the enlarged local views show the selected feature regions at matched camera settings. The selected small-feature regions remain visible after the rivet stage and are addressed in the subsequent small-feature stage. For a second-stage small-feature candidate, the local host relation determines whether to remove, reconstruct, or repair the affected region.
 
 For each original--simplified pair, surface meshes were generated using OpenCASCADE 7.9.0 with identical relative linear and angular deflections of 0.0005 and 0.5 rad, respectively \parencite{occt_mesh_2026}. Node and triangle counts were recorded, and meshing time was reported as the median of five runs per model.
 
 The paired models support comparison of CAD-face and surface-mesh scale under fixed meshing controls. Removal completeness, reconstruction success, geometric fidelity, finite-element accuracy, and physical-response equivalence require additional evidence.
 
-\subsection{Data Annotation and Training Protocol}\label{sec:data_training}
+\subsection{Data annotation and training protocol}\label{sec:data_training}
 
 \subsubsection{Annotation contract and model-level partitioning}\label{sec:data_partition}
 
-Annotation records associate each original face with its source category. Rivet faces receive the \textit{rivet} label; the remaining annotated target faces receive the \textit{small-feature} label; and all other faces are labelled \textit{background}. This association allows each label to be checked against the corresponding B-Rep model before training or evaluation.
+Annotation records associate each original face with its source category. Rivet faces receive the \textit{rivet} label; the remaining annotated target faces receive the \textit{cosmetic feature} label; and all other faces are labelled \textit{background}. This association allows each label to be checked against the corresponding B-Rep model before training or evaluation.
 
 All faces from an aircraft remain in one partition, avoiding overlap of same-aircraft faces and local adjacency relations \parencite{kapoor2023leakage}. Model parameters and normalisation statistics are computed from the training partition. The full test set is processed with the stored feature order, statistics, class mapping, and decision thresholds; it is not used to update the reported checkpoint. Table~\ref{tab:data_composition} gives the training and test composition used for the reported face-level metrics.
 
@@ -567,7 +636,7 @@ All faces from an aircraft remain in one partition, avoiding overlap of same-air
 \caption{Face-level composition of the training and test partitions. Percentages are calculated within each row.}\label{tab:data_composition}
 \begin{tabular*}{\linewidth}{@{\extracolsep{\fill}}lrrrr@{}}
 \toprule
-Data role & Total B-Rep faces & Background & Rivet & Small-feature \\
+Data role & Total B-Rep faces & Background & Rivet & Cosmetic feature \\
 \midrule
 Training & 48,095 & 44,716 (92.97\%) & 653 (1.36\%) & 2,726 (5.67\%) \\
 Test & 34,162 & 33,073 (96.81\%) & 346 (1.01\%) & 743 (2.18\%) \\
@@ -601,7 +670,7 @@ Surface type & Categorical B-Rep surface representation & 8 \\
 \end{tabularx}
 \end{table}
 
-\section{Experimental Results}\label{sec:results}
+\section{Experimental results}\label{sec:results}
 
 This section reports face-level recognition results, CAD-processing outputs, and surface-mesh comparisons before and after simplification. Recognition results use aligned prediction and truth records. The CAD table reports processing inputs at their respective stages; candidate outputs and visual examples do not measure operation-level completeness.
 
@@ -613,7 +682,7 @@ The fixed checkpoint was evaluated on all 34,162 faces in the full test set. Pre
 
 For each class, precision ($P$) is the proportion of predicted faces in that class that are correct, whereas recall ($R$) is the proportion of true faces in that class that are recovered. The F1 score is their harmonic mean, $F1 = 2PR/(P+R)$, and therefore summarises the balance between false candidates and missed target faces.
 
-The full-test results give F1 scores of 0.9312 for rivets and 0.8091 for small-features (Table~\ref{tab:e1_class_metrics}). Overall accuracy was 0.9900 and background F1 was 0.9949. Rivet precision and recall were 0.9436 and 0.9191, respectively. Small-feature precision and recall were 0.7841 and 0.8358, respectively. These class-level measures complement the background-dominated overall accuracy and show the remaining trade-off between missed target faces and false candidates.
+The full-test results give F1 scores of 0.9312 for rivets and 0.8091 for cosmetic features (Table~\ref{tab:e1_class_metrics}). Overall accuracy was 0.9900 and background F1 was 0.9949. Rivet precision and recall were 0.9436 and 0.9191, respectively. Cosmetic feature precision and recall were 0.7841 and 0.8358, respectively. These class-level measures complement the background-dominated overall accuracy and show the remaining trade-off between missed target faces and false candidates.
 
 \begin{table}[!ht]
 \centering
@@ -625,14 +694,14 @@ Class & Support & Precision & Recall & F1 & IoU \\
 \midrule
 Background & 33,073 & 0.9955 & 0.9943 & 0.9949 & 0.9898 \\
 Rivet & 346 & 0.9436 & 0.9191 & 0.9312 & 0.8712 \\
-Small-feature & 743 & 0.7841 & 0.8358 & 0.8091 & 0.6794 \\
+Cosmetic feature & 743 & 0.7841 & 0.8358 & 0.8091 & 0.6794 \\
 \bottomrule
 \end{tabular*}
 \end{table}
 
 \subsubsection{Comparison with a unified three-class classifier}\label{sec:architecture_comparison}
 
-To test whether the two class-specific branches can be replaced by one unified classifier, we trained a three-class softmax GNN using the same 17-aircraft training partition, 48 node attributes, six edge attributes, four graph-convolution layers, 50 epochs, batch size 8, seed 123, and fixed nine-aircraft test partition as the reported system. Its predictions and the retained dual-branch predictions were evaluated after the documented planar-patch rivet guard and small-feature screening. Table~\ref{tab:architecture_comparison} compares the resulting face-level metrics.
+To test whether the two class-specific branches can be replaced by one unified classifier, we trained a three-class softmax GNN using the same 17-aircraft training partition, 48 node attributes, six edge attributes, four graph-convolution layers, 50 epochs, batch size 8, seed 123, and fixed nine-aircraft test partition as the reported system. Its predictions and the retained dual-branch predictions were evaluated after the documented planar-patch rivet guard and cosmetic-feature screening. Table~\ref{tab:architecture_comparison} compares the resulting face-level metrics.
 
 \begin{table}[!ht]
 \centering
@@ -641,7 +710,7 @@ To test whether the two class-specific branches can be replaced by one unified c
 \setlength{\tabcolsep}{4pt}
 \begin{tabular*}{\linewidth}{@{\extracolsep{\fill}}lrrrrr@{}}
 \toprule
-Model & \shortstack[r]{Background\\F1} & Rivet F1 & \shortstack[r]{Small-feature\\F1} & mIoU & \shortstack[r]{Background\\FP} \\
+Model & \shortstack[r]{Background\\F1} & Rivet F1 & \shortstack[r]{Cosmetic feature\\F1} & mIoU & \shortstack[r]{Background\\FP} \\
 \midrule
 Class-specific dual branches & 0.9949 & 0.9312 & 0.8091 & 0.8468 & 190 \\
 Unified three-class classifier & 0.9168 & 0.1312 & 0.4589 & 0.4048 & 4,762 \\
@@ -649,7 +718,7 @@ Unified three-class classifier & 0.9168 & 0.1312 & 0.4589 & 0.4048 & 4,762 \\
 \end{tabular*}
 \end{table}
 
-The dual-branch system achieves higher rivet F1 (0.9312 versus 0.1312) and small-feature F1 (0.8091 versus 0.4589) than the unified classifier, with fewer background false positives (190 versus 4,762). These results provide empirical support for retaining the class-specific branches and their fixed decision rule for the reported aircraft B-Rep task. The comparison evaluates the two implemented systems, which differ in network structure, loss formulation, and decision rules. It therefore does not isolate binary decomposition as the cause of the improvement or establish superiority across other training settings; the evidence is limited to the reported single-seed experiment and fixed test set.
+The dual-branch system achieves higher rivet F1 (0.9312 versus 0.1312) and cosmetic-feature F1 (0.8091 versus 0.4589) than the unified classifier, with fewer background false positives (190 versus 4,762). These results provide empirical support for retaining the class-specific branches and their fixed decision rule for the reported aircraft B-Rep task. The comparison evaluates the two implemented systems, which differ in network structure, loss formulation, and decision rules. It therefore does not isolate binary decomposition as the cause of the improvement or establish superiority across other training settings; the evidence is limited to the reported single-seed experiment and fixed test set.
 
 Across the full test set, background false positives are unevenly distributed (Table~\ref{tab:e1_risk}). Air Plane Idea A accounts for 82 of the 190 background faces predicted as targets, whereas the 109 standard E-1 model has six. Count alone does not capture geometric risk: Airbus has the largest relative area among the reported background false positives ($8.80831\times10^{-2}$). Reporting both count and area therefore distinguishes frequent local mistakes from an isolated error on a relatively larger background face.
 
@@ -674,7 +743,7 @@ Gulfstream G280 v17 & 668 & 0.9820 & 0 & 8 & 8 & $2.67640\times10^{-3}$ \\
 \end{tabular*}
 \end{table}
 
-The pooled class scores do not show how many target faces were present or missed in each aircraft. Table~\ref{tab:e1_per_aircraft_targets} reports these quantities and the corresponding within-aircraft F1 scores from the same prediction--truth pairing used above. A missed target face is a true rivet or small-feature face assigned to another class.
+The pooled class scores do not show how many target faces were present or missed in each aircraft. Table~\ref{tab:e1_per_aircraft_targets} reports these quantities and the corresponding within-aircraft F1 scores from the same prediction--truth pairing used above. A missed target face is a true rivet or cosmetic-feature face assigned to another class.
 
 \begin{table}[!ht]
 \centering
@@ -682,7 +751,7 @@ The pooled class scores do not show how many target faces were present or missed
 \caption{Per-aircraft target-class results in the full test set. Support is the number of true faces in the class; missed is the number assigned to another class. The dash indicates that Air Plane Idea A has no true rivet faces, so a rivet F1 is not reported for that aircraft.}\label{tab:e1_per_aircraft_targets}
 \begin{tabular*}{\linewidth}{@{\extracolsep{\fill}}lrrrrrr@{}}
 \toprule
-\multirow[c]{2}{*}[-0.5ex]{Model} & \multicolumn{3}{c}{Rivet} & \multicolumn{3}{c}{Small-feature} \\
+\multirow[c]{2}{*}[-0.5ex]{Model} & \multicolumn{3}{c}{Rivet} & \multicolumn{3}{c}{Cosmetic feature} \\
 \cmidrule(lr){2-4}\cmidrule(lr){5-7}
  & Support & Missed & F1 & Support & Missed & F1 \\
 \midrule
@@ -703,13 +772,13 @@ Full test set & 346 & 28 & 0.9312 & 743 & 122 & 0.8091 \\
 
 \FloatBarrier
 
-The target-class results vary by aircraft. Airbus accounts for 103 of the 122 missed small-feature faces, whereas the 747-400 has six misses among 256 true small-feature faces. The 109 standard E-1 has only one true small-feature face, so its F1 score of 0.2500 is especially sensitive to a few false predictions. Air Plane Idea A contains 27,366 of the 34,162 test faces but no true rivet faces. The pooled scores therefore describe this fixed nine-aircraft set and should not be read as uniformly stable performance on every aircraft or class.
+The target-class results vary by aircraft. Airbus accounts for 103 of the 122 missed cosmetic-feature faces, whereas the 747-400 has six misses among 256 true cosmetic-feature faces. The 109 standard E-1 has only one true cosmetic-feature face, so its F1 score of 0.2500 is especially sensitive to a few false predictions. Air Plane Idea A contains 27,366 of the 34,162 test faces but no true rivet faces. The pooled scores therefore describe this fixed nine-aircraft set and should not be read as uniformly stable performance on every aircraft or class.
 
 \subsection{CAD-processing outputs}\label{sec:e2_results}
 
 \subsubsection{Feature removal and reconstruction}
 
-The staged protocol in Section~\ref{sec:geometry_protocol} processes rivet predictions before extracting features again from the intermediate model for small-feature processing. Re-extraction is necessary because the second-stage predictions refer to the intermediate model rather than to the original model. Table~\ref{tab:e2_results} records candidate inputs for the processing cases. Its rivet counts precede the additional planar-patch check used for the face-level recognition results; its small-feature counts refer to the intermediate models. Air Plane Idea A follows a small-feature-only route without rivet removal.
+The staged protocol in Section~\ref{sec:geometry_protocol} processes rivet predictions before extracting features again from the intermediate model for cosmetic-feature processing. Re-extraction is necessary because the second-stage predictions refer to the intermediate model rather than to the original model. Table~\ref{tab:e2_results} records candidate inputs for the processing cases. Its rivet counts precede the additional planar-patch check used for the face-level recognition results; its cosmetic-feature counts refer to the intermediate models. Air Plane Idea A follows a cosmetic-feature-only route without rivet removal.
 
 Candidate counts vary substantially because a physical feature may be represented by multiple B-Rep faces and because the source models have different face partitions. The table consequently reports operation inputs rather than feature instances or a removal success rate.
 
@@ -717,10 +786,10 @@ Candidate counts vary substantially because a physical feature may be represente
 \centering
 \footnotesize
 \captionsetup{justification=raggedright,singlelinecheck=false}
-\caption{Predicted-face outputs supplied to CAD processing. The dash for Air Plane Idea A denotes that rivet removal was not part of its small-feature-only processing route; it is not a rivet-classification result.}\label{tab:e2_results}
+\caption{Predicted-face outputs supplied to CAD processing. The dash for Air Plane Idea A denotes that rivet removal was not part of its cosmetic-feature-only processing route; it is not a rivet-classification result.}\label{tab:e2_results}
 \begin{tabular*}{\linewidth}{@{\extracolsep{\fill}}lrr@{}}
 \toprule
-Test object & Predicted rivet faces & Predicted small-feature faces \\
+Test object & Predicted rivet faces & Predicted cosmetic-feature faces \\
 \midrule
 109 standard E-1 & 26 & 27 \\
 DC-10 & 26 & 110 \\
@@ -735,7 +804,7 @@ Gulfstream G280 v17 & 60 & 50 \\
 \end{tabular*}
 \end{table}
 
-The processing outputs can be inspected on the associated original or intermediate B-Rep model. Figure~\ref{fig:e2_rivet_examples} compares the rivet stage for Airbus (left) and Cessna Citation 2 (right), both from the nine-aircraft test set, using whole-aircraft views and three local comparisons per model. Figures~\ref{fig:e2_window_examples} and~\ref{fig:e2_window_cessna} compare DC-10 and Cessna Citation 2 before and after small-feature processing. Figure~\ref{fig:e2_decal_109} compares small-feature regions on the 109 standard E-1 and Airplane body models. Each before/after pair uses the same orthographic camera, centre and scale. These visual comparisons do not establish operation-level completeness.
+The processing outputs can be inspected on the associated original or intermediate B-Rep model. Figure~\ref{fig:e2_rivet_examples} compares the rivet stage for Airbus (left) and Cessna Citation 2 (right), both from the nine-aircraft test set, using whole-aircraft views and three local comparisons per model. Figures~\ref{fig:e2_window_examples} and~\ref{fig:e2_window_cessna} compare DC-10 and Cessna Citation 2 before and after cosmetic-feature processing. Figure~\ref{fig:e2_decal_109} compares cosmetic-feature regions on the 109 standard E-1 and Airplane body models. Each before/after pair uses the same orthographic camera, centre and scale. These visual comparisons do not establish operation-level completeness.
 
 \begin{figure}[!htp]
 \centering
@@ -745,26 +814,26 @@ The processing outputs can be inspected on the associated original or intermedia
 \begin{minipage}[t]{.49\linewidth}
 \centering\input{figures/fig7_cessna_rivet_example.tex}
 \end{minipage}
-\caption{Rivet-stage comparisons for (a) Airbus and (b) Cessna Citation 2 from the nine-aircraft test set. Within each panel, the upper row shows the original B-Rep and the lower row shows the archived model after rivet processing. The whole-aircraft views and numbered local views 1--3 use matched before/after cameras. Blue marks rivet faces and orange marks small-feature faces in the input models; the selected local views do not establish complete removal.}\label{fig:e2_rivet_examples}
+\caption{Rivet-stage comparisons for (A) Airbus and (B) Cessna Citation 2 from the nine-aircraft test set. Within each panel, the upper row shows the original B-Rep and the lower row shows the archived model after rivet processing. The whole-aircraft views and numbered local views 1--3 use matched before/after cameras. Blue marks rivet faces and orange marks cosmetic-feature faces in the input models; the selected local views do not establish complete removal.}\label{fig:e2_rivet_examples}
 \end{figure}
 
 \begin{figure}[!htp]
 \centering
 \captionsetup{font=small,skip=3pt}
 \input{figures/fig9_dc10_window_comparison.tex}
-\caption{Small-feature processing for DC-10: (a) original B-Rep and (b) archived model after processing. Orange highlights small-feature regions in the input. Both views share the same side-view camera, centre and scale; genuine face boundaries remain visible.}\label{fig:e2_window_examples}
+\caption{Cosmetic-feature processing for DC-10: (A) original B-Rep and (B) archived model after processing. Orange highlights cosmetic-feature regions in the input. Both views share the same side-view camera, centre and scale; genuine face boundaries remain visible.}\label{fig:e2_window_examples}
 \end{figure}
 \begin{figure}[!htp]
 \centering
 \captionsetup{font=small,skip=3pt}
 \input{figures/fig10_cessna_window_comparison.tex}
-\caption{Small-feature processing for Cessna Citation 2: (a) original B-Rep and (b) archived model after processing. Orange highlights input small-feature regions. The paired side views use identical camera settings and retain genuine face boundaries.}\label{fig:e2_window_cessna}
+\caption{Cosmetic-feature processing for Cessna Citation 2: (A) original B-Rep and (B) archived model after processing. Orange highlights input cosmetic-feature regions. The paired side views use identical camera settings and retain genuine face boundaries.}\label{fig:e2_window_cessna}
 \end{figure}
 \begin{figure}[!htp]
 \centering
 \captionsetup{font=small,skip=3pt}
 \input{figures/fig11_109_decal_comparison.tex}
-\caption{CAD comparisons for Airplane body (upper) and 109 standard E-1 (lower): (a,c) original and (b,d) processed B-Reps. Orange marks the original small-feature regions. Each pair uses identical orthographic camera settings and retains face boundaries. The processed Airplane body B-Rep is invalid and shown descriptively.}\label{fig:e2_decal_109}
+\caption{CAD comparisons for Airplane body (upper) and 109 standard E-1 (lower): (A, C) original and (B, D) processed B-Reps. Orange marks the original cosmetic-feature regions. Each pair uses identical orthographic camera settings and retains face boundaries. The processed Airplane body B-Rep is invalid and shown descriptively.}\label{fig:e2_decal_109}
 \end{figure}
 \FloatBarrier
 
@@ -772,13 +841,14 @@ The processing outputs can be inspected on the associated original or intermedia
 
 The original--simplified pairs were meshed with the OpenCASCADE settings in Section~\ref{sec:geometry_protocol}. Each endpoint was meshed five times, and the median generation time was used for the within-pair comparison. Fixed settings make these measurements comparable within a pair; they do not establish suitability for a particular analysis task \parencite{thakur2009cad_simplification}.
 
-Figure~\ref{fig:e3_mesh_schematic} compares original surface meshes, processed B-Reps and meshes generated from the processed models for AULIRA 2, DC-10, Airbus, Gulfstream G280 v17 and Airplane body. These examples span triangle-count reductions from 15.31\% to 48.66\% in Table~\ref{tab:e3_mesh}. Each model uses matched side views and includes an enlarged view of the same selected fuselage region to show local changes around small-features. Gulfstream G280 v17 also includes a second enlarged row showing the small-feature region on the tail. The displayed geometry endpoints and complete-model triangle counts agree with Table~\ref{tab:e3_mesh}. The processed Airplane body endpoint fails the B-Rep validity check and is included only as a descriptive surface-mesh comparison.
+Figure~\ref{fig:e3_mesh_schematic} compares original surface meshes, processed B-Reps and meshes generated from the processed models for AULIRA 2, DC-10, Airbus, Gulfstream G280 v17 and Airplane body. These examples span triangle-count reductions from 15.31\% to 48.66\% in Table~\ref{tab:e3_mesh}. Each model uses matched side views and includes an enlarged view of the same selected fuselage region to show local changes around cosmetic features. Gulfstream G280 v17 also includes a second enlarged row showing the cosmetic-feature region on the tail. The displayed geometry endpoints and complete-model triangle counts agree with Table~\ref{tab:e3_mesh}. The processed Airplane body endpoint fails the B-Rep validity check and is included only as a descriptive surface-mesh comparison.
 
 \begin{figure}[p]
 \centering
-\input{figures/fig_mesh_five_models.tex}
+\singlespacing
+\resizebox{0.95\linewidth}{!}{\input{figures/fig_mesh_five_models.tex}}
 \captionsetup{font={footnotesize,stretch=1},skip=3pt}
-\caption{Surface meshes for five pairs in Table~\ref{tab:e3_mesh}. Columns show original mesh, processed B-Rep and processed mesh. Solid boxes mark fuselage small-feature regions; dashed boxes mark the G280 tail region. Labels give complete-model triangle counts and reductions under identical OpenCASCADE controls. The processed Airplane body B-Rep is invalid; that pair is descriptive.}
+\caption{Surface meshes for five pairs in Table~\ref{tab:e3_mesh}: (A) AULIRA 2, (B) DC-10, (C) Airbus, (D) Gulfstream G280 v17 and (E) Airplane body. Columns show original mesh, processed B-Rep and processed mesh. Solid boxes mark fuselage cosmetic-feature regions; dashed boxes mark the G280 tail region. Labels give complete-model triangle counts and reductions under identical OpenCASCADE controls. The processed Airplane body B-Rep is invalid; that pair is descriptive.}
 \label{fig:e3_mesh_schematic}
 \end{figure}
 
@@ -837,20 +907,13 @@ Air Plane Idea A & 424,892 & 3.5458 & 3.8216 & 7.22 \\
 
 At the matched triangle targets, the QEM outputs contained the target count or one fewer triangle because edge collapse is discrete. The final-meshing component after B-Rep processing was lower than the original-meshing-plus-QEM-kernel component for all nine pairs, by 7.22\%--60.05\% (median 48.08\%). This result is limited to the stated timing components. It does not compare end-to-end processing time, geometric fidelity, or mesh quality between the two routes.
 
-\subsection{Discussion and evidence boundaries}\label{sec:experimental_boundaries}
-
-The face-level evaluation shows that the proposed method can recognise rivet and small-feature faces in the reported complete-aircraft B-Rep test set, with F1 scores of 0.9312 and 0.8091, respectively. The staged-processing cases supply candidate inputs, and the nine original--simplified pairs show lower surface-triangle counts and median mesh-generation times under the tested settings. These records do not quantify how many individual CAD operations completed successfully.
-
-The predictions should nevertheless be reviewed before geometric operations are accepted. Table~\ref{tab:e1_per_aircraft_targets} shows that target-class support and missed faces differ substantially across the nine aircraft, particularly for small-features; pooled F1 does not imply uniformly stable performance by aircraft. Residual background false positives also vary across models, and the small-feature branch has higher recall than precision, so some background faces remain among the candidate small-features. Candidate counts are operation inputs rather than feature-instance counts or completed removals. Because rivet processing changes face enumeration, the model is re-extracted before the second-stage prediction, which refers to the intermediate model rather than the original model.
-
-Under fixed OpenCASCADE controls, the pairs reported in Table~\ref{tab:e3_mesh} have lower surface-triangle counts and median meshing times after simplification. The changes in triangle count and time are not proportional, indicating that triangle count alone does not determine meshing time. At matched triangle targets, Table~\ref{tab:qem_matched_time} also shows lower final-meshing components than original meshing plus the QEM kernel, under the explicitly limited timing accounting. These results describe CAD-face and mesh-scale changes under the stated settings; they do not establish end-to-end timing superiority, geometric fidelity, B-Rep equivalence, or preservation of analysis response.
-
 \section{Conclusions}
-This study developed a framework for face-level identification of rivet and small-feature faces in B-Rep models of complete aircraft. Each face and its shared-boundary relations are encoded as a graph, and two class-specific GNNs produce the three-class output. The predicted faces can be located on the corresponding original or intermediate B-Rep model for subsequent processing.
+This study developed a framework for face-level identification of rivet and cosmetic-feature faces in B-Rep models of complete aircraft. Each face and its shared-boundary relations are encoded as a graph, and two class-specific GNNs produce the three-class output. The predicted faces can be located on the corresponding original or intermediate B-Rep model for subsequent processing.
 
-On the full test set of 34,162 faces, the framework achieved F1 scores of 0.9312 for rivets and 0.8091 for small-features. Across the reported original--simplified pairs, surface-triangle counts were 0.57\%--48.66\% lower and median mesh-generation times were 2.49\%--58.29\% lower under the same meshing settings. At matched triangle targets, final meshing after B-Rep processing was 7.22\%--60.05\% lower than the separately timed original-meshing-plus-QEM-kernel component. The reported predictions provide locatable CAD-processing candidates, and the paired results demonstrate lower mesh complexity and shorter meshing times for the tested models. These outcomes support reviewable CAD and mesh preparation; they do not quantify the effect of individual predictions or operations. Solver runtime and engineering response were not evaluated.
+{\widowpenalty=10000
+On the full test set of 34,162 faces, the framework achieved F1 scores of 0.9312 for rivets and 0.8091 for cosmetic features. Under fixed meshing settings, original--simplified pairs showed 0.57\%--48.66\% fewer surface triangles and 2.49\%--58.29\% shorter median mesh-generation times. These results support targeted CAD simplification and mesh preparation for numerical simulation.\par}
 
-The present evidence does not establish transferability to other CAD sources, complete feature-removal success, end-to-end timing superiority over QEM, geometric fidelity, or equivalence for a downstream CAE task. Candidate-face counts are not operation success rates. Future work should evaluate external CAD sources, record the outcome of each removal and reconstruction attempt, compare both routes using matched quality criteria and complete timing, isolate component effects through repeated controlled experiments, and assess task-specific CAE responses under defined loads and boundary conditions. These extensions are required to determine when the geometric changes are acceptable for a particular analysis purpose.
+Three limitations remain: transferability to other CAD sources, incomplete validation of CAD operations and geometric fidelity, and untested downstream CAE performance. Future work should evaluate independent datasets, quantify CAD-operation outcomes and compare simplification routes at matched quality with complete timing, and assess simulation accuracy and computational cost under controlled conditions.
 
 %--- Mandatory Section ---%
 \section*{Author contributions}
