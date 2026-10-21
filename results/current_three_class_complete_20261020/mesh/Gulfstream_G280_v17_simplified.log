@@ -1,0 +1,26 @@
+{
+  "input_step": "D:\\projects\\gjy_byproject\\results\\current_three_class_complete_20261020\\cad\\Gulfstream_G280_v17\\final.step",
+  "bounding_box_diagonal": 437.65636011267725,
+  "relative_deflection": 0.0005,
+  "linear_deflection": 0.21882818005633864,
+  "angular_deflection_rad": 0.5,
+  "face_count": 271,
+  "mesh_node_count": 8686,
+  "mesh_triangle_count": 11059,
+  "mesh_quality": {
+    "degenerate_triangle_count": 2,
+    "minimum_angle_deg": 8.624804302325207e-05,
+    "minimum_angle_p05_deg": 1.3365611534891366,
+    "maximum_aspect_ratio": 383517.853141434,
+    "aspect_ratio_p95": 28.070729185523252
+  },
+  "mesh_repeats": 5,
+  "mesh_elapsed_seconds_samples": [
+    0.08250099990982562,
+    0.08738979999907315,
+    0.08849130000453442,
+    0.09232699999120086,
+    0.09127770003397018
+  ],
+  "mesh_elapsed_seconds_median": 0.08849130000453442
+}

@@ -1,0 +1,26 @@
+{
+  "input_step": "D:\\projects\\gjy_byproject\\results\\current_three_class_complete_20261020\\cad\\Airbus\\final.step",
+  "bounding_box_diagonal": 101.2323022983853,
+  "relative_deflection": 0.0005,
+  "linear_deflection": 0.050616151149192656,
+  "angular_deflection_rad": 0.5,
+  "face_count": 673,
+  "mesh_node_count": 43000,
+  "mesh_triangle_count": 63439,
+  "mesh_quality": {
+    "degenerate_triangle_count": 168,
+    "minimum_angle_deg": 0.019877687011441967,
+    "minimum_angle_p05_deg": 3.071638669023,
+    "maximum_aspect_ratio": 1673.8727358863862,
+    "aspect_ratio_p95": 11.450849021172328
+  },
+  "mesh_repeats": 5,
+  "mesh_elapsed_seconds_samples": [
+    0.22834370005875826,
+    0.23013869998976588,
+    0.22160230006556958,
+    0.238170399912633,
+    0.23499500006437302
+  ],
+  "mesh_elapsed_seconds_median": 0.23013869998976588
+}

@@ -1,0 +1,22 @@
+Rivet groups accepted: 8, rejected: 0
+BRep valid after defeaturing: yes
+Residual candidate faces: 4
+Residual components rejected by BRep validation: 0
+Boolean contact loops detected: 6
+Boolean contact loops filled: 0
+Residual rivet components removed: 4
+
+*******************************************************************
+******        Statistics on Transfer (Write)                 ******
+
+*******************************************************************
+******        Transfer Mode = 0  I.E.  As Is       ******
+******        Transferring Shape, ShapeType = 0                      ******
+** WorkSession : Sending all data
+ Step File Name : D:\projects\gjy_byproject\results\current_three_class_complete_20261020\cad\109-ww1-standart-e-1-aircraft_CATIA_STP_standart-e1\109-ww1-standart-e-1-aircraft_CATIA_STP_standart-e1_rivet_removed.step(176473 ents)  Write  Done
+Predicted rivet faces selected: 24
+Small connected faces selected: 26
+Input BRep valid: yes
+Output BRep valid: yes
+Face count: 1244 -> 992
+Repaired STEP: D:\projects\gjy_byproject\results\current_three_class_complete_20261020\cad\109-ww1-standart-e-1-aircraft_CATIA_STP_standart-e1\109-ww1-standart-e-1-aircraft_CATIA_STP_standart-e1_rivet_removed.step

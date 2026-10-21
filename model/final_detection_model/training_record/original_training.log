@@ -1,0 +1,48 @@
+distilled_frozen epoch=1/200 loss=2.421030 frozen=True
+distilled_frozen epoch=20/200 loss=0.059207 frozen=True
+distilled_frozen epoch=40/200 loss=0.056851 frozen=True
+distilled_frozen epoch=60/200 loss=0.054148 frozen=True
+distilled_frozen epoch=80/200 loss=0.053409 frozen=True
+distilled_frozen epoch=100/200 loss=0.053085 frozen=True
+distilled_frozen epoch=120/200 loss=0.052814 frozen=True
+distilled_frozen epoch=140/200 loss=0.052777 frozen=True
+distilled_frozen epoch=160/200 loss=0.052631 frozen=True
+distilled_frozen epoch=180/200 loss=0.052527 frozen=True
+distilled_frozen epoch=200/200 loss=0.052483 frozen=True
+Evaluate argmax: 109-ww1-standart-e-1-aircraft CATIA STP_standart-e1_wing_rivets_decals.step
+Evaluate argmax: 27- DC-10 SolidWorks stp igs_DC 10_wing_rivets.step
+Evaluate argmax: 87- 747-400 stp_beoing 747-400 v6_wing_rivets.stp
+Evaluate argmax: AULIRA 2_wing_rivets.step
+Evaluate argmax: Air Plane Idea A.step
+Evaluate argmax: Airbus_wing_rivets.step
+Evaluate argmax: Airplane body_wing_rivets.step
+Evaluate argmax: Cessna Citation 2_wing_rivets.step
+Evaluate argmax: Gulfstream G280 v17_wing_rivets.step
+         variant    stage  faces  accuracy  rivet_f1  surface_feature_f1  foreground_macro_f1  background_fp
+distilled_frozen      raw  34162  0.898981  0.189038            0.622344             0.405691           3154
+distilled_frozen screened  34162  0.987706  0.928144            0.753968             0.841056            211
+distilled_finetune epoch=1/200 loss=2.421030 frozen=True
+distilled_finetune epoch=20/200 loss=0.059207 frozen=True
+distilled_finetune epoch=40/200 loss=0.056849 frozen=True
+D:\Anaconda\envs\cad_graph_env\lib\site-packages\torch_geometric\utils\_scatter.py:91: UserWarning: The usage of `scatter(reduce='max')` can be accelerated via the 'torch-scatter' package, but it was not found
+  warnings.warn(
+distilled_finetune epoch=60/200 loss=0.054909 frozen=False
+distilled_finetune epoch=80/200 loss=0.054105 frozen=False
+distilled_finetune epoch=100/200 loss=0.053697 frozen=False
+distilled_finetune epoch=120/200 loss=0.053321 frozen=False
+distilled_finetune epoch=140/200 loss=0.053281 frozen=False
+distilled_finetune epoch=160/200 loss=0.052990 frozen=False
+distilled_finetune epoch=180/200 loss=0.052921 frozen=False
+distilled_finetune epoch=200/200 loss=0.052856 frozen=False
+Evaluate argmax: 109-ww1-standart-e-1-aircraft CATIA STP_standart-e1_wing_rivets_decals.step
+Evaluate argmax: 27- DC-10 SolidWorks stp igs_DC 10_wing_rivets.step
+Evaluate argmax: 87- 747-400 stp_beoing 747-400 v6_wing_rivets.stp
+Evaluate argmax: AULIRA 2_wing_rivets.step
+Evaluate argmax: Air Plane Idea A.step
+Evaluate argmax: Airbus_wing_rivets.step
+Evaluate argmax: Airplane body_wing_rivets.step
+Evaluate argmax: Cessna Citation 2_wing_rivets.step
+Evaluate argmax: Gulfstream G280 v17_wing_rivets.step
+           variant    stage  faces  accuracy  rivet_f1  surface_feature_f1  foreground_macro_f1  background_fp
+distilled_finetune      raw  34162  0.899977  0.189544            0.650472             0.420008           3149
+distilled_finetune screened  34162  0.988613  0.929746            0.777633             0.853690            209

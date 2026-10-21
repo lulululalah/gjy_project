@@ -1,0 +1,26 @@
+{
+  "input_step": "D:\\projects\\gjy_byproject\\results\\current_three_class_complete_20261020\\cad\\109-ww1-standart-e-1-aircraft_CATIA_STP_standart-e1\\final.step",
+  "bounding_box_diagonal": 6460.69662779423,
+  "relative_deflection": 0.0005,
+  "linear_deflection": 3.230348313897115,
+  "angular_deflection_rad": 0.5,
+  "face_count": 967,
+  "mesh_node_count": 45967,
+  "mesh_triangle_count": 57196,
+  "mesh_quality": {
+    "degenerate_triangle_count": 16,
+    "minimum_angle_deg": 0.004456304814438509,
+    "minimum_angle_p05_deg": 1.202452524239537,
+    "maximum_aspect_ratio": 8243.525872218004,
+    "aspect_ratio_p95": 30.466377381095963
+  },
+  "mesh_repeats": 5,
+  "mesh_elapsed_seconds_samples": [
+    0.27553089999128133,
+    0.2640968000050634,
+    0.2879028999013826,
+    0.2782728000311181,
+    0.3181881000055
+  ],
+  "mesh_elapsed_seconds_median": 0.2782728000311181
+}

@@ -1,0 +1,23 @@
+Embedded-window rebuild profile: aulira
+Window-host match distance: 16.1819
+Tail decal anchors: 0
+Free edges after window removal: 6
+Free edges before exterior skin rebuild: 6
+
+*******************************************************************
+******        Statistics on Transfer (Write)                 ******
+
+*******************************************************************
+******        Transfer Mode = 0  I.E.  As Is       ******
+******        Transferring Shape, ShapeType = 0                      ******
+** WorkSession : Sending all data
+ Step File Name : D:\projects\gjy_byproject\results\current_three_class_complete_20261020\cad\AULIRA_2\surface_candidate.step(16508 ents)  Write  Done
+Embedded-window host loops rebuilt: 20
+Narrow-mode host skin faces rebuilt: 0
+Residual window faces removed: 180
+Repeated main-skin window faces rebuilt: 0
+Full exterior skin faces rebuilt: 0
+BRep valid: yes
+Free edges: 6 -> 6
+Face count: 316 -> 136
+Embedded-window repair candidate: D:\projects\gjy_byproject\results\current_three_class_complete_20261020\cad\AULIRA_2\surface_candidate.step

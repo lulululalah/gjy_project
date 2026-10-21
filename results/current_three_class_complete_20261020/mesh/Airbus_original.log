@@ -1,0 +1,26 @@
+{
+  "input_step": "D:\\projects\\gjy_byproject\\data\\plane_model\\after_two\\Airbus_wing_rivets.step",
+  "bounding_box_diagonal": 101.2323022983853,
+  "relative_deflection": 0.0005,
+  "linear_deflection": 0.050616151149192656,
+  "angular_deflection_rad": 0.5,
+  "face_count": 1775,
+  "mesh_node_count": 69556,
+  "mesh_triangle_count": 95610,
+  "mesh_quality": {
+    "degenerate_triangle_count": 168,
+    "minimum_angle_deg": 0.0004393310463691499,
+    "minimum_angle_p05_deg": 1.9853989217003585,
+    "maximum_aspect_ratio": 75295.97080319827,
+    "aspect_ratio_p95": 17.69937223866193
+  },
+  "mesh_repeats": 5,
+  "mesh_elapsed_seconds_samples": [
+    0.524915200076066,
+    0.5456102000316605,
+    0.5994346999796107,
+    0.6161843999288976,
+    0.6136134000262246
+  ],
+  "mesh_elapsed_seconds_median": 0.5994346999796107
+}

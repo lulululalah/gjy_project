@@ -134,3 +134,16 @@ D:\Anaconda\envs\cad_graph_env\python.exe .\python\main.py view-edges `
 统一通过 `python/main.py <命令>` 使用当前流程；各功能选项用 `<命令> --help` 查看。源代码按 `recognition/`（模型、训练、预测和筛选）、`cad/`（几何处理和候选）、`geometry/`（几何/网格/QEM测量）、`tools/`（标注与选面）、`visualization/`（CAD与预测审查）分组。
 
 完整命令表见 [python/README.md](python/README.md)。2026-10-21整理记录及新旧输出对照见 `work/python_refactor_20261021/整理报告.md`。旧平铺入口已移除，不再维护两套脚本。
+
+## Git 备份与恢复
+
+当前模型权重、归一化与训练资产、九份评估原始 STEP、CAD 中间及最终 STEP、QEM 网格缓存和两份论文 PDF 使用 Git LFS 保存。克隆后先安装 Git LFS，再在项目根目录执行：
+
+```powershell
+git lfs install --local
+git lfs pull
+git lfs fsck
+D:\Anaconda\envs\cad_graph_env\python.exe python/main.py predict --verify-only
+```
+
+运行仍需按本文前述说明配置 OpenCASCADE、PyTorch 等依赖并构建 Detector。当前实验的正式日志随结果保存；`work/` 中的诊断、临时构建和备份不上传。模型清单中的哈希对应下载后的实际文件，不对应 Git LFS 指针文本。代码、模型配套记录和当前实验结果按原始字节保存，避免 Git 换行转换改变校验哈希。

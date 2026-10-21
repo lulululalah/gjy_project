@@ -1,0 +1,26 @@
+{
+  "input_step": "D:\\projects\\gjy_byproject\\results\\current_three_class_complete_20261020\\cad\\Cessna_Citation_2\\final.step",
+  "bounding_box_diagonal": 21513.056068586982,
+  "relative_deflection": 0.0005,
+  "linear_deflection": 10.756528034293492,
+  "angular_deflection_rad": 0.5,
+  "face_count": 234,
+  "mesh_node_count": 12008,
+  "mesh_triangle_count": 17347,
+  "mesh_quality": {
+    "degenerate_triangle_count": 8,
+    "minimum_angle_deg": 5.762814003798845e-05,
+    "minimum_angle_p05_deg": 1.2315767174306298,
+    "maximum_aspect_ratio": 573960.3719354738,
+    "aspect_ratio_p95": 30.959962201778563
+  },
+  "mesh_repeats": 5,
+  "mesh_elapsed_seconds_samples": [
+    0.06376109994016588,
+    0.07437339995522052,
+    0.07321519998367876,
+    0.07405819999985397,
+    0.07382440008223057
+  ],
+  "mesh_elapsed_seconds_median": 0.07382440008223057
+}

@@ -1,0 +1,23 @@
+Embedded-window rebuild profile: airplane-body
+Window-host match distance: 300
+Tail decal anchors: 0
+Free edges after window removal: 118
+Free edges before exterior skin rebuild: 118
+
+*******************************************************************
+******        Statistics on Transfer (Write)                 ******
+
+*******************************************************************
+******        Transfer Mode = 0  I.E.  As Is       ******
+******        Transferring Shape, ShapeType = 0                      ******
+** WorkSession : Sending all data
+ Step File Name : D:\projects\gjy_byproject\results\current_three_class_complete_20261020\cad\Airplane_body\surface_candidate.step(199518 ents)  Write  Done
+Embedded-window host loops rebuilt: 18
+Narrow-mode host skin faces rebuilt: 0
+Residual window faces removed: 130
+Repeated main-skin window faces rebuilt: 0
+Full exterior skin faces rebuilt: 3
+BRep valid: yes
+Free edges: 18 -> 127
+Face count: 650 -> 450
+Embedded-window repair candidate: D:\projects\gjy_byproject\results\current_three_class_complete_20261020\cad\Airplane_body\surface_candidate.step

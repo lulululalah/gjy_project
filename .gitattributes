@@ -1,0 +1,14 @@
+python/** -text whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol
+model/final_detection_model/** -text whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol
+results/current_three_class_complete_20261020/** -text whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol
+data/plane_model/after_two/*.step filter=lfs diff=lfs merge=lfs -text
+data/plane_model/after_two/*.STEP filter=lfs diff=lfs merge=lfs -text
+data/plane_model/after_two/*.stp filter=lfs diff=lfs merge=lfs -text
+model/final_detection_model/*.pth filter=lfs diff=lfs merge=lfs -text
+model/final_detection_model/*.npz filter=lfs diff=lfs merge=lfs -text
+model/final_detection_model/training_assets/*.pth filter=lfs diff=lfs merge=lfs -text
+model/final_detection_model/training_assets/*.npz filter=lfs diff=lfs merge=lfs -text
+model/final_detection_model/training_record/*.npz filter=lfs diff=lfs merge=lfs -text
+paper/manuscript/*.pdf filter=lfs diff=lfs merge=lfs -text
+results/current_three_class_complete_20261020/**/*.step filter=lfs diff=lfs merge=lfs -text
+results/current_three_class_complete_20261020/**/*.npz filter=lfs diff=lfs merge=lfs -text

@@ -1,0 +1,20 @@
+
+*******************************************************************
+******        Statistics on Transfer (Write)                 ******
+
+*******************************************************************
+******        Transfer Mode = 0  I.E.  As Is       ******
+******        Transferring Shape, ShapeType = 0                      ******
+** WorkSession : Sending all data
+ Step File Name : D:\projects\gjy_byproject\results\current_three_class_complete_20261020\cad\27-_DC-10_SolidWorks_stp_igs_DC_10\surface_candidate.step(544098 ents)  Write  Done
+Split-window predicted faces selected: 119
+Single-boundary window faces eligible for removal: 113
+Split-window host loops rebuilt: 56
+Remaining groups removed directly: 1
+Remaining groups removed by scoped defeaturing: 0
+Window detour edges replaced by vertex connections: 30
+Predicted faces still present: 4
+Output BRep valid: yes
+Free edges: 8 -> 8
+Face count: 260 -> 201
+Split-window skin rebuild candidate: D:\projects\gjy_byproject\results\current_three_class_complete_20261020\cad\27-_DC-10_SolidWorks_stp_igs_DC_10\surface_candidate.step

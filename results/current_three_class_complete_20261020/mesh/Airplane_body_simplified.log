@@ -1,0 +1,26 @@
+{
+  "input_step": "D:\\projects\\gjy_byproject\\results\\current_three_class_complete_20261020\\cad\\Airplane_body\\final.step",
+  "bounding_box_diagonal": 28950.142528678076,
+  "relative_deflection": 0.0005,
+  "linear_deflection": 14.475071264339038,
+  "angular_deflection_rad": 0.5,
+  "face_count": 450,
+  "mesh_node_count": 27114,
+  "mesh_triangle_count": 42401,
+  "mesh_quality": {
+    "degenerate_triangle_count": 18,
+    "minimum_angle_deg": 3.05336003858729e-05,
+    "minimum_angle_p05_deg": 1.4735458183126555,
+    "maximum_aspect_ratio": 1083973.6271336733,
+    "aspect_ratio_p95": 27.365370057710077
+  },
+  "mesh_repeats": 5,
+  "mesh_elapsed_seconds_samples": [
+    0.13804160000290722,
+    0.18712470005266368,
+    0.19010409992188215,
+    0.18252570007462054,
+    0.17735909996554255
+  ],
+  "mesh_elapsed_seconds_median": 0.18252570007462054
+}
