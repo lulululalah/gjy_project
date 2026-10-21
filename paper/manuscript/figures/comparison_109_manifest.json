@@ -1,10 +1,10 @@
 {
   "model": "109 standard E-1",
-  "endpoint_scope": "Original and processed decal endpoint shown in the CAD figure.",
+  "endpoint_scope": "Fresh current single-three-class checkpoint CAD run, 2026-10-20; input colours are original annotations, not predicted/processed truth.",
   "projection": "orthographic",
   "size": [
     2400,
-    1000
+    800
   ],
   "camera": {
     "center": [
@@ -52,48 +52,22 @@
           0.9808484760291367
         ],
         "scale": 2906.461558501601,
-        "aspect": 2.4
-      },
-      "mesh": {
-        "faces": 1244,
-        "nodes": 47808,
-        "triangles": 58692,
-        "linear_deflection": 3.230348313897115,
-        "mesh_decimated": false
-      },
-      "mesh_image": "mesh_109_before.png",
-      "mesh_camera": {
-        "center": [
-          -1537.6142423869926,
-          2444.0000000003497,
-          862.5108808244371
-        ],
-        "direction": [
-          -0.11686340806974296,
-          0.9738617339145248,
-          -0.19477234678290495
-        ],
-        "up": [
-          -0.02320619422781869,
-          0.19338495189848912,
-          0.9808484760291367
-        ],
-        "scale": 2906.461558501601,
-        "aspect": 2.4
+        "aspect": 3.0
       }
     },
     {
       "stage": "after",
-      "step": "D:\\projects\\gjy_byproject\\data\\plane_model\\ending\\109-ww1-standart-e-1-aircraft CATIA STP_standart-e1_wing_rivets_decals.step",
-      "labels": "D:\\projects\\gjy_byproject\\work\\109_after_visualization\\after_render.labels.json",
-      "step_sha256": "3b66fd7db4501255b282ed71c412491748bdd21ff2dd82ebbacae878084607cf",
-      "labels_sha256": "052335dc9971447a248ef793f9ebdd8ae9d68a0a1150c858227bb677fc103370",
+      "step": "D:\\projects\\gjy_byproject\\results\\current_three_class_complete_20261020\\cad\\109-ww1-standart-e-1-aircraft_CATIA_STP_standart-e1\\final.step",
+      "labels": null,
+      "step_sha256": "6d4876ca773826ea181b49fd35f1b9a792483f26637a131dc0187df2f7ab954c",
+      "labels_sha256": null,
+      "label_scope": "Uniform background display only; no processed semantic ground truth.",
       "cad_image": "cad_109_after.png",
       "cad_camera": {
         "center": [
           -1537.6142423869926,
-          2444.0000000003497,
-          862.5108808244371
+          2444.0000000003492,
+          862.5108808244372
         ],
         "direction": [
           -0.11686340806974296,
@@ -106,34 +80,7 @@
           0.9808484760291367
         ],
         "scale": 2906.461558501601,
-        "aspect": 2.4
-      },
-      "mesh": {
-        "faces": 986,
-        "nodes": 46811,
-        "triangles": 58357,
-        "linear_deflection": 3.230348313897115,
-        "mesh_decimated": false
-      },
-      "mesh_image": "mesh_109_after.png",
-      "mesh_camera": {
-        "center": [
-          -1537.6142423869926,
-          2444.0000000003497,
-          862.5108808244371
-        ],
-        "direction": [
-          -0.11686340806974296,
-          0.9738617339145248,
-          -0.19477234678290495
-        ],
-        "up": [
-          -0.02320619422781869,
-          0.19338495189848912,
-          0.9808484760291367
-        ],
-        "scale": 2906.461558501601,
-        "aspect": 2.4
+        "aspect": 3.0
       }
     }
   ]

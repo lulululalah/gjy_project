@@ -1,10 +1,10 @@
 {
   "model": "Cessna Citation 2",
-  "endpoint_scope": "Original and archived window-stage endpoint shown in the CAD figure.",
+  "endpoint_scope": "Fresh current single-three-class checkpoint CAD run, 2026-10-20; input colours are original annotations, not predicted/processed truth.",
   "projection": "orthographic",
   "size": [
     2400,
-    1000
+    800
   ],
   "camera": {
     "center": [
@@ -22,7 +22,7 @@
       0,
       1
     ],
-    "scale": 6546.068145769501
+    "scale": 5236.854516615602
   },
   "geometry_modified": false,
   "relative_deflection": 0.0005,
@@ -51,43 +51,17 @@
           0.0,
           1.0
         ],
-        "scale": 6546.068145769501,
-        "aspect": 2.4
-      },
-      "mesh": {
-        "faces": 312,
-        "nodes": 13756,
-        "triangles": 19696,
-        "linear_deflection": 10.797144645364892,
-        "mesh_decimated": false
-      },
-      "mesh_image": "mesh_cessna_before.png",
-      "mesh_camera": {
-        "center": [
-          -7273.409050755,
-          0.0,
-          1580.386852229318
-        ],
-        "direction": [
-          -0.0,
-          -1.0,
-          -0.0
-        ],
-        "up": [
-          0.0,
-          0.0,
-          1.0
-        ],
-        "scale": 6546.068145769501,
-        "aspect": 2.4
+        "scale": 5236.854516615602,
+        "aspect": 3.0
       }
     },
     {
       "stage": "after",
-      "step": "D:\\projects\\gjy_byproject\\work\\test_removal_pipeline\\Cessna_Citation_2\\Cessna_Citation_2_surface_removed.step",
-      "labels": "D:\\projects\\gjy_byproject\\work\\cessna_window_visualization\\after_render.labels.json",
-      "step_sha256": "442c92df7f77bb45c9ae571d1f5b982c4626bd9f76e8e5c4dfeb0387a9c48514",
-      "labels_sha256": "2727ef85db9b6e09bab5ae024ae142f21c09b588182e45a0fb4cd02d3ca52318",
+      "step": "D:\\projects\\gjy_byproject\\results\\current_three_class_complete_20261020\\cad\\Cessna_Citation_2\\final.step",
+      "labels": null,
+      "step_sha256": "e8644892435a65542dfe83411f8c70d7b1014408ed80c0da71663eccf90f163a",
+      "labels_sha256": null,
+      "label_scope": "Uniform background display only; no processed semantic ground truth.",
       "cad_image": "cad_cessna_after.png",
       "cad_camera": {
         "center": [
@@ -105,35 +79,8 @@
           0.0,
           1.0
         ],
-        "scale": 6546.068145769501,
-        "aspect": 2.4
-      },
-      "mesh": {
-        "faces": 231,
-        "nodes": 12838,
-        "triangles": 19037,
-        "linear_deflection": 10.797144546664613,
-        "mesh_decimated": false
-      },
-      "mesh_image": "mesh_cessna_after.png",
-      "mesh_camera": {
-        "center": [
-          -7273.409050755,
-          0.0,
-          1580.386852229318
-        ],
-        "direction": [
-          -0.0,
-          -1.0,
-          -0.0
-        ],
-        "up": [
-          0.0,
-          0.0,
-          1.0
-        ],
-        "scale": 6546.068145769501,
-        "aspect": 2.4
+        "scale": 5236.854516615602,
+        "aspect": 3.0
       }
     }
   ]

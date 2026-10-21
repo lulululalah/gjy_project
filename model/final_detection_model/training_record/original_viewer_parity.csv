@@ -1,0 +1,10 @@
+model_name,faces,label_differences,max_probability_difference
+109-ww1-standart-e-1-aircraft CATIA STP_standart-e1_wing_rivets_decals.step,1244,0,2.0674591061364822e-07
+27- DC-10 SolidWorks stp igs_DC 10_wing_rivets.step,287,0,1.8357772824106888e-07
+87- 747-400 stp_beoing 747-400 v6_wing_rivets.stp,1432,0,2.0759887697785473e-07
+AULIRA 2_wing_rivets.step,370,0,1.8809738155933786e-07
+Air Plane Idea A.step,27366,0,2.8983535771409663e-07
+Airbus_wing_rivets.step,1775,0,2.3385742187187475e-07
+Airplane body_wing_rivets.step,708,0,1.7854705813835636e-07
+Cessna Citation 2_wing_rivets.step,312,0,1.505798339351827e-07
+Gulfstream G280 v17_wing_rivets.step,668,0,1.8043319705007832e-07

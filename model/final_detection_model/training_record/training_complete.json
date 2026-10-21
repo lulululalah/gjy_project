@@ -1,0 +1,33 @@
+{
+  "status": "PASS",
+  "variant": "distilled_finetune",
+  "configuration": {
+    "seed": 123,
+    "epochs": 200,
+    "hidden_dim": 64,
+    "num_layers": 4,
+    "adapter_dim": 192,
+    "dropout": 0.1,
+    "batch_size": 8,
+    "head_lr": 0.001,
+    "encoder_lr": 2e-05,
+    "weight_decay": 0.0001,
+    "background_rivet_penalty": 3.0,
+    "host_surface_penalty": 2.0,
+    "gradient_clip": 2.0,
+    "temperature": 2.0,
+    "supervised_loss_weight": 0.5,
+    "distillation_loss_weight": 1.0,
+    "frozen_encoder_epochs": 40
+  },
+  "parameters": 318217,
+  "elapsed_seconds": 99.18018209992442,
+  "encoder_tensors_transferred": 40,
+  "encoder_count": 1,
+  "classifier_heads": 1,
+  "binary_heads": 0,
+  "sha256": {
+    "model.pth": "7e7bed770ff66535e82278aa090779884995fa1249e9ddb18f12f0aa4d38ddda",
+    "stats.npz": "7230adf0de2b7dc32cd46f0501b5c858ad2fc439eda373e5b76e1135cc89dc9e"
+  }
+}

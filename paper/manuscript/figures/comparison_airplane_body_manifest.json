@@ -1,10 +1,10 @@
 {
   "model": "Airplane body",
-  "endpoint_scope": "Original and final endpoints of Table 8; final B-Rep invalid, descriptive CAD comparison only.",
+  "endpoint_scope": "Fresh current single-three-class checkpoint CAD run, 2026-10-20; input colours are original annotations, not predicted/processed truth.",
   "projection": "orthographic",
   "size": [
     2400,
-    1000
+    800
   ],
   "camera": {
     "center": [
@@ -22,7 +22,7 @@
       0,
       1
     ],
-    "scale": 9500.826316517032
+    "scale": 7600.661053213626
   },
   "geometry_modified": false,
   "relative_deflection": 0.0005,
@@ -51,36 +51,36 @@
           0.0,
           1.0
         ],
-        "scale": 9500.826316517032,
-        "aspect": 2.4
+        "scale": 7600.661053213626,
+        "aspect": 3.0
       }
     },
     {
       "stage": "after",
-      "step": "D:\\projects\\gjy_byproject\\data\\plane_model\\ending\\Airplane body_wing_rivets.step",
+      "step": "D:\\projects\\gjy_byproject\\results\\current_three_class_complete_20261020\\cad\\Airplane_body\\final.step",
       "labels": null,
-      "step_sha256": "14a68afb7eb3726bb37ada8caf94c478edb6895a68bb57f6d32aba2feccb20dc",
+      "step_sha256": "06c023dca246ed27503e49731f78e90dbcc528481af613745fac78b3e440330f",
       "labels_sha256": null,
       "label_scope": "Uniform background display only; no processed semantic ground truth.",
       "cad_image": "cad_airplane_body_after.png",
       "cad_camera": {
         "center": [
-          -9.094947017729282e-13,
+          -1.8189894035458565e-12,
           6395.953684907929,
-          1381.5707178779735
+          1381.5707178779737
         ],
         "direction": [
           -1.0,
-          -0.0,
-          -0.0
+          0.0,
+          0.0
         ],
         "up": [
           0.0,
           0.0,
           1.0
         ],
-        "scale": 9500.826316517032,
-        "aspect": 2.4
+        "scale": 7600.661053213626,
+        "aspect": 3.0
       }
     }
   ]

@@ -1,0 +1,108 @@
+{
+  "model_name": "Airplane body_wing_rivets.step",
+  "model_id": "single_three_class_distilled_finetune_h64_seed123",
+  "protocol_id": "complete-three-class-cad-v3",
+  "checkpoint_sha256": "7e7bed770ff66535e82278aa090779884995fa1249e9ddb18f12f0aa4d38ddda",
+  "original": {
+    "path": "data\\plane_model\\after_two\\Airplane body_wing_rivets.step",
+    "sha256": "31b6276eafad2a2af1b79d1efaafd9bb5f6e0ea1ba25ac84f06b706a7b13f73f",
+    "faces": 708,
+    "edges": 1961
+  },
+  "original_predictions_sha256": "3f348b6b87f89178d4d4efda1b26fd510cd27a72e8ffb93d367850a477d1ada5",
+  "rivet_candidates": 52,
+  "original_surface_candidates": 21,
+  "route": "embedded",
+  "reconstruction_profile": "airplane-body",
+  "original_geometric_completion": {
+    "network_candidates": 21,
+    "cad_candidates": 21,
+    "added_face_ids": [],
+    "repeated_panes": 0,
+    "single_host_patches": 0,
+    "scope": "CAD candidates only; unchanged neural probabilities, no labels or stored target face lists."
+  },
+  "detector_sha256": "290c83998c0c722570f20d11e28d85e6ece62211a36e6291b1a56bdcbeaca2f5",
+  "operations": [
+    {
+      "returncode": 0,
+      "seconds": 113.79073749994859,
+      "command": [
+        "D:\\projects\\gjy_byproject\\build\\Release\\Detector.exe",
+        "--remove-predicted-rivets",
+        "D:\\projects\\gjy_byproject\\data\\plane_model\\after_two\\Airplane body_wing_rivets.step",
+        "D:\\projects\\gjy_byproject\\results\\current_three_class_complete_20261020\\cad\\Airplane_body\\original.pred.csv",
+        "D:\\projects\\gjy_byproject\\results\\current_three_class_complete_20261020\\cad\\Airplane_body\\Airplane_body_rivet_removed.step"
+      ],
+      "log": "results\\current_three_class_complete_20261020\\cad\\Airplane_body\\rivet.log"
+    },
+    {
+      "returncode": 0,
+      "seconds": 23.879442099947482,
+      "command": [
+        "D:\\projects\\gjy_byproject\\build\\Release\\Detector.exe",
+        "--predict",
+        "D:\\projects\\gjy_byproject\\results\\current_three_class_complete_20261020\\cad\\Airplane_body\\Airplane_body_rivet_removed.step",
+        "D:\\projects\\gjy_byproject\\results\\current_three_class_complete_20261020\\cad\\Airplane_body\\intermediate_features.csv"
+      ],
+      "log": "results\\current_three_class_complete_20261020\\cad\\Airplane_body\\export.log"
+    },
+    {
+      "returncode": 0,
+      "seconds": 9.88309479993768,
+      "command": [
+        "D:\\projects\\gjy_byproject\\build\\Release\\Detector.exe",
+        "--rebuild-embedded-window-hosts",
+        "D:\\projects\\gjy_byproject\\results\\current_three_class_complete_20261020\\cad\\Airplane_body\\Airplane_body_rivet_removed.step",
+        "D:\\projects\\gjy_byproject\\results\\current_three_class_complete_20261020\\cad\\Airplane_body\\surface_candidates.csv",
+        "D:\\projects\\gjy_byproject\\results\\current_three_class_complete_20261020\\cad\\Airplane_body\\surface_candidate.step",
+        "airplane-body"
+      ],
+      "log": "results\\current_three_class_complete_20261020\\cad\\Airplane_body\\surface.log"
+    }
+  ],
+  "rivet_endpoint": {
+    "path": "results\\current_three_class_complete_20261020\\cad\\Airplane_body\\Airplane_body_rivet_removed.step",
+    "sha256": "f1a7b3d529acae0264b8c6a648ed5c6f7b1d379d37f6096c2dcd52fc55df8065",
+    "faces": 650,
+    "edges": 1828
+  },
+  "intermediate_predictions_sha256": "efde674896a0875079678b5b4f664b7a32981f38725447fb37b7af412945da70",
+  "intermediate_features_sha256": "1ca1bd065d1fff835bd4ff344544e9395a2149a6d4116cf55499304a6daa5324",
+  "surface_candidates": 17,
+  "intermediate_geometric_completion": {
+    "network_candidates": 17,
+    "cad_candidates": 17,
+    "added_face_ids": [],
+    "repeated_panes": 0,
+    "single_host_patches": 0,
+    "scope": "CAD candidates only; unchanged neural probabilities, no labels or stored target face lists."
+  },
+  "candidate_correspondence": {
+    "original_candidates": 21,
+    "current_network_candidates": 17,
+    "geometrically_matched_original_faces": 21,
+    "matched_current_faces": 21,
+    "cad_candidates": 21,
+    "added_candidates": 4,
+    "coordinate_tolerance": 0.2059094,
+    "scope": "Geometry correspondence only; no truth labels or reused face identifiers."
+  },
+  "operator_candidates": 21,
+  "operator_predictions_sha256": "fcc2f05b7111bb2ddef6ecca4f65e8baf9f567b5fcb1d81a5bf10e9a65e3a389",
+  "surface_operation_succeeded": true,
+  "final": {
+    "path": "results\\current_three_class_complete_20261020\\cad\\Airplane_body\\final.step",
+    "sha256": "06c023dca246ed27503e49731f78e90dbcc528481af613745fac78b3e440330f",
+    "faces": 450,
+    "edges": 1293
+  },
+  "complete": true,
+  "enabled_stages": [
+    "rivet processing",
+    "graph re-extraction and three-class recognition",
+    "window and decal candidate processing"
+  ],
+  "operator_profile_verified": true,
+  "operator_labels_verified_against_current_policy": true
+}

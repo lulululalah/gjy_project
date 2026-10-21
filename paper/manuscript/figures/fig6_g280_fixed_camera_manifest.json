@@ -62,10 +62,11 @@
       "scale": 1.4078258508993713
     }
   ],
+  "surface_details": [],
   "stages": [
     {
       "stage": "original",
-      "step": "D:\\projects\\gjy_byproject\\data\\plane_model\\new_data\\Gulfstream G280 v17_wing_rivets.step",
+      "step": "D:\\projects\\gjy_byproject\\data\\plane_model\\after_two\\Gulfstream G280 v17_wing_rivets.step",
       "labels": "D:\\projects\\gjy_byproject\\data\\plane_model\\label\\Gulfstream G280 v17_wing_rivets.labels.json",
       "step_sha256": "6f22774ee215b073c3cf6ce137fc810e09701ccffca48b0349ae996d312d22bc",
       "labels_sha256": "13dd9fd1080f740668ce0b35602eb518aa41bba1c27c1d79b5620c13b25ab447",
@@ -177,11 +178,11 @@
     },
     {
       "stage": "rivet_removed",
-      "step": "D:\\projects\\gjy_byproject\\work\\test_removal_pipeline\\Gulfstream_G280_v17\\Gulfstream_G280_v17_removed.step",
-      "labels": "D:\\projects\\gjy_byproject\\work\\test_removal_pipeline\\Gulfstream_G280_v17\\after_rivet_render.labels.json",
-      "step_sha256": "c800ce75f4cf9de62c32d36ed47512bcfcb67c1fdef233a9fc8d8bc603c8915b",
-      "labels_sha256": "d78288ade26b347c645d8bc4e12f953969f74607f13dfc337c3fc5aa797e55bf",
-      "faces": 608,
+      "step": "D:\\projects\\gjy_byproject\\results\\current_three_class_complete_20261020\\cad\\Gulfstream_G280_v17\\Gulfstream_G280_v17_rivet_removed.step",
+      "labels": "D:\\projects\\gjy_byproject\\results\\current_three_class_complete_20261020\\cad\\Gulfstream_G280_v17\\rivet_removed.display.labels.json",
+      "step_sha256": "394fdc36574a6b93d0c43355e63bc3fff4a194f09cebab15e021826f38b83069",
+      "labels_sha256": "9e897405c0ae8f3de66f926da3c3449f1b9ee3be41d9c038e2b11ea835e09753",
+      "faces": 612,
       "images": [
         "fig6_g280_rivet_removed_side_fixed.png",
         "fig6_g280_rivet_removed_top_fixed.png",
@@ -289,25 +290,45 @@
     },
     {
       "stage": "surface_processed",
-      "step": "D:\\projects\\gjy_byproject\\work\\test_removal_pipeline\\Gulfstream_G280_v17\\Gulfstream_G280_v17_embedded.step",
-      "labels": "D:\\projects\\gjy_byproject\\work\\test_removal_pipeline\\Gulfstream_G280_v17\\after_surface_render.labels.json",
-      "step_sha256": "a958756e51ba37e98df26e6882c622f6a9e04b74a33c0dd460f4d34734663d8e",
-      "labels_sha256": "ec1414cba73e8a60b773ce08a7396c3531c4c97e612cfe6a12553ae8e270f4af",
-      "faces": 277,
+      "step": "D:\\projects\\gjy_byproject\\results\\current_three_class_complete_20261020\\cad\\Gulfstream_G280_v17\\final.step",
+      "labels": "D:\\projects\\gjy_byproject\\results\\current_three_class_complete_20261020\\cad\\Gulfstream_G280_v17\\surface_processed.display.labels.json",
+      "step_sha256": "1ab68d364f2f167ea21536d194d6c722d1f8f7cf887fdc364d6e293cbd78baaf",
+      "labels_sha256": "9d8cc8601d4a37d8ebb2a0eeeaa30d3a10693387aa3f7350dc155b55f64cda08",
+      "faces": 271,
       "images": [
+        "fig6_g280_surface_processed_side_fixed.png",
         "fig6_g280_surface_processed_top_fixed.png"
       ],
       "cameras": {
-        "top": {
+        "side": {
           "center": [
-            1.5704603514354383,
+            1.5704603514354378,
             14.708050328405307,
             -1.1837765542478564
           ],
           "direction": [
             0.0,
-            -1.0,
+            0.0,
+            -1.0
+          ],
+          "up": [
+            0.0,
+            1.0,
             0.0
+          ],
+          "scale": 81.65109669345136,
+          "aspect": 2.1818181818181817
+        },
+        "top": {
+          "center": [
+            1.5704603514354378,
+            14.708050328405307,
+            -1.1837765542478564
+          ],
+          "direction": [
+            -0.0,
+            -1.0,
+            -0.0
           ],
           "up": [
             0.0,
@@ -317,11 +338,7 @@
           "scale": 155.8793664147708,
           "aspect": 1.1428571428571428
         }
-      },
-      "historical_unavailable_images": [
-        "fig6_g280_surface_processed_side_fixed.png"
-      ],
-      "geometry_revision": "G280 outer trimming boundary retained; matched inner loops removed, 2026-10-15."
+      }
     }
   ]
 }

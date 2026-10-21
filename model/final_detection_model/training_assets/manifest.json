@@ -1,0 +1,22 @@
+{
+  "schema_version": 1,
+  "train_csv_sha256": "0fb2a339c5a363388c0ec3141bc6f5327ca840304b64aa84283f0503f4c9fd5c",
+  "normalization_stats_sha256": "b4c0797a9fc0546a4b976983008a1ffb9014e28e3b12dc6e271322c2c5b77771",
+  "train_aircraft": 17,
+  "train_faces": 48095,
+  "classes": [
+    "background",
+    "rivet",
+    "surface_feature"
+  ],
+  "encoder_tensors": 40,
+  "classifier_heads_in_initialization": 0,
+  "provenance": "Shared encoder initialization extracted from the completed frozen three-class student. Cached three-class auxiliary logits from the completed refinement run; original training teacher is being removed.",
+  "purpose": "Reproduce categorical training without loading or retaining a dual-head checkpoint; these are train-only inputs, not an alternative recognition model.",
+  "files": {
+    "initial_encoder.pth": "81968995dcebc3414f23d6f5a453ce1d34fb0e30361c795a3f127a18e000c35f",
+    "auxiliary_three_class_logits.npz": "2b35d24e8a031bac9bdc966c62341d74252ed1dbb1405527ae684ef911eb475d",
+    "index.csv": "e332d8a01458678b88ba80042dd55716a76fbbc66ad202d6f29341da1bc80b60",
+    "normalization.npz": "443e08276e8a4ffb15d702ff2d3e5d6a295a06f97d84c172d6a298fd46758f24"
+  }
+}

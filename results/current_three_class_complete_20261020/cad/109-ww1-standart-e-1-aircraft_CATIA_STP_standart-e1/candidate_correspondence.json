@@ -1,0 +1,10 @@
+{
+  "original_candidates": 3,
+  "current_network_candidates": 0,
+  "geometrically_matched_original_faces": 3,
+  "matched_current_faces": 3,
+  "cad_candidates": 3,
+  "added_candidates": 3,
+  "coordinate_tolerance": 0.04761022800000001,
+  "scope": "Geometry correspondence only; no truth labels or reused face identifiers."
+}

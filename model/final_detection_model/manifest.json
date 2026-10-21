@@ -1,0 +1,227 @@
+{
+  "schema_version": 1,
+  "status": "VERIFIED_RUNNABLE",
+  "model_id": "single_three_class_distilled_finetune_h64_seed123",
+  "model_architecture": "three-class-mlp",
+  "encoder_sharing": "shared",
+  "hidden_dim": 64,
+  "parameters": 318217,
+  "seed": 123,
+  "train_csv": "train_17_models.csv",
+  "test_csv": "test_9_models_frozen_truth.csv",
+  "checkpoint": "model.pth",
+  "stats": "stats.npz",
+  "train_aircraft": 17,
+  "test_aircraft": 9,
+  "train_faces": 48095,
+  "test_faces": 34162,
+  "output_labels": {
+    "0": "background",
+    "1": "rivet",
+    "2": "surface_feature"
+  },
+  "geometry": {
+    "109-ww1-standart-e-1-aircraft CATIA STP_standart-e1_wing_rivets_decals.step": {
+      "path": "..\\..\\data\\plane_model\\after_two\\109-ww1-standart-e-1-aircraft CATIA STP_standart-e1_wing_rivets_decals.step",
+      "sha256": "5c6dcc1665e3a676091897cebab18b50a238d4f1365c6ebca49563fe549dd970"
+    },
+    "27- DC-10 SolidWorks stp igs_DC 10_wing_rivets.step": {
+      "path": "..\\..\\data\\plane_model\\after_two\\27- DC-10 SolidWorks stp igs_DC 10_wing_rivets.step",
+      "sha256": "074d09a8d2ead427d0051020baf12a3150ab7db740cd618be4809b589ae11b23"
+    },
+    "87- 747-400 stp_beoing 747-400 v6_wing_rivets.stp": {
+      "path": "..\\..\\data\\plane_model\\after_two\\87- 747-400 stp_beoing 747-400 v6_wing_rivets.stp",
+      "sha256": "15f45bb8c17a68543ad4c9c90add1fb24777131c7f820eb3b5153325353a0583"
+    },
+    "AULIRA 2_wing_rivets.step": {
+      "path": "..\\..\\data\\plane_model\\after_two\\AULIRA 2_wing_rivets.step",
+      "sha256": "14553b9c5def46798d3238a1826bb84fdc468ef4b399393add9ffe87364b1541"
+    },
+    "Air Plane Idea A.step": {
+      "path": "..\\..\\data\\plane_model\\after_two\\Air Plane Idea A.step",
+      "sha256": "83048eb1bf22deec4e1bb8fa878188f149e325cf1f1b767469830b27681d01bb"
+    },
+    "Airbus_wing_rivets.step": {
+      "path": "..\\..\\data\\plane_model\\after_two\\Airbus_wing_rivets.step",
+      "sha256": "8574a354f15b0b3ab7925ac9d058db29a3aec31f73954b1e58013c8db5f075f5"
+    },
+    "Airplane body_wing_rivets.step": {
+      "path": "..\\..\\data\\plane_model\\after_two\\Airplane body_wing_rivets.step",
+      "sha256": "31b6276eafad2a2af1b79d1efaafd9bb5f6e0ea1ba25ac84f06b706a7b13f73f"
+    },
+    "Cessna Citation 2_wing_rivets.step": {
+      "path": "..\\..\\data\\plane_model\\after_two\\Cessna Citation 2_wing_rivets.step",
+      "sha256": "4d879b94232623e614d51770d916c28debfcaa41a45ac52d4c10c09c58b56b86"
+    },
+    "Gulfstream G280 v17_wing_rivets.step": {
+      "path": "..\\..\\data\\plane_model\\after_two\\Gulfstream G280 v17_wing_rivets.step",
+      "sha256": "6f22774ee215b073c3cf6ce137fc810e09701ccffca48b0349ae996d312d22bc"
+    }
+  },
+  "input_sha256": {
+    "train_17_models.csv": "0fb2a339c5a363388c0ec3141bc6f5327ca840304b64aa84283f0503f4c9fd5c",
+    "test_9_models_frozen_truth.csv": "39765eaa33f1c581b9c1779939f2a971c7db925c17e7c4233890fa0f3bc98948",
+    "model.pth": "7e7bed770ff66535e82278aa090779884995fa1249e9ddb18f12f0aa4d38ddda",
+    "stats.npz": "b4c0797a9fc0546a4b976983008a1ffb9014e28e3b12dc6e271322c2c5b77771",
+    "configuration.json": "caeab347ac165c0a7e9a6c754e389b636f44365b4afda32a3775b6892f4aa125",
+    "dc10_window_recovery.json": "db152bc1e016f1db25566b05a3291b1d85a19e6d426488bbb3caef1d6e7b0da8",
+    "training_assets\\auxiliary_three_class_logits.npz": "2b35d24e8a031bac9bdc966c62341d74252ed1dbb1405527ae684ef911eb475d",
+    "training_assets\\index.csv": "e332d8a01458678b88ba80042dd55716a76fbbc66ad202d6f29341da1bc80b60",
+    "training_assets\\initial_encoder.pth": "81968995dcebc3414f23d6f5a453ce1d34fb0e30361c795a3f127a18e000c35f",
+    "training_assets\\manifest.json": "5c884f01a76e640a6f45bcd1e13e20d8d3235fe4b71a3076226d18dd66944fb8",
+    "training_assets\\normalization.npz": "443e08276e8a4ffb15d702ff2d3e5d6a295a06f97d84c172d6a298fd46758f24",
+    "training_record\\architecture_audit.csv": "e0b5faf4441eb937642415d7e5379fba5a80d2dfe3a17cea8168e4661da22775",
+    "training_record\\cached_retraining_complete.json": "2858e14360655c313edeb7ed633a176e81193bb543dd40026947d887b43148fa",
+    "training_record\\cached_retraining_verification.json": "480fa6ae7fcddc38bd8c252dc838dd1c08dc31700dd31932c20c1710e9e39c8f",
+    "training_record\\original_comparison_metrics.csv": "0ae601164a89e72c3d0c99f41ac661b04fe8ed0a40e76b4055739410213f7680",
+    "training_record\\original_protocol.json": "aaca3e3f100e7ec5073f310c0c5220cc6cc655933803ac2f5e9f96d8084917f1",
+    "training_record\\original_replay_parity.csv": "abd318eda2bc296630a3ba358b1dbd0d7fe6ca0968989ccde0779e7883b455fc",
+    "training_record\\original_training.log": "195b20f9cb80bf7ebc9e14ec0636bcb830dd651a976b90c524c5f0a799ef9dc2",
+    "training_record\\original_training_stats.npz": "7230adf0de2b7dc32cd46f0501b5c858ad2fc439eda373e5b76e1135cc89dc9e",
+    "training_record\\original_viewer_parity.csv": "bd71975cb94561ed60d5b91bc650e0842ec5cf318fdd1b905d80cb9c1b354b87",
+    "training_record\\README.md": "bf1862c9a378ee50e42acc9e11db7d3fe91cd36c94096d2b6a0ce09ed1350bbe",
+    "training_record\\training_complete.json": "a671345f5ddeaa2bae24de58570b78a2fbaa201551868200c426927bde2f7598",
+    "training_record\\training_history.csv": "c8896e58eaa0dd22cca38572873840b273bef62635e4fb0d23f37f1e2448c9e7",
+    "training_record\\training_scope_audit.json": "38f7f0eace7cbc74d5ff3922333954b52040aec3fe42938c66ac1d596f473750",
+    "training_record\\training_target_audit.csv": "74fe83b0671003d9e4d6de2661c6396c1daf2cd990199c220b80d8f4f73f95bd"
+  },
+  "models": [
+    {
+      "model": "109-ww1-standart-e-1-aircraft CATIA STP_standart-e1_wing_rivets",
+      "model_name": "109-ww1-standart-e-1-aircraft CATIA STP_standart-e1_wing_rivets_decals.step",
+      "source_prediction_file": "model/final_detection_model/evaluation/predictions/109-ww1-standart-e-1-aircraft CATIA STP_standart-e1_wing_rivets.pred.csv",
+      "output_prediction_file": "model/final_detection_model/evaluation/predictions/109-ww1-standart-e-1-aircraft CATIA STP_standart-e1_wing_rivets.pred.csv",
+      "truth_file": "model/final_detection_model/evaluation/inputs/109-ww1-standart-e-1-aircraft CATIA STP_standart-e1_wing_rivets.features.csv",
+      "truth_faces": 1244
+    },
+    {
+      "model": "27- DC-10 SolidWorks stp igs_DC 10_wing_rivets",
+      "model_name": "27- DC-10 SolidWorks stp igs_DC 10_wing_rivets.step",
+      "source_prediction_file": "model/final_detection_model/evaluation/predictions/27- DC-10 SolidWorks stp igs_DC 10_wing_rivets.pred.csv",
+      "output_prediction_file": "model/final_detection_model/evaluation/predictions/27- DC-10 SolidWorks stp igs_DC 10_wing_rivets.pred.csv",
+      "truth_file": "model/final_detection_model/evaluation/inputs/27- DC-10 SolidWorks stp igs_DC 10_wing_rivets.features.csv",
+      "truth_faces": 287
+    },
+    {
+      "model": "87- 747-400 stp_beoing 747-400 v6_wing_rivets",
+      "model_name": "87- 747-400 stp_beoing 747-400 v6_wing_rivets.stp",
+      "source_prediction_file": "model/final_detection_model/evaluation/predictions/87- 747-400 stp_beoing 747-400 v6_wing_rivets.pred.csv",
+      "output_prediction_file": "model/final_detection_model/evaluation/predictions/87- 747-400 stp_beoing 747-400 v6_wing_rivets.pred.csv",
+      "truth_file": "model/final_detection_model/evaluation/inputs/87- 747-400 stp_beoing 747-400 v6_wing_rivets.features.csv",
+      "truth_faces": 1432
+    },
+    {
+      "model": "AULIRA 2_wing_rivets",
+      "model_name": "AULIRA 2_wing_rivets.step",
+      "source_prediction_file": "model/final_detection_model/evaluation/predictions/AULIRA 2_wing_rivets.pred.csv",
+      "output_prediction_file": "model/final_detection_model/evaluation/predictions/AULIRA 2_wing_rivets.pred.csv",
+      "truth_file": "model/final_detection_model/evaluation/inputs/AULIRA 2_wing_rivets.features.csv",
+      "truth_faces": 370
+    },
+    {
+      "model": "Air Plane Idea A",
+      "model_name": "Air Plane Idea A.step",
+      "source_prediction_file": "model/final_detection_model/evaluation/predictions/Air Plane Idea A.pred.csv",
+      "output_prediction_file": "model/final_detection_model/evaluation/predictions/Air Plane Idea A.pred.csv",
+      "truth_file": "model/final_detection_model/evaluation/inputs/Air Plane Idea A.features.csv",
+      "truth_faces": 27366
+    },
+    {
+      "model": "Airbus_wing_rivets",
+      "model_name": "Airbus_wing_rivets.step",
+      "source_prediction_file": "model/final_detection_model/evaluation/predictions/Airbus_wing_rivets.pred.csv",
+      "output_prediction_file": "model/final_detection_model/evaluation/predictions/Airbus_wing_rivets.pred.csv",
+      "truth_file": "model/final_detection_model/evaluation/inputs/Airbus_wing_rivets.features.csv",
+      "truth_faces": 1775
+    },
+    {
+      "model": "Airplane body_wing_rivets",
+      "model_name": "Airplane body_wing_rivets.step",
+      "source_prediction_file": "model/final_detection_model/evaluation/predictions/Airplane body_wing_rivets.pred.csv",
+      "output_prediction_file": "model/final_detection_model/evaluation/predictions/Airplane body_wing_rivets.pred.csv",
+      "truth_file": "model/final_detection_model/evaluation/inputs/Airplane body_wing_rivets.features.csv",
+      "truth_faces": 708
+    },
+    {
+      "model": "Cessna Citation 2_wing_rivets",
+      "model_name": "Cessna Citation 2_wing_rivets.step",
+      "source_prediction_file": "model/final_detection_model/evaluation/predictions/Cessna Citation 2_wing_rivets.pred.csv",
+      "output_prediction_file": "model/final_detection_model/evaluation/predictions/Cessna Citation 2_wing_rivets.pred.csv",
+      "truth_file": "model/final_detection_model/evaluation/inputs/Cessna Citation 2_wing_rivets.features.csv",
+      "truth_faces": 312
+    },
+    {
+      "model": "Gulfstream G280 v17_wing_rivets",
+      "model_name": "Gulfstream G280 v17_wing_rivets.step",
+      "source_prediction_file": "model/final_detection_model/evaluation/predictions/Gulfstream G280 v17_wing_rivets.pred.csv",
+      "output_prediction_file": "model/final_detection_model/evaluation/predictions/Gulfstream G280 v17_wing_rivets.pred.csv",
+      "truth_file": "model/final_detection_model/evaluation/inputs/Gulfstream G280 v17_wing_rivets.features.csv",
+      "truth_faces": 668
+    }
+  ],
+  "verification": {
+    "status": "PASS",
+    "model_id": "single_three_class_distilled_finetune_h64_seed123",
+    "encoder_count": 1,
+    "classifier_heads": 1,
+    "output_classes": 3,
+    "binary_heads": 0,
+    "teacher_used_at_inference": false,
+    "decision": "argmax",
+    "aircraft": 9,
+    "faces": 34162,
+    "truth_differences": 0,
+    "raw_label_differences": 0,
+    "final_label_differences": 0,
+    "max_probability_difference": 2.700000000244174e-07,
+    "viewer_label_differences": 0,
+    "viewer_max_probability_difference": 2.898353577140967e-07,
+    "normalization_matches_trained_pair": true,
+    "backup_hashes_match": true,
+    "invocation": "Historical replay; compact evidence retained in training_record/original_replay_parity.csv"
+  },
+  "model_checkpoint": "model/final_detection_model/model.pth",
+  "model_stats": "model/final_detection_model/stats.npz",
+  "runtime_sha256": {
+    "python/cad/candidates.py": "7947288107f9131bb6f8ded44b913be475730b7f8339e8cc210a6a64cd17b15c",
+    "python/cad/pipeline.py": "b99a6a97a3fcc87df344d815b23913e5344a7a3fc04c0f0deebb91f9f86b064d",
+    "python/cad/windows.py": "06432a077e442128600fea069e1f050987e3f5324bdf90f5c914306e66432bdc",
+    "python/geometry/measure.py": "931f6923a776b7a0d872504cad23446c22e16e57354d17c516d10eb74bc057b7",
+    "python/geometry/qem.py": "d7869cdcf09799b622bc1f61466054638f3e57c61c1fb2e523d3008bd420ee9c",
+    "python/main.py": "1f148a5ceb7ac099e910a203442f668d7b0edc5fba0355d13a94c33c3bbe2b69",
+    "python/recognition/graph.py": "749d299ce41ccee76cd53805d7ec4a52812565a3c23f31c0b11914692202ee8c",
+    "python/recognition/model.py": "e1a8a1ef264b00c649bc9d3da3c4fc488c9aa3aea44731efccc44eedc0e1d0e3",
+    "python/recognition/postprocess.py": "ba240ead9643df94fec7cb67362f12aad4aec656d3e2bad3fc8130249c78cf0e",
+    "python/recognition/predict.py": "fd6629efa90e517dc4cbdd8564f42cfd8f08fc480404f411b9ac2229d167b225",
+    "python/recognition/recovery.py": "15be6ceb1e5cca96fb53749a20225b304b359d5c8da1574ae0451e10bb82a607",
+    "python/recognition/train.py": "f7584470544795a32b83c7bd1208c555c5900788c791406541e52688240d9dd2",
+    "python/tools/faces.py": "c98c796278af8817055a648f1f92abf732955e92771738f258cf1c60bd3890ec",
+    "python/tools/labels.py": "f8633b2cba8f29831395fefad145f512f17dd2c384ec163cedbe2608be5f3581",
+    "python/visualization/cad.py": "cbd22858ca88c55b967dd9d1cb48c413236f3de0e2c348e090c2f9a071ceb7e9",
+    "python/visualization/predictions.py": "0408850d2978923fdb4f3e7b83bd8da836e09304b1a7b8b9a03e68559f98dd78"
+  },
+  "surface_recovery": {
+    "enabled": true,
+    "method": "dc10-window-topology",
+    "configuration": "dc10_window_recovery.json"
+  },
+  "pipeline_id": "single_three_class_distilled_finetune_h64_seed123_argmax_geometry_20261019",
+  "decision": "argmax",
+  "classifier_heads": 1,
+  "classifier_outputs": 3,
+  "old_dual_head_artifacts": "REMOVED; only current single-three-class runtime dependencies retained",
+  "cleanup_record": "work/current_three_class_cleanup_20261019/completion_audit.json",
+  "code_reorganisation": {
+    "date": "2026-10-21",
+    "entrypoint": "python/main.py",
+    "report": "work/python_refactor_20261021/整理报告.md",
+    "weights_stats_and_data_unchanged": true,
+    "training_protocol_unchanged": true,
+    "initialisation_and_gradient_parity": "PASS",
+    "baseline_faces": 34162,
+    "label_differences": 0,
+    "probability_tolerance": 1e-06,
+    "historical_training_hashes": "Original training_record hashes remain unchanged; new runtime paths are recorded here.",
+    "max_observed_probability_difference": 3.0000000006413785e-07
+  }
+}

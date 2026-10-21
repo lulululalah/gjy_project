@@ -1,0 +1,61 @@
+{
+  "configuration": {
+    "seed": 123,
+    "epochs": 200,
+    "hidden_dim": 64,
+    "num_layers": 4,
+    "adapter_dim": 192,
+    "dropout": 0.1,
+    "batch_size": 8,
+    "head_lr": 0.001,
+    "encoder_lr": 2e-05,
+    "weight_decay": 0.0001,
+    "background_rivet_penalty": 3.0,
+    "host_surface_penalty": 2.0,
+    "gradient_clip": 2.0,
+    "temperature": 2.0,
+    "supervised_loss_weight": 0.5,
+    "distillation_loss_weight": 1.0
+  },
+  "variants": {
+    "distilled_frozen": 200,
+    "distilled_finetune": 40
+  },
+  "seed": 123,
+  "input_sha256": {
+    "train_17_models.csv": "0fb2a339c5a363388c0ec3141bc6f5327ca840304b64aa84283f0503f4c9fd5c",
+    "test_9_models_frozen_truth.csv": "39765eaa33f1c581b9c1779939f2a971c7db925c17e7c4233890fa0f3bc98948",
+    "model.pth": "7c51ad3e1464f33aafdd51be01fb247acc26599fedf83982b448f076538df9b6",
+    "stats.npz": "41ec968e3a7005ca96bf1017f9d6ee74f4903fe9b0d87bd00a3dd57f479708b0",
+    "configuration.json": "3c9726f5a673659b1616109b8c4588721dd2685c9a2ab2f6c9115866b9018be2",
+    "dc10_window_recovery.json": "5eeb453f1c644080e8ebd7195bb76285f517730f0c85bf037e540bf59fef7306"
+  },
+  "current_categorical_input_sha256": {
+    "train_17_models.csv": "0fb2a339c5a363388c0ec3141bc6f5327ca840304b64aa84283f0503f4c9fd5c",
+    "test_9_models_frozen_truth.csv": "39765eaa33f1c581b9c1779939f2a971c7db925c17e7c4233890fa0f3bc98948",
+    "model.pth": "645794c4220a77581f999b656b7a6ebd040f5b32d348883f1d5029a18a93e7fb",
+    "stats.npz": "19a0b3b871ad1c8461665345b250bed911533fea130e787ebb4b9829785d6f51",
+    "configuration.json": "54481daa69c0a59de4e911fc8ce0456811856770786036fde38e148c19c1d723",
+    "dc10_window_recovery.json": "fa90a871817d03163e7bcba2a37805c7744d4e68ef979d40c299a519a5aa1d89"
+  },
+  "source_sha256": {
+    "run_three_class_refinement.py": "17da0a83a206d11907d793f231840024b6b972c1aebcee64c9595cbb710f407a",
+    "run_improved_three_class.py": "26e90121a196e68ca1a7c0b1d3a5226fe06b134ed0a10fe5f3b343fa058e2a78",
+    "run_head_formulation_ablation.py": "d621a542c7f5dd08bfda0d0c33bbd9bf088957ebfb3dd56914952acb0c81fa0a",
+    "run_recognition_experiment.py": "d7763b5bbeb1358f13ac5437e9727b156f37c5a718cb60a859dd41389ed10324",
+    "train_rivet_gcn.py": "5ec04c9cf1321b8f9f1d17266d27bb087f2a1374c51f20d566d01593d72f8c18",
+    "dc10_window_recovery.py": "18a5ce8f2bdf19518bbcccd073009dd3a5e505421859455b823c97774b5bca1a",
+    "run_architecture_comparison_postprocess.py": "b13e8037735944db96ad96d5e535bb7ce065dabb9bfcefb306e87aa8f8846270",
+    "surface_visibility_guard.py": "b7cf788f76314dc9095fe4cd0f503068c11fb20dcc28ba510420589baace01f1",
+    "rivet_topology_guard.py": "33b312293a7705bc2c5f9752bb028ea373644cf0a1f7b87e9aaa8abb38b218af"
+  },
+  "architecture": "one shared GNN, one shared 192-to-192 MLP, one 192-to-3 classifier, softmax argmax",
+  "training": "Train-17 real labels plus frozen teacher logits on the same training aircraft only. Teacher not used during student inference.",
+  "teacher_conversion": "Three categorical logits [0, rivet_logit-logit(0.9), surface_logit-logit(0.5)]; softmax at T=2. This approximates calibrated margins and is not an exact reparameterization of rivet-priority decisions.",
+  "checkpoint": "Fixed epoch 200 for both; no test threshold, checkpoint, or epoch selection.",
+  "promotion": "Both screened class F1 >= current categorical F1 and foreground mean strictly greater; among eligible candidates choose greatest foreground mean, then fewer background FP.",
+  "target": "Reach or exceed both archived dual-head class F1, not just the foreground mean.",
+  "scope": "Explicit development selection on the known nine-aircraft comparison set; not independent confirmatory evaluation.",
+  "postprocessing": "Existing fixed recovery and all geometry guards, uniformly applied to all nine aircraft.",
+  "official_bundle_replaced": false
+}

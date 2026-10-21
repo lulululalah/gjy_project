@@ -1,2 +1,0 @@
-rivet_f1,surface_feature_f1,foreground_macro_f1,miou,background_fp,architecture,seed,run_id
-0.1312422616591003,0.4589400116482237,0.295091136653662,0.40480180235900304,4762.0,three-class,123,three-class_h64_seed123

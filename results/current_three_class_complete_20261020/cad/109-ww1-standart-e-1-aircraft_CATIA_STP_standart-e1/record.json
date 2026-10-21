@@ -1,0 +1,111 @@
+{
+  "model_name": "109-ww1-standart-e-1-aircraft CATIA STP_standart-e1_wing_rivets_decals.step",
+  "model_id": "single_three_class_distilled_finetune_h64_seed123",
+  "protocol_id": "complete-three-class-cad-v3",
+  "checkpoint_sha256": "7e7bed770ff66535e82278aa090779884995fa1249e9ddb18f12f0aa4d38ddda",
+  "original": {
+    "path": "data\\plane_model\\after_two\\109-ww1-standart-e-1-aircraft CATIA STP_standart-e1_wing_rivets_decals.step",
+    "sha256": "5c6dcc1665e3a676091897cebab18b50a238d4f1365c6ebca49563fe549dd970",
+    "faces": 1244,
+    "edges": 2775
+  },
+  "original_predictions_sha256": "078be023ae6bbc5bf5b1eccfa10d0f095d918dca7d437756bcb4f22ee31be37f",
+  "rivet_candidates": 24,
+  "original_surface_candidates": 2,
+  "route": "generic",
+  "reconstruction_profile": "generic",
+  "original_geometric_completion": {
+    "network_candidates": 2,
+    "cad_candidates": 3,
+    "added_face_ids": [
+      79
+    ],
+    "repeated_panes": 0,
+    "single_host_patches": 1,
+    "scope": "CAD candidates only; unchanged neural probabilities, no labels or stored target face lists."
+  },
+  "detector_sha256": "334d034a21b533fced593f53104440ed15b00e742fd2830cfa85e560f0a70e91",
+  "operations": [
+    {
+      "returncode": 0,
+      "seconds": 53.786005900008604,
+      "command": [
+        "D:\\projects\\gjy_byproject\\work\\complete_cad_pipeline_20261020\\build\\Release\\Detector.exe",
+        "--remove-predicted-rivets",
+        "D:\\projects\\gjy_byproject\\data\\plane_model\\after_two\\109-ww1-standart-e-1-aircraft CATIA STP_standart-e1_wing_rivets_decals.step",
+        "D:\\projects\\gjy_byproject\\results\\current_three_class_complete_20261020\\cad\\109-ww1-standart-e-1-aircraft_CATIA_STP_standart-e1\\original.pred.csv",
+        "D:\\projects\\gjy_byproject\\results\\current_three_class_complete_20261020\\cad\\109-ww1-standart-e-1-aircraft_CATIA_STP_standart-e1\\109-ww1-standart-e-1-aircraft_CATIA_STP_standart-e1_rivet_removed.step"
+      ],
+      "log": "results\\current_three_class_complete_20261020\\cad\\109-ww1-standart-e-1-aircraft_CATIA_STP_standart-e1\\rivet.log"
+    },
+    {
+      "returncode": 0,
+      "seconds": 7.658094400074333,
+      "command": [
+        "D:\\projects\\gjy_byproject\\work\\complete_cad_pipeline_20261020\\build\\Release\\Detector.exe",
+        "--predict",
+        "D:\\projects\\gjy_byproject\\results\\current_three_class_complete_20261020\\cad\\109-ww1-standart-e-1-aircraft_CATIA_STP_standart-e1\\109-ww1-standart-e-1-aircraft_CATIA_STP_standart-e1_rivet_removed.step",
+        "D:\\projects\\gjy_byproject\\results\\current_three_class_complete_20261020\\cad\\109-ww1-standart-e-1-aircraft_CATIA_STP_standart-e1\\intermediate_features.csv"
+      ],
+      "log": "results\\current_three_class_complete_20261020\\cad\\109-ww1-standart-e-1-aircraft_CATIA_STP_standart-e1\\export.log"
+    },
+    {
+      "returncode": 0,
+      "seconds": 8.746240500011481,
+      "command": [
+        "D:\\projects\\gjy_byproject\\work\\complete_cad_pipeline_20261020\\build\\Release\\Detector.exe",
+        "--remove-predicted-surface-features",
+        "D:\\projects\\gjy_byproject\\results\\current_three_class_complete_20261020\\cad\\109-ww1-standart-e-1-aircraft_CATIA_STP_standart-e1\\109-ww1-standart-e-1-aircraft_CATIA_STP_standart-e1_rivet_removed.step",
+        "D:\\projects\\gjy_byproject\\results\\current_three_class_complete_20261020\\cad\\109-ww1-standart-e-1-aircraft_CATIA_STP_standart-e1\\surface_candidates.csv",
+        "D:\\projects\\gjy_byproject\\results\\current_three_class_complete_20261020\\cad\\109-ww1-standart-e-1-aircraft_CATIA_STP_standart-e1\\surface_candidate.step"
+      ],
+      "log": "results\\current_three_class_complete_20261020\\cad\\109-ww1-standart-e-1-aircraft_CATIA_STP_standart-e1\\surface.log"
+    }
+  ],
+  "rivet_endpoint": {
+    "path": "results\\current_three_class_complete_20261020\\cad\\109-ww1-standart-e-1-aircraft_CATIA_STP_standart-e1\\109-ww1-standart-e-1-aircraft_CATIA_STP_standart-e1_rivet_removed.step",
+    "sha256": "91e98ccab34d0824bdb2581bd0375a130762183fc1d25cfbcae44ff2ffe95179",
+    "faces": 992,
+    "edges": 2111
+  },
+  "intermediate_predictions_sha256": "3006af3e4f0b54878e9a85294fc5808fee6099792be2bdfdde60da2a55d5d321",
+  "intermediate_features_sha256": "64bd077b6fa95ea6658bcbf97f83eaf3aa827e24ae76b2d468fcec51318b0510",
+  "surface_candidates": 0,
+  "intermediate_geometric_completion": {
+    "network_candidates": 0,
+    "cad_candidates": 1,
+    "added_face_ids": [
+      64
+    ],
+    "repeated_panes": 0,
+    "single_host_patches": 1,
+    "scope": "CAD candidates only; unchanged neural probabilities, no labels or stored target face lists."
+  },
+  "candidate_correspondence": {
+    "original_candidates": 3,
+    "current_network_candidates": 0,
+    "geometrically_matched_original_faces": 3,
+    "matched_current_faces": 3,
+    "cad_candidates": 3,
+    "added_candidates": 3,
+    "coordinate_tolerance": 0.04761022800000001,
+    "scope": "Geometry correspondence only; no truth labels or reused face identifiers."
+  },
+  "operator_candidates": 3,
+  "operator_predictions_sha256": "3a1ffc4a764edb1d5e16fb936b7e394bc4aad647033b52f4d595299947397bcf",
+  "surface_operation_succeeded": true,
+  "final": {
+    "path": "results\\current_three_class_complete_20261020\\cad\\109-ww1-standart-e-1-aircraft_CATIA_STP_standart-e1\\final.step",
+    "sha256": "6d4876ca773826ea181b49fd35f1b9a792483f26637a131dc0187df2f7ab954c",
+    "faces": 967,
+    "edges": 2053
+  },
+  "complete": true,
+  "enabled_stages": [
+    "rivet processing",
+    "graph re-extraction and three-class recognition",
+    "window and decal candidate processing"
+  ],
+  "operator_profile_verified": true,
+  "operator_labels_verified_against_current_policy": true
+}

@@ -37,7 +37,7 @@ class G280WindowHostGeometryTests(unittest.TestCase):
         from OCC.Core.BRepCheck import BRepCheck_Analyzer
         from OCC.Core.IntCurvesFace import IntCurvesFace_ShapeIntersector
         from OCC.Core.gp import gp_Dir, gp_Lin, gp_Pnt
-        from mesh_step_surface import load_step
+        from geometry.measure import load_step
         cls.checker = BRepCheck_Analyzer
         cls.intersector_type = IntCurvesFace_ShapeIntersector
         cls.ray = staticmethod(lambda x, y: gp_Lin(gp_Pnt(x, y, 200), gp_Dir(0, 0, -1)))

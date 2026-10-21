@@ -1,0 +1,134 @@
+{
+  "model_name": "27- DC-10 SolidWorks stp igs_DC 10_wing_rivets.step",
+  "model_id": "single_three_class_distilled_finetune_h64_seed123",
+  "protocol_id": "complete-three-class-cad-v2",
+  "checkpoint_sha256": "7e7bed770ff66535e82278aa090779884995fa1249e9ddb18f12f0aa4d38ddda",
+  "original": {
+    "path": "data\\plane_model\\after_two\\27- DC-10 SolidWorks stp igs_DC 10_wing_rivets.step",
+    "sha256": "074d09a8d2ead427d0051020baf12a3150ab7db740cd618be4809b589ae11b23",
+    "faces": 287,
+    "edges": 1029
+  },
+  "original_predictions_sha256": "d73e8b73d82b6b4ceadafc14ec351bb34b7ddfe5198ef297b77177bfb4b3d132",
+  "rivet_candidates": 24,
+  "original_surface_candidates": 119,
+  "route": "split",
+  "reconstruction_profile": "generic",
+  "operations": [
+    {
+      "returncode": 0,
+      "seconds": 116.76515390002169,
+      "command": [
+        "D:\\projects\\gjy_byproject\\build\\Release\\Detector.exe",
+        "--remove-predicted-rivets",
+        "D:\\projects\\gjy_byproject\\data\\plane_model\\after_two\\27- DC-10 SolidWorks stp igs_DC 10_wing_rivets.step",
+        "D:\\projects\\gjy_byproject\\results\\current_three_class_complete_20261020\\cad\\27-_DC-10_SolidWorks_stp_igs_DC_10\\original.pred.csv",
+        "D:\\projects\\gjy_byproject\\results\\current_three_class_complete_20261020\\cad\\27-_DC-10_SolidWorks_stp_igs_DC_10\\27-_DC-10_SolidWorks_stp_igs_DC_10_rivet_removed.step"
+      ],
+      "log": "results\\current_three_class_complete_20261020\\cad\\27-_DC-10_SolidWorks_stp_igs_DC_10\\rivet.log"
+    },
+    {
+      "returncode": 0,
+      "seconds": 25.78805309999734,
+      "command": [
+        "D:\\projects\\gjy_byproject\\build\\Release\\Detector.exe",
+        "--predict",
+        "D:\\projects\\gjy_byproject\\results\\current_three_class_complete_20261020\\cad\\27-_DC-10_SolidWorks_stp_igs_DC_10\\27-_DC-10_SolidWorks_stp_igs_DC_10_rivet_removed.step",
+        "D:\\projects\\gjy_byproject\\results\\current_three_class_complete_20261020\\cad\\27-_DC-10_SolidWorks_stp_igs_DC_10\\intermediate_features.csv"
+      ],
+      "log": "results\\current_three_class_complete_20261020\\cad\\27-_DC-10_SolidWorks_stp_igs_DC_10\\export.log"
+    },
+    {
+      "returncode": 0,
+      "seconds": 118.83709919999819,
+      "command": [
+        "D:\\projects\\gjy_byproject\\build\\Release\\Detector.exe",
+        "--rebuild-split-window-skins",
+        "D:\\projects\\gjy_byproject\\results\\current_three_class_complete_20261020\\cad\\27-_DC-10_SolidWorks_stp_igs_DC_10\\27-_DC-10_SolidWorks_stp_igs_DC_10_rivet_removed.step",
+        "D:\\projects\\gjy_byproject\\results\\current_three_class_complete_20261020\\cad\\27-_DC-10_SolidWorks_stp_igs_DC_10\\surface_candidates.csv",
+        "D:\\projects\\gjy_byproject\\results\\current_three_class_complete_20261020\\cad\\27-_DC-10_SolidWorks_stp_igs_DC_10\\surface_candidate.step"
+      ],
+      "log": "results\\current_three_class_complete_20261020\\cad\\27-_DC-10_SolidWorks_stp_igs_DC_10\\surface.log"
+    },
+    {
+      "returncode": 0,
+      "seconds": 240.56303730001673,
+      "command": [
+        "D:\\Anaconda\\envs\\cad_graph_env\\python.exe",
+        "D:\\projects\\gjy_byproject\\python\\batch_bridge_split_windows.py",
+        "D:\\projects\\gjy_byproject\\results\\current_three_class_complete_20261020\\cad\\27-_DC-10_SolidWorks_stp_igs_DC_10\\surface_candidate.step",
+        "D:\\projects\\gjy_byproject\\results\\current_three_class_complete_20261020\\cad\\27-_DC-10_SolidWorks_stp_igs_DC_10\\bridged.step",
+        "--detector",
+        "D:\\projects\\gjy_byproject\\build\\Release\\Detector.exe"
+      ],
+      "log": "results\\current_three_class_complete_20261020\\cad\\27-_DC-10_SolidWorks_stp_igs_DC_10\\bridge.log"
+    }
+  ],
+  "rivet_endpoint": {
+    "path": "results\\current_three_class_complete_20261020\\cad\\27-_DC-10_SolidWorks_stp_igs_DC_10\\27-_DC-10_SolidWorks_stp_igs_DC_10_rivet_removed.step",
+    "sha256": "f0682ba8328e3b9c373a776a907fb1ae65ae3073464a184dd950c8da9cc65408",
+    "faces": 260,
+    "edges": 968
+  },
+  "intermediate_predictions_sha256": "9a6803576cc3e12a0882511d37d1d8dcfc9682d9da2c2693c45ab267701909ab",
+  "intermediate_features_sha256": "04de872fd237c89371e9694c906ae46b1ef4657645c7244d459b512d434d42c9",
+  "surface_candidates": 0,
+  "candidate_correspondence": {
+    "original_candidates": 119,
+    "current_network_candidates": 0,
+    "geometrically_matched_original_faces": 119,
+    "matched_current_faces": 119,
+    "cad_candidates": 119,
+    "added_candidates": 119,
+    "coordinate_tolerance": 0.00436684866,
+    "scope": "Geometry correspondence only; no truth labels or reused face identifiers."
+  },
+  "operator_candidates": 119,
+  "operator_predictions_sha256": "c963fd212d9f65963db54eff9f8f5afa70b48bd5cef13057d9350afa13371b82",
+  "surface_operation_succeeded": true,
+  "final": {
+    "path": "results\\current_three_class_complete_20261020\\cad\\27-_DC-10_SolidWorks_stp_igs_DC_10\\final.step",
+    "sha256": "02174163f5f6b189c46fb573118c70e17fa7e9c6de9360f54f5821b67f22f724",
+    "faces": 165,
+    "edges": 489
+  },
+  "complete": true,
+  "accepted_protocol_id": "complete-three-class-cad-v3",
+  "candidate_policy_compatibility": {
+    "labels_identical": true,
+    "face_identifiers_identical": true,
+    "original_geometric_completion": {
+      "network_candidates": 119,
+      "cad_candidates": 119,
+      "added_face_ids": [],
+      "repeated_panes": 0,
+      "single_host_patches": 0,
+      "scope": "CAD candidates only; unchanged neural probabilities, no labels or stored target face lists."
+    },
+    "intermediate_geometric_completion": {
+      "network_candidates": 0,
+      "cad_candidates": 0,
+      "added_face_ids": [],
+      "repeated_panes": 0,
+      "single_host_patches": 0,
+      "scope": "CAD candidates only; unchanged neural probabilities, no labels or stored target face lists."
+    },
+    "explanation": "Current candidate policy reproduces the exact operator label vector executed on this same intermediate geometry."
+  },
+  "enabled_stages": [
+    "rivet processing",
+    "graph re-extraction and three-class recognition",
+    "window and decal candidate processing"
+  ],
+  "operator_profile_verified": true,
+  "operator_labels_verified_against_current_policy": true,
+  "bridge_completion": {
+    "additional_bridges": 5,
+    "input_step": "results\\current_three_class_complete_20261020\\cad\\27-_DC-10_SolidWorks_stp_igs_DC_10\\bridged.step",
+    "input_sha256": "a35618e4202bd67e9b0711b724b7d03fd011bc5ee32c32e0f7f3da574c922ee7",
+    "output_sha256": "02174163f5f6b189c46fb573118c70e17fa7e9c6de9360f54f5821b67f22f724",
+    "log": "work/complete_cad_pipeline_20261020/dc10_complete_bridges.log",
+    "source_candidate_sha256": "c963fd212d9f65963db54eff9f8f5afa70b48bd5cef13057d9350afa13371b82",
+    "policy": "Two-edge windows supported by existing shared skin or nearby predicted pane geometry"
+  }
+}

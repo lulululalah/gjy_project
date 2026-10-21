@@ -1,19 +1,114 @@
 [
-  {"key":"aulira", "name":"AULIRA 2", "metric_prefix":"aulira",
-   "labels":"data/plane_model/label/AULIRA 2_wing_rivets.labels.json",
-   "projection":[1,0,0], "up":[0,1,0], "length_axis":2, "detail_fraction":0.22, "detail_semantic":"window"},
-  {"key":"dc10", "name":"DC-10", "metric_prefix":"dc10",
-   "labels":"data/plane_model/label/27- DC-10 SolidWorks stp igs_DC 10_wing_rivets.labels.json",
-   "projection":[1,0,0], "up":[0,1,0], "length_axis":2, "detail_fraction":0.17, "detail_semantic":"window"},
-  {"key":"airbus", "name":"Airbus", "metric_prefix":"airbus",
-   "labels":"data/plane_model/label/Airbus_wing_rivets.labels.json",
-   "projection":[0,0,1], "up":[0,1,0], "length_axis":0, "detail_fraction":0.16, "detail_semantic":"window"},
-  {"key":"gulfstream", "name":"Gulfstream G280 v17", "metric_prefix":"gulfstream",
-   "labels":"data/plane_model/label/Gulfstream G280 v17_wing_rivets.labels.json",
-   "projection":[0,0,1], "up":[0,1,0], "length_axis":0, "detail_fraction":0.20, "detail_semantic":"window",
-   "extra_details":[{"name":"tail_decal", "semantic":"decal", "original_face_ids":[294,327,361,378]}]},
-  {"key":"airplane_body", "name":"Airplane body", "metric_prefix":"airplane_body",
-   "labels":"data/plane_model/label/Airplane body_wing_rivets.labels.json",
-   "projection":[1,0,0], "up":[0,0,1], "length_axis":1, "detail_fraction":0.20,
-   "detail_semantic":"window"}
+  {
+    "key": "aulira",
+    "name": "AULIRA 2",
+    "metric_prefix": "AULIRA_2",
+    "labels": "data/plane_model/label/AULIRA 2_wing_rivets.labels.json",
+    "projection": [
+      1,
+      0,
+      0
+    ],
+    "up": [
+      0,
+      1,
+      0
+    ],
+    "length_axis": 2,
+    "detail_fraction": 0.22,
+    "detail_semantic": "window",
+    "evidence_run": "current_three_class_complete_20261020"
+  },
+  {
+    "key": "dc10",
+    "name": "DC-10",
+    "metric_prefix": "27-_DC-10_SolidWorks_stp_igs_DC_10",
+    "labels": "data/plane_model/label/27- DC-10 SolidWorks stp igs_DC 10_wing_rivets.labels.json",
+    "projection": [
+      1,
+      0,
+      0
+    ],
+    "up": [
+      0,
+      1,
+      0
+    ],
+    "length_axis": 2,
+    "detail_fraction": 0.17,
+    "detail_semantic": "window",
+    "evidence_run": "current_three_class_complete_20261020"
+  },
+  {
+    "key": "airbus",
+    "name": "Airbus",
+    "metric_prefix": "Airbus",
+    "labels": "data/plane_model/label/Airbus_wing_rivets.labels.json",
+    "projection": [
+      0,
+      0,
+      1
+    ],
+    "up": [
+      0,
+      1,
+      0
+    ],
+    "length_axis": 0,
+    "detail_fraction": 0.16,
+    "detail_semantic": "window",
+    "evidence_run": "current_three_class_complete_20261020"
+  },
+  {
+    "key": "gulfstream",
+    "name": "Gulfstream G280 v17",
+    "metric_prefix": "Gulfstream_G280_v17",
+    "labels": "data/plane_model/label/Gulfstream G280 v17_wing_rivets.labels.json",
+    "projection": [
+      0,
+      0,
+      1
+    ],
+    "up": [
+      0,
+      1,
+      0
+    ],
+    "length_axis": 0,
+    "detail_fraction": 0.2,
+    "detail_semantic": "window",
+    "extra_details": [
+      {
+        "name": "tail_decal",
+        "semantic": "decal",
+        "original_face_ids": [
+          294,
+          327,
+          361,
+          378
+        ]
+      }
+    ],
+    "evidence_run": "current_three_class_complete_20261020"
+  },
+  {
+    "key": "airplane_body",
+    "name": "Airplane body",
+    "metric_prefix": "Airplane_body",
+    "labels": "data/plane_model/label/Airplane body_wing_rivets.labels.json",
+    "projection": [
+      1,
+      0,
+      0
+    ],
+    "up": [
+      0,
+      0,
+      1
+    ],
+    "length_axis": 1,
+    "detail_fraction": 0.2,
+    "detail_semantic": "window",
+    "evidence_run": "current_three_class_complete_20261020"
+  }
 ]

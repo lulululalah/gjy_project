@@ -42,6 +42,7 @@ namespace
             << "  Detector.exe --remove-predicted-surface-features <step> <postprocessed-pred.csv> <output.step>\n"
             << "  Detector.exe --rebuild-invalid-surface-hosts <step> <postprocessed-pred.csv> <output.step>\n"
             << "  Detector.exe --rebuild-split-window-skins <step> <postprocessed-pred.csv> <output.step>\n"
+            << "  Detector.exe --complete-split-window-seams <step> <source.step> <source-pred.csv> <output.step>\n"
             << "  Detector.exe --bridge-split-window-face <step> <face-id> <output.step>\n"
             << "  Detector.exe --rebuild-embedded-window-hosts <step> <postprocessed-pred.csv> <output.step> [auto|generic|airplane-body|aulira|airbus|gulfstream-g280]\n"
             << "  Detector.exe --rebuild-embedded-window-hosts-batch <input-dir> <predictions-dir> <output-dir>\n"
@@ -130,6 +131,10 @@ int main(int argc, char *argv[])
     else if (mode == "--rebuild-split-window-skins" && argc == 5)
     {
         return RunSplitWindowSkinRebuild(argv[2], argv[3], argv[4]);
+    }
+    else if (mode == "--complete-split-window-seams" && argc == 6)
+    {
+        return RunCompleteSplitWindowSeams(argv[2],argv[3],argv[4],argv[5]);
     }
     else if (mode == "--bridge-split-window-face" && argc == 5)
     {

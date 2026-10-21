@@ -1,6 +1,6 @@
 {
   "model": "Gulfstream G280 v17",
-  "scope": "Original and final STEP endpoints of Table 8",
+  "scope": "Current original and final STEP endpoints of the mesh comparison table",
   "size": [
     2400,
     800
@@ -66,7 +66,7 @@
       "stage": "before",
       "step": "D:\\projects\\gjy_byproject\\data\\plane_model\\after_two\\Gulfstream G280 v17_wing_rivets.step",
       "step_sha256": "6f22774ee215b073c3cf6ce137fc810e09701ccffca48b0349ae996d312d22bc",
-      "metric_source": "D:\\projects\\gjy_byproject\\results\\e3_mesh\\per_model\\gulfstream_original.json",
+      "metric_source": "D:\\projects\\gjy_byproject\\results\\current_three_class_complete_20261020\\mesh\\Gulfstream_G280_v17_original.json",
       "mesh": {
         "faces": 668,
         "nodes": 15858,
@@ -141,13 +141,13 @@
     },
     {
       "stage": "after",
-      "step": "D:\\projects\\gjy_byproject\\data\\plane_model\\ending\\Gulfstream G280 v17_wing_rivets.step",
-      "step_sha256": "a958756e51ba37e98df26e6882c622f6a9e04b74a33c0dd460f4d34734663d8e",
-      "metric_source": "D:\\projects\\gjy_byproject\\results\\e3_mesh\\per_model\\gulfstream_simplified.json",
+      "step": "D:\\projects\\gjy_byproject\\results\\current_three_class_complete_20261020\\cad\\Gulfstream_G280_v17\\final.step",
+      "step_sha256": "1ab68d364f2f167ea21536d194d6c722d1f8f7cf887fdc364d6e293cbd78baaf",
+      "metric_source": "D:\\projects\\gjy_byproject\\results\\current_three_class_complete_20261020\\mesh\\Gulfstream_G280_v17_simplified.json",
       "mesh": {
-        "faces": 277,
-        "nodes": 8727,
-        "triangles": 11084,
+        "faces": 271,
+        "nodes": 8686,
+        "triangles": 11059,
         "linear_deflection": 0.21882818005633864,
         "mesh_decimated": false
       },

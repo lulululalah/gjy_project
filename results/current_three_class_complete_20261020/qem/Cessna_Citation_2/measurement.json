@@ -1,0 +1,29 @@
+{
+  "model_name": "Cessna Citation 2_wing_rivets.step",
+  "checkpoint_sha256": "7e7bed770ff66535e82278aa090779884995fa1249e9ddb18f12f0aa4d38ddda",
+  "input_step_sha256": "4d879b94232623e614d51770d916c28debfcaa41a45ac52d4c10c09c58b56b86",
+  "final_step_sha256": "e8644892435a65542dfe83411f8c70d7b1014408ed80c0da71663eccf90f163a",
+  "source_triangles": 19686,
+  "requested_target": 17347,
+  "qem_triangles": 17347,
+  "matched_target": true,
+  "qem_version": "0.2.0",
+  "aggregation": 7.0,
+  "preserve_border": false,
+  "stitching_decimal_places": 9,
+  "repeats": 5,
+  "samples": [
+    0.0060056999791413546,
+    0.005375000066123903,
+    0.005400799913331866,
+    0.005612200009636581,
+    0.005394299980252981
+  ],
+  "qem_median_seconds": 0.005400799913331866,
+  "original_meshing_seconds": 0.09305749996565282,
+  "final_meshing_seconds": 0.07382440008223057,
+  "baseline_seconds": 0.09845829987898469,
+  "relative_difference_percent": 25.01962742301228,
+  "source_mesh_sha256": "dcb79443ad08af03255bfa931456839a93cd8d61a539100de41390abeb9c33e7",
+  "scope": "Meshing and QEM kernel components only; excludes extraction, I/O, inference, CAD operations."
+}

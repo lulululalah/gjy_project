@@ -1,6 +1,6 @@
 {
   "model": "DC-10",
-  "scope": "Original and final STEP endpoints of Table 8",
+  "scope": "Current original and final STEP endpoints of the mesh comparison table",
   "size": [
     2400,
     800
@@ -66,7 +66,7 @@
       "stage": "before",
       "step": "D:\\projects\\gjy_byproject\\data\\plane_model\\after_two\\27- DC-10 SolidWorks stp igs_DC 10_wing_rivets.step",
       "step_sha256": "074d09a8d2ead427d0051020baf12a3150ab7db740cd618be4809b589ae11b23",
-      "metric_source": "D:\\projects\\gjy_byproject\\results\\e3_mesh\\per_model\\dc10_original.json",
+      "metric_source": "D:\\projects\\gjy_byproject\\results\\current_three_class_complete_20261020\\mesh\\27-_DC-10_SolidWorks_stp_igs_DC_10_original.json",
       "mesh": {
         "faces": 287,
         "nodes": 27041,
@@ -121,13 +121,13 @@
     },
     {
       "stage": "after",
-      "step": "D:\\projects\\gjy_byproject\\data\\plane_model\\ending\\27- DC-10 SolidWorks stp igs_DC 10_wing_rivets.step",
-      "step_sha256": "7a363fa82a0ee84bb94bdef8de68a26f1cac2d3ccb13bc90ad4ec646379d2b78",
-      "metric_source": "D:\\projects\\gjy_byproject\\results\\e3_mesh\\per_model\\dc10_simplified.json",
+      "step": "D:\\projects\\gjy_byproject\\results\\current_three_class_complete_20261020\\cad\\27-_DC-10_SolidWorks_stp_igs_DC_10\\final.step",
+      "step_sha256": "02174163f5f6b189c46fb573118c70e17fa7e9c6de9360f54f5821b67f22f724",
+      "metric_source": "D:\\projects\\gjy_byproject\\results\\current_three_class_complete_20261020\\mesh\\27-_DC-10_SolidWorks_stp_igs_DC_10_simplified.json",
       "mesh": {
-        "faces": 170,
-        "nodes": 20608,
-        "triangles": 35496,
+        "faces": 165,
+        "nodes": 20329,
+        "triangles": 35208,
         "linear_deflection": 0.3010565958197343,
         "mesh_decimated": false
       },

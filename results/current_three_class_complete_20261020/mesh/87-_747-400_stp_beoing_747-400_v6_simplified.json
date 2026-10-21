@@ -1,0 +1,28 @@
+{
+  "input_step": "D:\\projects\\gjy_byproject\\results\\current_three_class_complete_20261020\\cad\\87-_747-400_stp_beoing_747-400_v6\\final.step",
+  "bounding_box_diagonal": 752.7649296091478,
+  "relative_deflection": 0.0005,
+  "linear_deflection": 0.3763824648045739,
+  "angular_deflection_rad": 0.5,
+  "face_count": 1128,
+  "mesh_node_count": 36970,
+  "mesh_triangle_count": 48794,
+  "mesh_quality": {
+    "degenerate_triangle_count": 10,
+    "minimum_angle_deg": 0.0038553285098727585,
+    "minimum_angle_p05_deg": 1.2409106389761728,
+    "maximum_aspect_ratio": 8605.467532130908,
+    "aspect_ratio_p95": 32.30480483991437
+  },
+  "mesh_repeats": 5,
+  "mesh_elapsed_seconds_samples": [
+    0.31175430002622306,
+    0.34316440008115023,
+    0.3354521000292152,
+    0.3497226000763476,
+    0.3409836000064388
+  ],
+  "mesh_elapsed_seconds_median": 0.3409836000064388,
+  "step_sha256": "7246cfc461f31f88515cf67fc4ed5805fa8dc0058598030cb335c56ff9218e94",
+  "checkpoint_sha256": "7e7bed770ff66535e82278aa090779884995fa1249e9ddb18f12f0aa4d38ddda"
+}

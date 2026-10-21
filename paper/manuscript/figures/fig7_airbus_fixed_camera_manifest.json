@@ -147,10 +147,10 @@
     },
     {
       "stage": "rivet_removed",
-      "step": "D:\\projects\\gjy_byproject\\work\\test_removal_pipeline\\Airbus\\Airbus_removed.step",
-      "labels": "D:\\projects\\gjy_byproject\\work\\test_removal_pipeline\\Airbus\\after_rivet_render.labels.json",
-      "step_sha256": "5e35869cde721572fdd513f4e9670f054123b1b5db5695b1dcbcf879f57d2801",
-      "labels_sha256": "f2edbb21af01e1b8ef97eed6d9f60ed9c01db216edfe7b19c78c3a40f31d3515",
+      "step": "D:\\projects\\gjy_byproject\\results\\current_three_class_complete_20261020\\cad\\Airbus\\Airbus_rivet_removed.step",
+      "labels": "D:\\projects\\gjy_byproject\\results\\current_three_class_complete_20261020\\cad\\Airbus\\rivet_removed.display.labels.json",
+      "step_sha256": "ad9fff30500dcaaa90a771ae1fea5834e1bfd0e97999d28aeb8a33423302dad5",
+      "labels_sha256": "25fd4c824fd3875c006be2deaf6ce9a90fa2795109139ef31f0b26a576f2605a",
       "faces": 1723,
       "images": [
         "fig7_airbus_rivet_removed_overview_fixed.png",

@@ -1,0 +1,30 @@
+{
+  "status": "PASS",
+  "model_id": "single_three_class_distilled_finetune_h64_seed123",
+  "encoder_count": 1,
+  "classifier_heads": 1,
+  "output_classes": 3,
+  "binary_heads": 0,
+  "teacher_used_at_inference": false,
+  "decision": "argmax",
+  "aircraft": 9,
+  "faces": 34162,
+  "truth_differences": 0,
+  "raw_label_differences": 0,
+  "final_label_differences": 0,
+  "max_probability_difference": 2.700000000244174e-07,
+  "viewer_label_differences": 0,
+  "viewer_max_probability_difference": 2.898353577140967e-07,
+  "normalization_matches_trained_pair": true,
+  "backup_hashes_match": true,
+  "invocation": "python/run_recognition_experiment.py --output-dir work/three_class_refinement_default_replay_20261019; no bundle override",
+  "post_cleanup_default_inference": {
+    "status": "PASS",
+    "faces": 34162,
+    "aircraft": 9,
+    "raw_label_differences": 0,
+    "final_label_differences": 0,
+    "max_probability_difference": 2.599999999741698e-07,
+    "old_recognition_checkpoint_required": false
+  }
+}

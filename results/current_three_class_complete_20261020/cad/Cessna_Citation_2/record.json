@@ -1,0 +1,107 @@
+{
+  "model_name": "Cessna Citation 2_wing_rivets.step",
+  "model_id": "single_three_class_distilled_finetune_h64_seed123",
+  "protocol_id": "complete-three-class-cad-v3",
+  "checkpoint_sha256": "7e7bed770ff66535e82278aa090779884995fa1249e9ddb18f12f0aa4d38ddda",
+  "original": {
+    "path": "data\\plane_model\\after_two\\Cessna Citation 2_wing_rivets.step",
+    "sha256": "4d879b94232623e614d51770d916c28debfcaa41a45ac52d4c10c09c58b56b86",
+    "faces": 312,
+    "edges": 899
+  },
+  "original_predictions_sha256": "46207024ff289b76b07b6c17b3d2b40fc79598161f71cfe0232cf175aba0ca24",
+  "rivet_candidates": 48,
+  "original_surface_candidates": 28,
+  "route": "generic",
+  "reconstruction_profile": "generic",
+  "original_geometric_completion": {
+    "network_candidates": 28,
+    "cad_candidates": 28,
+    "added_face_ids": [],
+    "repeated_panes": 0,
+    "single_host_patches": 0,
+    "scope": "CAD candidates only; unchanged neural probabilities, no labels or stored target face lists."
+  },
+  "detector_sha256": "290c83998c0c722570f20d11e28d85e6ece62211a36e6291b1a56bdcbeaca2f5",
+  "operations": [
+    {
+      "returncode": 0,
+      "seconds": 79.43577730003744,
+      "command": [
+        "D:\\projects\\gjy_byproject\\build\\Release\\Detector.exe",
+        "--remove-predicted-rivets",
+        "D:\\projects\\gjy_byproject\\data\\plane_model\\after_two\\Cessna Citation 2_wing_rivets.step",
+        "D:\\projects\\gjy_byproject\\results\\current_three_class_complete_20261020\\cad\\Cessna_Citation_2\\original.pred.csv",
+        "D:\\projects\\gjy_byproject\\results\\current_three_class_complete_20261020\\cad\\Cessna_Citation_2\\Cessna_Citation_2_rivet_removed.step"
+      ],
+      "log": "results\\current_three_class_complete_20261020\\cad\\Cessna_Citation_2\\rivet.log"
+    },
+    {
+      "returncode": 0,
+      "seconds": 3.480203600018285,
+      "command": [
+        "D:\\projects\\gjy_byproject\\build\\Release\\Detector.exe",
+        "--predict",
+        "D:\\projects\\gjy_byproject\\results\\current_three_class_complete_20261020\\cad\\Cessna_Citation_2\\Cessna_Citation_2_rivet_removed.step",
+        "D:\\projects\\gjy_byproject\\results\\current_three_class_complete_20261020\\cad\\Cessna_Citation_2\\intermediate_features.csv"
+      ],
+      "log": "results\\current_three_class_complete_20261020\\cad\\Cessna_Citation_2\\export.log"
+    },
+    {
+      "returncode": 0,
+      "seconds": 5.117844199994579,
+      "command": [
+        "D:\\projects\\gjy_byproject\\build\\Release\\Detector.exe",
+        "--remove-predicted-surface-features",
+        "D:\\projects\\gjy_byproject\\results\\current_three_class_complete_20261020\\cad\\Cessna_Citation_2\\Cessna_Citation_2_rivet_removed.step",
+        "D:\\projects\\gjy_byproject\\results\\current_three_class_complete_20261020\\cad\\Cessna_Citation_2\\surface_candidates.csv",
+        "D:\\projects\\gjy_byproject\\results\\current_three_class_complete_20261020\\cad\\Cessna_Citation_2\\surface_candidate.step"
+      ],
+      "log": "results\\current_three_class_complete_20261020\\cad\\Cessna_Citation_2\\surface.log"
+    }
+  ],
+  "rivet_endpoint": {
+    "path": "results\\current_three_class_complete_20261020\\cad\\Cessna_Citation_2\\Cessna_Citation_2_rivet_removed.step",
+    "sha256": "bd1885bf37fd5cf88db474f30e958a1c6630e57320f0dc4fd6ad678124711b93",
+    "faces": 260,
+    "edges": 779
+  },
+  "intermediate_predictions_sha256": "b82b9b695d9f46c0d6eca57c484caeb68c0d67a8a601a40793a2fe03f02ac495",
+  "intermediate_features_sha256": "2b3137115acf93b709d152d3acdfbb7ba66c1794a6d6c2c25509bc8d85f1c5d8",
+  "surface_candidates": 18,
+  "intermediate_geometric_completion": {
+    "network_candidates": 18,
+    "cad_candidates": 18,
+    "added_face_ids": [],
+    "repeated_panes": 0,
+    "single_host_patches": 0,
+    "scope": "CAD candidates only; unchanged neural probabilities, no labels or stored target face lists."
+  },
+  "candidate_correspondence": {
+    "original_candidates": 28,
+    "current_network_candidates": 18,
+    "geometrically_matched_original_faces": 28,
+    "matched_current_faces": 28,
+    "cad_candidates": 28,
+    "added_candidates": 10,
+    "coordinate_tolerance": 0.13829607000000002,
+    "scope": "Geometry correspondence only; no truth labels or reused face identifiers."
+  },
+  "operator_candidates": 28,
+  "operator_predictions_sha256": "6567209dbb38a5572696885f2853ba6746ae62d1484a13c52fd7111af0571174",
+  "surface_operation_succeeded": true,
+  "final": {
+    "path": "results\\current_three_class_complete_20261020\\cad\\Cessna_Citation_2\\final.step",
+    "sha256": "e8644892435a65542dfe83411f8c70d7b1014408ed80c0da71663eccf90f163a",
+    "faces": 234,
+    "edges": 584
+  },
+  "complete": true,
+  "enabled_stages": [
+    "rivet processing",
+    "graph re-extraction and three-class recognition",
+    "window and decal candidate processing"
+  ],
+  "operator_profile_verified": true,
+  "operator_labels_verified_against_current_policy": true
+}

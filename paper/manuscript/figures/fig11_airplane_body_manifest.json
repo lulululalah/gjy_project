@@ -1,6 +1,6 @@
 {
   "model": "Airplane body",
-  "scope": "Original and final STEP endpoints of Table 8",
+  "scope": "Current original and final STEP endpoints of the mesh comparison table",
   "size": [
     2400,
     800
@@ -66,7 +66,7 @@
       "stage": "before",
       "step": "D:\\projects\\gjy_byproject\\data\\plane_model\\after_two\\Airplane body_wing_rivets.step",
       "step_sha256": "31b6276eafad2a2af1b79d1efaafd9bb5f6e0ea1ba25ac84f06b706a7b13f73f",
-      "metric_source": "D:\\projects\\gjy_byproject\\results\\e3_mesh\\per_model\\airplane_body_original.json",
+      "metric_source": "D:\\projects\\gjy_byproject\\results\\current_three_class_complete_20261020\\mesh\\Airplane_body_original.json",
       "mesh": {
         "faces": 708,
         "nodes": 34721,
@@ -121,9 +121,9 @@
     },
     {
       "stage": "after",
-      "step": "D:\\projects\\gjy_byproject\\data\\plane_model\\ending\\Airplane body_wing_rivets.step",
-      "step_sha256": "14a68afb7eb3726bb37ada8caf94c478edb6895a68bb57f6d32aba2feccb20dc",
-      "metric_source": "D:\\projects\\gjy_byproject\\results\\e3_mesh\\per_model\\airplane_body_simplified.json",
+      "step": "D:\\projects\\gjy_byproject\\results\\current_three_class_complete_20261020\\cad\\Airplane_body\\final.step",
+      "step_sha256": "06c023dca246ed27503e49731f78e90dbcc528481af613745fac78b3e440330f",
+      "metric_source": "D:\\projects\\gjy_byproject\\results\\current_three_class_complete_20261020\\mesh\\Airplane_body_simplified.json",
       "mesh": {
         "faces": 450,
         "nodes": 27114,

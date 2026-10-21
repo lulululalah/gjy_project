@@ -1,19 +1,16 @@
 # Model artifacts
 
-This directory contains retained model artifacts and model-derived outputs. Runtime geometry-processing intermediates remain under `work`.
+This directory contains the single current three-class model and its complete training and inference assets. Runtime geometry-processing intermediates remain under `work`.
 
 ## Current formal model
 
 `final_detection_model/` contains the retained checkpoint, paired normalization statistics, evaluation CSV, training/test snapshots, and the predictions generated from this model.
 
-## Model-derived outputs
+## Current dependencies
 
-- `predictions/postprocess_current_20260909/`: current nine-aircraft predictions used by the formal detection snapshot.
-- `predictions/post_rivet_predictions/`: predictions after the rivet-removal stage.
-- `predictions/test_predictions_all/`: historical prediction outputs.
-- `postprocess/`: topology and surface-visibility post-processing experiments.
-- `visualizations/`: prediction screenshots and related visual artifacts.
-- `evaluation/test_eval_models/`: face-level truth CSVs aligned with the nine formal test STEP models.
-- `label_audits/`: retained label-audit and truth-review artifacts.
+- `final_detection_model/training_assets/`: encoder initialization, train-only auxiliary logits, normalization and identity index required for retraining.
+- `final_detection_model/training_record/`: the selected model's actual training history, settings and provenance.
+- `final_detection_model/evaluation/`: the only formal predictions and metrics, paired with the retained model.
+- Project `python/` and `data/plane_model/after_two/`: executable runtime and required geometry, listed by hash in the formal manifest.
 
-The checkpoint and its statistics file must be used as a pair. The formal snapshot manifest is maintained under `results/e1_detection/current_test_snapshot/manifest.json`.
+The checkpoint and its statistics file must be used as a pair. The formal manifest is `final_detection_model/manifest.json`; commands are in its README. Obsolete candidate models and experiments were removed by explicit user request; see `work/current_three_class_cleanup_20261019/`. Original truth audits and compact manuscript evidence remain as historical records.

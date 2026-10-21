@@ -5,7 +5,7 @@ import pandas as pd
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
-from rivet_topology_guard import suppress_planar_patch_rivet_predictions
+from recognition.postprocess import suppress_planar_patch_rivet_predictions
 
 
 def test_guard_suppresses_only_planar_patch_rivets():

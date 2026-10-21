@@ -1,5 +1,0 @@
-# Formal-system unified three-class comparison
-
-This run trains one unified three-class softmax GNN against the retained formal dual-head system; it does not retrain or replace that dual-head checkpoint. The unified model uses the formal system's fixed 17-aircraft training CSV, fixed nine-aircraft test CSV, 48 node attributes, six edge attributes, four graph-convolution layers, hidden dimension 64, AdamW (learning rate 0.005 and weight decay 0.0001), dropout 0.2, focal-loss gamma 2.0, maximum class weight 5.0, surface-feature weight scale 2.0, seed 123, 50 epochs, full-aircraft graphs, and batch size 8.
-
-The retained formal dual-head output remains the face-level reference: Rivet F1 0.9312 and surface-feature F1 0.8091 on 34,162 frozen test faces. The unified checkpoint was evaluated on the same nine source B-Rep models and face identifiers. Its predictions passed the documented planar-patch rivet guard and surface-feature visibility screening before the face-level metrics were aggregated.

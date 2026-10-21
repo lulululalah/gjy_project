@@ -1,0 +1,29 @@
+{
+  "model_name": "Air Plane Idea A.step",
+  "checkpoint_sha256": "7e7bed770ff66535e82278aa090779884995fa1249e9ddb18f12f0aa4d38ddda",
+  "input_step_sha256": "83048eb1bf22deec4e1bb8fa878188f149e325cf1f1b767469830b27681d01bb",
+  "final_step_sha256": "1c9dad67179410ec66dbeaa7362636efb791f76e7358da0b33104aa2e3d042f6",
+  "source_triangles": 436251,
+  "requested_target": 421385,
+  "qem_triangles": 421385,
+  "matched_target": true,
+  "qem_version": "0.2.0",
+  "aggregation": 7.0,
+  "preserve_border": false,
+  "stitching_decimal_places": 9,
+  "repeats": 5,
+  "samples": [
+    0.24030439998023212,
+    0.18528049997985363,
+    0.19120010000187904,
+    0.20200989989098161,
+    0.19271460000891238
+  ],
+  "qem_median_seconds": 0.19271460000891238,
+  "original_meshing_seconds": 3.8202853000257164,
+  "final_meshing_seconds": 3.778703600051813,
+  "baseline_seconds": 4.012999900034629,
+  "relative_difference_percent": 5.838432739078668,
+  "source_mesh_sha256": "b19470c7376d24a9709b7bd1e4277c5f3f68af2845c5ba0ea68639e16117164f",
+  "scope": "Meshing and QEM kernel components only; excludes extraction, I/O, inference, CAD operations."
+}

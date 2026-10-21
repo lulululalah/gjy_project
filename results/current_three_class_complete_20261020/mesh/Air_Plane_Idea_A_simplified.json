@@ -1,0 +1,28 @@
+{
+  "input_step": "D:\\projects\\gjy_byproject\\results\\current_three_class_complete_20261020\\cad\\Air_Plane_Idea_A\\final.step",
+  "bounding_box_diagonal": 199790.45781569972,
+  "relative_deflection": 0.0005,
+  "linear_deflection": 99.89522890784986,
+  "angular_deflection_rad": 0.5,
+  "face_count": 27230,
+  "mesh_node_count": 430868,
+  "mesh_triangle_count": 421385,
+  "mesh_quality": {
+    "degenerate_triangle_count": 2513,
+    "minimum_angle_deg": 0.0,
+    "minimum_angle_p05_deg": 1.2682425257183674,
+    "maximum_aspect_ratio": 4921917643.220421,
+    "aspect_ratio_p95": 27.937477295693288
+  },
+  "mesh_repeats": 5,
+  "mesh_elapsed_seconds_samples": [
+    3.55823289998807,
+    3.778703600051813,
+    3.7907541999593377,
+    3.5818008000496775,
+    3.847438200027682
+  ],
+  "mesh_elapsed_seconds_median": 3.778703600051813,
+  "step_sha256": "1c9dad67179410ec66dbeaa7362636efb791f76e7358da0b33104aa2e3d042f6",
+  "checkpoint_sha256": "7e7bed770ff66535e82278aa090779884995fa1249e9ddb18f12f0aa4d38ddda"
+}

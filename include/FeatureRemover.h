@@ -27,6 +27,12 @@ int RunBridgeSplitWindowFace(
     int windowFaceId,
     const std::string& outputFile);
 
+int RunCompleteSplitWindowSeams(
+    const std::string& inputFile,
+    const std::string& sourceFile,
+    const std::string& predictionsFile,
+    const std::string& outputFile);
+
 int RunEmbeddedWindowHostRebuild(
     const std::string& inputFile,
     const std::string& predictionsFile,

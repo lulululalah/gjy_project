@@ -1,0 +1,108 @@
+{
+  "model_name": "Gulfstream G280 v17_wing_rivets.step",
+  "model_id": "single_three_class_distilled_finetune_h64_seed123",
+  "protocol_id": "complete-three-class-cad-v3",
+  "checkpoint_sha256": "7e7bed770ff66535e82278aa090779884995fa1249e9ddb18f12f0aa4d38ddda",
+  "original": {
+    "path": "data\\plane_model\\after_two\\Gulfstream G280 v17_wing_rivets.step",
+    "sha256": "6f22774ee215b073c3cf6ce137fc810e09701ccffca48b0349ae996d312d22bc",
+    "faces": 668,
+    "edges": 1793
+  },
+  "original_predictions_sha256": "afb547c60314637c35508bb12f53ce5b4e2156bd3a67abe8d33dc3d5a22634aa",
+  "rivet_candidates": 49,
+  "original_surface_candidates": 61,
+  "route": "embedded",
+  "reconstruction_profile": "gulfstream-g280",
+  "original_geometric_completion": {
+    "network_candidates": 61,
+    "cad_candidates": 61,
+    "added_face_ids": [],
+    "repeated_panes": 0,
+    "single_host_patches": 0,
+    "scope": "CAD candidates only; unchanged neural probabilities, no labels or stored target face lists."
+  },
+  "detector_sha256": "334d034a21b533fced593f53104440ed15b00e742fd2830cfa85e560f0a70e91",
+  "operations": [
+    {
+      "returncode": 0,
+      "seconds": 72.41642820008565,
+      "command": [
+        "D:\\projects\\gjy_byproject\\work\\complete_cad_pipeline_20261020\\build\\Release\\Detector.exe",
+        "--remove-predicted-rivets",
+        "D:\\projects\\gjy_byproject\\data\\plane_model\\after_two\\Gulfstream G280 v17_wing_rivets.step",
+        "D:\\projects\\gjy_byproject\\results\\current_three_class_complete_20261020\\cad\\Gulfstream_G280_v17\\original.pred.csv",
+        "D:\\projects\\gjy_byproject\\results\\current_three_class_complete_20261020\\cad\\Gulfstream_G280_v17\\Gulfstream_G280_v17_rivet_removed.step"
+      ],
+      "log": "results\\current_three_class_complete_20261020\\cad\\Gulfstream_G280_v17\\rivet.log"
+    },
+    {
+      "returncode": 0,
+      "seconds": 13.12906850001309,
+      "command": [
+        "D:\\projects\\gjy_byproject\\work\\complete_cad_pipeline_20261020\\build\\Release\\Detector.exe",
+        "--predict",
+        "D:\\projects\\gjy_byproject\\results\\current_three_class_complete_20261020\\cad\\Gulfstream_G280_v17\\Gulfstream_G280_v17_rivet_removed.step",
+        "D:\\projects\\gjy_byproject\\results\\current_three_class_complete_20261020\\cad\\Gulfstream_G280_v17\\intermediate_features.csv"
+      ],
+      "log": "results\\current_three_class_complete_20261020\\cad\\Gulfstream_G280_v17\\export.log"
+    },
+    {
+      "returncode": 0,
+      "seconds": 4.151861399994232,
+      "command": [
+        "D:\\projects\\gjy_byproject\\work\\complete_cad_pipeline_20261020\\build\\Release\\Detector.exe",
+        "--rebuild-embedded-window-hosts",
+        "D:\\projects\\gjy_byproject\\results\\current_three_class_complete_20261020\\cad\\Gulfstream_G280_v17\\Gulfstream_G280_v17_rivet_removed.step",
+        "D:\\projects\\gjy_byproject\\results\\current_three_class_complete_20261020\\cad\\Gulfstream_G280_v17\\surface_candidates.csv",
+        "D:\\projects\\gjy_byproject\\results\\current_three_class_complete_20261020\\cad\\Gulfstream_G280_v17\\surface_candidate.step",
+        "gulfstream-g280"
+      ],
+      "log": "results\\current_three_class_complete_20261020\\cad\\Gulfstream_G280_v17\\surface.log"
+    }
+  ],
+  "rivet_endpoint": {
+    "path": "results\\current_three_class_complete_20261020\\cad\\Gulfstream_G280_v17\\Gulfstream_G280_v17_rivet_removed.step",
+    "sha256": "394fdc36574a6b93d0c43355e63bc3fff4a194f09cebab15e021826f38b83069",
+    "faces": 612,
+    "edges": 1666
+  },
+  "intermediate_predictions_sha256": "fd9ec275e83edc4eeaeccdd6a4ad2c1535f678752e3d4154cbf36522cd634195",
+  "intermediate_features_sha256": "a52cc9eb7834caa5453c9f3ef1f7a3f2a0920a97ea8961b641b3194c2bea2be5",
+  "surface_candidates": 34,
+  "intermediate_geometric_completion": {
+    "network_candidates": 34,
+    "cad_candidates": 34,
+    "added_face_ids": [],
+    "repeated_panes": 0,
+    "single_host_patches": 0,
+    "scope": "CAD candidates only; unchanged neural probabilities, no labels or stored target face lists."
+  },
+  "candidate_correspondence": {
+    "original_candidates": 61,
+    "current_network_candidates": 34,
+    "geometrically_matched_original_faces": 57,
+    "matched_current_faces": 57,
+    "cad_candidates": 61,
+    "added_candidates": 27,
+    "coordinate_tolerance": 0.0014421339999999999,
+    "scope": "Geometry correspondence only; no truth labels or reused face identifiers."
+  },
+  "operator_candidates": 61,
+  "operator_predictions_sha256": "4c3a59315c72cddc7ad2cb21e1e15ca226f8f89cc980c93959f1972d5dc50ecc",
+  "surface_operation_succeeded": true,
+  "final": {
+    "path": "results\\current_three_class_complete_20261020\\cad\\Gulfstream_G280_v17\\final.step",
+    "sha256": "1ab68d364f2f167ea21536d194d6c722d1f8f7cf887fdc364d6e293cbd78baaf",
+    "faces": 271,
+    "edges": 853
+  },
+  "complete": true,
+  "enabled_stages": [
+    "rivet processing",
+    "graph re-extraction and three-class recognition",
+    "window and decal candidate processing"
+  ],
+  "operator_profile_verified": true,
+  "operator_labels_verified_against_current_policy": true
+}

@@ -1,0 +1,19 @@
+{
+  "schema_version": 1,
+  "enabled": true,
+  "method": "dc10-window-topology",
+  "geometry_sha256": "074d09a8d2ead427d0051020baf12a3150ab7db740cd618be4809b589ae11b23",
+  "train_sha256": "0fb2a339c5a363388c0ec3141bc6f5327ca840304b64aa84283f0503f4c9fd5c",
+  "checkpoint_sha256": "7e7bed770ff66535e82278aa090779884995fa1249e9ddb18f12f0aa4d38ddda",
+  "minimum_score": 0.0,
+  "minimum_inner_wire_panes": 8,
+  "maximum_dihedral": 0.05,
+  "maximum_patch_host_area_ratio": 0.25,
+  "symmetry_axis": 0,
+  "maximum_mirror_area_ratio": 1.1,
+  "mirror_distance_per_sqrt_area": 0.1,
+  "patch_area_factor": 10.0,
+  "maximum_patch_compactness": 3.0,
+  "scope": "Engineering repair developed and checked on this known DC-10 geometry only; no independent generalization claim.",
+  "score_semantics": "recovery_score and pred_confidence retain the neural surface score; they are not geometric confidence estimates."
+}

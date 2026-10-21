@@ -1,0 +1,1192 @@
+[
+  {
+    "model_name": "109-ww1-standart-e-1-aircraft CATIA STP_standart-e1_wing_rivets_decals.step",
+    "model_id": "single_three_class_distilled_finetune_h64_seed123",
+    "protocol_id": "complete-three-class-cad-v3",
+    "checkpoint_sha256": "7e7bed770ff66535e82278aa090779884995fa1249e9ddb18f12f0aa4d38ddda",
+    "original": {
+      "path": "data\\plane_model\\after_two\\109-ww1-standart-e-1-aircraft CATIA STP_standart-e1_wing_rivets_decals.step",
+      "sha256": "5c6dcc1665e3a676091897cebab18b50a238d4f1365c6ebca49563fe549dd970",
+      "faces": 1244,
+      "edges": 2775
+    },
+    "original_predictions_sha256": "078be023ae6bbc5bf5b1eccfa10d0f095d918dca7d437756bcb4f22ee31be37f",
+    "rivet_candidates": 24,
+    "original_surface_candidates": 2,
+    "route": "generic",
+    "reconstruction_profile": "generic",
+    "original_geometric_completion": {
+      "network_candidates": 2,
+      "cad_candidates": 3,
+      "added_face_ids": [
+        79
+      ],
+      "repeated_panes": 0,
+      "single_host_patches": 1,
+      "scope": "CAD candidates only; unchanged neural probabilities, no labels or stored target face lists."
+    },
+    "detector_sha256": "334d034a21b533fced593f53104440ed15b00e742fd2830cfa85e560f0a70e91",
+    "operations": [
+      {
+        "returncode": 0,
+        "seconds": 53.786005900008604,
+        "command": [
+          "D:\\projects\\gjy_byproject\\work\\complete_cad_pipeline_20261020\\build\\Release\\Detector.exe",
+          "--remove-predicted-rivets",
+          "D:\\projects\\gjy_byproject\\data\\plane_model\\after_two\\109-ww1-standart-e-1-aircraft CATIA STP_standart-e1_wing_rivets_decals.step",
+          "D:\\projects\\gjy_byproject\\results\\current_three_class_complete_20261020\\cad\\109-ww1-standart-e-1-aircraft_CATIA_STP_standart-e1\\original.pred.csv",
+          "D:\\projects\\gjy_byproject\\results\\current_three_class_complete_20261020\\cad\\109-ww1-standart-e-1-aircraft_CATIA_STP_standart-e1\\109-ww1-standart-e-1-aircraft_CATIA_STP_standart-e1_rivet_removed.step"
+        ],
+        "log": "results\\current_three_class_complete_20261020\\cad\\109-ww1-standart-e-1-aircraft_CATIA_STP_standart-e1\\rivet.log"
+      },
+      {
+        "returncode": 0,
+        "seconds": 7.658094400074333,
+        "command": [
+          "D:\\projects\\gjy_byproject\\work\\complete_cad_pipeline_20261020\\build\\Release\\Detector.exe",
+          "--predict",
+          "D:\\projects\\gjy_byproject\\results\\current_three_class_complete_20261020\\cad\\109-ww1-standart-e-1-aircraft_CATIA_STP_standart-e1\\109-ww1-standart-e-1-aircraft_CATIA_STP_standart-e1_rivet_removed.step",
+          "D:\\projects\\gjy_byproject\\results\\current_three_class_complete_20261020\\cad\\109-ww1-standart-e-1-aircraft_CATIA_STP_standart-e1\\intermediate_features.csv"
+        ],
+        "log": "results\\current_three_class_complete_20261020\\cad\\109-ww1-standart-e-1-aircraft_CATIA_STP_standart-e1\\export.log"
+      },
+      {
+        "returncode": 0,
+        "seconds": 8.746240500011481,
+        "command": [
+          "D:\\projects\\gjy_byproject\\work\\complete_cad_pipeline_20261020\\build\\Release\\Detector.exe",
+          "--remove-predicted-surface-features",
+          "D:\\projects\\gjy_byproject\\results\\current_three_class_complete_20261020\\cad\\109-ww1-standart-e-1-aircraft_CATIA_STP_standart-e1\\109-ww1-standart-e-1-aircraft_CATIA_STP_standart-e1_rivet_removed.step",
+          "D:\\projects\\gjy_byproject\\results\\current_three_class_complete_20261020\\cad\\109-ww1-standart-e-1-aircraft_CATIA_STP_standart-e1\\surface_candidates.csv",
+          "D:\\projects\\gjy_byproject\\results\\current_three_class_complete_20261020\\cad\\109-ww1-standart-e-1-aircraft_CATIA_STP_standart-e1\\surface_candidate.step"
+        ],
+        "log": "results\\current_three_class_complete_20261020\\cad\\109-ww1-standart-e-1-aircraft_CATIA_STP_standart-e1\\surface.log"
+      }
+    ],
+    "rivet_endpoint": {
+      "path": "results\\current_three_class_complete_20261020\\cad\\109-ww1-standart-e-1-aircraft_CATIA_STP_standart-e1\\109-ww1-standart-e-1-aircraft_CATIA_STP_standart-e1_rivet_removed.step",
+      "sha256": "91e98ccab34d0824bdb2581bd0375a130762183fc1d25cfbcae44ff2ffe95179",
+      "faces": 992,
+      "edges": 2111
+    },
+    "intermediate_predictions_sha256": "3006af3e4f0b54878e9a85294fc5808fee6099792be2bdfdde60da2a55d5d321",
+    "intermediate_features_sha256": "64bd077b6fa95ea6658bcbf97f83eaf3aa827e24ae76b2d468fcec51318b0510",
+    "surface_candidates": 0,
+    "intermediate_geometric_completion": {
+      "network_candidates": 0,
+      "cad_candidates": 1,
+      "added_face_ids": [
+        64
+      ],
+      "repeated_panes": 0,
+      "single_host_patches": 1,
+      "scope": "CAD candidates only; unchanged neural probabilities, no labels or stored target face lists."
+    },
+    "candidate_correspondence": {
+      "original_candidates": 3,
+      "current_network_candidates": 0,
+      "geometrically_matched_original_faces": 3,
+      "matched_current_faces": 3,
+      "cad_candidates": 3,
+      "added_candidates": 3,
+      "coordinate_tolerance": 0.04761022800000001,
+      "scope": "Geometry correspondence only; no truth labels or reused face identifiers."
+    },
+    "operator_candidates": 3,
+    "operator_predictions_sha256": "3a1ffc4a764edb1d5e16fb936b7e394bc4aad647033b52f4d595299947397bcf",
+    "surface_operation_succeeded": true,
+    "final": {
+      "path": "results\\current_three_class_complete_20261020\\cad\\109-ww1-standart-e-1-aircraft_CATIA_STP_standart-e1\\final.step",
+      "sha256": "6d4876ca773826ea181b49fd35f1b9a792483f26637a131dc0187df2f7ab954c",
+      "faces": 967,
+      "edges": 2053
+    },
+    "complete": true,
+    "enabled_stages": [
+      "rivet processing",
+      "graph re-extraction and three-class recognition",
+      "window and decal candidate processing"
+    ],
+    "operator_profile_verified": true,
+    "operator_labels_verified_against_current_policy": true
+  },
+  {
+    "model_name": "27- DC-10 SolidWorks stp igs_DC 10_wing_rivets.step",
+    "model_id": "single_three_class_distilled_finetune_h64_seed123",
+    "protocol_id": "complete-three-class-cad-v2",
+    "checkpoint_sha256": "7e7bed770ff66535e82278aa090779884995fa1249e9ddb18f12f0aa4d38ddda",
+    "original": {
+      "path": "data\\plane_model\\after_two\\27- DC-10 SolidWorks stp igs_DC 10_wing_rivets.step",
+      "sha256": "074d09a8d2ead427d0051020baf12a3150ab7db740cd618be4809b589ae11b23",
+      "faces": 287,
+      "edges": 1029
+    },
+    "original_predictions_sha256": "d73e8b73d82b6b4ceadafc14ec351bb34b7ddfe5198ef297b77177bfb4b3d132",
+    "rivet_candidates": 24,
+    "original_surface_candidates": 119,
+    "route": "split",
+    "reconstruction_profile": "generic",
+    "operations": [
+      {
+        "returncode": 0,
+        "seconds": 116.76515390002169,
+        "command": [
+          "D:\\projects\\gjy_byproject\\build\\Release\\Detector.exe",
+          "--remove-predicted-rivets",
+          "D:\\projects\\gjy_byproject\\data\\plane_model\\after_two\\27- DC-10 SolidWorks stp igs_DC 10_wing_rivets.step",
+          "D:\\projects\\gjy_byproject\\results\\current_three_class_complete_20261020\\cad\\27-_DC-10_SolidWorks_stp_igs_DC_10\\original.pred.csv",
+          "D:\\projects\\gjy_byproject\\results\\current_three_class_complete_20261020\\cad\\27-_DC-10_SolidWorks_stp_igs_DC_10\\27-_DC-10_SolidWorks_stp_igs_DC_10_rivet_removed.step"
+        ],
+        "log": "results\\current_three_class_complete_20261020\\cad\\27-_DC-10_SolidWorks_stp_igs_DC_10\\rivet.log"
+      },
+      {
+        "returncode": 0,
+        "seconds": 25.78805309999734,
+        "command": [
+          "D:\\projects\\gjy_byproject\\build\\Release\\Detector.exe",
+          "--predict",
+          "D:\\projects\\gjy_byproject\\results\\current_three_class_complete_20261020\\cad\\27-_DC-10_SolidWorks_stp_igs_DC_10\\27-_DC-10_SolidWorks_stp_igs_DC_10_rivet_removed.step",
+          "D:\\projects\\gjy_byproject\\results\\current_three_class_complete_20261020\\cad\\27-_DC-10_SolidWorks_stp_igs_DC_10\\intermediate_features.csv"
+        ],
+        "log": "results\\current_three_class_complete_20261020\\cad\\27-_DC-10_SolidWorks_stp_igs_DC_10\\export.log"
+      },
+      {
+        "returncode": 0,
+        "seconds": 118.83709919999819,
+        "command": [
+          "D:\\projects\\gjy_byproject\\build\\Release\\Detector.exe",
+          "--rebuild-split-window-skins",
+          "D:\\projects\\gjy_byproject\\results\\current_three_class_complete_20261020\\cad\\27-_DC-10_SolidWorks_stp_igs_DC_10\\27-_DC-10_SolidWorks_stp_igs_DC_10_rivet_removed.step",
+          "D:\\projects\\gjy_byproject\\results\\current_three_class_complete_20261020\\cad\\27-_DC-10_SolidWorks_stp_igs_DC_10\\surface_candidates.csv",
+          "D:\\projects\\gjy_byproject\\results\\current_three_class_complete_20261020\\cad\\27-_DC-10_SolidWorks_stp_igs_DC_10\\surface_candidate.step"
+        ],
+        "log": "results\\current_three_class_complete_20261020\\cad\\27-_DC-10_SolidWorks_stp_igs_DC_10\\surface.log"
+      },
+      {
+        "returncode": 0,
+        "seconds": 240.56303730001673,
+        "command": [
+          "D:\\Anaconda\\envs\\cad_graph_env\\python.exe",
+          "D:\\projects\\gjy_byproject\\python\\batch_bridge_split_windows.py",
+          "D:\\projects\\gjy_byproject\\results\\current_three_class_complete_20261020\\cad\\27-_DC-10_SolidWorks_stp_igs_DC_10\\surface_candidate.step",
+          "D:\\projects\\gjy_byproject\\results\\current_three_class_complete_20261020\\cad\\27-_DC-10_SolidWorks_stp_igs_DC_10\\bridged.step",
+          "--detector",
+          "D:\\projects\\gjy_byproject\\build\\Release\\Detector.exe"
+        ],
+        "log": "results\\current_three_class_complete_20261020\\cad\\27-_DC-10_SolidWorks_stp_igs_DC_10\\bridge.log"
+      }
+    ],
+    "rivet_endpoint": {
+      "path": "results\\current_three_class_complete_20261020\\cad\\27-_DC-10_SolidWorks_stp_igs_DC_10\\27-_DC-10_SolidWorks_stp_igs_DC_10_rivet_removed.step",
+      "sha256": "f0682ba8328e3b9c373a776a907fb1ae65ae3073464a184dd950c8da9cc65408",
+      "faces": 260,
+      "edges": 968
+    },
+    "intermediate_predictions_sha256": "9a6803576cc3e12a0882511d37d1d8dcfc9682d9da2c2693c45ab267701909ab",
+    "intermediate_features_sha256": "04de872fd237c89371e9694c906ae46b1ef4657645c7244d459b512d434d42c9",
+    "surface_candidates": 0,
+    "candidate_correspondence": {
+      "original_candidates": 119,
+      "current_network_candidates": 0,
+      "geometrically_matched_original_faces": 119,
+      "matched_current_faces": 119,
+      "cad_candidates": 119,
+      "added_candidates": 119,
+      "coordinate_tolerance": 0.00436684866,
+      "scope": "Geometry correspondence only; no truth labels or reused face identifiers."
+    },
+    "operator_candidates": 119,
+    "operator_predictions_sha256": "c963fd212d9f65963db54eff9f8f5afa70b48bd5cef13057d9350afa13371b82",
+    "surface_operation_succeeded": true,
+    "final": {
+      "path": "results\\current_three_class_complete_20261020\\cad\\27-_DC-10_SolidWorks_stp_igs_DC_10\\final.step",
+      "sha256": "02174163f5f6b189c46fb573118c70e17fa7e9c6de9360f54f5821b67f22f724",
+      "faces": 165,
+      "edges": 489
+    },
+    "complete": true,
+    "accepted_protocol_id": "complete-three-class-cad-v3",
+    "candidate_policy_compatibility": {
+      "labels_identical": true,
+      "face_identifiers_identical": true,
+      "original_geometric_completion": {
+        "network_candidates": 119,
+        "cad_candidates": 119,
+        "added_face_ids": [],
+        "repeated_panes": 0,
+        "single_host_patches": 0,
+        "scope": "CAD candidates only; unchanged neural probabilities, no labels or stored target face lists."
+      },
+      "intermediate_geometric_completion": {
+        "network_candidates": 0,
+        "cad_candidates": 0,
+        "added_face_ids": [],
+        "repeated_panes": 0,
+        "single_host_patches": 0,
+        "scope": "CAD candidates only; unchanged neural probabilities, no labels or stored target face lists."
+      },
+      "explanation": "Current candidate policy reproduces the exact operator label vector executed on this same intermediate geometry."
+    },
+    "enabled_stages": [
+      "rivet processing",
+      "graph re-extraction and three-class recognition",
+      "window and decal candidate processing"
+    ],
+    "operator_profile_verified": true,
+    "operator_labels_verified_against_current_policy": true,
+    "bridge_completion": {
+      "additional_bridges": 5,
+      "input_step": "results\\current_three_class_complete_20261020\\cad\\27-_DC-10_SolidWorks_stp_igs_DC_10\\bridged.step",
+      "input_sha256": "a35618e4202bd67e9b0711b724b7d03fd011bc5ee32c32e0f7f3da574c922ee7",
+      "output_sha256": "02174163f5f6b189c46fb573118c70e17fa7e9c6de9360f54f5821b67f22f724",
+      "log": "work/complete_cad_pipeline_20261020/dc10_complete_bridges.log",
+      "source_candidate_sha256": "c963fd212d9f65963db54eff9f8f5afa70b48bd5cef13057d9350afa13371b82",
+      "policy": "Two-edge windows supported by existing shared skin or nearby predicted pane geometry"
+    }
+  },
+  {
+    "model_name": "87- 747-400 stp_beoing 747-400 v6_wing_rivets.stp",
+    "model_id": "single_three_class_distilled_finetune_h64_seed123",
+    "protocol_id": "complete-three-class-cad-v3",
+    "checkpoint_sha256": "7e7bed770ff66535e82278aa090779884995fa1249e9ddb18f12f0aa4d38ddda",
+    "original": {
+      "path": "data\\plane_model\\after_two\\87- 747-400 stp_beoing 747-400 v6_wing_rivets.stp",
+      "sha256": "15f45bb8c17a68543ad4c9c90add1fb24777131c7f820eb3b5153325353a0583",
+      "faces": 1432,
+      "edges": 7073
+    },
+    "original_predictions_sha256": "38867e529a7731cdeb01557933d87a23bb7781ba9e258b3d800e814888f883ed",
+    "rivet_candidates": 30,
+    "original_surface_candidates": 260,
+    "route": "generic",
+    "reconstruction_profile": "generic",
+    "original_geometric_completion": {
+      "network_candidates": 260,
+      "cad_candidates": 260,
+      "added_face_ids": [],
+      "repeated_panes": 0,
+      "single_host_patches": 0,
+      "scope": "CAD candidates only; unchanged neural probabilities, no labels or stored target face lists."
+    },
+    "detector_sha256": "334d034a21b533fced593f53104440ed15b00e742fd2830cfa85e560f0a70e91",
+    "operations": [
+      {
+        "returncode": 0,
+        "seconds": 351.0057698000455,
+        "command": [
+          "D:\\projects\\gjy_byproject\\build\\Release\\Detector.exe",
+          "--remove-predicted-rivets",
+          "D:\\projects\\gjy_byproject\\data\\plane_model\\after_two\\87- 747-400 stp_beoing 747-400 v6_wing_rivets.stp",
+          "D:\\projects\\gjy_byproject\\results\\current_three_class_complete_20261020\\cad\\87-_747-400_stp_beoing_747-400_v6\\original.pred.csv",
+          "D:\\projects\\gjy_byproject\\results\\current_three_class_complete_20261020\\cad\\87-_747-400_stp_beoing_747-400_v6\\87-_747-400_stp_beoing_747-400_v6_rivet_removed.step"
+        ],
+        "log": "results\\current_three_class_complete_20261020\\cad\\87-_747-400_stp_beoing_747-400_v6\\rivet.log"
+      },
+      {
+        "returncode": 0,
+        "seconds": 28.786089400062338,
+        "command": [
+          "D:\\projects\\gjy_byproject\\build\\Release\\Detector.exe",
+          "--predict",
+          "D:\\projects\\gjy_byproject\\results\\current_three_class_complete_20261020\\cad\\87-_747-400_stp_beoing_747-400_v6\\87-_747-400_stp_beoing_747-400_v6_rivet_removed.step",
+          "D:\\projects\\gjy_byproject\\results\\current_three_class_complete_20261020\\cad\\87-_747-400_stp_beoing_747-400_v6\\intermediate_features.csv"
+        ],
+        "log": "results\\current_three_class_complete_20261020\\cad\\87-_747-400_stp_beoing_747-400_v6\\export.log"
+      },
+      {
+        "returncode": 0,
+        "seconds": 29.600035700015724,
+        "command": [
+          "D:\\projects\\gjy_byproject\\build\\Release\\Detector.exe",
+          "--remove-predicted-surface-features",
+          "D:\\projects\\gjy_byproject\\results\\current_three_class_complete_20261020\\cad\\87-_747-400_stp_beoing_747-400_v6\\87-_747-400_stp_beoing_747-400_v6_rivet_removed.step",
+          "D:\\projects\\gjy_byproject\\results\\current_three_class_complete_20261020\\cad\\87-_747-400_stp_beoing_747-400_v6\\surface_candidates.csv",
+          "D:\\projects\\gjy_byproject\\results\\current_three_class_complete_20261020\\cad\\87-_747-400_stp_beoing_747-400_v6\\surface_candidate.step"
+        ],
+        "log": "results\\current_three_class_complete_20261020\\cad\\87-_747-400_stp_beoing_747-400_v6\\surface.log"
+      }
+    ],
+    "rivet_endpoint": {
+      "path": "results\\current_three_class_complete_20261020\\cad\\87-_747-400_stp_beoing_747-400_v6\\87-_747-400_stp_beoing_747-400_v6_rivet_removed.step",
+      "sha256": "de6f4c31baf6e6556054b678cfee71795d941559c686cbd5e1924cc5539efe83",
+      "faces": 1382,
+      "edges": 6977
+    },
+    "intermediate_predictions_sha256": "e2290ac89edd8c2804cc2aa3045be91345f4145ead0427c75a02a52ed9b1a83c",
+    "intermediate_features_sha256": "8923de6ad8f30482be1ff35221b89a83284b51fe48a6db35bdba6c6c4d0641b5",
+    "surface_candidates": 260,
+    "intermediate_geometric_completion": {
+      "network_candidates": 260,
+      "cad_candidates": 260,
+      "added_face_ids": [],
+      "repeated_panes": 0,
+      "single_host_patches": 0,
+      "scope": "CAD candidates only; unchanged neural probabilities, no labels or stored target face lists."
+    },
+    "candidate_correspondence": {
+      "original_candidates": 260,
+      "current_network_candidates": 260,
+      "geometrically_matched_original_faces": 260,
+      "matched_current_faces": 260,
+      "cad_candidates": 258,
+      "added_candidates": 0,
+      "protected_host_faces": [
+        1381,
+        1382
+      ],
+      "coordinate_tolerance": 0.0047384705000000004,
+      "scope": "Geometry correspondence only; no truth labels or reused face identifiers."
+    },
+    "operator_candidates": 258,
+    "operator_predictions_sha256": "b0d75f497e9f4a4e7b5e1590080ec10b8936b1bfe228b329210443860879afb7",
+    "surface_operation_succeeded": true,
+    "final": {
+      "path": "results\\current_three_class_complete_20261020\\cad\\87-_747-400_stp_beoing_747-400_v6\\final.step",
+      "sha256": "7246cfc461f31f88515cf67fc4ed5805fa8dc0058598030cb335c56ff9218e94",
+      "faces": 1128,
+      "edges": 3228
+    },
+    "complete": true,
+    "enabled_stages": [
+      "rivet processing",
+      "graph re-extraction and three-class recognition",
+      "window and decal candidate processing"
+    ],
+    "operator_profile_verified": true,
+    "operator_labels_verified_against_current_policy": true
+  },
+  {
+    "model_name": "AULIRA 2_wing_rivets.step",
+    "model_id": "single_three_class_distilled_finetune_h64_seed123",
+    "protocol_id": "complete-three-class-cad-v3",
+    "checkpoint_sha256": "7e7bed770ff66535e82278aa090779884995fa1249e9ddb18f12f0aa4d38ddda",
+    "original": {
+      "path": "data\\plane_model\\after_two\\AULIRA 2_wing_rivets.step",
+      "sha256": "14553b9c5def46798d3238a1826bb84fdc468ef4b399393add9ffe87364b1541",
+      "faces": 370,
+      "edges": 900
+    },
+    "original_predictions_sha256": "5f74fa869a2f796508c5c93e8f6deab6bd993eaa953ef7d6eed103032983e8db",
+    "rivet_candidates": 48,
+    "original_surface_candidates": 11,
+    "route": "embedded",
+    "reconstruction_profile": "aulira",
+    "original_geometric_completion": {
+      "network_candidates": 11,
+      "cad_candidates": 11,
+      "added_face_ids": [],
+      "repeated_panes": 0,
+      "single_host_patches": 0,
+      "scope": "CAD candidates only; unchanged neural probabilities, no labels or stored target face lists."
+    },
+    "detector_sha256": "e90fcad96f674339a29c749517a1a64db7ec235d11fee888ac456cea783acf97",
+    "operations": [
+      {
+        "returncode": 0,
+        "seconds": 87.64813109999523,
+        "command": [
+          "D:\\projects\\gjy_byproject\\work\\complete_cad_pipeline_20261020\\build\\Release\\Detector.exe",
+          "--remove-predicted-rivets",
+          "D:\\projects\\gjy_byproject\\data\\plane_model\\after_two\\AULIRA 2_wing_rivets.step",
+          "D:\\projects\\gjy_byproject\\results\\current_three_class_complete_20261020\\cad\\AULIRA_2\\original.pred.csv",
+          "D:\\projects\\gjy_byproject\\results\\current_three_class_complete_20261020\\cad\\AULIRA_2\\AULIRA_2_rivet_removed.step"
+        ],
+        "log": "results\\current_three_class_complete_20261020\\cad\\AULIRA_2\\rivet.log"
+      },
+      {
+        "returncode": 0,
+        "seconds": 20.444826200022362,
+        "command": [
+          "D:\\projects\\gjy_byproject\\work\\complete_cad_pipeline_20261020\\build\\Release\\Detector.exe",
+          "--predict",
+          "D:\\projects\\gjy_byproject\\results\\current_three_class_complete_20261020\\cad\\AULIRA_2\\AULIRA_2_rivet_removed.step",
+          "D:\\projects\\gjy_byproject\\results\\current_three_class_complete_20261020\\cad\\AULIRA_2\\intermediate_features.csv"
+        ],
+        "log": "results\\current_three_class_complete_20261020\\cad\\AULIRA_2\\export.log"
+      },
+      {
+        "returncode": 0,
+        "seconds": 1.060963899944909,
+        "command": [
+          "D:\\projects\\gjy_byproject\\work\\complete_cad_pipeline_20261020\\build\\Release\\Detector.exe",
+          "--rebuild-embedded-window-hosts",
+          "D:\\projects\\gjy_byproject\\results\\current_three_class_complete_20261020\\cad\\AULIRA_2\\AULIRA_2_rivet_removed.step",
+          "D:\\projects\\gjy_byproject\\results\\current_three_class_complete_20261020\\cad\\AULIRA_2\\surface_candidates.csv",
+          "D:\\projects\\gjy_byproject\\results\\current_three_class_complete_20261020\\cad\\AULIRA_2\\surface_candidate.step",
+          "aulira"
+        ],
+        "log": "results\\current_three_class_complete_20261020\\cad\\AULIRA_2\\surface.log"
+      }
+    ],
+    "rivet_endpoint": {
+      "path": "results\\current_three_class_complete_20261020\\cad\\AULIRA_2\\AULIRA_2_rivet_removed.step",
+      "sha256": "fc2e8e70152d084456b71af7088b9759c1a7eb47c85d7d74fdbf3028ddf463be",
+      "faces": 316,
+      "edges": 773
+    },
+    "intermediate_predictions_sha256": "2a2e3d9262d0f8d398845ee730d7ddd6da1e6249d02bd104562ca47feb4bc558",
+    "intermediate_features_sha256": "70b05163b88289ea41c64f02df75df754ea29273696e9175ef2fff605440c10e",
+    "surface_candidates": 10,
+    "intermediate_geometric_completion": {
+      "network_candidates": 10,
+      "cad_candidates": 10,
+      "added_face_ids": [],
+      "repeated_panes": 0,
+      "single_host_patches": 0,
+      "scope": "CAD candidates only; unchanged neural probabilities, no labels or stored target face lists."
+    },
+    "candidate_correspondence": {
+      "original_candidates": 11,
+      "current_network_candidates": 10,
+      "geometrically_matched_original_faces": 11,
+      "matched_current_faces": 11,
+      "cad_candidates": 10,
+      "added_candidates": 0,
+      "protected_host_faces": [
+        28
+      ],
+      "coordinate_tolerance": 0.0038935000000000007,
+      "scope": "Geometry correspondence only; no truth labels or reused face identifiers."
+    },
+    "operator_candidates": 10,
+    "operator_predictions_sha256": "12b962939270ade2cc0b14188dae0c72bc2618eed870dc1ffc235b3a1592d9da",
+    "surface_operation_succeeded": true,
+    "final": {
+      "path": "results\\current_three_class_complete_20261020\\cad\\AULIRA_2\\final.step",
+      "sha256": "a740703bdd9e321de946bc7863812c92d72f7517484a7654ce87fd9765c01772",
+      "faces": 136,
+      "edges": 292
+    },
+    "complete": true,
+    "enabled_stages": [
+      "rivet processing",
+      "graph re-extraction and three-class recognition",
+      "window and decal candidate processing"
+    ],
+    "operator_profile_verified": true,
+    "operator_labels_verified_against_current_policy": true
+  },
+  {
+    "model_name": "Air Plane Idea A.step",
+    "model_id": "single_three_class_distilled_finetune_h64_seed123",
+    "protocol_id": "complete-three-class-cad-v3",
+    "checkpoint_sha256": "7e7bed770ff66535e82278aa090779884995fa1249e9ddb18f12f0aa4d38ddda",
+    "original": {
+      "path": "data\\plane_model\\after_two\\Air Plane Idea A.STEP",
+      "sha256": "83048eb1bf22deec4e1bb8fa878188f149e325cf1f1b767469830b27681d01bb",
+      "faces": 27366,
+      "edges": 71531
+    },
+    "original_predictions_sha256": "db0a8a7f0a7264cf8f550f109e67047e5f79d087e4e0c0e419684a482e764866",
+    "rivet_candidates": 0,
+    "original_surface_candidates": 48,
+    "route": "invalid-host",
+    "reconstruction_profile": "generic",
+    "original_geometric_completion": {
+      "network_candidates": 48,
+      "cad_candidates": 136,
+      "added_face_ids": [
+        178,
+        179,
+        180,
+        181,
+        182,
+        183,
+        184,
+        185,
+        186,
+        187,
+        188,
+        189,
+        190,
+        191,
+        192,
+        193,
+        194,
+        195,
+        196,
+        197,
+        198,
+        199,
+        200,
+        201,
+        202,
+        203,
+        204,
+        205,
+        206,
+        207,
+        208,
+        209,
+        210,
+        211,
+        212,
+        213,
+        214,
+        215,
+        216,
+        217,
+        218,
+        219,
+        220,
+        221,
+        227,
+        228,
+        229,
+        230,
+        231,
+        232,
+        233,
+        234,
+        235,
+        236,
+        237,
+        238,
+        239,
+        240,
+        241,
+        242,
+        243,
+        244,
+        245,
+        246,
+        247,
+        248,
+        249,
+        250,
+        251,
+        252,
+        253,
+        254,
+        255,
+        256,
+        257,
+        258,
+        259,
+        260,
+        261,
+        262,
+        263,
+        264,
+        265,
+        266,
+        267,
+        268,
+        269,
+        270
+      ],
+      "repeated_panes": 88,
+      "single_host_patches": 0,
+      "scope": "CAD candidates only; unchanged neural probabilities, no labels or stored target face lists."
+    },
+    "detector_sha256": "290c83998c0c722570f20d11e28d85e6ece62211a36e6291b1a56bdcbeaca2f5",
+    "operations": [
+      {
+        "returncode": 0,
+        "seconds": 161.43486159993336,
+        "command": [
+          "D:\\projects\\gjy_byproject\\build\\Release\\Detector.exe",
+          "--predict",
+          "D:\\projects\\gjy_byproject\\results\\current_three_class_complete_20261020\\cad\\Air_Plane_Idea_A\\Air_Plane_Idea_A_rivet_removed.step",
+          "D:\\projects\\gjy_byproject\\results\\current_three_class_complete_20261020\\cad\\Air_Plane_Idea_A\\intermediate_features.csv"
+        ],
+        "log": "results\\current_three_class_complete_20261020\\cad\\Air_Plane_Idea_A\\export.log"
+      },
+      {
+        "returncode": 0,
+        "seconds": 97.75914599990938,
+        "command": [
+          "D:\\projects\\gjy_byproject\\build\\Release\\Detector.exe",
+          "--rebuild-invalid-surface-hosts",
+          "D:\\projects\\gjy_byproject\\results\\current_three_class_complete_20261020\\cad\\Air_Plane_Idea_A\\Air_Plane_Idea_A_rivet_removed.step",
+          "D:\\projects\\gjy_byproject\\results\\current_three_class_complete_20261020\\cad\\Air_Plane_Idea_A\\surface_candidates.csv",
+          "D:\\projects\\gjy_byproject\\results\\current_three_class_complete_20261020\\cad\\Air_Plane_Idea_A\\surface_candidate.step"
+        ],
+        "log": "results\\current_three_class_complete_20261020\\cad\\Air_Plane_Idea_A\\surface.log"
+      }
+    ],
+    "rivet_endpoint": {
+      "path": "results\\current_three_class_complete_20261020\\cad\\Air_Plane_Idea_A\\Air_Plane_Idea_A_rivet_removed.step",
+      "sha256": "83048eb1bf22deec4e1bb8fa878188f149e325cf1f1b767469830b27681d01bb",
+      "faces": 27366,
+      "edges": 71531
+    },
+    "intermediate_predictions_sha256": "497b45b02f015e2a99785e6e7441c873ce59732cadd99a8f75e42aebdc546a23",
+    "intermediate_features_sha256": "420cae1574a2a0fe75ec3c681a9f86e2bb8b38c9cb176ab8654cb35944947002",
+    "surface_candidates": 48,
+    "intermediate_geometric_completion": {
+      "network_candidates": 48,
+      "cad_candidates": 136,
+      "added_face_ids": [
+        178,
+        179,
+        180,
+        181,
+        182,
+        183,
+        184,
+        185,
+        186,
+        187,
+        188,
+        189,
+        190,
+        191,
+        192,
+        193,
+        194,
+        195,
+        196,
+        197,
+        198,
+        199,
+        200,
+        201,
+        202,
+        203,
+        204,
+        205,
+        206,
+        207,
+        208,
+        209,
+        210,
+        211,
+        212,
+        213,
+        214,
+        215,
+        216,
+        217,
+        218,
+        219,
+        220,
+        221,
+        227,
+        228,
+        229,
+        230,
+        231,
+        232,
+        233,
+        234,
+        235,
+        236,
+        237,
+        238,
+        239,
+        240,
+        241,
+        242,
+        243,
+        244,
+        245,
+        246,
+        247,
+        248,
+        249,
+        250,
+        251,
+        252,
+        253,
+        254,
+        255,
+        256,
+        257,
+        258,
+        259,
+        260,
+        261,
+        262,
+        263,
+        264,
+        265,
+        266,
+        267,
+        268,
+        269,
+        270
+      ],
+      "repeated_panes": 88,
+      "single_host_patches": 0,
+      "scope": "CAD candidates only; unchanged neural probabilities, no labels or stored target face lists."
+    },
+    "candidate_correspondence": {
+      "original_candidates": 136,
+      "current_network_candidates": 48,
+      "geometrically_matched_original_faces": 136,
+      "matched_current_faces": 136,
+      "cad_candidates": 136,
+      "added_candidates": 88,
+      "coordinate_tolerance": 1.3843020000000001,
+      "scope": "Geometry correspondence only; no truth labels or reused face identifiers."
+    },
+    "operator_candidates": 136,
+    "operator_predictions_sha256": "7d50b15ea47a4f319a59114b55495b39a9e1b5a53949067b94860a857302e580",
+    "surface_operation_succeeded": true,
+    "final": {
+      "path": "results\\current_three_class_complete_20261020\\cad\\Air_Plane_Idea_A\\final.step",
+      "sha256": "1c9dad67179410ec66dbeaa7362636efb791f76e7358da0b33104aa2e3d042f6",
+      "faces": 27230,
+      "edges": 71135
+    },
+    "complete": true,
+    "enabled_stages": [
+      "rivet processing",
+      "graph re-extraction and three-class recognition",
+      "window and decal candidate processing"
+    ],
+    "operator_profile_verified": true,
+    "operator_labels_verified_against_current_policy": true
+  },
+  {
+    "model_name": "Airbus_wing_rivets.step",
+    "model_id": "single_three_class_distilled_finetune_h64_seed123",
+    "protocol_id": "complete-three-class-cad-v3",
+    "checkpoint_sha256": "7e7bed770ff66535e82278aa090779884995fa1249e9ddb18f12f0aa4d38ddda",
+    "original": {
+      "path": "data\\plane_model\\after_two\\Airbus_wing_rivets.step",
+      "sha256": "8574a354f15b0b3ab7925ac9d058db29a3aec31f73954b1e58013c8db5f075f5",
+      "faces": 1775,
+      "edges": 4949
+    },
+    "original_predictions_sha256": "eef6559dc6c5fb76a51b1efa10c55ec5949c4ef6c29a0f9ca709f86fc122374d",
+    "rivet_candidates": 48,
+    "original_surface_candidates": 245,
+    "route": "embedded",
+    "reconstruction_profile": "airbus",
+    "original_geometric_completion": {
+      "network_candidates": 245,
+      "cad_candidates": 245,
+      "added_face_ids": [],
+      "repeated_panes": 0,
+      "single_host_patches": 0,
+      "scope": "CAD candidates only; unchanged neural probabilities, no labels or stored target face lists."
+    },
+    "detector_sha256": "3d27c03c9aeedba04ed8c30a72f68480f5d04036cfed8f273c25fb05d8d30964",
+    "operations": [
+      {
+        "returncode": 0,
+        "seconds": 703.9298683999805,
+        "command": [
+          "D:\\projects\\gjy_byproject\\work\\complete_cad_pipeline_20261020\\build\\Release\\Detector.exe",
+          "--remove-predicted-rivets",
+          "D:\\projects\\gjy_byproject\\data\\plane_model\\after_two\\Airbus_wing_rivets.step",
+          "D:\\projects\\gjy_byproject\\results\\current_three_class_complete_20261020\\cad\\Airbus\\original.pred.csv",
+          "D:\\projects\\gjy_byproject\\results\\current_three_class_complete_20261020\\cad\\Airbus\\Airbus_rivet_removed.step"
+        ],
+        "log": "results\\current_three_class_complete_20261020\\cad\\Airbus\\rivet.log"
+      },
+      {
+        "returncode": 0,
+        "seconds": 234.8518509999849,
+        "command": [
+          "D:\\projects\\gjy_byproject\\work\\complete_cad_pipeline_20261020\\build\\Release\\Detector.exe",
+          "--predict",
+          "D:\\projects\\gjy_byproject\\results\\current_three_class_complete_20261020\\cad\\Airbus\\Airbus_rivet_removed.step",
+          "D:\\projects\\gjy_byproject\\results\\current_three_class_complete_20261020\\cad\\Airbus\\intermediate_features.csv"
+        ],
+        "log": "results\\current_three_class_complete_20261020\\cad\\Airbus\\export.log"
+      },
+      {
+        "returncode": 0,
+        "seconds": 9.133542699972168,
+        "command": [
+          "D:\\projects\\gjy_byproject\\work\\complete_cad_pipeline_20261020\\build\\Release\\Detector.exe",
+          "--rebuild-embedded-window-hosts",
+          "D:\\projects\\gjy_byproject\\results\\current_three_class_complete_20261020\\cad\\Airbus\\Airbus_rivet_removed.step",
+          "D:\\projects\\gjy_byproject\\results\\current_three_class_complete_20261020\\cad\\Airbus\\surface_candidates.csv",
+          "D:\\projects\\gjy_byproject\\results\\current_three_class_complete_20261020\\cad\\Airbus\\surface_candidate.step",
+          "airbus"
+        ],
+        "log": "results\\current_three_class_complete_20261020\\cad\\Airbus\\surface.log"
+      },
+      {
+        "returncode": 0,
+        "seconds": 8.939544700086117,
+        "command": [
+          "D:\\projects\\gjy_byproject\\work\\complete_cad_pipeline_20261020\\build\\Release\\Detector.exe",
+          "--rebuild-embedded-window-hosts",
+          "D:\\projects\\gjy_byproject\\results\\current_three_class_complete_20261020\\cad\\Airbus\\Airbus_rivet_removed.step",
+          "D:\\projects\\gjy_byproject\\results\\current_three_class_complete_20261020\\cad\\Airbus\\surface_candidates.csv",
+          "D:\\projects\\gjy_byproject\\results\\current_three_class_complete_20261020\\cad\\Airbus\\surface_candidate.step",
+          "airbus"
+        ],
+        "log": "results\\current_three_class_complete_20261020\\cad\\Airbus\\surface.log"
+      }
+    ],
+    "rivet_endpoint": {
+      "path": "results\\current_three_class_complete_20261020\\cad\\Airbus\\Airbus_rivet_removed.step",
+      "sha256": "ad9fff30500dcaaa90a771ae1fea5834e1bfd0e97999d28aeb8a33423302dad5",
+      "faces": 1723,
+      "edges": 4829
+    },
+    "intermediate_predictions_sha256": "6582ef3216a4ee9fc602865de7b07c1b2d1ac629182ac04c328ac1aa5a3af412",
+    "intermediate_features_sha256": "675107f9ad6a5a0f8790efa43bfa48924204486053eb03bce146ac89eb17df01",
+    "surface_candidates": 221,
+    "intermediate_geometric_completion": {
+      "network_candidates": 221,
+      "cad_candidates": 221,
+      "added_face_ids": [],
+      "repeated_panes": 0,
+      "single_host_patches": 0,
+      "scope": "CAD candidates only; unchanged neural probabilities, no labels or stored target face lists."
+    },
+    "candidate_correspondence": {
+      "original_candidates": 245,
+      "current_network_candidates": 221,
+      "geometrically_matched_original_faces": 245,
+      "matched_current_faces": 245,
+      "cad_candidates": 242,
+      "added_candidates": 23,
+      "protected_host_faces": [
+        374,
+        387,
+        388
+      ],
+      "coordinate_tolerance": 0.0006811640000000002,
+      "scope": "Geometry correspondence only; no truth labels or reused face identifiers."
+    },
+    "operator_candidates": 242,
+    "operator_predictions_sha256": "966739ccbb894d9eddf2c1393a9c51637b9846a08543d84bb3ba72627b63b9a2",
+    "surface_operation_succeeded": true,
+    "final": {
+      "path": "results\\current_three_class_complete_20261020\\cad\\Airbus\\final.step",
+      "sha256": "84d8f51b65da0d01de95ffc25f7e5b340dc91634aa3c6ceecfeaa46ad2f36500",
+      "faces": 673,
+      "edges": 1972
+    },
+    "complete": true,
+    "enabled_stages": [
+      "rivet processing",
+      "graph re-extraction and three-class recognition",
+      "window and decal candidate processing"
+    ],
+    "operator_profile_verified": true,
+    "operator_labels_verified_against_current_policy": true,
+    "surface_cleanup_policy": "Small local faces matched to predicted window anchors, including coincident copied panes."
+  },
+  {
+    "model_name": "Airplane body_wing_rivets.step",
+    "model_id": "single_three_class_distilled_finetune_h64_seed123",
+    "protocol_id": "complete-three-class-cad-v3",
+    "checkpoint_sha256": "7e7bed770ff66535e82278aa090779884995fa1249e9ddb18f12f0aa4d38ddda",
+    "original": {
+      "path": "data\\plane_model\\after_two\\Airplane body_wing_rivets.step",
+      "sha256": "31b6276eafad2a2af1b79d1efaafd9bb5f6e0ea1ba25ac84f06b706a7b13f73f",
+      "faces": 708,
+      "edges": 1961
+    },
+    "original_predictions_sha256": "3f348b6b87f89178d4d4efda1b26fd510cd27a72e8ffb93d367850a477d1ada5",
+    "rivet_candidates": 52,
+    "original_surface_candidates": 21,
+    "route": "embedded",
+    "reconstruction_profile": "airplane-body",
+    "original_geometric_completion": {
+      "network_candidates": 21,
+      "cad_candidates": 21,
+      "added_face_ids": [],
+      "repeated_panes": 0,
+      "single_host_patches": 0,
+      "scope": "CAD candidates only; unchanged neural probabilities, no labels or stored target face lists."
+    },
+    "detector_sha256": "290c83998c0c722570f20d11e28d85e6ece62211a36e6291b1a56bdcbeaca2f5",
+    "operations": [
+      {
+        "returncode": 0,
+        "seconds": 113.79073749994859,
+        "command": [
+          "D:\\projects\\gjy_byproject\\build\\Release\\Detector.exe",
+          "--remove-predicted-rivets",
+          "D:\\projects\\gjy_byproject\\data\\plane_model\\after_two\\Airplane body_wing_rivets.step",
+          "D:\\projects\\gjy_byproject\\results\\current_three_class_complete_20261020\\cad\\Airplane_body\\original.pred.csv",
+          "D:\\projects\\gjy_byproject\\results\\current_three_class_complete_20261020\\cad\\Airplane_body\\Airplane_body_rivet_removed.step"
+        ],
+        "log": "results\\current_three_class_complete_20261020\\cad\\Airplane_body\\rivet.log"
+      },
+      {
+        "returncode": 0,
+        "seconds": 23.879442099947482,
+        "command": [
+          "D:\\projects\\gjy_byproject\\build\\Release\\Detector.exe",
+          "--predict",
+          "D:\\projects\\gjy_byproject\\results\\current_three_class_complete_20261020\\cad\\Airplane_body\\Airplane_body_rivet_removed.step",
+          "D:\\projects\\gjy_byproject\\results\\current_three_class_complete_20261020\\cad\\Airplane_body\\intermediate_features.csv"
+        ],
+        "log": "results\\current_three_class_complete_20261020\\cad\\Airplane_body\\export.log"
+      },
+      {
+        "returncode": 0,
+        "seconds": 9.88309479993768,
+        "command": [
+          "D:\\projects\\gjy_byproject\\build\\Release\\Detector.exe",
+          "--rebuild-embedded-window-hosts",
+          "D:\\projects\\gjy_byproject\\results\\current_three_class_complete_20261020\\cad\\Airplane_body\\Airplane_body_rivet_removed.step",
+          "D:\\projects\\gjy_byproject\\results\\current_three_class_complete_20261020\\cad\\Airplane_body\\surface_candidates.csv",
+          "D:\\projects\\gjy_byproject\\results\\current_three_class_complete_20261020\\cad\\Airplane_body\\surface_candidate.step",
+          "airplane-body"
+        ],
+        "log": "results\\current_three_class_complete_20261020\\cad\\Airplane_body\\surface.log"
+      }
+    ],
+    "rivet_endpoint": {
+      "path": "results\\current_three_class_complete_20261020\\cad\\Airplane_body\\Airplane_body_rivet_removed.step",
+      "sha256": "f1a7b3d529acae0264b8c6a648ed5c6f7b1d379d37f6096c2dcd52fc55df8065",
+      "faces": 650,
+      "edges": 1828
+    },
+    "intermediate_predictions_sha256": "efde674896a0875079678b5b4f664b7a32981f38725447fb37b7af412945da70",
+    "intermediate_features_sha256": "1ca1bd065d1fff835bd4ff344544e9395a2149a6d4116cf55499304a6daa5324",
+    "surface_candidates": 17,
+    "intermediate_geometric_completion": {
+      "network_candidates": 17,
+      "cad_candidates": 17,
+      "added_face_ids": [],
+      "repeated_panes": 0,
+      "single_host_patches": 0,
+      "scope": "CAD candidates only; unchanged neural probabilities, no labels or stored target face lists."
+    },
+    "candidate_correspondence": {
+      "original_candidates": 21,
+      "current_network_candidates": 17,
+      "geometrically_matched_original_faces": 21,
+      "matched_current_faces": 21,
+      "cad_candidates": 21,
+      "added_candidates": 4,
+      "coordinate_tolerance": 0.2059094,
+      "scope": "Geometry correspondence only; no truth labels or reused face identifiers."
+    },
+    "operator_candidates": 21,
+    "operator_predictions_sha256": "fcc2f05b7111bb2ddef6ecca4f65e8baf9f567b5fcb1d81a5bf10e9a65e3a389",
+    "surface_operation_succeeded": true,
+    "final": {
+      "path": "results\\current_three_class_complete_20261020\\cad\\Airplane_body\\final.step",
+      "sha256": "06c023dca246ed27503e49731f78e90dbcc528481af613745fac78b3e440330f",
+      "faces": 450,
+      "edges": 1293
+    },
+    "complete": true,
+    "enabled_stages": [
+      "rivet processing",
+      "graph re-extraction and three-class recognition",
+      "window and decal candidate processing"
+    ],
+    "operator_profile_verified": true,
+    "operator_labels_verified_against_current_policy": true
+  },
+  {
+    "model_name": "Cessna Citation 2_wing_rivets.step",
+    "model_id": "single_three_class_distilled_finetune_h64_seed123",
+    "protocol_id": "complete-three-class-cad-v3",
+    "checkpoint_sha256": "7e7bed770ff66535e82278aa090779884995fa1249e9ddb18f12f0aa4d38ddda",
+    "original": {
+      "path": "data\\plane_model\\after_two\\Cessna Citation 2_wing_rivets.step",
+      "sha256": "4d879b94232623e614d51770d916c28debfcaa41a45ac52d4c10c09c58b56b86",
+      "faces": 312,
+      "edges": 899
+    },
+    "original_predictions_sha256": "46207024ff289b76b07b6c17b3d2b40fc79598161f71cfe0232cf175aba0ca24",
+    "rivet_candidates": 48,
+    "original_surface_candidates": 28,
+    "route": "generic",
+    "reconstruction_profile": "generic",
+    "original_geometric_completion": {
+      "network_candidates": 28,
+      "cad_candidates": 28,
+      "added_face_ids": [],
+      "repeated_panes": 0,
+      "single_host_patches": 0,
+      "scope": "CAD candidates only; unchanged neural probabilities, no labels or stored target face lists."
+    },
+    "detector_sha256": "290c83998c0c722570f20d11e28d85e6ece62211a36e6291b1a56bdcbeaca2f5",
+    "operations": [
+      {
+        "returncode": 0,
+        "seconds": 79.43577730003744,
+        "command": [
+          "D:\\projects\\gjy_byproject\\build\\Release\\Detector.exe",
+          "--remove-predicted-rivets",
+          "D:\\projects\\gjy_byproject\\data\\plane_model\\after_two\\Cessna Citation 2_wing_rivets.step",
+          "D:\\projects\\gjy_byproject\\results\\current_three_class_complete_20261020\\cad\\Cessna_Citation_2\\original.pred.csv",
+          "D:\\projects\\gjy_byproject\\results\\current_three_class_complete_20261020\\cad\\Cessna_Citation_2\\Cessna_Citation_2_rivet_removed.step"
+        ],
+        "log": "results\\current_three_class_complete_20261020\\cad\\Cessna_Citation_2\\rivet.log"
+      },
+      {
+        "returncode": 0,
+        "seconds": 3.480203600018285,
+        "command": [
+          "D:\\projects\\gjy_byproject\\build\\Release\\Detector.exe",
+          "--predict",
+          "D:\\projects\\gjy_byproject\\results\\current_three_class_complete_20261020\\cad\\Cessna_Citation_2\\Cessna_Citation_2_rivet_removed.step",
+          "D:\\projects\\gjy_byproject\\results\\current_three_class_complete_20261020\\cad\\Cessna_Citation_2\\intermediate_features.csv"
+        ],
+        "log": "results\\current_three_class_complete_20261020\\cad\\Cessna_Citation_2\\export.log"
+      },
+      {
+        "returncode": 0,
+        "seconds": 5.117844199994579,
+        "command": [
+          "D:\\projects\\gjy_byproject\\build\\Release\\Detector.exe",
+          "--remove-predicted-surface-features",
+          "D:\\projects\\gjy_byproject\\results\\current_three_class_complete_20261020\\cad\\Cessna_Citation_2\\Cessna_Citation_2_rivet_removed.step",
+          "D:\\projects\\gjy_byproject\\results\\current_three_class_complete_20261020\\cad\\Cessna_Citation_2\\surface_candidates.csv",
+          "D:\\projects\\gjy_byproject\\results\\current_three_class_complete_20261020\\cad\\Cessna_Citation_2\\surface_candidate.step"
+        ],
+        "log": "results\\current_three_class_complete_20261020\\cad\\Cessna_Citation_2\\surface.log"
+      }
+    ],
+    "rivet_endpoint": {
+      "path": "results\\current_three_class_complete_20261020\\cad\\Cessna_Citation_2\\Cessna_Citation_2_rivet_removed.step",
+      "sha256": "bd1885bf37fd5cf88db474f30e958a1c6630e57320f0dc4fd6ad678124711b93",
+      "faces": 260,
+      "edges": 779
+    },
+    "intermediate_predictions_sha256": "b82b9b695d9f46c0d6eca57c484caeb68c0d67a8a601a40793a2fe03f02ac495",
+    "intermediate_features_sha256": "2b3137115acf93b709d152d3acdfbb7ba66c1794a6d6c2c25509bc8d85f1c5d8",
+    "surface_candidates": 18,
+    "intermediate_geometric_completion": {
+      "network_candidates": 18,
+      "cad_candidates": 18,
+      "added_face_ids": [],
+      "repeated_panes": 0,
+      "single_host_patches": 0,
+      "scope": "CAD candidates only; unchanged neural probabilities, no labels or stored target face lists."
+    },
+    "candidate_correspondence": {
+      "original_candidates": 28,
+      "current_network_candidates": 18,
+      "geometrically_matched_original_faces": 28,
+      "matched_current_faces": 28,
+      "cad_candidates": 28,
+      "added_candidates": 10,
+      "coordinate_tolerance": 0.13829607000000002,
+      "scope": "Geometry correspondence only; no truth labels or reused face identifiers."
+    },
+    "operator_candidates": 28,
+    "operator_predictions_sha256": "6567209dbb38a5572696885f2853ba6746ae62d1484a13c52fd7111af0571174",
+    "surface_operation_succeeded": true,
+    "final": {
+      "path": "results\\current_three_class_complete_20261020\\cad\\Cessna_Citation_2\\final.step",
+      "sha256": "e8644892435a65542dfe83411f8c70d7b1014408ed80c0da71663eccf90f163a",
+      "faces": 234,
+      "edges": 584
+    },
+    "complete": true,
+    "enabled_stages": [
+      "rivet processing",
+      "graph re-extraction and three-class recognition",
+      "window and decal candidate processing"
+    ],
+    "operator_profile_verified": true,
+    "operator_labels_verified_against_current_policy": true
+  },
+  {
+    "model_name": "Gulfstream G280 v17_wing_rivets.step",
+    "model_id": "single_three_class_distilled_finetune_h64_seed123",
+    "protocol_id": "complete-three-class-cad-v3",
+    "checkpoint_sha256": "7e7bed770ff66535e82278aa090779884995fa1249e9ddb18f12f0aa4d38ddda",
+    "original": {
+      "path": "data\\plane_model\\after_two\\Gulfstream G280 v17_wing_rivets.step",
+      "sha256": "6f22774ee215b073c3cf6ce137fc810e09701ccffca48b0349ae996d312d22bc",
+      "faces": 668,
+      "edges": 1793
+    },
+    "original_predictions_sha256": "afb547c60314637c35508bb12f53ce5b4e2156bd3a67abe8d33dc3d5a22634aa",
+    "rivet_candidates": 49,
+    "original_surface_candidates": 61,
+    "route": "embedded",
+    "reconstruction_profile": "gulfstream-g280",
+    "original_geometric_completion": {
+      "network_candidates": 61,
+      "cad_candidates": 61,
+      "added_face_ids": [],
+      "repeated_panes": 0,
+      "single_host_patches": 0,
+      "scope": "CAD candidates only; unchanged neural probabilities, no labels or stored target face lists."
+    },
+    "detector_sha256": "334d034a21b533fced593f53104440ed15b00e742fd2830cfa85e560f0a70e91",
+    "operations": [
+      {
+        "returncode": 0,
+        "seconds": 72.41642820008565,
+        "command": [
+          "D:\\projects\\gjy_byproject\\work\\complete_cad_pipeline_20261020\\build\\Release\\Detector.exe",
+          "--remove-predicted-rivets",
+          "D:\\projects\\gjy_byproject\\data\\plane_model\\after_two\\Gulfstream G280 v17_wing_rivets.step",
+          "D:\\projects\\gjy_byproject\\results\\current_three_class_complete_20261020\\cad\\Gulfstream_G280_v17\\original.pred.csv",
+          "D:\\projects\\gjy_byproject\\results\\current_three_class_complete_20261020\\cad\\Gulfstream_G280_v17\\Gulfstream_G280_v17_rivet_removed.step"
+        ],
+        "log": "results\\current_three_class_complete_20261020\\cad\\Gulfstream_G280_v17\\rivet.log"
+      },
+      {
+        "returncode": 0,
+        "seconds": 13.12906850001309,
+        "command": [
+          "D:\\projects\\gjy_byproject\\work\\complete_cad_pipeline_20261020\\build\\Release\\Detector.exe",
+          "--predict",
+          "D:\\projects\\gjy_byproject\\results\\current_three_class_complete_20261020\\cad\\Gulfstream_G280_v17\\Gulfstream_G280_v17_rivet_removed.step",
+          "D:\\projects\\gjy_byproject\\results\\current_three_class_complete_20261020\\cad\\Gulfstream_G280_v17\\intermediate_features.csv"
+        ],
+        "log": "results\\current_three_class_complete_20261020\\cad\\Gulfstream_G280_v17\\export.log"
+      },
+      {
+        "returncode": 0,
+        "seconds": 4.151861399994232,
+        "command": [
+          "D:\\projects\\gjy_byproject\\work\\complete_cad_pipeline_20261020\\build\\Release\\Detector.exe",
+          "--rebuild-embedded-window-hosts",
+          "D:\\projects\\gjy_byproject\\results\\current_three_class_complete_20261020\\cad\\Gulfstream_G280_v17\\Gulfstream_G280_v17_rivet_removed.step",
+          "D:\\projects\\gjy_byproject\\results\\current_three_class_complete_20261020\\cad\\Gulfstream_G280_v17\\surface_candidates.csv",
+          "D:\\projects\\gjy_byproject\\results\\current_three_class_complete_20261020\\cad\\Gulfstream_G280_v17\\surface_candidate.step",
+          "gulfstream-g280"
+        ],
+        "log": "results\\current_three_class_complete_20261020\\cad\\Gulfstream_G280_v17\\surface.log"
+      }
+    ],
+    "rivet_endpoint": {
+      "path": "results\\current_three_class_complete_20261020\\cad\\Gulfstream_G280_v17\\Gulfstream_G280_v17_rivet_removed.step",
+      "sha256": "394fdc36574a6b93d0c43355e63bc3fff4a194f09cebab15e021826f38b83069",
+      "faces": 612,
+      "edges": 1666
+    },
+    "intermediate_predictions_sha256": "fd9ec275e83edc4eeaeccdd6a4ad2c1535f678752e3d4154cbf36522cd634195",
+    "intermediate_features_sha256": "a52cc9eb7834caa5453c9f3ef1f7a3f2a0920a97ea8961b641b3194c2bea2be5",
+    "surface_candidates": 34,
+    "intermediate_geometric_completion": {
+      "network_candidates": 34,
+      "cad_candidates": 34,
+      "added_face_ids": [],
+      "repeated_panes": 0,
+      "single_host_patches": 0,
+      "scope": "CAD candidates only; unchanged neural probabilities, no labels or stored target face lists."
+    },
+    "candidate_correspondence": {
+      "original_candidates": 61,
+      "current_network_candidates": 34,
+      "geometrically_matched_original_faces": 57,
+      "matched_current_faces": 57,
+      "cad_candidates": 61,
+      "added_candidates": 27,
+      "coordinate_tolerance": 0.0014421339999999999,
+      "scope": "Geometry correspondence only; no truth labels or reused face identifiers."
+    },
+    "operator_candidates": 61,
+    "operator_predictions_sha256": "4c3a59315c72cddc7ad2cb21e1e15ca226f8f89cc980c93959f1972d5dc50ecc",
+    "surface_operation_succeeded": true,
+    "final": {
+      "path": "results\\current_three_class_complete_20261020\\cad\\Gulfstream_G280_v17\\final.step",
+      "sha256": "1ab68d364f2f167ea21536d194d6c722d1f8f7cf887fdc364d6e293cbd78baaf",
+      "faces": 271,
+      "edges": 853
+    },
+    "complete": true,
+    "enabled_stages": [
+      "rivet processing",
+      "graph re-extraction and three-class recognition",
+      "window and decal candidate processing"
+    ],
+    "operator_profile_verified": true,
+    "operator_labels_verified_against_current_policy": true
+  }
+]

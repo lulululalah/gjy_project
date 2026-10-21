@@ -1,10 +1,10 @@
 {
   "model": "DC-10",
-  "endpoint_scope": "Original and archived window-stage endpoint shown in the CAD figure.",
+  "endpoint_scope": "Fresh current single-three-class checkpoint CAD run, 2026-10-20; input colours are original annotations, not predicted/processed truth.",
   "projection": "orthographic",
   "size": [
     2400,
-    1000
+    800
   ],
   "camera": {
     "center": [
@@ -22,7 +22,7 @@
       1,
       0
     ],
-    "scale": 199.99630601985214
+    "scale": 159.99704481588168
   },
   "geometry_modified": false,
   "relative_deflection": 0.0005,
@@ -51,18 +51,19 @@
           1.0,
           0.0
         ],
-        "scale": 199.99630601985214,
-        "aspect": 2.4
-      },
-      "mesh": {
-        "faces": 287,
-        "nodes": 27041,
-        "triangles": 41914,
-        "linear_deflection": 0.3010565958197343,
-        "mesh_decimated": false
-      },
-      "mesh_image": "mesh_dc10_before.png",
-      "mesh_camera": {
+        "scale": 159.99704481588168,
+        "aspect": 3.0
+      }
+    },
+    {
+      "stage": "after",
+      "step": "D:\\projects\\gjy_byproject\\results\\current_three_class_complete_20261020\\cad\\27-_DC-10_SolidWorks_stp_igs_DC_10\\final.step",
+      "labels": null,
+      "step_sha256": "02174163f5f6b189c46fb573118c70e17fa7e9c6de9360f54f5821b67f22f724",
+      "labels_sha256": null,
+      "label_scope": "Uniform background display only; no processed semantic ground truth.",
+      "cad_image": "cad_dc10_after.png",
+      "cad_camera": {
         "center": [
           2.637534635141492e-11,
           38.80711686152023,
@@ -78,62 +79,8 @@
           1.0,
           0.0
         ],
-        "scale": 199.99630601985214,
-        "aspect": 2.4
-      }
-    },
-    {
-      "stage": "after",
-      "step": "D:\\projects\\gjy_byproject\\work\\test_removal_pipeline\\27-_DC-10_SolidWorks_stp_igs_DC_10\\27-_DC-10_SolidWorks_stp_igs_DC_10_bridged.step",
-      "labels": "D:\\projects\\gjy_byproject\\work\\dc10_window_visualization\\after_render.labels.json",
-      "step_sha256": "7a363fa82a0ee84bb94bdef8de68a26f1cac2d3ccb13bc90ad4ec646379d2b78",
-      "labels_sha256": "179b2737c96762dcb4d63f3d1b660a626a403b673c553b9dd665da8c94d5a47d",
-      "cad_image": "cad_dc10_after.png",
-      "cad_camera": {
-        "center": [
-          2.637534635141492e-11,
-          38.80711686152023,
-          -222.21795229003413
-        ],
-        "direction": [
-          -1.0,
-          0.0,
-          0.0
-        ],
-        "up": [
-          0.0,
-          1.0,
-          0.0
-        ],
-        "scale": 199.99630601985214,
-        "aspect": 2.4
-      },
-      "mesh": {
-        "faces": 170,
-        "nodes": 20608,
-        "triangles": 35496,
-        "linear_deflection": 0.3010565958197343,
-        "mesh_decimated": false
-      },
-      "mesh_image": "mesh_dc10_after.png",
-      "mesh_camera": {
-        "center": [
-          2.637534635141492e-11,
-          38.80711686152023,
-          -222.21795229003413
-        ],
-        "direction": [
-          -1.0,
-          0.0,
-          -0.0
-        ],
-        "up": [
-          0.0,
-          1.0,
-          0.0
-        ],
-        "scale": 199.99630601985214,
-        "aspect": 2.4
+        "scale": 159.99704481588168,
+        "aspect": 3.0
       }
     }
   ]

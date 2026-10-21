@@ -1,0 +1,28 @@
+{
+  "input_step": "D:\\projects\\gjy_byproject\\data\\plane_model\\after_two\\109-ww1-standart-e-1-aircraft CATIA STP_standart-e1_wing_rivets_decals.step",
+  "bounding_box_diagonal": 6460.69662779423,
+  "relative_deflection": 0.0005,
+  "linear_deflection": 3.230348313897115,
+  "angular_deflection_rad": 0.5,
+  "face_count": 1244,
+  "mesh_node_count": 47808,
+  "mesh_triangle_count": 58692,
+  "mesh_quality": {
+    "degenerate_triangle_count": 16,
+    "minimum_angle_deg": 8.896468877610913e-05,
+    "minimum_angle_p05_deg": 1.1477876323276415,
+    "maximum_aspect_ratio": 371954.1984059401,
+    "aspect_ratio_p95": 31.327269446796066
+  },
+  "mesh_repeats": 5,
+  "mesh_elapsed_seconds_samples": [
+    0.3395706999581307,
+    0.3334146999986842,
+    0.3497918000211939,
+    0.3400706999236718,
+    0.34083539992570877
+  ],
+  "mesh_elapsed_seconds_median": 0.3400706999236718,
+  "step_sha256": "5c6dcc1665e3a676091897cebab18b50a238d4f1365c6ebca49563fe549dd970",
+  "checkpoint_sha256": "7e7bed770ff66535e82278aa090779884995fa1249e9ddb18f12f0aa4d38ddda"
+}

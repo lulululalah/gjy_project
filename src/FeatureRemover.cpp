@@ -1448,7 +1448,9 @@ namespace
         return static_cast<int>(removableSolidIds.size() + removableShellIds.size());
     }
 
-    int StraightenRepeatedSharedSkinEdges(TopoDS_Shape& shape)
+    int StraightenRepeatedSharedSkinEdges(
+        TopoDS_Shape& shape,
+        const std::vector<std::pair<gp_Pnt,double>>* targetRegions = nullptr)
     {
         TopTools_IndexedMapOfShape faceMap;
         TopExp::MapShapes(shape, TopAbs_FACE, faceMap);
@@ -1493,7 +1495,7 @@ namespace
         std::vector<SharedSkinEdge> targetEdges;
         for (const auto& [facePair, edgeIds] : sharedEdgesByFacePair)
         {
-            if (edgeIds.size() < 8)
+            if (targetRegions == nullptr && edgeIds.size() < 8)
             {
                 continue;
             }
@@ -1512,6 +1514,22 @@ namespace
                 const double edgeLength = properties.Mass();
                 const double chordLength = BRep_Tool::Pnt(firstVertex).Distance(
                     BRep_Tool::Pnt(lastVertex));
+                if (targetRegions != nullptr)
+                {
+                    bool supported = false;
+                    for (const auto& region : *targetRegions)
+                    {
+                        if (properties.CentreOfMass().Distance(region.first)<=region.second)
+                        {
+                            supported = true;
+                            break;
+                        }
+                    }
+                    if (!supported)
+                    {
+                        continue;
+                    }
+                }
                 if (edgeLength <= 10.0 && chordLength >= 0.5)
                 {
                     targetEdges.push_back(
@@ -1603,7 +1621,8 @@ namespace
             {
                 trialShape = batchFixer.Shape();
             }
-            if (!trialShape.IsNull() && BRepCheck_Analyzer(trialShape).IsValid())
+            if (!trialShape.IsNull() &&
+                (targetRegions != nullptr || BRepCheck_Analyzer(trialShape).IsValid()))
             {
                 shape = trialShape;
                 return batchReplacementCount;
@@ -1639,7 +1658,8 @@ namespace
             {
                 edgeTrial = edgeFixer.Shape();
             }
-            if (!edgeTrial.IsNull() && BRepCheck_Analyzer(edgeTrial).IsValid())
+            if (!edgeTrial.IsNull() &&
+                (targetRegions != nullptr || BRepCheck_Analyzer(edgeTrial).IsValid()))
             {
                 shape = edgeTrial;
                 ++acceptedCount;
@@ -1653,6 +1673,61 @@ namespace
         return acceptedCount;
     }
 
+}
+
+int RunCompleteSplitWindowSeams(
+    const std::string& inputFile,
+    const std::string& sourceFile,
+    const std::string& predictionsFile,
+    const std::string& outputFile)
+{
+    try
+    {
+        TopoDS_Shape shape, source;
+        if (!LoadStep(inputFile,shape) || !LoadStep(sourceFile,source))
+        {
+            return 1;
+        }
+        TopTools_IndexedMapOfShape faces;
+        TopExp::MapShapes(source,TopAbs_FACE,faces);
+        const PredictionSelection predictions=ReadPredictedFaceIds(predictionsFile);
+        if (predictions.allFaceIds.size()!=static_cast<std::size_t>(faces.Extent()))
+        {
+            std::cerr << "Source predictions do not cover the source geometry." << std::endl;
+            return 1;
+        }
+        std::vector<std::pair<gp_Pnt,double>> regions;
+        for (const int id : predictions.surfaceFeatureFaceIds)
+        {
+            GProp_GProps p;
+            BRepGProp::SurfaceProperties(faces.FindKey(id),p);
+            if (p.Mass()>0.0)
+            {
+                regions.emplace_back(p.CentreOfMass(),1.5*std::sqrt(p.Mass()));
+            }
+        }
+        const int count=StraightenRepeatedSharedSkinEdges(shape,&regions);
+        ShapeUpgrade_UnifySameDomain merge(shape,Standard_True,Standard_True,Standard_True);
+        merge.SetLinearTolerance(1.0e-4);
+        merge.SetAngularTolerance(1.0e-3);
+        merge.Build();
+        if (!merge.Shape().IsNull())
+        {
+            shape=merge.Shape();
+        }
+        if (shape.IsNull() || !SaveStep(shape,outputFile))
+        {
+            return 1;
+        }
+        std::cout << "Candidate-supported window seams straightened: " << count << std::endl;
+        std::cout << "Completed skin faces: " << CountFaces(shape) << std::endl;
+        return 0;
+    }
+    catch (const Standard_Failure& error)
+    {
+        std::cerr << "Window seam completion failed: " << error.GetMessageString() << std::endl;
+        return 1;
+    }
 }
 
 int RunPredictedRivetRemoval(
@@ -2926,6 +3001,7 @@ int RunEmbeddedWindowHostRebuild(
         // solid, then remove both the solid and all matched host loops.
         std::vector<gp_Pnt> windowCenters;
         std::vector<gp_Pnt> tailDecalCenters;
+        std::vector<Bnd_Box> tailDecalBounds;
         std::vector<TopoDS_Shape> removableWindowSolids;
         for (const auto& entry : removalContainers)
         {
@@ -2948,7 +3024,9 @@ int RunEmbeddedWindowHostRebuild(
             windowCenters.push_back(properties.CentreOfMass());
             removableWindowSolids.push_back(solid);
         }
-        if (useNarrowWindowRemoval && usePredictedWindowFaceAnchors)
+        const bool useLocalWindowFaces = useNarrowWindowRemoval ||
+            effectiveProfile == "aulira" || rebuildAirbusWindows;
+        if (useLocalWindowFaces && usePredictedWindowFaceAnchors)
         {
             // Some aircraft model the window patches as faces of the main
             // fuselage solid instead of separate small solids.  Their
@@ -2966,7 +3044,10 @@ int RunEmbeddedWindowHostRebuild(
                 }
                 GProp_GProps properties;
                 BRepGProp::SurfaceProperties(selectedFace, properties);
-                if ((!rebuildAirbusWindows && selectedEdgeCount > 2) ||
+                const int maximumAnchorEdges =
+                    effectiveProfile == "aulira" ? 8 : 2;
+                if ((!rebuildAirbusWindows &&
+                     selectedEdgeCount > maximumAnchorEdges) ||
                     (rebuildAirbusWindows && properties.Mass() > 5.0))
                 {
                     continue;
@@ -3025,6 +3106,10 @@ int RunEmbeddedWindowHostRebuild(
                 if (center.X() >= aftThreshold)
                 {
                     tailDecalCenters.push_back(center);
+                    Bnd_Box decalBounds;
+                    BRepBndLib::Add(selectedFace, decalBounds);
+                    decalBounds.Enlarge(std::max(modelDiagonal * 1.0e-5, 1.0e-6));
+                    tailDecalBounds.push_back(decalBounds);
                 }
             }
         }
@@ -3078,6 +3163,14 @@ int RunEmbeddedWindowHostRebuild(
                             break;
                         }
                     }
+                    for (const Bnd_Box& decalBounds : tailDecalBounds)
+                    {
+                        if (!decalBounds.IsOut(loopCenter))
+                        {
+                            isWindowHostLoop = true;
+                            break;
+                        }
+                    }
                 }
                 if (isWindowHostLoop)
                 {
@@ -3124,22 +3217,12 @@ int RunEmbeddedWindowHostRebuild(
         {
             const TopoDS_Face candidateFace = TopoDS::Face(
                 currentFaceMap.FindKey(faceIndex));
-            if (rebuildAirbusWindows)
-            {
-                const int originalFaceId =
-                    originalFaceMap.FindIndex(candidateFace);
-                if (originalFaceId <= 0 ||
-                    selectedSurfaceFeatureFaceIds.count(originalFaceId) == 0)
-                {
-                    continue;
-                }
-            }
             GProp_GProps properties;
             BRepGProp::SurfaceProperties(candidateFace, properties);
-            const double residualMinimumArea = useNarrowWindowRemoval ?
+            const double residualMinimumArea = useLocalWindowFaces ?
                 1.0e-9 : 10000.0;
             const double residualMaximumArea = rebuildAirbusWindows ? 5.0 :
-                (useNarrowWindowRemoval ?
+                (useLocalWindowFaces ?
                  modelDiagonal * modelDiagonal * 0.0001 : 150000.0);
             if (properties.Mass() < residualMinimumArea ||
                 properties.Mass() > residualMaximumArea)
@@ -3150,7 +3233,7 @@ int RunEmbeddedWindowHostRebuild(
             bool isResidualWindowFace = false;
             for (const gp_Pnt& windowCenter : windowCenters)
             {
-                const double residualMatchDistance = useNarrowWindowRemoval ?
+                const double residualMatchDistance = useLocalWindowFaces ?
                     hostLoopMatchDistance * 0.2 : hostLoopMatchDistance;
                 if (faceCenter.Distance(windowCenter) <= residualMatchDistance)
                 {
@@ -3160,12 +3243,22 @@ int RunEmbeddedWindowHostRebuild(
             }
             if (!isResidualWindowFace)
             {
-                const double residualMatchDistance = useNarrowWindowRemoval ?
+                const double residualMatchDistance = useLocalWindowFaces ?
                     hostLoopMatchDistance * 0.2 : hostLoopMatchDistance;
                 for (const gp_Pnt& decalCenter : tailDecalCenters)
                 {
                     if (faceCenter.Distance(decalCenter) <=
                         residualMatchDistance)
+                    {
+                        isResidualWindowFace = true;
+                        break;
+                    }
+                }
+                // Thin lettering fragments can sit near a letter's tips,
+                // beyond its centroid radius while still inside its footprint.
+                for (const Bnd_Box& decalBounds : tailDecalBounds)
+                {
+                    if (!decalBounds.IsOut(faceCenter))
                     {
                         isResidualWindowFace = true;
                         break;

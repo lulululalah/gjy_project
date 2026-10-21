@@ -1,6 +1,5 @@
 import json
 import sys
-import tempfile
 import unittest
 from pathlib import Path
 from unittest.mock import MagicMock, patch
@@ -9,10 +8,35 @@ from unittest.mock import MagicMock, patch
 PYTHON_DIR = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(PYTHON_DIR))
 
-import visualize_cad_targets as viewer
+import visualization.cad as viewer
 
 
 class ViewerInputTests(unittest.TestCase):
+    def test_transient_dump_failure_does_not_publish_an_incomplete_image(self):
+        display=MagicMock()
+        display.View.Dump.side_effect=[False, True]
+        with patch.object(Path, 'unlink'), patch.object(Path, 'replace') as publish, \
+             patch('PIL.Image.open') as validate:
+            viewer.dump_png(display, Path('example.png'))
+        self.assertEqual(display.View.Dump.call_count,2)
+        validate.return_value.__enter__.return_value.verify.assert_called_once()
+        publish.assert_called_once()
+
+    def test_permanent_dump_failure_preserves_the_previous_image(self):
+        display=MagicMock()
+        display.View.Dump.return_value=False
+        with patch.object(Path, 'unlink'), patch.object(Path, 'replace') as publish, \
+             self.assertRaisesRegex(RuntimeError,'CAD image export failed'):
+            viewer.dump_png(display,Path('example.png'))
+        self.assertEqual(display.View.Dump.call_count,3)
+        publish.assert_not_called()
+
+    def render_source_fixture(self):
+        return json.dumps({key:[
+            {'name':'original','step':f'data/plane_model/after_two/{name}.step','labels':'fixture/original.labels.json'},
+            {'name':'rivet_removed','step':f'fixture/{key}/rivet_removed.step','labels':'fixture/intermediate.labels.json'}]
+            for key,name in [('airbus','Airbus_wing_rivets'),('cessna','Cessna Citation 2_wing_rivets')]})
+
     def test_unlabelled_comparison_endpoint_uses_display_background_only(self):
         with patch.object(viewer, "load_labels") as labels:
             self.assertEqual(viewer.comparison_display_labels({1: None, 3: None}, None),
@@ -115,10 +139,8 @@ class ViewerInputTests(unittest.TestCase):
                 viewer.main()
 
     def read_fixture(self, faces):
-        with tempfile.TemporaryDirectory() as directory:
-            path = Path(directory) / "labels.json"
-            path.write_text(json.dumps({"faces": faces}), encoding="utf-8")
-            return viewer.load_labels(path)
+        with patch.object(Path, 'read_text', return_value=json.dumps({'faces': faces})):
+            return viewer.load_labels(Path('labels.json'))
 
     def test_valid_labels(self):
         self.assertEqual(
@@ -269,23 +291,11 @@ class ViewerInputTests(unittest.TestCase):
             viewer.main()
         export.assert_not_called()
 
-    def test_figure8_export_does_not_open_interactive_window(self):
-        with patch.object(sys, "argv", ["viewer", "--export-figure8", "output"]), \
-             patch.object(viewer, "export_figure8") as export, \
-             patch.object(viewer, "init_display") as init_display:
-            viewer.main()
-        export.assert_called_once_with(Path("output"))
-        init_display.assert_not_called()
 
-    def test_figure8_uses_three_visually_reviewed_positions(self):
-        with patch.object(viewer, "export_paired_rivet_views") as export:
-            viewer.export_figure8(Path("output"))
-        self.assertEqual(export.call_args.args[2], "fig8_xian_y20")
-        self.assertEqual(export.call_args.kwargs["detail_face_ids"], {48, 59, 83})
-        self.assertEqual(export.call_args.kwargs["detail_scale_factor"], 0.25)
 
     def test_figure7_keeps_its_existing_candidate_filter(self):
-        with patch.object(viewer, "export_paired_rivet_views") as export:
+        with patch.object(Path, 'read_text', return_value=self.render_source_fixture()), \
+             patch.object(viewer, "export_paired_rivet_views") as export:
             viewer.export_figure7(Path("output"))
         self.assertEqual(export.call_args.args[2], "fig7_airbus")
         candidate_filter = export.call_args.args[3]
@@ -293,12 +303,13 @@ class ViewerInputTests(unittest.TestCase):
         self.assertFalse(candidate_filter((0, -1.8, 0, 0.01, -1.7, 0.01)))
         self.assertEqual(export.call_args.kwargs, {})
 
-    def test_figure7_cessna_uses_test_endpoint_and_rivet_stage(self):
-        with patch.object(viewer, "export_paired_rivet_views") as export:
+    def test_figure7_cessna_uses_recorded_endpoint_and_rivet_stage(self):
+        with patch.object(Path, 'read_text', return_value=self.render_source_fixture()), \
+             patch.object(viewer, "export_paired_rivet_views") as export:
             viewer.export_figure7(Path("output"), "cessna")
         cases = export.call_args.args[1]
         self.assertEqual(cases[0][1], viewer.ROOT / "data/plane_model/after_two/Cessna Citation 2_wing_rivets.step")
-        self.assertEqual(cases[1][1].name, "Cessna_Citation_2_removed.step")
+        self.assertEqual(cases[1][1], viewer.ROOT/'fixture/cessna/rivet_removed.step')
         self.assertEqual(export.call_args.args[2], "fig7_cessna")
         candidate_filter = export.call_args.args[3]
         self.assertTrue(candidate_filter((0, 1, 0, 1, 2, 1)))
@@ -325,15 +336,16 @@ class ViewerInputTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "Unsupported Figure 7 model"):
             viewer.export_figure7(Path("output"), "unknown")
 
-    def test_figure8_cannot_be_combined_with_other_exports(self):
-        for other in ("--export-figure6", "--export-figure7"):
-            with self.subTest(other=other), \
-                 patch.object(sys, "argv", ["viewer", other, "one", "--export-figure8", "two"]), \
-                 patch.object(viewer, "export_figure8") as export, \
-                 self.assertRaises(SystemExit):
+
+
+class RetiredExportTests(unittest.TestCase):
+    def test_old_y20_export_is_rejected_before_opening_gui(self):
+        import contextlib, io
+        with patch.object(sys, 'argv', ['viewer', '--export-figure8', 'output']), patch.object(viewer, 'init_display') as start, contextlib.redirect_stderr(io.StringIO()):
+            with self.assertRaises(SystemExit):
                 viewer.main()
-            export.assert_not_called()
+        start.assert_not_called()
 
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     unittest.main()

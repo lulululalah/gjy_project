@@ -1,6 +1,6 @@
 {
   "model": "Airbus",
-  "scope": "Original and final STEP endpoints of Table 8",
+  "scope": "Current original and final STEP endpoints of the mesh comparison table",
   "size": [
     2400,
     800
@@ -66,7 +66,7 @@
       "stage": "before",
       "step": "D:\\projects\\gjy_byproject\\data\\plane_model\\after_two\\Airbus_wing_rivets.step",
       "step_sha256": "8574a354f15b0b3ab7925ac9d058db29a3aec31f73954b1e58013c8db5f075f5",
-      "metric_source": "D:\\projects\\gjy_byproject\\results\\e3_mesh\\per_model\\airbus_original.json",
+      "metric_source": "D:\\projects\\gjy_byproject\\results\\current_three_class_complete_20261020\\mesh\\Airbus_original.json",
       "mesh": {
         "faces": 1775,
         "nodes": 69556,
@@ -121,13 +121,13 @@
     },
     {
       "stage": "after",
-      "step": "D:\\projects\\gjy_byproject\\data\\plane_model\\ending\\Airbus_wing_rivets.step",
-      "step_sha256": "873b7466030edc38638dcfe9f89f163aaf47db9ec6ba4c7895a7390956844815",
-      "metric_source": "D:\\projects\\gjy_byproject\\results\\e3_mesh\\per_model\\airbus_simplified.json",
+      "step": "D:\\projects\\gjy_byproject\\results\\current_three_class_complete_20261020\\cad\\Airbus\\final.step",
+      "step_sha256": "84d8f51b65da0d01de95ffc25f7e5b340dc91634aa3c6ceecfeaa46ad2f36500",
+      "metric_source": "D:\\projects\\gjy_byproject\\results\\current_three_class_complete_20261020\\mesh\\Airbus_simplified.json",
       "mesh": {
-        "faces": 686,
-        "nodes": 43042,
-        "triangles": 63505,
+        "faces": 673,
+        "nodes": 43000,
+        "triangles": 63439,
         "linear_deflection": 0.050616151149192656,
         "mesh_decimated": false
       },

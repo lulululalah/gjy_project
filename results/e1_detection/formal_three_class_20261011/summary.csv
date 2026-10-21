@@ -1,2 +1,0 @@
-architecture,hidden_dim,parameters,seeds,rivet_f1_mean,rivet_f1_sd,surface_feature_f1_mean,surface_feature_f1_sd,foreground_macro_f1_mean,foreground_macro_f1_sd,miou_mean,miou_sd,background_fp_mean,background_fp_sd
-three-class,64,280777,123,0.131242,,0.458940,,0.295091,,0.404802,,4762.000000,

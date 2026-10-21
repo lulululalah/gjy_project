@@ -1,0 +1,19 @@
+variant,model_name,faces,raw_label_differences,max_probability_difference
+distilled_frozen,109-ww1-standart-e-1-aircraft CATIA STP_standart-e1_wing_rivets_decals.step,1244,0,1.810331725637937e-07
+distilled_frozen,27- DC-10 SolidWorks stp igs_DC 10_wing_rivets.step,287,0,1.825683594303129e-07
+distilled_frozen,87- 747-400 stp_beoing 747-400 v6_wing_rivets.stp,1432,0,1.7743392943803116e-07
+distilled_frozen,AULIRA 2_wing_rivets.step,370,0,1.8456954953283145e-07
+distilled_frozen,Air Plane Idea A.step,27366,0,2.4271453857860337e-07
+distilled_frozen,Airbus_wing_rivets.step,1775,0,1.9559936526025723e-07
+distilled_frozen,Airplane body_wing_rivets.step,708,0,1.8223648068360632e-07
+distilled_frozen,Cessna Citation 2_wing_rivets.step,312,0,1.4460830688456383e-07
+distilled_frozen,Gulfstream G280 v17_wing_rivets.step,668,0,1.915679931352443e-07
+distilled_finetune,109-ww1-standart-e-1-aircraft CATIA STP_standart-e1_wing_rivets_decals.step,1244,0,2.0674591061364822e-07
+distilled_finetune,27- DC-10 SolidWorks stp igs_DC 10_wing_rivets.step,287,0,1.791021728703157e-07
+distilled_finetune,87- 747-400 stp_beoing 747-400 v6_wing_rivets.stp,1432,0,1.7831771847998112e-07
+distilled_finetune,AULIRA 2_wing_rivets.step,370,0,1.636062622045742e-07
+distilled_finetune,Air Plane Idea A.step,27366,0,3.31647567741733e-07
+distilled_finetune,Airbus_wing_rivets.step,1775,0,2.0405960088343278e-07
+distilled_finetune,Airplane body_wing_rivets.step,708,0,1.935264587471508e-07
+distilled_finetune,Cessna Citation 2_wing_rivets.step,312,0,1.7743118285729054e-07
+distilled_finetune,Gulfstream G280 v17_wing_rivets.step,668,0,1.7735748292224685e-07

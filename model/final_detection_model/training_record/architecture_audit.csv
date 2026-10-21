@@ -1,0 +1,3 @@
+variant,encoder_count,classifier_heads,binary_heads,classifier_outputs,encoder_tensors_changed
+distilled_frozen,1,1,0,3,0
+distilled_finetune,1,1,0,3,40

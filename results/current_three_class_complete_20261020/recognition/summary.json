@@ -1,0 +1,114 @@
+{
+  "faces": 34162,
+  "confusion": [
+    [
+      32864,
+      12,
+      197
+    ],
+    [
+      35,
+      311,
+      0
+    ],
+    [
+      145,
+      0,
+      598
+    ]
+  ],
+  "accuracy": 0.9886130788595515,
+  "rivet_f1": 0.929745889387145,
+  "surface_feature_f1": 0.7776332899869961,
+  "foreground_macro_f1": 0.8536895896870705,
+  "background_fp": 209,
+  "model_id": "single_three_class_distilled_finetune_h64_seed123",
+  "encoder_sharing": "shared",
+  "input_sha256": {
+    "train_17_models.csv": "0fb2a339c5a363388c0ec3141bc6f5327ca840304b64aa84283f0503f4c9fd5c",
+    "test_9_models_frozen_truth.csv": "39765eaa33f1c581b9c1779939f2a971c7db925c17e7c4233890fa0f3bc98948",
+    "model.pth": "7e7bed770ff66535e82278aa090779884995fa1249e9ddb18f12f0aa4d38ddda",
+    "stats.npz": "b4c0797a9fc0546a4b976983008a1ffb9014e28e3b12dc6e271322c2c5b77771",
+    "configuration.json": "caeab347ac165c0a7e9a6c754e389b636f44365b4afda32a3775b6892f4aa125",
+    "dc10_window_recovery.json": "db152bc1e016f1db25566b05a3291b1d85a19e6d426488bbb3caef1d6e7b0da8",
+    "training_assets\\auxiliary_three_class_logits.npz": "2b35d24e8a031bac9bdc966c62341d74252ed1dbb1405527ae684ef911eb475d",
+    "training_assets\\index.csv": "e332d8a01458678b88ba80042dd55716a76fbbc66ad202d6f29341da1bc80b60",
+    "training_assets\\initial_encoder.pth": "81968995dcebc3414f23d6f5a453ce1d34fb0e30361c795a3f127a18e000c35f",
+    "training_assets\\manifest.json": "5c884f01a76e640a6f45bcd1e13e20d8d3235fe4b71a3076226d18dd66944fb8",
+    "training_assets\\normalization.npz": "443e08276e8a4ffb15d702ff2d3e5d6a295a06f97d84c172d6a298fd46758f24",
+    "training_record\\architecture_audit.csv": "e0b5faf4441eb937642415d7e5379fba5a80d2dfe3a17cea8168e4661da22775",
+    "training_record\\cached_retraining_complete.json": "2858e14360655c313edeb7ed633a176e81193bb543dd40026947d887b43148fa",
+    "training_record\\cached_retraining_verification.json": "480fa6ae7fcddc38bd8c252dc838dd1c08dc31700dd31932c20c1710e9e39c8f",
+    "training_record\\original_comparison_metrics.csv": "0ae601164a89e72c3d0c99f41ac661b04fe8ed0a40e76b4055739410213f7680",
+    "training_record\\original_protocol.json": "aaca3e3f100e7ec5073f310c0c5220cc6cc655933803ac2f5e9f96d8084917f1",
+    "training_record\\original_replay_parity.csv": "abd318eda2bc296630a3ba358b1dbd0d7fe6ca0968989ccde0779e7883b455fc",
+    "training_record\\original_training.log": "195b20f9cb80bf7ebc9e14ec0636bcb830dd651a976b90c524c5f0a799ef9dc2",
+    "training_record\\original_training_stats.npz": "7230adf0de2b7dc32cd46f0501b5c858ad2fc439eda373e5b76e1135cc89dc9e",
+    "training_record\\original_viewer_parity.csv": "bd71975cb94561ed60d5b91bc650e0842ec5cf318fdd1b905d80cb9c1b354b87",
+    "training_record\\README.md": "bf1862c9a378ee50e42acc9e11db7d3fe91cd36c94096d2b6a0ce09ed1350bbe",
+    "training_record\\training_complete.json": "a671345f5ddeaa2bae24de58570b78a2fbaa201551868200c426927bde2f7598",
+    "training_record\\training_history.csv": "c8896e58eaa0dd22cca38572873840b273bef62635e4fb0d23f37f1e2448c9e7",
+    "training_record\\training_scope_audit.json": "38f7f0eace7cbc74d5ff3922333954b52040aec3fe42938c66ac1d596f473750",
+    "training_record\\training_target_audit.csv": "74fe83b0671003d9e4d6de2661c6396c1daf2cd990199c220b80d8f4f73f95bd"
+  },
+  "raw": {
+    "faces": 34162,
+    "confusion": [
+      [
+        29924,
+        2892,
+        257
+      ],
+      [
+        7,
+        339,
+        0
+      ],
+      [
+        261,
+        0,
+        482
+      ]
+    ],
+    "accuracy": 0.8999765821673205,
+    "rivet_f1": 0.18954431087503495,
+    "surface_feature_f1": 0.650472334682861,
+    "foreground_macro_f1": 0.420008322778948,
+    "background_fp": 3149
+  },
+  "pipeline_id": "single_three_class_distilled_finetune_h64_seed123_argmax_geometry_20261019",
+  "recovery_candidates": 119,
+  "surface_recovered": 119,
+  "output_sha256": {
+    "face_level_metrics.csv": "45698bf90918897d778c87de4b276b523660bbb4111f0c54e8c86ea9d1aff33f",
+    "inputs\\109-ww1-standart-e-1-aircraft CATIA STP_standart-e1_wing_rivets.features.csv": "c7f406e69063b212f29463fce8012dd59e2a4ba22e247fa217a4687f064df499",
+    "inputs\\27- DC-10 SolidWorks stp igs_DC 10_wing_rivets.features.csv": "ccab99b7891a10bcc78d241753b3f25343e83f9a16a692601658af2914960720",
+    "inputs\\87- 747-400 stp_beoing 747-400 v6_wing_rivets.features.csv": "b143e0ba5bb933b26ad89c0f04ce0071712748642bf42bbe344bc793be65b418",
+    "inputs\\Air Plane Idea A.features.csv": "250558e2366c0a172875477bbaa9fb8d837a65607305de9d2627a038ce8945dd",
+    "inputs\\Airbus_wing_rivets.features.csv": "c3ae49cb615aa334615d761da9fbcc37a07af677e25acc649e2963eec39fd8d1",
+    "inputs\\Airplane body_wing_rivets.features.csv": "21adb59243e34117a7898b16dcd4b79e6e8780bc8a54d5feaa57fa4593f06e01",
+    "inputs\\AULIRA 2_wing_rivets.features.csv": "6a9cb7061a85cb4482d5eddc96ce7150415fe899d25b4c402e544b52df39ab7f",
+    "inputs\\Cessna Citation 2_wing_rivets.features.csv": "fd81f9e25f73e56668a20e58d93e8c7edd4948f71fff2145097eb399b2d13d25",
+    "inputs\\Gulfstream G280 v17_wing_rivets.features.csv": "036f0b1d997fb7701bc7fd97ee31de6c97e29383251be6e8dae6846366242faf",
+    "per_aircraft_metrics.csv": "fdf538fa3623747e450da2a8418e5446c97158f36b84ca66d227330a3d50c6d6",
+    "predictions\\109-ww1-standart-e-1-aircraft CATIA STP_standart-e1_wing_rivets.pred.csv": "39654814953e25dd25ca44525e23938c8880c71fa25e40b7b6d3a5e87fd25cfe",
+    "predictions\\27- DC-10 SolidWorks stp igs_DC 10_wing_rivets.pred.csv": "b82e26c9f42960e54f2e6571f2358883fb521eae915f7cf16c4709d5ac596337",
+    "predictions\\87- 747-400 stp_beoing 747-400 v6_wing_rivets.pred.csv": "f63f70efdfbe37584b7b3b3bb0c038c91cb2faf6d40d86adee2fc576c8a79691",
+    "predictions\\Air Plane Idea A.pred.csv": "45747a5cb7b15f705d2fbc5a966aafff7007740d1214c0741a8b81942df74e6a",
+    "predictions\\Airbus_wing_rivets.pred.csv": "08183f2087b3d2368ca769fe5984ec3f55ae4081d83ba130b192a45dfc7c33b7",
+    "predictions\\Airplane body_wing_rivets.pred.csv": "65e2dff0bd862cfe2f15891175190ebed2c7108a738ad13364d1ed344c9d7460",
+    "predictions\\AULIRA 2_wing_rivets.pred.csv": "1223067b3d0aaa714abd648cb5849e14ff77580b83277704c8f5e7989bb0f955",
+    "predictions\\Cessna Citation 2_wing_rivets.pred.csv": "98847b9b5f4456e296d3652d7389e617199079b43b2fd6325228540bcb4496b8",
+    "predictions\\Gulfstream G280 v17_wing_rivets.pred.csv": "287073db817c28289e0ce351db0d90db62a18dbe76667c2cfcd696b5d3113f9e",
+    "predictions.csv": "274b340e4731ec1bc6cc16db8b0307d1e193dadf4c85dd3316bac85b9000246a",
+    "raw\\109-ww1-standart-e-1-aircraft CATIA STP_standart-e1_wing_rivets.pred.csv": "27ee5c07b41c57f62051f35ecc2ab8f9e45638843c88b40ae8b84ab1e2803d6d",
+    "raw\\27- DC-10 SolidWorks stp igs_DC 10_wing_rivets.pred.csv": "52fa3caf94ad1fa925d4c848a022d1c4a4850061bf3d931d2801680897796a50",
+    "raw\\87- 747-400 stp_beoing 747-400 v6_wing_rivets.pred.csv": "c44fc01e0d71277d3153d7e613bf9ea8d93399d06b0ed2121675217a603ff619",
+    "raw\\Air Plane Idea A.pred.csv": "74c20ea1cb848c7afbab66fe0eacae6107b5c658f7cedf65d3277435a24efd12",
+    "raw\\Airbus_wing_rivets.pred.csv": "65217d51faf5737f5b83fbc4ecc7d6e79a3dea290e360c11b8c4660638787c05",
+    "raw\\Airplane body_wing_rivets.pred.csv": "714db9d8d3373f79a480008beb18dc40e86243ee603f7538b47d5ae2d07c920d",
+    "raw\\AULIRA 2_wing_rivets.pred.csv": "82c358aff33b18cf8e705df44be02c5abaf76e219579ca8ad31a9c09ef7999c0",
+    "raw\\Cessna Citation 2_wing_rivets.pred.csv": "b61ca4128691e8fc2ecca239b3d38887fa1e21c6ab58fde5c0be9581ebb61946",
+    "raw\\Gulfstream G280 v17_wing_rivets.pred.csv": "bc810f05f0de90fd0bb64aacd861620fd399930324f9665d1327a8699e65816e"
+  }
+}

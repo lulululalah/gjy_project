@@ -1,6 +1,6 @@
 {
   "model": "AULIRA 2",
-  "scope": "Original and final STEP endpoints of Table 8",
+  "scope": "Current original and final STEP endpoints of the mesh comparison table",
   "size": [
     2400,
     800
@@ -66,7 +66,7 @@
       "stage": "before",
       "step": "D:\\projects\\gjy_byproject\\data\\plane_model\\after_two\\AULIRA 2_wing_rivets.step",
       "step_sha256": "14553b9c5def46798d3238a1826bb84fdc468ef4b399393add9ffe87364b1541",
-      "metric_source": "D:\\projects\\gjy_byproject\\results\\e3_mesh\\per_model\\aulira_original.json",
+      "metric_source": "D:\\projects\\gjy_byproject\\results\\current_three_class_complete_20261020\\mesh\\AULIRA_2_original.json",
       "mesh": {
         "faces": 370,
         "nodes": 16178,
@@ -121,13 +121,13 @@
     },
     {
       "stage": "after",
-      "step": "D:\\projects\\gjy_byproject\\data\\plane_model\\ending\\AULIRA 2_wing_rivets.step",
-      "step_sha256": "f5ed57062e1fefd1cb8edf311ea509dcffb4ec81a511a772216efa9dfe73277d",
-      "metric_source": "D:\\projects\\gjy_byproject\\results\\e3_mesh\\per_model\\aulira_simplified.json",
+      "step": "D:\\projects\\gjy_byproject\\results\\current_three_class_complete_20261020\\cad\\AULIRA_2\\final.step",
+      "step_sha256": "a740703bdd9e321de946bc7863812c92d72f7517484a7654ce87fd9765c01772",
+      "metric_source": "D:\\projects\\gjy_byproject\\results\\current_three_class_complete_20261020\\mesh\\AULIRA_2_simplified.json",
       "mesh": {
         "faces": 136,
-        "nodes": 7824,
-        "triangles": 12589,
+        "nodes": 10420,
+        "triangles": 17695,
         "linear_deflection": 0.2694808360923331,
         "mesh_decimated": false
       },

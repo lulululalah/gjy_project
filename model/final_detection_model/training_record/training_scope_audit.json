@@ -1,0 +1,7 @@
+{
+  "status": "PASS",
+  "training_aircraft": 17,
+  "training_faces": 48095,
+  "test_aircraft_used_for_teacher_supervision": 0,
+  "target_sha256": "2b35d24e8a031bac9bdc966c62341d74252ed1dbb1405527ae684ef911eb475d"
+}

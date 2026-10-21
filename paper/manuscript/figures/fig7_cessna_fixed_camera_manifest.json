@@ -147,10 +147,10 @@
     },
     {
       "stage": "rivet_removed",
-      "step": "D:\\projects\\gjy_byproject\\work\\test_removal_pipeline\\Cessna_Citation_2\\Cessna_Citation_2_removed.step",
-      "labels": "D:\\projects\\gjy_byproject\\work\\test_removal_pipeline\\Cessna_Citation_2\\after_rivet_render.labels.json",
-      "step_sha256": "a10a3095c3c63c7771b3f09548bed211d3d48f56efcbaa7a6adf0c02f30a7186",
-      "labels_sha256": "7a251a0b1f5ae44619eadb36ae3736c5cfa54d310cf1a65c45ffbbb5ead9a286",
+      "step": "D:\\projects\\gjy_byproject\\results\\current_three_class_complete_20261020\\cad\\Cessna_Citation_2\\Cessna_Citation_2_rivet_removed.step",
+      "labels": "D:\\projects\\gjy_byproject\\results\\current_three_class_complete_20261020\\cad\\Cessna_Citation_2\\rivet_removed.display.labels.json",
+      "step_sha256": "bd1885bf37fd5cf88db474f30e958a1c6630e57320f0dc4fd6ad678124711b93",
+      "labels_sha256": "64bd77a3f1bc6f940a89a3529ad2b17c4f90cfdcb0d05bc47525115281142963",
       "faces": 260,
       "images": [
         "fig7_cessna_rivet_removed_overview_fixed.png",
