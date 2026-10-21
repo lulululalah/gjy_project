@@ -9,6 +9,21 @@ import cad.pipeline as experiment
 
 
 class EvidenceIntegrityTests(unittest.TestCase):
+    def test_cad_recovery_uses_the_configuration_from_the_selected_bundle(self):
+        import json
+        step = Path('current-aircraft.step')
+        manifest = json.loads((experiment.BUNDLE/'manifest.json').read_text(encoding='utf-8'))
+        expected = json.loads((experiment.BUNDLE/manifest['surface_recovery']['configuration']).read_text(encoding='utf-8'))
+        recovery = experiment.cad_recovery(step)
+        self.assertEqual(recovery.configuration, expected)
+        self.assertEqual(recovery.geometry, {step.name: step})
+
+    def test_disabled_recovery_does_not_construct_a_recovery_model(self):
+        with patch.object(experiment.json, 'loads', return_value={'surface_recovery': {'enabled': False}}):
+            with patch('recognition.recovery.DC10WindowRecovery') as constructor:
+                self.assertIsNone(experiment.cad_recovery(Path('current-aircraft.step')))
+                constructor.assert_not_called()
+
     def record(self):
         return dict(checkpoint_sha256='selected',
             original=dict(path='source.step', sha256='source'),

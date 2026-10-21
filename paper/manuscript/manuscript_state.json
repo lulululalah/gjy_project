@@ -12,7 +12,7 @@
     "lifecycle_stage": "evidence_and_method_revision",
     "review_maturity": "full_manuscript_author_review",
     "target_venue": "Journal of Computational Design and Engineering (provisional)",
-    "active_release": "figure5-half-page-layout-20261021",
+    "active_release": "figure5-balance-20261021",
     "style_reference": "TOG argument structure; existing manuscript format retained"
   },
   "artifacts": [
@@ -35,14 +35,15 @@
       "path": "main_annotated_three_class_20261019.pdf",
       "role": "annotated_manuscript_pdf",
       "status": "ACTIVE",
-      "required_for_release": true
+      "required_for_release": true,
+      "note": "Recreated against author-supplied main(11).pdf, including the latest numbered author comments; yellow highlights and Chinese popup notes."
     }
   ],
   "authority_sources": [
     {
       "id": "current-code",
       "kind": "verified_primary_evidence",
-      "path_or_reference": "python/three_class_model.py; python/run_three_class_refinement.py; python/run_recognition_experiment.py; python/train_rivet_gcn.py; python/dc10_window_recovery.py; model/final_detection_model/manifest.json",
+      "path_or_reference": "python/recognition/model.py; python/recognition/train.py; python/recognition/predict.py; python/recognition/postprocess.py; python/recognition/recovery.py; python/cad/pipeline.py; model/final_detection_model/manifest.json",
       "scope": [
         "methods",
         "model_contract",
@@ -79,16 +80,15 @@
     {
       "id": "current-eval",
       "kind": "analysis_output",
-      "path_or_reference": "model/final_detection_model/evaluation/predictions.csv; model/final_detection_model/evaluation/summary.json; paper/manuscript/work/single_three_class_revision_20261019/evidence_snapshot.json",
+      "path_or_reference": "results/current_three_class_complete_20261020/final_recognition/summary.json; results/current_three_class_complete_20261020/final_recognition/predictions.csv; results/current_three_class_complete_20261020/final_recognition/face_correspondence.csv; work/final_recognition_tables_20261021/evaluate.py",
       "scope": [
-        "fixed_developmental_evaluation",
+        "final_original_face_domain_metrics",
         "pooled_metrics",
         "per_aircraft_risk",
-        "current_candidates",
-        "raw_vs_screened"
+        "label_blind_correspondence"
       ],
       "status": "VERIFIED",
-      "last_verified": "2026-10-19"
+      "last_verified": "2026-10-21"
     },
     {
       "id": "current-test-csv",
@@ -161,7 +161,7 @@
       "path_or_reference": "results/current_three_class_complete_20261020",
       "scope": [
         "numerical CAD outcomes",
-        "mesh and QEM tables"
+        "paired original/final mesh table"
       ],
       "status": "CONFIRMED",
       "last_verified": "2026-10-20"
@@ -181,12 +181,12 @@
     {
       "id": "current-mesh-call",
       "kind": "verified_primary_evidence",
-      "path_or_reference": "python/mesh_step_surface.py; python/run_current_qem_experiment.py",
+      "path_or_reference": "python/geometry/measure.py",
       "scope": [
         "absolute_deflection_scaled_by_endpoint_diagonal",
         "parallel_meshing",
         "face_local_node_counts",
-        "QEM_aggressiveness"
+        "paired_endpoint_meshing_times"
       ],
       "status": "VERIFIED",
       "last_verified": "2026-10-20"
@@ -199,7 +199,7 @@
       "current face-level recognition",
       "per-aircraft errors",
       "original and intermediate candidate counts",
-      "fresh staged CAD outcomes and mesh/QEM measurements"
+      "fresh staged CAD outcomes and paired original/final mesh measurements"
     ],
     "questions": [
       {
@@ -223,7 +223,7 @@
       "No universal generalization claim across all aircraft or CAD sources.",
       "Geometric comparison does not establish physics equivalence.",
       "No CAE acceleration or response-preservation claim before controlled downstream experiments.",
-      "No mesh-quality or geometric-fidelity superiority claim over QEM.",
+      "No mesh-quality or geometric-fidelity superiority claim over alternative simplification methods.",
       "Human visual review is not described as fully automatic validation.",
       "Retired BFS and 51-dimensional experiments are not part of the formal model.",
       "No independent test claim for the inspected development set.",
@@ -254,7 +254,7 @@
     {
       "id": "current-and-retained-evidence",
       "kind": "SEMANTIC",
-      "canonical": "Figures6--11 and CAD/mesh/QEM tables use the current three-class model CAD endpoints. Input CAD colours are original annotations, processed geometry is uniformly shaded. Nine-aircraft results describe a known developmental set."
+      "canonical": "Figures6--11 and paired original/final mesh Table4 use current three-class CAD endpoints. Input colours show original annotations; processed geometry is uniformly shaded. QEM comparison retired from manuscript at author request. The test set informed model selection; independent transfer is not established."
     }
   ],
   "terminology": [
@@ -398,12 +398,11 @@
     },
     {
       "id": "recognition-current",
-      "value": "Final rivet F1 .9297; cosmetic F1 .7776; 35 and145 missed; background FP209",
+      "value": "Final selections: rivet F1 .9297; cosmetic F1 .8476; 35 and56 missed; background FP203; 34162 original faces",
       "source_id": "current-eval",
       "expected_strings": [
         "0.9297",
-        "0.7776",
-        "209"
+        "0.8476"
       ],
       "scope_roles": [
         "main_manuscript"
@@ -411,7 +410,7 @@
     },
     {
       "id": "raw-recognition-current",
-      "value": "Raw F1 rivet.1895 cosmetic.6505; raw background FP3149; system results remain.9297/.7776",
+      "value": "Retained earlier-stage evidence: raw F1 .1895/.6505; original recognition-stage F1 .9297/.7776. Not the final selection stage now reported in Tables3--5.",
       "source_id": "full-reconstruction-audit",
       "expected_strings": [
         "0.1895",
@@ -419,16 +418,16 @@
         "3,149"
       ],
       "scope_roles": [
-        "main_manuscript"
+        "retained_internal_evidence"
       ]
     }
   ],
   "alignment": [
     {
       "question_id": "RQ1",
-      "method": "48/6 attributed graph, four-layer width64 edge-conditioned encoder, categorical output; weighted CE/background costs/cached training targets; separately stored raw and system labels",
-      "evidence": "Frozen 34162 evaluation pairs, verified_evidence.json, Tables3--5",
-      "result": "Raw F1 .1895/.6505; system F1 .9297/.7776; background FP3149->209",
+      "method": "Current shared categorical GNN and complete retained geometric selection workflow; final cosmetic selections mapped back to original faces using label-blind geometry.",
+      "evidence": "Final original-face-domain predictions, truth and face correspondence in results/current_three_class_complete_20261020/final_recognition; Table3",
+      "result": "Final selections F1 .9297/.8476, background FP203; missed targets35/56. Earlier pipeline stages remain unchanged as retained evidence.",
       "interpretation": "Full implemented system performance; geometric processing is materially involved",
       "limitation": "Development-set use, generated targets, one seed, no current controlled module ablations or independent aircraft test",
       "contribution": "Task-specific recognition and error characterisation",
@@ -437,20 +436,20 @@
     {
       "question_id": "RQ4",
       "method": "Rivet stage, graph re-extraction, same classifier, geometric correspondence and CAD proposals; configured operator families",
-      "evidence": "results/current_three_class_complete_20261020; Figures6--10; Table6",
-      "result": "Nine recorded final endpoints; C1 proposals kept separate from original-label metrics",
+      "evidence": "results/current_three_class_complete_20261020; Figures6--10; candidate-count table removed at author request",
+      "result": "Recorded CAD endpoints remain unchanged; underlying candidate records retained outside the manuscript.",
       "interpretation": "Traceable editing outcomes across face re-enumeration",
-      "limitation": "Known-model configured routes; original truth does not annotate changed topology; removal completeness not quantitatively established",
+      "limitation": "Original truth evaluates mapped final selections, not new/reconstructed faces or quantitative removal completeness; known-model configured routes.",
       "contribution": "Recognition-to-editing integration",
       "status": "IN_PROGRESS"
     },
     {
       "question_id": "RQ5",
-      "method": "Endpoint-diagonal scaled absolute deflection .0005D, angle .5rad, parallel OCC; five fresh reloads; matched-count QEM kernels",
-      "evidence": "Current mesh/qem JSON; Figure11; Tables7--8",
-      "result": "Triangles decrease2.55--38.36%; median mesher time decreases1.09--61.61%; matched-count QEM component differences5.84--63.26%",
+      "method": "Endpoint-diagonal scaled absolute deflection .0005D, angle .5rad, parallel OCC; five fresh reloads of original and final CAD endpoints",
+      "evidence": "Current mesh JSON; Figure11; Table4",
+      "result": "Triangles decrease2.55--38.36%; median mesher time decreases1.09--61.61%",
       "interpretation": "Endpoint size/timing observations, elementary shape diagnostics retained",
-      "limitation": "No matched-error geometric/mesh-quality superiority or total-workflow/CAE claim",
+      "limitation": "Paired endpoint measurements; no comparison against alternative simplifiers, complete-workflow timing claim or CAE validation.",
       "contribution": "Paired downstream measurements",
       "status": "IN_PROGRESS"
     }
@@ -473,8 +472,7 @@
         "face count",
         "paired mesh node and triangle counts",
         "median meshing time",
-        "operation-level outcomes",
-        "matched-quality baseline"
+        "operation-level outcomes"
       ],
       "status": "INCOMPLETE"
     },
@@ -514,7 +512,8 @@
       "status": "OPEN",
       "description": "Quantitative geometry, mesh, and CAE validation is incomplete.",
       "evidence_status": "CONFIRMED",
-      "required_action": "Complete controlled downstream validation or narrow title and claims."
+      "required_action": "Complete controlled downstream validation or narrow title and claims.",
+      "additional_evidence": "work/fixed_error_comparison_20261021/preliminary_error_audit.json; preliminary sampled bidirectional distances exceed .001D in8/9 current endpoint pairs. QEM experiment retired; geometric/CAE suitability remains unresolved."
     },
     {
       "id": "I4",
@@ -586,12 +585,12 @@
   "release": {
     "status": "FOR_AUTHOR_REVIEW",
     "date": "2026-10-21",
-    "scope": "Full-paper reconstruction; numeric table bodies retained; Figure5 redrawn and Table6 completion-status column removed by explicit author request; 2026-10-21 Figure5 compact flat-module layout, unchanged architecture and results",
+    "scope": "Figure5 layout balance only: same-width aligned stages, horizontal input diagram, regular spacing. Model, scientific content, manuscript prose and caption unchanged.",
     "clean_pdf": "main.pdf",
     "annotated_pdf": "main_annotated_three_class_20261019.pdf",
     "change_ledger": "../../work/tog_manuscript_reconstruction_20261020/revision_ledger.json",
-    "review_report": "../../work/tog_manuscript_reconstruction_20261020/02_全文重构审阅报告.md",
-    "citation_audit": "../../work/tog_manuscript_reconstruction_20261020/03_文献与引用核验.md",
+    "review_report": "../../work/figure5_balance_20261021/修改记录.md",
+    "citation_audit": "../../work/abstract_figure5_related_work_20261021/文献核验.md",
     "pending_checks": [],
     "remaining_work": [
       "Author-supplied metadata and annotations/provenance confirmation",
@@ -607,25 +606,86 @@
       "Beautify Figure5 using its native scientific diagram source"
     ],
     "completed_checks": [
-      "2026-10-20: Exact-source candidate audit and manual contextual dispositions",
-      "2026-10-20: Full 24-page clean PDF visual inspection and annotated focal-page checks",
-      "2026-10-20: Chinese annotation roundtrip and exact clean/annotated page-content and extracted-text parity",
-      "2026-10-20: All8 numeric table bodies,20citation keys,unique labels and resolved references",
-      "2026-10-20: 177 protected files unchanged; sole authorised exception is Figure5 TikZ source",
-      "2026-10-21: successful isolated latexmk build; no undefined references or overfull boxes",
-      "2026-10-21: Figure5 page8, adjacent pages7/9 and annotated page12 visually checked",
-      "2026-10-21: all8063 nonfigure tokens mapped; all33 existing Chinese notes retained; annotation streams match clean PDF"
+      "Main manuscript source and caption unchanged; model dimensions and operations retained in Figure5.",
+      "21-page clean/annotated text identical;43 logical notes/45 highlights and original links preserved.",
+      "Figure5 is on page10; no undefined references or overfull boxes.",
+      "Published clean Figure5 and annotated pages10/11 visually inspected."
     ],
     "source_inventory": "../../work/tog_manuscript_reconstruction_20261020/04_模型来源核查.md",
-    "change_entries": 52,
-    "pages": 24,
+    "change_entries": 67,
+    "pages": 21,
     "figures": 11,
-    "tables": 8,
-    "verification": "../../work/tog_manuscript_reconstruction_20261020/source_verification.json",
-    "annotation_manifest": "../../work/tog_manuscript_reconstruction_20261020/annotation_manifest.json",
-    "source_sha256": "5e9eb76101b0ae9fa1cbc98631bb9ba085a55c867d9c62a38fb3ca3e9ca59e24",
-    "clean_sha256": "3f635069b90a6dea82749dc2bdd6d2f1b555b32fd997c22541e13c735ab74ff9",
-    "annotated_sha256": "983449dca4b92e44f1d5258fbc188f80cd609600fc36c6d7b5af6d6204088986"
+    "tables": 4,
+    "verification": "../../work/figure5_balance_20261021/verification.json",
+    "annotation_manifest": "../../work/figure5_balance_20261021/annotation_manifest.json",
+    "source_sha256": "b60ec1c10b1020edb7ca4bbf6703bbca5f28c5cbca0aabc45bf91ba3a25c4625",
+    "clean_sha256": "e6529b7d70d1eb4b6b2687013f4ca2bd39233c70ee04087f4ff9da2663eaa8c8",
+    "annotated_sha256": "936cf9789a27afa46bc435e47e4fa48ca46e5ec9cbe5baf26fa3664b1dcefda4",
+    "annotated_pdf_status": "CURRENT_COMPARISON_TO_MAIN11",
+    "annotation_manifest_scope": "Current manuscript versus main(11).pdf;43 logical notes/45 highlights. QEM removal explained beside the retained paired-mesh discussion.",
+    "figure_table_locations": {
+      "fig:gulfstream_target_examples": {
+        "number": "1",
+        "page": 2
+      },
+      "fig:brep_preliminary": {
+        "number": "2",
+        "page": 6
+      },
+      "fig:face_graph_preliminary": {
+        "number": "3",
+        "page": 6
+      },
+      "fig:face_graph_attributes": {
+        "number": "4",
+        "page": 8
+      },
+      "tab:node_attribute_groups": {
+        "number": "1",
+        "page": 9
+      },
+      "fig:three_class_gnn": {
+        "number": "5",
+        "page": 10
+      },
+      "fig:geometry_protocol": {
+        "number": "6",
+        "page": 13
+      },
+      "tab:data_composition": {
+        "number": "2",
+        "page": 14
+      },
+      "tab:e1_class_metrics": {
+        "number": "3",
+        "page": 15
+      },
+      "fig:e2_rivet_examples": {
+        "number": "7",
+        "page": 16
+      },
+      "fig:e2_window_examples": {
+        "number": "8",
+        "page": 16
+      },
+      "fig:e2_window_cessna": {
+        "number": "9",
+        "page": 16
+      },
+      "fig:e2_decal_109": {
+        "number": "10",
+        "page": 17
+      },
+      "fig:e3_mesh_schematic": {
+        "number": "11",
+        "page": 18
+      },
+      "tab:e3_mesh": {
+        "number": "4",
+        "page": 19
+      }
+    },
+    "previous_verification": "../../work/discussion_sentence_removal_20261021/verification.json"
   },
   "decisions": [
     {
@@ -633,6 +693,18 @@
       "authority": "Explicit author request for full systematic reconstruction, evidence-preserving literature review and marked PDF",
       "decision": "Reframe as task-specific recognition-to-editing study; group candidate parameters in appendices; disclose generated targets and raw/system scores; preserve all figures, model assets and numerical tables; no new experiments",
       "supersedes": "Old narrative and stale release notes about an unresolved G280 routing error"
+    },
+    {
+      "id": "D-no-annotation-R53-R55-20261021",
+      "authority": "Explicit current author instruction",
+      "decision": "Update clean manuscript and text ledger only; preserve prior annotated PDF unchanged",
+      "supersedes": "Earlier standing request to annotate every manuscript revision"
+    },
+    {
+      "id": "D-author-review-revision-20261021",
+      "authority": "Explicit numbered comments and asynchronous confirmation of five node groups plus one edge group",
+      "decision": "Move combined input overview to4.3; remove appendices and candidate-count table; omit raw-score comparison; retain final metrics scope once and model-selection scope once in Discussion; regenerate comparison annotations.",
+      "supersedes": "Old appendix/candidate-table presentation and previous no-annotation instruction"
     }
   ],
   "post_release_cleanup_20261020": {
@@ -667,6 +739,157 @@
     "report": "../../work/figure5_halfpage_20261021/修改记录.md",
     "verification": "../../work/figure5_halfpage_20261021/annotation_verification.json",
     "main_tex_and_caption_unchanged": true,
-    "model_and_experimental_results_unchanged": true
+    "model_and_experimental_results_unchanged": true,
+    "superseded_by": "abstract-reference-figure5-relatedwork-20261021"
+  },
+  "abstract_figure5_related_work_revision_20261021": {
+    "authority": "Explicit author request for all three changes and no annotated-PDF update",
+    "entries": [
+      "R53",
+      "R54",
+      "R55"
+    ],
+    "figure_page": 9,
+    "figure_height_mm": 87,
+    "report": "../../work/abstract_figure5_related_work_20261021/修改记录.md",
+    "reference_pdf": "D:/app/xwechat_files/wxid_2h960nxyi3z621_a2c6/msg/file/2026-10/main(11).pdf",
+    "reference_pdf_sha256": "8e8d54fe3553eca068fc7075b8f5296cd17343357f0a87a68909d1d0d63c3f90",
+    "annotated_pdf_unchanged": true,
+    "model_and_numeric_tables_unchanged": true,
+    "superseded_by": "figure5-vertical-reference-20261021"
+  },
+  "figure5_vertical_reference_revision_20261021": {
+    "id": "R56",
+    "date": "2026-10-21",
+    "section": "Figure 5",
+    "change_type": "visual_format_only",
+    "before": "Horizontal grouped encoder/context/prediction diagram, panels A--D",
+    "after": "Vertical build/learn/assign diagram, stages a--c, matching the supplied reference format",
+    "reason": "Explicit author request to use the supplied older figure format while retaining the current three-class model",
+    "figure_page": 9,
+    "diagram_height_mm": 108.24,
+    "annotated_pdf_updated": false,
+    "scientific_results_changed": false,
+    "report": "work/figure5_vertical_reference_20261021/修改记录.md",
+    "source_sha256": "97b3c674df56586d81461fe70eab5eca2eb41819d1f196e9f88e034677c6d80e"
+  },
+  "build_recovery_20261021": {
+    "root_cause": "Original in-place pdflatex cannot overwrite main.pdf while it is in use; incomplete auxiliary files are a consequence.",
+    "build_script": "../build.ps1",
+    "vscode_settings": "../../.vscode/settings.json",
+    "build_directory": "../../work/latex_manuscript_build",
+    "pdf_publication": "Compile in work, back up prior PDF, replace by same-directory rename after successful compilation.",
+    "full_build_exit_code": 0,
+    "incremental_build_exit_code": 0,
+    "pages": 25,
+    "source_bibliography_figure_and_annotated_pdf_unchanged": true,
+    "pdf_text_unchanged": true,
+    "vscode_ui_invoked": false,
+    "report": "../../work/latex_build_recovery_20261021/修复记录.md",
+    "verification": "../../work/latex_build_recovery_20261021/verification.json"
+  },
+  "abstract_reference_revision_20261021": {
+    "entry": "R57",
+    "pages": 26,
+    "figure5_page": 9,
+    "annotated_pdf_updated": false,
+    "figures_and_body_unchanged": true,
+    "report": "../../work/abstract_reference_revision_20261021/修改记录.md",
+    "verification": "../../work/abstract_reference_revision_20261021/verification.json",
+    "build_follow_up": "../build.ps1 now includes the isolated directory in process-local TEXINPUTS so auxiliary files and cross-references are read correctly."
+  },
+  "introduction_reference_ending_20261021": {
+    "entry": "R58",
+    "source_reference": "D:/app/xwechat_files/wxid_2h960nxyi3z621_a2c6/msg/file/2026-10/main(11).pdf",
+    "pages": 25,
+    "figure5_page": 9,
+    "annotated_pdf_updated": false,
+    "scientific_results_changed": false,
+    "scope": "Contribution3 and removal of final Introduction paragraph only",
+    "verification": "../../work/introduction_reference_ending_20261021/verification.json"
+  },
+  "reviewer_revision_20261021": {
+    "entry": "R59",
+    "author_confirmed_table": "five node groups and one edge group, six rows",
+    "pages": 23,
+    "tables": 7,
+    "figures": 11,
+    "annotated_notes": 43,
+    "appendices_removed": true,
+    "candidate_count_table_removed": true,
+    "underlying_model_results_and_figures_unchanged": true,
+    "model_selection_scope_retained_once": true,
+    "verification": "../../work/reviewer_revision_20261021/verification.json"
+  },
+  "final_recognition_tables_20261021": {
+    "entry": "R60",
+    "evidence": "../../results/current_three_class_complete_20261020/final_recognition",
+    "note": "Final selection evaluation, not pure network performance or a removal-success metric; all878 intermediate cosmetic selections mapped uniquely onto original faces without truth labels.",
+    "single_recognition_table": true,
+    "verification": "../../work/final_recognition_tables_20261021/verification.json",
+    "pooled_metrics": {
+      "rivet_f1": 0.929745889387145,
+      "cosmetic_f1": 0.8476249228871067,
+      "background_fp": 203
+    },
+    "annotation_notes": 42,
+    "highlight_popup_pairs": 45
+  },
+  "softmax_reference_20261021": {
+    "entry": "R61",
+    "description": "Link first softmax explanation to eq:three_class_probabilities; current equation5.",
+    "verification": "../../work/softmax_reference_20261021/verification.json",
+    "formula_number": 5,
+    "mention_page": 9,
+    "formula_page": 10
+  },
+  "chapter5_title_20261021": {
+    "entry": "R62",
+    "heading": "CAD Simplification and Experimental Setup",
+    "verification": "../../work/chapter5_title_20261021/verification.json",
+    "page": 12,
+    "logical_notes": 43,
+    "highlights": 46
+  },
+  "dataset_sentence_removal_20261021": {
+    "entry": "R63",
+    "description": "Delete the single author-specified sentence in5.3.1; no replacement claim about data provenance.",
+    "verification": "../../work/dataset_sentence_removal_20261021/verification.json",
+    "logical_notes": 43,
+    "highlights": 45
+  },
+  "training_description_20261021": {
+    "entry": "R64",
+    "description": "Training schedule stated once; redundant zero-learning-rate clause removed. Recorded training configuration remains unchanged.",
+    "verification": "../../work/training_description_20261021/verification.json",
+    "logical_notes": 43,
+    "highlights": 45
+  },
+  "remove_qem_comparison_20261021": {
+    "entry": "R65",
+    "status": "COMPLETED_FOR_AUTHOR_REVIEW",
+    "active_comparison": "Original versus processed CAD endpoints only",
+    "historical_QEM_records": "Retained outside manuscript for provenance; no deletion of experiment files",
+    "verification": "../../work/remove_qem_comparison_20261021/verification.json",
+    "logical_notes": 43,
+    "highlights": 45,
+    "reference_keys_removed_from_generated_list": [
+      "garland1997qem",
+      "fast_simplification_2026"
+    ]
+  },
+  "discussion_sentence_removal_20261021": {
+    "entry": "R66",
+    "status": "COMPLETED_FOR_AUTHOR_REVIEW",
+    "author_request": "Delete the final sentence of Discussion about test-set model selection and independent aircraft.",
+    "evidence_scope": "Editorial deletion only; no new independent evaluation or generalisation claim. Existing scientific issues remain open."
+  },
+  "figure5_balance_20261021": {
+    "entry": "R67",
+    "status": "COMPLETED_FOR_AUTHOR_REVIEW",
+    "source": "figures/fig_three_class_gnn_architecture.tex",
+    "figure_sha256": "c8ca72094fd8c53b49de86a4b6d72d6704875529e047ac0c3abff2119aac1d76",
+    "scientific_content_changed": false,
+    "verification": "../../work/figure5_balance_20261021/verification.json"
   }
 }

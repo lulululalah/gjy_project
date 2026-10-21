@@ -1,0 +1,26 @@
+{
+  "latex-workshop.latex.recipes": [
+    {
+      "name": "Safe manuscript build",
+      "tools": ["safe-manuscript-build"]
+    }
+  ],
+  "latex-workshop.latex.tools": [
+    {
+      "name": "safe-manuscript-build",
+      "command": "C:/Windows/System32/WindowsPowerShell/v1.0/powershell.exe",
+      "args": [
+        "-NoProfile",
+        "-NonInteractive",
+        "-ExecutionPolicy",
+        "RemoteSigned",
+        "-File",
+        "%DIR%/../build.ps1"
+      ],
+      "cwd": "%DIR%"
+    }
+  ],
+  "latex-workshop.latex.recipe.default": "first",
+  "latex-workshop.latex.outDir": "%DIR%/../../work/latex_manuscript_build",
+  "latex-workshop.view.pdf.viewer": "tab"
+}

@@ -6,7 +6,8 @@ lib/
 obj/
 
 # IDEs and Editors
-.vscode/
+.vscode/*
+!.vscode/settings.json
 .idea/
 *.swp
 *.swo

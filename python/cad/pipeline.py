@@ -68,9 +68,20 @@ def verify_completed_record(record, checkpoint_sha256):
         if sha256(folder/name) != record[key]:
             raise ValueError('Completed CAD evidence was modified: '+name)
 
+def cad_recovery(step):
+    """Use the recovery configuration paired with the selected model bundle."""
+    from recognition.recovery import DC10WindowRecovery
+    manifest = json.loads((BUNDLE/'manifest.json').read_text(encoding='utf-8'))
+    entry = manifest.get('surface_recovery', {})
+    if not entry.get('enabled', False):
+        return None
+    if entry.get('method') != 'dc10-window-topology':
+        raise ValueError('Unsupported CAD-stage recovery method')
+    return DC10WindowRecovery(BUNDLE/entry['configuration'], {step.name: step})
+
+
 def infer(step, csv_path, out, model, stats, device):
     from recognition.graph import build_graph
-    from recognition.recovery import DC10WindowRecovery
     features = pd.read_csv(csv_path)
     features['model_name'] = step.name
     graph = build_graph(features, stats['mean'], stats['std'], stats['edge_mean'],
@@ -82,7 +93,7 @@ def infer(step, csv_path, out, model, stats, device):
         pred_name=[LABEL_NAMES[x] for x in labels],
         pred_confidence=scores[np.arange(len(labels)), labels],
         prob_background=scores[:, 0], prob_rivet=scores[:, 1], prob_surface_feature=scores[:, 2]))
-    recovery = DC10WindowRecovery(BUNDLE/'recognition.recovery.json', {step.name: step})
+    recovery = cad_recovery(step)
     result = screen_predictions(raw, features, step, EVIDENCE/'visibility_cache', recovery)
     result['raw_label'] = raw.pred_label
     raw.to_csv(out.with_suffix('.raw.csv'), index=False)

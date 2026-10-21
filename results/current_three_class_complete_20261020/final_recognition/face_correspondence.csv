@@ -1,0 +1,879 @@
+model_name,original_face_id,intermediate_face_id,mapping_method,selection_reason
+109-ww1-standart-e-1-aircraft CATIA STP_standart-e1_wing_rivets_decals.step,79,64,recorded_geometric_correspondence,single_host_decorative_patch+geometry_correspondence
+109-ww1-standart-e-1-aircraft CATIA STP_standart-e1_wing_rivets_decals.step,417,391,recorded_geometric_correspondence,geometry_correspondence
+109-ww1-standart-e-1-aircraft CATIA STP_standart-e1_wing_rivets_decals.step,501,475,recorded_geometric_correspondence,geometry_correspondence
+27- DC-10 SolidWorks stp igs_DC 10_wing_rivets.step,59,32,recorded_geometric_correspondence,geometry_correspondence
+27- DC-10 SolidWorks stp igs_DC 10_wing_rivets.step,61,34,recorded_geometric_correspondence,geometry_correspondence
+27- DC-10 SolidWorks stp igs_DC 10_wing_rivets.step,62,35,recorded_geometric_correspondence,geometry_correspondence
+27- DC-10 SolidWorks stp igs_DC 10_wing_rivets.step,63,36,recorded_geometric_correspondence,geometry_correspondence
+27- DC-10 SolidWorks stp igs_DC 10_wing_rivets.step,64,37,recorded_geometric_correspondence,geometry_correspondence
+27- DC-10 SolidWorks stp igs_DC 10_wing_rivets.step,65,38,recorded_geometric_correspondence,geometry_correspondence
+27- DC-10 SolidWorks stp igs_DC 10_wing_rivets.step,66,39,recorded_geometric_correspondence,geometry_correspondence
+27- DC-10 SolidWorks stp igs_DC 10_wing_rivets.step,67,40,recorded_geometric_correspondence,geometry_correspondence
+27- DC-10 SolidWorks stp igs_DC 10_wing_rivets.step,68,41,recorded_geometric_correspondence,geometry_correspondence
+27- DC-10 SolidWorks stp igs_DC 10_wing_rivets.step,69,42,recorded_geometric_correspondence,geometry_correspondence
+27- DC-10 SolidWorks stp igs_DC 10_wing_rivets.step,71,44,recorded_geometric_correspondence,geometry_correspondence
+27- DC-10 SolidWorks stp igs_DC 10_wing_rivets.step,74,47,recorded_geometric_correspondence,geometry_correspondence
+27- DC-10 SolidWorks stp igs_DC 10_wing_rivets.step,75,48,recorded_geometric_correspondence,geometry_correspondence
+27- DC-10 SolidWorks stp igs_DC 10_wing_rivets.step,76,49,recorded_geometric_correspondence,geometry_correspondence
+27- DC-10 SolidWorks stp igs_DC 10_wing_rivets.step,78,51,recorded_geometric_correspondence,geometry_correspondence
+27- DC-10 SolidWorks stp igs_DC 10_wing_rivets.step,79,52,recorded_geometric_correspondence,geometry_correspondence
+27- DC-10 SolidWorks stp igs_DC 10_wing_rivets.step,80,53,recorded_geometric_correspondence,geometry_correspondence
+27- DC-10 SolidWorks stp igs_DC 10_wing_rivets.step,81,54,recorded_geometric_correspondence,geometry_correspondence
+27- DC-10 SolidWorks stp igs_DC 10_wing_rivets.step,82,55,recorded_geometric_correspondence,geometry_correspondence
+27- DC-10 SolidWorks stp igs_DC 10_wing_rivets.step,83,56,recorded_geometric_correspondence,geometry_correspondence
+27- DC-10 SolidWorks stp igs_DC 10_wing_rivets.step,84,57,recorded_geometric_correspondence,geometry_correspondence
+27- DC-10 SolidWorks stp igs_DC 10_wing_rivets.step,85,58,recorded_geometric_correspondence,geometry_correspondence
+27- DC-10 SolidWorks stp igs_DC 10_wing_rivets.step,86,59,recorded_geometric_correspondence,geometry_correspondence
+27- DC-10 SolidWorks stp igs_DC 10_wing_rivets.step,89,62,recorded_geometric_correspondence,geometry_correspondence
+27- DC-10 SolidWorks stp igs_DC 10_wing_rivets.step,94,67,recorded_geometric_correspondence,geometry_correspondence
+27- DC-10 SolidWorks stp igs_DC 10_wing_rivets.step,95,68,recorded_geometric_correspondence,geometry_correspondence
+27- DC-10 SolidWorks stp igs_DC 10_wing_rivets.step,96,69,recorded_geometric_correspondence,geometry_correspondence
+27- DC-10 SolidWorks stp igs_DC 10_wing_rivets.step,98,71,recorded_geometric_correspondence,geometry_correspondence
+27- DC-10 SolidWorks stp igs_DC 10_wing_rivets.step,99,72,recorded_geometric_correspondence,geometry_correspondence
+27- DC-10 SolidWorks stp igs_DC 10_wing_rivets.step,100,73,recorded_geometric_correspondence,geometry_correspondence
+27- DC-10 SolidWorks stp igs_DC 10_wing_rivets.step,101,74,recorded_geometric_correspondence,geometry_correspondence
+27- DC-10 SolidWorks stp igs_DC 10_wing_rivets.step,102,75,recorded_geometric_correspondence,geometry_correspondence
+27- DC-10 SolidWorks stp igs_DC 10_wing_rivets.step,103,76,recorded_geometric_correspondence,geometry_correspondence
+27- DC-10 SolidWorks stp igs_DC 10_wing_rivets.step,104,77,recorded_geometric_correspondence,geometry_correspondence
+27- DC-10 SolidWorks stp igs_DC 10_wing_rivets.step,105,78,recorded_geometric_correspondence,geometry_correspondence
+27- DC-10 SolidWorks stp igs_DC 10_wing_rivets.step,106,79,recorded_geometric_correspondence,geometry_correspondence
+27- DC-10 SolidWorks stp igs_DC 10_wing_rivets.step,107,80,recorded_geometric_correspondence,geometry_correspondence
+27- DC-10 SolidWorks stp igs_DC 10_wing_rivets.step,108,81,recorded_geometric_correspondence,geometry_correspondence
+27- DC-10 SolidWorks stp igs_DC 10_wing_rivets.step,109,82,recorded_geometric_correspondence,geometry_correspondence
+27- DC-10 SolidWorks stp igs_DC 10_wing_rivets.step,110,83,recorded_geometric_correspondence,geometry_correspondence
+27- DC-10 SolidWorks stp igs_DC 10_wing_rivets.step,111,84,recorded_geometric_correspondence,geometry_correspondence
+27- DC-10 SolidWorks stp igs_DC 10_wing_rivets.step,112,85,recorded_geometric_correspondence,geometry_correspondence
+27- DC-10 SolidWorks stp igs_DC 10_wing_rivets.step,115,88,recorded_geometric_correspondence,geometry_correspondence
+27- DC-10 SolidWorks stp igs_DC 10_wing_rivets.step,116,89,recorded_geometric_correspondence,geometry_correspondence
+27- DC-10 SolidWorks stp igs_DC 10_wing_rivets.step,117,90,recorded_geometric_correspondence,geometry_correspondence
+27- DC-10 SolidWorks stp igs_DC 10_wing_rivets.step,118,91,recorded_geometric_correspondence,geometry_correspondence
+27- DC-10 SolidWorks stp igs_DC 10_wing_rivets.step,134,107,recorded_geometric_correspondence,geometry_correspondence
+27- DC-10 SolidWorks stp igs_DC 10_wing_rivets.step,135,108,recorded_geometric_correspondence,geometry_correspondence
+27- DC-10 SolidWorks stp igs_DC 10_wing_rivets.step,136,109,recorded_geometric_correspondence,geometry_correspondence
+27- DC-10 SolidWorks stp igs_DC 10_wing_rivets.step,138,111,recorded_geometric_correspondence,geometry_correspondence
+27- DC-10 SolidWorks stp igs_DC 10_wing_rivets.step,140,113,recorded_geometric_correspondence,geometry_correspondence
+27- DC-10 SolidWorks stp igs_DC 10_wing_rivets.step,142,115,recorded_geometric_correspondence,geometry_correspondence
+27- DC-10 SolidWorks stp igs_DC 10_wing_rivets.step,144,117,recorded_geometric_correspondence,geometry_correspondence
+27- DC-10 SolidWorks stp igs_DC 10_wing_rivets.step,145,118,recorded_geometric_correspondence,geometry_correspondence
+27- DC-10 SolidWorks stp igs_DC 10_wing_rivets.step,146,119,recorded_geometric_correspondence,geometry_correspondence
+27- DC-10 SolidWorks stp igs_DC 10_wing_rivets.step,147,120,recorded_geometric_correspondence,geometry_correspondence
+27- DC-10 SolidWorks stp igs_DC 10_wing_rivets.step,148,121,recorded_geometric_correspondence,geometry_correspondence
+27- DC-10 SolidWorks stp igs_DC 10_wing_rivets.step,149,122,recorded_geometric_correspondence,geometry_correspondence
+27- DC-10 SolidWorks stp igs_DC 10_wing_rivets.step,150,123,recorded_geometric_correspondence,geometry_correspondence
+27- DC-10 SolidWorks stp igs_DC 10_wing_rivets.step,151,124,recorded_geometric_correspondence,geometry_correspondence
+27- DC-10 SolidWorks stp igs_DC 10_wing_rivets.step,152,125,recorded_geometric_correspondence,geometry_correspondence
+27- DC-10 SolidWorks stp igs_DC 10_wing_rivets.step,153,126,recorded_geometric_correspondence,geometry_correspondence
+27- DC-10 SolidWorks stp igs_DC 10_wing_rivets.step,154,127,recorded_geometric_correspondence,geometry_correspondence
+27- DC-10 SolidWorks stp igs_DC 10_wing_rivets.step,155,128,recorded_geometric_correspondence,geometry_correspondence
+27- DC-10 SolidWorks stp igs_DC 10_wing_rivets.step,156,129,recorded_geometric_correspondence,geometry_correspondence
+27- DC-10 SolidWorks stp igs_DC 10_wing_rivets.step,157,130,recorded_geometric_correspondence,geometry_correspondence
+27- DC-10 SolidWorks stp igs_DC 10_wing_rivets.step,158,131,recorded_geometric_correspondence,geometry_correspondence
+27- DC-10 SolidWorks stp igs_DC 10_wing_rivets.step,159,132,recorded_geometric_correspondence,geometry_correspondence
+27- DC-10 SolidWorks stp igs_DC 10_wing_rivets.step,160,133,recorded_geometric_correspondence,geometry_correspondence
+27- DC-10 SolidWorks stp igs_DC 10_wing_rivets.step,161,134,recorded_geometric_correspondence,geometry_correspondence
+27- DC-10 SolidWorks stp igs_DC 10_wing_rivets.step,162,135,recorded_geometric_correspondence,geometry_correspondence
+27- DC-10 SolidWorks stp igs_DC 10_wing_rivets.step,163,136,recorded_geometric_correspondence,geometry_correspondence
+27- DC-10 SolidWorks stp igs_DC 10_wing_rivets.step,164,137,recorded_geometric_correspondence,geometry_correspondence
+27- DC-10 SolidWorks stp igs_DC 10_wing_rivets.step,165,138,recorded_geometric_correspondence,geometry_correspondence
+27- DC-10 SolidWorks stp igs_DC 10_wing_rivets.step,167,140,recorded_geometric_correspondence,geometry_correspondence
+27- DC-10 SolidWorks stp igs_DC 10_wing_rivets.step,168,141,recorded_geometric_correspondence,geometry_correspondence
+27- DC-10 SolidWorks stp igs_DC 10_wing_rivets.step,169,142,recorded_geometric_correspondence,geometry_correspondence
+27- DC-10 SolidWorks stp igs_DC 10_wing_rivets.step,170,143,recorded_geometric_correspondence,geometry_correspondence
+27- DC-10 SolidWorks stp igs_DC 10_wing_rivets.step,171,144,recorded_geometric_correspondence,geometry_correspondence
+27- DC-10 SolidWorks stp igs_DC 10_wing_rivets.step,172,145,recorded_geometric_correspondence,geometry_correspondence
+27- DC-10 SolidWorks stp igs_DC 10_wing_rivets.step,173,146,recorded_geometric_correspondence,geometry_correspondence
+27- DC-10 SolidWorks stp igs_DC 10_wing_rivets.step,174,147,recorded_geometric_correspondence,geometry_correspondence
+27- DC-10 SolidWorks stp igs_DC 10_wing_rivets.step,175,148,recorded_geometric_correspondence,geometry_correspondence
+27- DC-10 SolidWorks stp igs_DC 10_wing_rivets.step,176,149,recorded_geometric_correspondence,geometry_correspondence
+27- DC-10 SolidWorks stp igs_DC 10_wing_rivets.step,177,150,recorded_geometric_correspondence,geometry_correspondence
+27- DC-10 SolidWorks stp igs_DC 10_wing_rivets.step,178,151,recorded_geometric_correspondence,geometry_correspondence
+27- DC-10 SolidWorks stp igs_DC 10_wing_rivets.step,179,152,recorded_geometric_correspondence,geometry_correspondence
+27- DC-10 SolidWorks stp igs_DC 10_wing_rivets.step,180,153,recorded_geometric_correspondence,geometry_correspondence
+27- DC-10 SolidWorks stp igs_DC 10_wing_rivets.step,181,154,recorded_geometric_correspondence,geometry_correspondence
+27- DC-10 SolidWorks stp igs_DC 10_wing_rivets.step,182,155,recorded_geometric_correspondence,geometry_correspondence
+27- DC-10 SolidWorks stp igs_DC 10_wing_rivets.step,183,156,recorded_geometric_correspondence,geometry_correspondence
+27- DC-10 SolidWorks stp igs_DC 10_wing_rivets.step,184,157,recorded_geometric_correspondence,geometry_correspondence
+27- DC-10 SolidWorks stp igs_DC 10_wing_rivets.step,185,158,recorded_geometric_correspondence,geometry_correspondence
+27- DC-10 SolidWorks stp igs_DC 10_wing_rivets.step,186,159,recorded_geometric_correspondence,geometry_correspondence
+27- DC-10 SolidWorks stp igs_DC 10_wing_rivets.step,187,160,recorded_geometric_correspondence,geometry_correspondence
+27- DC-10 SolidWorks stp igs_DC 10_wing_rivets.step,188,161,recorded_geometric_correspondence,geometry_correspondence
+27- DC-10 SolidWorks stp igs_DC 10_wing_rivets.step,189,162,recorded_geometric_correspondence,geometry_correspondence
+27- DC-10 SolidWorks stp igs_DC 10_wing_rivets.step,190,163,recorded_geometric_correspondence,geometry_correspondence
+27- DC-10 SolidWorks stp igs_DC 10_wing_rivets.step,195,168,recorded_geometric_correspondence,geometry_correspondence
+27- DC-10 SolidWorks stp igs_DC 10_wing_rivets.step,207,180,recorded_geometric_correspondence,geometry_correspondence
+27- DC-10 SolidWorks stp igs_DC 10_wing_rivets.step,208,181,recorded_geometric_correspondence,geometry_correspondence
+27- DC-10 SolidWorks stp igs_DC 10_wing_rivets.step,221,194,recorded_geometric_correspondence,geometry_correspondence
+27- DC-10 SolidWorks stp igs_DC 10_wing_rivets.step,224,197,recorded_geometric_correspondence,geometry_correspondence
+27- DC-10 SolidWorks stp igs_DC 10_wing_rivets.step,225,198,recorded_geometric_correspondence,geometry_correspondence
+27- DC-10 SolidWorks stp igs_DC 10_wing_rivets.step,226,199,recorded_geometric_correspondence,geometry_correspondence
+27- DC-10 SolidWorks stp igs_DC 10_wing_rivets.step,227,200,recorded_geometric_correspondence,geometry_correspondence
+27- DC-10 SolidWorks stp igs_DC 10_wing_rivets.step,228,201,recorded_geometric_correspondence,geometry_correspondence
+27- DC-10 SolidWorks stp igs_DC 10_wing_rivets.step,229,202,recorded_geometric_correspondence,geometry_correspondence
+27- DC-10 SolidWorks stp igs_DC 10_wing_rivets.step,230,203,recorded_geometric_correspondence,geometry_correspondence
+27- DC-10 SolidWorks stp igs_DC 10_wing_rivets.step,231,204,recorded_geometric_correspondence,geometry_correspondence
+27- DC-10 SolidWorks stp igs_DC 10_wing_rivets.step,233,206,recorded_geometric_correspondence,geometry_correspondence
+27- DC-10 SolidWorks stp igs_DC 10_wing_rivets.step,234,207,recorded_geometric_correspondence,geometry_correspondence
+27- DC-10 SolidWorks stp igs_DC 10_wing_rivets.step,235,208,recorded_geometric_correspondence,geometry_correspondence
+27- DC-10 SolidWorks stp igs_DC 10_wing_rivets.step,236,209,recorded_geometric_correspondence,geometry_correspondence
+27- DC-10 SolidWorks stp igs_DC 10_wing_rivets.step,237,210,recorded_geometric_correspondence,geometry_correspondence
+27- DC-10 SolidWorks stp igs_DC 10_wing_rivets.step,238,211,recorded_geometric_correspondence,geometry_correspondence
+27- DC-10 SolidWorks stp igs_DC 10_wing_rivets.step,239,212,recorded_geometric_correspondence,geometry_correspondence
+27- DC-10 SolidWorks stp igs_DC 10_wing_rivets.step,258,231,recorded_geometric_correspondence,geometry_correspondence
+27- DC-10 SolidWorks stp igs_DC 10_wing_rivets.step,259,232,recorded_geometric_correspondence,geometry_correspondence
+87- 747-400 stp_beoing 747-400 v6_wing_rivets.stp,111,79,recorded_geometric_correspondence,current_network+geometry_correspondence
+87- 747-400 stp_beoing 747-400 v6_wing_rivets.stp,112,80,recorded_geometric_correspondence,current_network+geometry_correspondence
+87- 747-400 stp_beoing 747-400 v6_wing_rivets.stp,1125,1075,recorded_geometric_correspondence,current_network+geometry_correspondence
+87- 747-400 stp_beoing 747-400 v6_wing_rivets.stp,1126,1076,recorded_geometric_correspondence,current_network+geometry_correspondence
+87- 747-400 stp_beoing 747-400 v6_wing_rivets.stp,1135,1085,recorded_geometric_correspondence,current_network+geometry_correspondence
+87- 747-400 stp_beoing 747-400 v6_wing_rivets.stp,1136,1086,recorded_geometric_correspondence,current_network+geometry_correspondence
+87- 747-400 stp_beoing 747-400 v6_wing_rivets.stp,1146,1096,recorded_geometric_correspondence,current_network+geometry_correspondence
+87- 747-400 stp_beoing 747-400 v6_wing_rivets.stp,1147,1097,recorded_geometric_correspondence,current_network+geometry_correspondence
+87- 747-400 stp_beoing 747-400 v6_wing_rivets.stp,1181,1131,recorded_geometric_correspondence,current_network+geometry_correspondence
+87- 747-400 stp_beoing 747-400 v6_wing_rivets.stp,1182,1132,recorded_geometric_correspondence,current_network+geometry_correspondence
+87- 747-400 stp_beoing 747-400 v6_wing_rivets.stp,1183,1133,recorded_geometric_correspondence,current_network+geometry_correspondence
+87- 747-400 stp_beoing 747-400 v6_wing_rivets.stp,1184,1134,recorded_geometric_correspondence,current_network+geometry_correspondence
+87- 747-400 stp_beoing 747-400 v6_wing_rivets.stp,1185,1135,recorded_geometric_correspondence,current_network+geometry_correspondence
+87- 747-400 stp_beoing 747-400 v6_wing_rivets.stp,1186,1136,recorded_geometric_correspondence,current_network+geometry_correspondence
+87- 747-400 stp_beoing 747-400 v6_wing_rivets.stp,1187,1137,recorded_geometric_correspondence,current_network+geometry_correspondence
+87- 747-400 stp_beoing 747-400 v6_wing_rivets.stp,1188,1138,recorded_geometric_correspondence,current_network+geometry_correspondence
+87- 747-400 stp_beoing 747-400 v6_wing_rivets.stp,1189,1139,recorded_geometric_correspondence,current_network+geometry_correspondence
+87- 747-400 stp_beoing 747-400 v6_wing_rivets.stp,1190,1140,recorded_geometric_correspondence,current_network+geometry_correspondence
+87- 747-400 stp_beoing 747-400 v6_wing_rivets.stp,1191,1141,recorded_geometric_correspondence,current_network+geometry_correspondence
+87- 747-400 stp_beoing 747-400 v6_wing_rivets.stp,1192,1142,recorded_geometric_correspondence,current_network+geometry_correspondence
+87- 747-400 stp_beoing 747-400 v6_wing_rivets.stp,1193,1143,recorded_geometric_correspondence,current_network+geometry_correspondence
+87- 747-400 stp_beoing 747-400 v6_wing_rivets.stp,1194,1144,recorded_geometric_correspondence,current_network+geometry_correspondence
+87- 747-400 stp_beoing 747-400 v6_wing_rivets.stp,1195,1145,recorded_geometric_correspondence,current_network+geometry_correspondence
+87- 747-400 stp_beoing 747-400 v6_wing_rivets.stp,1196,1146,recorded_geometric_correspondence,current_network+geometry_correspondence
+87- 747-400 stp_beoing 747-400 v6_wing_rivets.stp,1197,1147,recorded_geometric_correspondence,current_network+geometry_correspondence
+87- 747-400 stp_beoing 747-400 v6_wing_rivets.stp,1198,1148,recorded_geometric_correspondence,current_network+geometry_correspondence
+87- 747-400 stp_beoing 747-400 v6_wing_rivets.stp,1199,1149,recorded_geometric_correspondence,current_network+geometry_correspondence
+87- 747-400 stp_beoing 747-400 v6_wing_rivets.stp,1200,1150,recorded_geometric_correspondence,current_network+geometry_correspondence
+87- 747-400 stp_beoing 747-400 v6_wing_rivets.stp,1201,1151,recorded_geometric_correspondence,current_network+geometry_correspondence
+87- 747-400 stp_beoing 747-400 v6_wing_rivets.stp,1202,1152,recorded_geometric_correspondence,current_network+geometry_correspondence
+87- 747-400 stp_beoing 747-400 v6_wing_rivets.stp,1203,1153,recorded_geometric_correspondence,current_network+geometry_correspondence
+87- 747-400 stp_beoing 747-400 v6_wing_rivets.stp,1204,1154,recorded_geometric_correspondence,current_network+geometry_correspondence
+87- 747-400 stp_beoing 747-400 v6_wing_rivets.stp,1205,1155,recorded_geometric_correspondence,current_network+geometry_correspondence
+87- 747-400 stp_beoing 747-400 v6_wing_rivets.stp,1206,1156,recorded_geometric_correspondence,current_network+geometry_correspondence
+87- 747-400 stp_beoing 747-400 v6_wing_rivets.stp,1207,1157,recorded_geometric_correspondence,current_network+geometry_correspondence
+87- 747-400 stp_beoing 747-400 v6_wing_rivets.stp,1208,1158,recorded_geometric_correspondence,current_network+geometry_correspondence
+87- 747-400 stp_beoing 747-400 v6_wing_rivets.stp,1209,1159,recorded_geometric_correspondence,current_network+geometry_correspondence
+87- 747-400 stp_beoing 747-400 v6_wing_rivets.stp,1210,1160,recorded_geometric_correspondence,current_network+geometry_correspondence
+87- 747-400 stp_beoing 747-400 v6_wing_rivets.stp,1211,1161,recorded_geometric_correspondence,current_network+geometry_correspondence
+87- 747-400 stp_beoing 747-400 v6_wing_rivets.stp,1212,1162,recorded_geometric_correspondence,current_network+geometry_correspondence
+87- 747-400 stp_beoing 747-400 v6_wing_rivets.stp,1213,1163,recorded_geometric_correspondence,current_network+geometry_correspondence
+87- 747-400 stp_beoing 747-400 v6_wing_rivets.stp,1214,1164,recorded_geometric_correspondence,current_network+geometry_correspondence
+87- 747-400 stp_beoing 747-400 v6_wing_rivets.stp,1215,1165,recorded_geometric_correspondence,current_network+geometry_correspondence
+87- 747-400 stp_beoing 747-400 v6_wing_rivets.stp,1216,1166,recorded_geometric_correspondence,current_network+geometry_correspondence
+87- 747-400 stp_beoing 747-400 v6_wing_rivets.stp,1217,1167,recorded_geometric_correspondence,current_network+geometry_correspondence
+87- 747-400 stp_beoing 747-400 v6_wing_rivets.stp,1218,1168,recorded_geometric_correspondence,current_network+geometry_correspondence
+87- 747-400 stp_beoing 747-400 v6_wing_rivets.stp,1219,1169,recorded_geometric_correspondence,current_network+geometry_correspondence
+87- 747-400 stp_beoing 747-400 v6_wing_rivets.stp,1220,1170,recorded_geometric_correspondence,current_network+geometry_correspondence
+87- 747-400 stp_beoing 747-400 v6_wing_rivets.stp,1221,1171,recorded_geometric_correspondence,current_network+geometry_correspondence
+87- 747-400 stp_beoing 747-400 v6_wing_rivets.stp,1222,1172,recorded_geometric_correspondence,current_network+geometry_correspondence
+87- 747-400 stp_beoing 747-400 v6_wing_rivets.stp,1223,1173,recorded_geometric_correspondence,current_network+geometry_correspondence
+87- 747-400 stp_beoing 747-400 v6_wing_rivets.stp,1224,1174,recorded_geometric_correspondence,current_network+geometry_correspondence
+87- 747-400 stp_beoing 747-400 v6_wing_rivets.stp,1225,1175,recorded_geometric_correspondence,current_network+geometry_correspondence
+87- 747-400 stp_beoing 747-400 v6_wing_rivets.stp,1226,1176,recorded_geometric_correspondence,current_network+geometry_correspondence
+87- 747-400 stp_beoing 747-400 v6_wing_rivets.stp,1227,1177,recorded_geometric_correspondence,current_network+geometry_correspondence
+87- 747-400 stp_beoing 747-400 v6_wing_rivets.stp,1228,1178,recorded_geometric_correspondence,current_network+geometry_correspondence
+87- 747-400 stp_beoing 747-400 v6_wing_rivets.stp,1229,1179,recorded_geometric_correspondence,current_network+geometry_correspondence
+87- 747-400 stp_beoing 747-400 v6_wing_rivets.stp,1230,1180,recorded_geometric_correspondence,current_network+geometry_correspondence
+87- 747-400 stp_beoing 747-400 v6_wing_rivets.stp,1231,1181,recorded_geometric_correspondence,current_network+geometry_correspondence
+87- 747-400 stp_beoing 747-400 v6_wing_rivets.stp,1232,1182,recorded_geometric_correspondence,current_network+geometry_correspondence
+87- 747-400 stp_beoing 747-400 v6_wing_rivets.stp,1233,1183,recorded_geometric_correspondence,current_network+geometry_correspondence
+87- 747-400 stp_beoing 747-400 v6_wing_rivets.stp,1234,1184,recorded_geometric_correspondence,current_network+geometry_correspondence
+87- 747-400 stp_beoing 747-400 v6_wing_rivets.stp,1235,1185,recorded_geometric_correspondence,current_network+geometry_correspondence
+87- 747-400 stp_beoing 747-400 v6_wing_rivets.stp,1236,1186,recorded_geometric_correspondence,current_network+geometry_correspondence
+87- 747-400 stp_beoing 747-400 v6_wing_rivets.stp,1237,1187,recorded_geometric_correspondence,current_network+geometry_correspondence
+87- 747-400 stp_beoing 747-400 v6_wing_rivets.stp,1238,1188,recorded_geometric_correspondence,current_network+geometry_correspondence
+87- 747-400 stp_beoing 747-400 v6_wing_rivets.stp,1239,1189,recorded_geometric_correspondence,current_network+geometry_correspondence
+87- 747-400 stp_beoing 747-400 v6_wing_rivets.stp,1240,1190,recorded_geometric_correspondence,current_network+geometry_correspondence
+87- 747-400 stp_beoing 747-400 v6_wing_rivets.stp,1241,1191,recorded_geometric_correspondence,current_network+geometry_correspondence
+87- 747-400 stp_beoing 747-400 v6_wing_rivets.stp,1242,1192,recorded_geometric_correspondence,current_network+geometry_correspondence
+87- 747-400 stp_beoing 747-400 v6_wing_rivets.stp,1243,1193,recorded_geometric_correspondence,current_network+geometry_correspondence
+87- 747-400 stp_beoing 747-400 v6_wing_rivets.stp,1244,1194,recorded_geometric_correspondence,current_network+geometry_correspondence
+87- 747-400 stp_beoing 747-400 v6_wing_rivets.stp,1245,1195,recorded_geometric_correspondence,current_network+geometry_correspondence
+87- 747-400 stp_beoing 747-400 v6_wing_rivets.stp,1246,1196,recorded_geometric_correspondence,current_network+geometry_correspondence
+87- 747-400 stp_beoing 747-400 v6_wing_rivets.stp,1247,1197,recorded_geometric_correspondence,current_network+geometry_correspondence
+87- 747-400 stp_beoing 747-400 v6_wing_rivets.stp,1248,1198,recorded_geometric_correspondence,current_network+geometry_correspondence
+87- 747-400 stp_beoing 747-400 v6_wing_rivets.stp,1249,1199,recorded_geometric_correspondence,current_network+geometry_correspondence
+87- 747-400 stp_beoing 747-400 v6_wing_rivets.stp,1250,1200,recorded_geometric_correspondence,current_network+geometry_correspondence
+87- 747-400 stp_beoing 747-400 v6_wing_rivets.stp,1251,1201,recorded_geometric_correspondence,current_network+geometry_correspondence
+87- 747-400 stp_beoing 747-400 v6_wing_rivets.stp,1252,1202,recorded_geometric_correspondence,current_network+geometry_correspondence
+87- 747-400 stp_beoing 747-400 v6_wing_rivets.stp,1253,1203,recorded_geometric_correspondence,current_network+geometry_correspondence
+87- 747-400 stp_beoing 747-400 v6_wing_rivets.stp,1254,1204,recorded_geometric_correspondence,current_network+geometry_correspondence
+87- 747-400 stp_beoing 747-400 v6_wing_rivets.stp,1255,1205,recorded_geometric_correspondence,current_network+geometry_correspondence
+87- 747-400 stp_beoing 747-400 v6_wing_rivets.stp,1256,1206,recorded_geometric_correspondence,current_network+geometry_correspondence
+87- 747-400 stp_beoing 747-400 v6_wing_rivets.stp,1257,1207,recorded_geometric_correspondence,current_network+geometry_correspondence
+87- 747-400 stp_beoing 747-400 v6_wing_rivets.stp,1258,1208,recorded_geometric_correspondence,current_network+geometry_correspondence
+87- 747-400 stp_beoing 747-400 v6_wing_rivets.stp,1259,1209,recorded_geometric_correspondence,current_network+geometry_correspondence
+87- 747-400 stp_beoing 747-400 v6_wing_rivets.stp,1260,1210,recorded_geometric_correspondence,current_network+geometry_correspondence
+87- 747-400 stp_beoing 747-400 v6_wing_rivets.stp,1261,1211,recorded_geometric_correspondence,current_network+geometry_correspondence
+87- 747-400 stp_beoing 747-400 v6_wing_rivets.stp,1262,1212,recorded_geometric_correspondence,current_network+geometry_correspondence
+87- 747-400 stp_beoing 747-400 v6_wing_rivets.stp,1263,1213,recorded_geometric_correspondence,current_network+geometry_correspondence
+87- 747-400 stp_beoing 747-400 v6_wing_rivets.stp,1264,1214,recorded_geometric_correspondence,current_network+geometry_correspondence
+87- 747-400 stp_beoing 747-400 v6_wing_rivets.stp,1265,1215,recorded_geometric_correspondence,current_network+geometry_correspondence
+87- 747-400 stp_beoing 747-400 v6_wing_rivets.stp,1266,1216,recorded_geometric_correspondence,current_network+geometry_correspondence
+87- 747-400 stp_beoing 747-400 v6_wing_rivets.stp,1267,1217,recorded_geometric_correspondence,current_network+geometry_correspondence
+87- 747-400 stp_beoing 747-400 v6_wing_rivets.stp,1268,1218,recorded_geometric_correspondence,current_network+geometry_correspondence
+87- 747-400 stp_beoing 747-400 v6_wing_rivets.stp,1269,1219,recorded_geometric_correspondence,current_network+geometry_correspondence
+87- 747-400 stp_beoing 747-400 v6_wing_rivets.stp,1270,1220,recorded_geometric_correspondence,current_network+geometry_correspondence
+87- 747-400 stp_beoing 747-400 v6_wing_rivets.stp,1271,1221,recorded_geometric_correspondence,current_network+geometry_correspondence
+87- 747-400 stp_beoing 747-400 v6_wing_rivets.stp,1272,1222,recorded_geometric_correspondence,current_network+geometry_correspondence
+87- 747-400 stp_beoing 747-400 v6_wing_rivets.stp,1273,1223,recorded_geometric_correspondence,current_network+geometry_correspondence
+87- 747-400 stp_beoing 747-400 v6_wing_rivets.stp,1274,1224,recorded_geometric_correspondence,current_network+geometry_correspondence
+87- 747-400 stp_beoing 747-400 v6_wing_rivets.stp,1275,1225,recorded_geometric_correspondence,current_network+geometry_correspondence
+87- 747-400 stp_beoing 747-400 v6_wing_rivets.stp,1276,1226,recorded_geometric_correspondence,current_network+geometry_correspondence
+87- 747-400 stp_beoing 747-400 v6_wing_rivets.stp,1277,1227,recorded_geometric_correspondence,current_network+geometry_correspondence
+87- 747-400 stp_beoing 747-400 v6_wing_rivets.stp,1278,1228,recorded_geometric_correspondence,current_network+geometry_correspondence
+87- 747-400 stp_beoing 747-400 v6_wing_rivets.stp,1279,1229,recorded_geometric_correspondence,current_network+geometry_correspondence
+87- 747-400 stp_beoing 747-400 v6_wing_rivets.stp,1280,1230,recorded_geometric_correspondence,current_network+geometry_correspondence
+87- 747-400 stp_beoing 747-400 v6_wing_rivets.stp,1281,1231,recorded_geometric_correspondence,current_network+geometry_correspondence
+87- 747-400 stp_beoing 747-400 v6_wing_rivets.stp,1282,1232,recorded_geometric_correspondence,current_network+geometry_correspondence
+87- 747-400 stp_beoing 747-400 v6_wing_rivets.stp,1283,1233,recorded_geometric_correspondence,current_network+geometry_correspondence
+87- 747-400 stp_beoing 747-400 v6_wing_rivets.stp,1284,1234,recorded_geometric_correspondence,current_network+geometry_correspondence
+87- 747-400 stp_beoing 747-400 v6_wing_rivets.stp,1285,1235,recorded_geometric_correspondence,current_network+geometry_correspondence
+87- 747-400 stp_beoing 747-400 v6_wing_rivets.stp,1286,1236,recorded_geometric_correspondence,current_network+geometry_correspondence
+87- 747-400 stp_beoing 747-400 v6_wing_rivets.stp,1287,1237,recorded_geometric_correspondence,current_network+geometry_correspondence
+87- 747-400 stp_beoing 747-400 v6_wing_rivets.stp,1288,1238,recorded_geometric_correspondence,current_network+geometry_correspondence
+87- 747-400 stp_beoing 747-400 v6_wing_rivets.stp,1289,1239,recorded_geometric_correspondence,current_network+geometry_correspondence
+87- 747-400 stp_beoing 747-400 v6_wing_rivets.stp,1290,1240,recorded_geometric_correspondence,current_network+geometry_correspondence
+87- 747-400 stp_beoing 747-400 v6_wing_rivets.stp,1291,1241,recorded_geometric_correspondence,current_network+geometry_correspondence
+87- 747-400 stp_beoing 747-400 v6_wing_rivets.stp,1292,1242,recorded_geometric_correspondence,current_network+geometry_correspondence
+87- 747-400 stp_beoing 747-400 v6_wing_rivets.stp,1293,1243,recorded_geometric_correspondence,current_network+geometry_correspondence
+87- 747-400 stp_beoing 747-400 v6_wing_rivets.stp,1294,1244,recorded_geometric_correspondence,current_network+geometry_correspondence
+87- 747-400 stp_beoing 747-400 v6_wing_rivets.stp,1295,1245,recorded_geometric_correspondence,current_network+geometry_correspondence
+87- 747-400 stp_beoing 747-400 v6_wing_rivets.stp,1296,1246,recorded_geometric_correspondence,current_network+geometry_correspondence
+87- 747-400 stp_beoing 747-400 v6_wing_rivets.stp,1297,1247,recorded_geometric_correspondence,current_network+geometry_correspondence
+87- 747-400 stp_beoing 747-400 v6_wing_rivets.stp,1298,1248,recorded_geometric_correspondence,current_network+geometry_correspondence
+87- 747-400 stp_beoing 747-400 v6_wing_rivets.stp,1299,1249,recorded_geometric_correspondence,current_network+geometry_correspondence
+87- 747-400 stp_beoing 747-400 v6_wing_rivets.stp,1300,1250,recorded_geometric_correspondence,current_network+geometry_correspondence
+87- 747-400 stp_beoing 747-400 v6_wing_rivets.stp,1301,1251,recorded_geometric_correspondence,current_network+geometry_correspondence
+87- 747-400 stp_beoing 747-400 v6_wing_rivets.stp,1302,1252,recorded_geometric_correspondence,current_network+geometry_correspondence
+87- 747-400 stp_beoing 747-400 v6_wing_rivets.stp,1303,1253,recorded_geometric_correspondence,current_network+geometry_correspondence
+87- 747-400 stp_beoing 747-400 v6_wing_rivets.stp,1304,1254,recorded_geometric_correspondence,current_network+geometry_correspondence
+87- 747-400 stp_beoing 747-400 v6_wing_rivets.stp,1305,1255,recorded_geometric_correspondence,current_network+geometry_correspondence
+87- 747-400 stp_beoing 747-400 v6_wing_rivets.stp,1306,1256,recorded_geometric_correspondence,current_network+geometry_correspondence
+87- 747-400 stp_beoing 747-400 v6_wing_rivets.stp,1307,1257,recorded_geometric_correspondence,current_network+geometry_correspondence
+87- 747-400 stp_beoing 747-400 v6_wing_rivets.stp,1308,1258,recorded_geometric_correspondence,current_network+geometry_correspondence
+87- 747-400 stp_beoing 747-400 v6_wing_rivets.stp,1309,1259,recorded_geometric_correspondence,current_network+geometry_correspondence
+87- 747-400 stp_beoing 747-400 v6_wing_rivets.stp,1310,1260,recorded_geometric_correspondence,current_network+geometry_correspondence
+87- 747-400 stp_beoing 747-400 v6_wing_rivets.stp,1311,1261,recorded_geometric_correspondence,current_network+geometry_correspondence
+87- 747-400 stp_beoing 747-400 v6_wing_rivets.stp,1312,1262,recorded_geometric_correspondence,current_network+geometry_correspondence
+87- 747-400 stp_beoing 747-400 v6_wing_rivets.stp,1313,1263,recorded_geometric_correspondence,current_network+geometry_correspondence
+87- 747-400 stp_beoing 747-400 v6_wing_rivets.stp,1314,1264,recorded_geometric_correspondence,current_network+geometry_correspondence
+87- 747-400 stp_beoing 747-400 v6_wing_rivets.stp,1315,1265,recorded_geometric_correspondence,current_network+geometry_correspondence
+87- 747-400 stp_beoing 747-400 v6_wing_rivets.stp,1316,1266,recorded_geometric_correspondence,current_network+geometry_correspondence
+87- 747-400 stp_beoing 747-400 v6_wing_rivets.stp,1317,1267,recorded_geometric_correspondence,current_network+geometry_correspondence
+87- 747-400 stp_beoing 747-400 v6_wing_rivets.stp,1318,1268,recorded_geometric_correspondence,current_network+geometry_correspondence
+87- 747-400 stp_beoing 747-400 v6_wing_rivets.stp,1319,1269,recorded_geometric_correspondence,current_network+geometry_correspondence
+87- 747-400 stp_beoing 747-400 v6_wing_rivets.stp,1320,1270,recorded_geometric_correspondence,current_network+geometry_correspondence
+87- 747-400 stp_beoing 747-400 v6_wing_rivets.stp,1321,1271,recorded_geometric_correspondence,current_network+geometry_correspondence
+87- 747-400 stp_beoing 747-400 v6_wing_rivets.stp,1322,1272,recorded_geometric_correspondence,current_network+geometry_correspondence
+87- 747-400 stp_beoing 747-400 v6_wing_rivets.stp,1323,1273,recorded_geometric_correspondence,current_network+geometry_correspondence
+87- 747-400 stp_beoing 747-400 v6_wing_rivets.stp,1324,1274,recorded_geometric_correspondence,current_network+geometry_correspondence
+87- 747-400 stp_beoing 747-400 v6_wing_rivets.stp,1325,1275,recorded_geometric_correspondence,current_network+geometry_correspondence
+87- 747-400 stp_beoing 747-400 v6_wing_rivets.stp,1326,1276,recorded_geometric_correspondence,current_network+geometry_correspondence
+87- 747-400 stp_beoing 747-400 v6_wing_rivets.stp,1327,1277,recorded_geometric_correspondence,current_network+geometry_correspondence
+87- 747-400 stp_beoing 747-400 v6_wing_rivets.stp,1328,1278,recorded_geometric_correspondence,current_network+geometry_correspondence
+87- 747-400 stp_beoing 747-400 v6_wing_rivets.stp,1329,1279,recorded_geometric_correspondence,current_network+geometry_correspondence
+87- 747-400 stp_beoing 747-400 v6_wing_rivets.stp,1330,1280,recorded_geometric_correspondence,current_network+geometry_correspondence
+87- 747-400 stp_beoing 747-400 v6_wing_rivets.stp,1331,1281,recorded_geometric_correspondence,current_network+geometry_correspondence
+87- 747-400 stp_beoing 747-400 v6_wing_rivets.stp,1332,1282,recorded_geometric_correspondence,current_network+geometry_correspondence
+87- 747-400 stp_beoing 747-400 v6_wing_rivets.stp,1333,1283,recorded_geometric_correspondence,current_network+geometry_correspondence
+87- 747-400 stp_beoing 747-400 v6_wing_rivets.stp,1334,1284,recorded_geometric_correspondence,current_network+geometry_correspondence
+87- 747-400 stp_beoing 747-400 v6_wing_rivets.stp,1335,1285,recorded_geometric_correspondence,current_network+geometry_correspondence
+87- 747-400 stp_beoing 747-400 v6_wing_rivets.stp,1336,1286,recorded_geometric_correspondence,current_network+geometry_correspondence
+87- 747-400 stp_beoing 747-400 v6_wing_rivets.stp,1337,1287,recorded_geometric_correspondence,current_network+geometry_correspondence
+87- 747-400 stp_beoing 747-400 v6_wing_rivets.stp,1338,1288,recorded_geometric_correspondence,current_network+geometry_correspondence
+87- 747-400 stp_beoing 747-400 v6_wing_rivets.stp,1339,1289,recorded_geometric_correspondence,current_network+geometry_correspondence
+87- 747-400 stp_beoing 747-400 v6_wing_rivets.stp,1340,1290,recorded_geometric_correspondence,current_network+geometry_correspondence
+87- 747-400 stp_beoing 747-400 v6_wing_rivets.stp,1341,1291,recorded_geometric_correspondence,current_network+geometry_correspondence
+87- 747-400 stp_beoing 747-400 v6_wing_rivets.stp,1342,1292,recorded_geometric_correspondence,current_network+geometry_correspondence
+87- 747-400 stp_beoing 747-400 v6_wing_rivets.stp,1343,1293,recorded_geometric_correspondence,current_network+geometry_correspondence
+87- 747-400 stp_beoing 747-400 v6_wing_rivets.stp,1344,1294,recorded_geometric_correspondence,current_network+geometry_correspondence
+87- 747-400 stp_beoing 747-400 v6_wing_rivets.stp,1345,1295,recorded_geometric_correspondence,current_network+geometry_correspondence
+87- 747-400 stp_beoing 747-400 v6_wing_rivets.stp,1346,1296,recorded_geometric_correspondence,current_network+geometry_correspondence
+87- 747-400 stp_beoing 747-400 v6_wing_rivets.stp,1347,1297,recorded_geometric_correspondence,current_network+geometry_correspondence
+87- 747-400 stp_beoing 747-400 v6_wing_rivets.stp,1348,1298,recorded_geometric_correspondence,current_network+geometry_correspondence
+87- 747-400 stp_beoing 747-400 v6_wing_rivets.stp,1349,1299,recorded_geometric_correspondence,current_network+geometry_correspondence
+87- 747-400 stp_beoing 747-400 v6_wing_rivets.stp,1350,1300,recorded_geometric_correspondence,current_network+geometry_correspondence
+87- 747-400 stp_beoing 747-400 v6_wing_rivets.stp,1351,1301,recorded_geometric_correspondence,current_network+geometry_correspondence
+87- 747-400 stp_beoing 747-400 v6_wing_rivets.stp,1352,1302,recorded_geometric_correspondence,current_network+geometry_correspondence
+87- 747-400 stp_beoing 747-400 v6_wing_rivets.stp,1353,1303,recorded_geometric_correspondence,current_network+geometry_correspondence
+87- 747-400 stp_beoing 747-400 v6_wing_rivets.stp,1354,1304,recorded_geometric_correspondence,current_network+geometry_correspondence
+87- 747-400 stp_beoing 747-400 v6_wing_rivets.stp,1355,1305,recorded_geometric_correspondence,current_network+geometry_correspondence
+87- 747-400 stp_beoing 747-400 v6_wing_rivets.stp,1356,1306,recorded_geometric_correspondence,current_network+geometry_correspondence
+87- 747-400 stp_beoing 747-400 v6_wing_rivets.stp,1357,1307,recorded_geometric_correspondence,current_network+geometry_correspondence
+87- 747-400 stp_beoing 747-400 v6_wing_rivets.stp,1358,1308,recorded_geometric_correspondence,current_network+geometry_correspondence
+87- 747-400 stp_beoing 747-400 v6_wing_rivets.stp,1359,1309,recorded_geometric_correspondence,current_network+geometry_correspondence
+87- 747-400 stp_beoing 747-400 v6_wing_rivets.stp,1360,1310,recorded_geometric_correspondence,current_network+geometry_correspondence
+87- 747-400 stp_beoing 747-400 v6_wing_rivets.stp,1361,1311,recorded_geometric_correspondence,current_network+geometry_correspondence
+87- 747-400 stp_beoing 747-400 v6_wing_rivets.stp,1362,1312,recorded_geometric_correspondence,current_network+geometry_correspondence
+87- 747-400 stp_beoing 747-400 v6_wing_rivets.stp,1363,1313,recorded_geometric_correspondence,current_network+geometry_correspondence
+87- 747-400 stp_beoing 747-400 v6_wing_rivets.stp,1364,1314,recorded_geometric_correspondence,current_network+geometry_correspondence
+87- 747-400 stp_beoing 747-400 v6_wing_rivets.stp,1365,1315,recorded_geometric_correspondence,current_network+geometry_correspondence
+87- 747-400 stp_beoing 747-400 v6_wing_rivets.stp,1366,1316,recorded_geometric_correspondence,current_network+geometry_correspondence
+87- 747-400 stp_beoing 747-400 v6_wing_rivets.stp,1367,1317,recorded_geometric_correspondence,current_network+geometry_correspondence
+87- 747-400 stp_beoing 747-400 v6_wing_rivets.stp,1368,1318,recorded_geometric_correspondence,current_network+geometry_correspondence
+87- 747-400 stp_beoing 747-400 v6_wing_rivets.stp,1369,1319,recorded_geometric_correspondence,current_network+geometry_correspondence
+87- 747-400 stp_beoing 747-400 v6_wing_rivets.stp,1370,1320,recorded_geometric_correspondence,current_network+geometry_correspondence
+87- 747-400 stp_beoing 747-400 v6_wing_rivets.stp,1371,1321,recorded_geometric_correspondence,current_network+geometry_correspondence
+87- 747-400 stp_beoing 747-400 v6_wing_rivets.stp,1372,1322,recorded_geometric_correspondence,current_network+geometry_correspondence
+87- 747-400 stp_beoing 747-400 v6_wing_rivets.stp,1373,1323,recorded_geometric_correspondence,current_network+geometry_correspondence
+87- 747-400 stp_beoing 747-400 v6_wing_rivets.stp,1374,1324,recorded_geometric_correspondence,current_network+geometry_correspondence
+87- 747-400 stp_beoing 747-400 v6_wing_rivets.stp,1375,1325,recorded_geometric_correspondence,current_network+geometry_correspondence
+87- 747-400 stp_beoing 747-400 v6_wing_rivets.stp,1376,1326,recorded_geometric_correspondence,current_network+geometry_correspondence
+87- 747-400 stp_beoing 747-400 v6_wing_rivets.stp,1377,1327,recorded_geometric_correspondence,current_network+geometry_correspondence
+87- 747-400 stp_beoing 747-400 v6_wing_rivets.stp,1378,1328,recorded_geometric_correspondence,current_network+geometry_correspondence
+87- 747-400 stp_beoing 747-400 v6_wing_rivets.stp,1379,1329,recorded_geometric_correspondence,current_network+geometry_correspondence
+87- 747-400 stp_beoing 747-400 v6_wing_rivets.stp,1380,1330,recorded_geometric_correspondence,current_network+geometry_correspondence
+87- 747-400 stp_beoing 747-400 v6_wing_rivets.stp,1381,1331,recorded_geometric_correspondence,current_network+geometry_correspondence
+87- 747-400 stp_beoing 747-400 v6_wing_rivets.stp,1382,1332,recorded_geometric_correspondence,current_network+geometry_correspondence
+87- 747-400 stp_beoing 747-400 v6_wing_rivets.stp,1383,1333,recorded_geometric_correspondence,current_network+geometry_correspondence
+87- 747-400 stp_beoing 747-400 v6_wing_rivets.stp,1384,1334,recorded_geometric_correspondence,current_network+geometry_correspondence
+87- 747-400 stp_beoing 747-400 v6_wing_rivets.stp,1385,1335,recorded_geometric_correspondence,current_network+geometry_correspondence
+87- 747-400 stp_beoing 747-400 v6_wing_rivets.stp,1386,1336,recorded_geometric_correspondence,current_network+geometry_correspondence
+87- 747-400 stp_beoing 747-400 v6_wing_rivets.stp,1387,1337,recorded_geometric_correspondence,current_network+geometry_correspondence
+87- 747-400 stp_beoing 747-400 v6_wing_rivets.stp,1388,1338,recorded_geometric_correspondence,current_network+geometry_correspondence
+87- 747-400 stp_beoing 747-400 v6_wing_rivets.stp,1389,1339,recorded_geometric_correspondence,current_network+geometry_correspondence
+87- 747-400 stp_beoing 747-400 v6_wing_rivets.stp,1390,1340,recorded_geometric_correspondence,current_network+geometry_correspondence
+87- 747-400 stp_beoing 747-400 v6_wing_rivets.stp,1391,1341,recorded_geometric_correspondence,current_network+geometry_correspondence
+87- 747-400 stp_beoing 747-400 v6_wing_rivets.stp,1392,1342,recorded_geometric_correspondence,current_network+geometry_correspondence
+87- 747-400 stp_beoing 747-400 v6_wing_rivets.stp,1393,1343,recorded_geometric_correspondence,current_network+geometry_correspondence
+87- 747-400 stp_beoing 747-400 v6_wing_rivets.stp,1394,1344,recorded_geometric_correspondence,current_network+geometry_correspondence
+87- 747-400 stp_beoing 747-400 v6_wing_rivets.stp,1395,1345,recorded_geometric_correspondence,current_network+geometry_correspondence
+87- 747-400 stp_beoing 747-400 v6_wing_rivets.stp,1396,1346,recorded_geometric_correspondence,current_network+geometry_correspondence
+87- 747-400 stp_beoing 747-400 v6_wing_rivets.stp,1397,1347,recorded_geometric_correspondence,current_network+geometry_correspondence
+87- 747-400 stp_beoing 747-400 v6_wing_rivets.stp,1398,1348,recorded_geometric_correspondence,current_network+geometry_correspondence
+87- 747-400 stp_beoing 747-400 v6_wing_rivets.stp,1399,1349,recorded_geometric_correspondence,current_network+geometry_correspondence
+87- 747-400 stp_beoing 747-400 v6_wing_rivets.stp,1400,1350,recorded_geometric_correspondence,current_network+geometry_correspondence
+87- 747-400 stp_beoing 747-400 v6_wing_rivets.stp,1401,1351,recorded_geometric_correspondence,current_network+geometry_correspondence
+87- 747-400 stp_beoing 747-400 v6_wing_rivets.stp,1402,1352,recorded_geometric_correspondence,current_network+geometry_correspondence
+87- 747-400 stp_beoing 747-400 v6_wing_rivets.stp,1403,1353,recorded_geometric_correspondence,current_network+geometry_correspondence
+87- 747-400 stp_beoing 747-400 v6_wing_rivets.stp,1404,1354,recorded_geometric_correspondence,current_network+geometry_correspondence
+87- 747-400 stp_beoing 747-400 v6_wing_rivets.stp,1405,1355,recorded_geometric_correspondence,current_network+geometry_correspondence
+87- 747-400 stp_beoing 747-400 v6_wing_rivets.stp,1406,1356,recorded_geometric_correspondence,current_network+geometry_correspondence
+87- 747-400 stp_beoing 747-400 v6_wing_rivets.stp,1407,1357,recorded_geometric_correspondence,current_network+geometry_correspondence
+87- 747-400 stp_beoing 747-400 v6_wing_rivets.stp,1408,1358,recorded_geometric_correspondence,current_network+geometry_correspondence
+87- 747-400 stp_beoing 747-400 v6_wing_rivets.stp,1409,1359,recorded_geometric_correspondence,current_network+geometry_correspondence
+87- 747-400 stp_beoing 747-400 v6_wing_rivets.stp,1410,1360,recorded_geometric_correspondence,current_network+geometry_correspondence
+87- 747-400 stp_beoing 747-400 v6_wing_rivets.stp,1411,1361,recorded_geometric_correspondence,current_network+geometry_correspondence
+87- 747-400 stp_beoing 747-400 v6_wing_rivets.stp,1412,1362,recorded_geometric_correspondence,current_network+geometry_correspondence
+87- 747-400 stp_beoing 747-400 v6_wing_rivets.stp,1413,1363,recorded_geometric_correspondence,current_network+geometry_correspondence
+87- 747-400 stp_beoing 747-400 v6_wing_rivets.stp,1414,1364,recorded_geometric_correspondence,current_network+geometry_correspondence
+87- 747-400 stp_beoing 747-400 v6_wing_rivets.stp,1415,1365,recorded_geometric_correspondence,current_network+geometry_correspondence
+87- 747-400 stp_beoing 747-400 v6_wing_rivets.stp,1416,1366,recorded_geometric_correspondence,current_network+geometry_correspondence
+87- 747-400 stp_beoing 747-400 v6_wing_rivets.stp,1417,1367,recorded_geometric_correspondence,current_network+geometry_correspondence
+87- 747-400 stp_beoing 747-400 v6_wing_rivets.stp,1418,1368,recorded_geometric_correspondence,current_network+geometry_correspondence
+87- 747-400 stp_beoing 747-400 v6_wing_rivets.stp,1419,1369,recorded_geometric_correspondence,current_network+geometry_correspondence
+87- 747-400 stp_beoing 747-400 v6_wing_rivets.stp,1420,1370,recorded_geometric_correspondence,current_network+geometry_correspondence
+87- 747-400 stp_beoing 747-400 v6_wing_rivets.stp,1421,1371,recorded_geometric_correspondence,current_network+geometry_correspondence
+87- 747-400 stp_beoing 747-400 v6_wing_rivets.stp,1422,1372,recorded_geometric_correspondence,current_network+geometry_correspondence
+87- 747-400 stp_beoing 747-400 v6_wing_rivets.stp,1423,1373,recorded_geometric_correspondence,current_network+geometry_correspondence
+87- 747-400 stp_beoing 747-400 v6_wing_rivets.stp,1424,1374,recorded_geometric_correspondence,current_network+geometry_correspondence
+87- 747-400 stp_beoing 747-400 v6_wing_rivets.stp,1425,1375,recorded_geometric_correspondence,current_network+geometry_correspondence
+87- 747-400 stp_beoing 747-400 v6_wing_rivets.stp,1426,1376,recorded_geometric_correspondence,current_network+geometry_correspondence
+87- 747-400 stp_beoing 747-400 v6_wing_rivets.stp,1427,1377,recorded_geometric_correspondence,current_network+geometry_correspondence
+87- 747-400 stp_beoing 747-400 v6_wing_rivets.stp,1428,1378,recorded_geometric_correspondence,current_network+geometry_correspondence
+87- 747-400 stp_beoing 747-400 v6_wing_rivets.stp,1429,1379,recorded_geometric_correspondence,current_network+geometry_correspondence
+87- 747-400 stp_beoing 747-400 v6_wing_rivets.stp,1430,1380,recorded_geometric_correspondence,current_network+geometry_correspondence
+Air Plane Idea A.step,178,178,recorded_geometric_correspondence,repeated_two_edge_pane+geometry_correspondence
+Air Plane Idea A.step,179,179,recorded_geometric_correspondence,repeated_two_edge_pane+geometry_correspondence
+Air Plane Idea A.step,180,180,recorded_geometric_correspondence,repeated_two_edge_pane+geometry_correspondence
+Air Plane Idea A.step,181,181,recorded_geometric_correspondence,repeated_two_edge_pane+geometry_correspondence
+Air Plane Idea A.step,182,182,recorded_geometric_correspondence,repeated_two_edge_pane+geometry_correspondence
+Air Plane Idea A.step,183,183,recorded_geometric_correspondence,repeated_two_edge_pane+geometry_correspondence
+Air Plane Idea A.step,184,184,recorded_geometric_correspondence,repeated_two_edge_pane+geometry_correspondence
+Air Plane Idea A.step,185,185,recorded_geometric_correspondence,repeated_two_edge_pane+geometry_correspondence
+Air Plane Idea A.step,186,186,recorded_geometric_correspondence,repeated_two_edge_pane+geometry_correspondence
+Air Plane Idea A.step,187,187,recorded_geometric_correspondence,repeated_two_edge_pane+geometry_correspondence
+Air Plane Idea A.step,188,188,recorded_geometric_correspondence,repeated_two_edge_pane+geometry_correspondence
+Air Plane Idea A.step,189,189,recorded_geometric_correspondence,repeated_two_edge_pane+geometry_correspondence
+Air Plane Idea A.step,190,190,recorded_geometric_correspondence,repeated_two_edge_pane+geometry_correspondence
+Air Plane Idea A.step,191,191,recorded_geometric_correspondence,repeated_two_edge_pane+geometry_correspondence
+Air Plane Idea A.step,192,192,recorded_geometric_correspondence,repeated_two_edge_pane+geometry_correspondence
+Air Plane Idea A.step,193,193,recorded_geometric_correspondence,repeated_two_edge_pane+geometry_correspondence
+Air Plane Idea A.step,194,194,recorded_geometric_correspondence,repeated_two_edge_pane+geometry_correspondence
+Air Plane Idea A.step,195,195,recorded_geometric_correspondence,repeated_two_edge_pane+geometry_correspondence
+Air Plane Idea A.step,196,196,recorded_geometric_correspondence,repeated_two_edge_pane+geometry_correspondence
+Air Plane Idea A.step,197,197,recorded_geometric_correspondence,repeated_two_edge_pane+geometry_correspondence
+Air Plane Idea A.step,198,198,recorded_geometric_correspondence,repeated_two_edge_pane+geometry_correspondence
+Air Plane Idea A.step,199,199,recorded_geometric_correspondence,repeated_two_edge_pane+geometry_correspondence
+Air Plane Idea A.step,200,200,recorded_geometric_correspondence,repeated_two_edge_pane+geometry_correspondence
+Air Plane Idea A.step,201,201,recorded_geometric_correspondence,repeated_two_edge_pane+geometry_correspondence
+Air Plane Idea A.step,202,202,recorded_geometric_correspondence,repeated_two_edge_pane+geometry_correspondence
+Air Plane Idea A.step,203,203,recorded_geometric_correspondence,repeated_two_edge_pane+geometry_correspondence
+Air Plane Idea A.step,204,204,recorded_geometric_correspondence,repeated_two_edge_pane+geometry_correspondence
+Air Plane Idea A.step,205,205,recorded_geometric_correspondence,repeated_two_edge_pane+geometry_correspondence
+Air Plane Idea A.step,206,206,recorded_geometric_correspondence,repeated_two_edge_pane+geometry_correspondence
+Air Plane Idea A.step,207,207,recorded_geometric_correspondence,repeated_two_edge_pane+geometry_correspondence
+Air Plane Idea A.step,208,208,recorded_geometric_correspondence,repeated_two_edge_pane+geometry_correspondence
+Air Plane Idea A.step,209,209,recorded_geometric_correspondence,repeated_two_edge_pane+geometry_correspondence
+Air Plane Idea A.step,210,210,recorded_geometric_correspondence,repeated_two_edge_pane+geometry_correspondence
+Air Plane Idea A.step,211,211,recorded_geometric_correspondence,repeated_two_edge_pane+geometry_correspondence
+Air Plane Idea A.step,212,212,recorded_geometric_correspondence,repeated_two_edge_pane+geometry_correspondence
+Air Plane Idea A.step,213,213,recorded_geometric_correspondence,repeated_two_edge_pane+geometry_correspondence
+Air Plane Idea A.step,214,214,recorded_geometric_correspondence,repeated_two_edge_pane+geometry_correspondence
+Air Plane Idea A.step,215,215,recorded_geometric_correspondence,repeated_two_edge_pane+geometry_correspondence
+Air Plane Idea A.step,216,216,recorded_geometric_correspondence,repeated_two_edge_pane+geometry_correspondence
+Air Plane Idea A.step,217,217,recorded_geometric_correspondence,repeated_two_edge_pane+geometry_correspondence
+Air Plane Idea A.step,218,218,recorded_geometric_correspondence,repeated_two_edge_pane+geometry_correspondence
+Air Plane Idea A.step,219,219,recorded_geometric_correspondence,repeated_two_edge_pane+geometry_correspondence
+Air Plane Idea A.step,220,220,recorded_geometric_correspondence,repeated_two_edge_pane+geometry_correspondence
+Air Plane Idea A.step,221,221,recorded_geometric_correspondence,repeated_two_edge_pane+geometry_correspondence
+Air Plane Idea A.step,227,227,recorded_geometric_correspondence,repeated_two_edge_pane+geometry_correspondence
+Air Plane Idea A.step,228,228,recorded_geometric_correspondence,repeated_two_edge_pane+geometry_correspondence
+Air Plane Idea A.step,229,229,recorded_geometric_correspondence,repeated_two_edge_pane+geometry_correspondence
+Air Plane Idea A.step,230,230,recorded_geometric_correspondence,repeated_two_edge_pane+geometry_correspondence
+Air Plane Idea A.step,231,231,recorded_geometric_correspondence,repeated_two_edge_pane+geometry_correspondence
+Air Plane Idea A.step,232,232,recorded_geometric_correspondence,repeated_two_edge_pane+geometry_correspondence
+Air Plane Idea A.step,233,233,recorded_geometric_correspondence,repeated_two_edge_pane+geometry_correspondence
+Air Plane Idea A.step,234,234,recorded_geometric_correspondence,repeated_two_edge_pane+geometry_correspondence
+Air Plane Idea A.step,235,235,recorded_geometric_correspondence,repeated_two_edge_pane+geometry_correspondence
+Air Plane Idea A.step,236,236,recorded_geometric_correspondence,repeated_two_edge_pane+geometry_correspondence
+Air Plane Idea A.step,237,237,recorded_geometric_correspondence,repeated_two_edge_pane+geometry_correspondence
+Air Plane Idea A.step,238,238,recorded_geometric_correspondence,repeated_two_edge_pane+geometry_correspondence
+Air Plane Idea A.step,239,239,recorded_geometric_correspondence,repeated_two_edge_pane+geometry_correspondence
+Air Plane Idea A.step,240,240,recorded_geometric_correspondence,repeated_two_edge_pane+geometry_correspondence
+Air Plane Idea A.step,241,241,recorded_geometric_correspondence,repeated_two_edge_pane+geometry_correspondence
+Air Plane Idea A.step,242,242,recorded_geometric_correspondence,repeated_two_edge_pane+geometry_correspondence
+Air Plane Idea A.step,243,243,recorded_geometric_correspondence,repeated_two_edge_pane+geometry_correspondence
+Air Plane Idea A.step,244,244,recorded_geometric_correspondence,repeated_two_edge_pane+geometry_correspondence
+Air Plane Idea A.step,245,245,recorded_geometric_correspondence,repeated_two_edge_pane+geometry_correspondence
+Air Plane Idea A.step,246,246,recorded_geometric_correspondence,repeated_two_edge_pane+geometry_correspondence
+Air Plane Idea A.step,247,247,recorded_geometric_correspondence,repeated_two_edge_pane+geometry_correspondence
+Air Plane Idea A.step,248,248,recorded_geometric_correspondence,repeated_two_edge_pane+geometry_correspondence
+Air Plane Idea A.step,249,249,recorded_geometric_correspondence,repeated_two_edge_pane+geometry_correspondence
+Air Plane Idea A.step,250,250,recorded_geometric_correspondence,repeated_two_edge_pane+geometry_correspondence
+Air Plane Idea A.step,251,251,recorded_geometric_correspondence,repeated_two_edge_pane+geometry_correspondence
+Air Plane Idea A.step,252,252,recorded_geometric_correspondence,repeated_two_edge_pane+geometry_correspondence
+Air Plane Idea A.step,253,253,recorded_geometric_correspondence,repeated_two_edge_pane+geometry_correspondence
+Air Plane Idea A.step,254,254,recorded_geometric_correspondence,repeated_two_edge_pane+geometry_correspondence
+Air Plane Idea A.step,255,255,recorded_geometric_correspondence,repeated_two_edge_pane+geometry_correspondence
+Air Plane Idea A.step,256,256,recorded_geometric_correspondence,repeated_two_edge_pane+geometry_correspondence
+Air Plane Idea A.step,257,257,recorded_geometric_correspondence,repeated_two_edge_pane+geometry_correspondence
+Air Plane Idea A.step,258,258,recorded_geometric_correspondence,repeated_two_edge_pane+geometry_correspondence
+Air Plane Idea A.step,259,259,recorded_geometric_correspondence,repeated_two_edge_pane+geometry_correspondence
+Air Plane Idea A.step,260,260,recorded_geometric_correspondence,repeated_two_edge_pane+geometry_correspondence
+Air Plane Idea A.step,261,261,recorded_geometric_correspondence,repeated_two_edge_pane+geometry_correspondence
+Air Plane Idea A.step,262,262,recorded_geometric_correspondence,repeated_two_edge_pane+geometry_correspondence
+Air Plane Idea A.step,263,263,recorded_geometric_correspondence,repeated_two_edge_pane+geometry_correspondence
+Air Plane Idea A.step,264,264,recorded_geometric_correspondence,repeated_two_edge_pane+geometry_correspondence
+Air Plane Idea A.step,265,265,recorded_geometric_correspondence,repeated_two_edge_pane+geometry_correspondence
+Air Plane Idea A.step,266,266,recorded_geometric_correspondence,repeated_two_edge_pane+geometry_correspondence
+Air Plane Idea A.step,267,267,recorded_geometric_correspondence,repeated_two_edge_pane+geometry_correspondence
+Air Plane Idea A.step,268,268,recorded_geometric_correspondence,repeated_two_edge_pane+geometry_correspondence
+Air Plane Idea A.step,269,269,recorded_geometric_correspondence,repeated_two_edge_pane+geometry_correspondence
+Air Plane Idea A.step,270,270,recorded_geometric_correspondence,repeated_two_edge_pane+geometry_correspondence
+Air Plane Idea A.step,278,278,recorded_geometric_correspondence,current_network+geometry_correspondence
+Air Plane Idea A.step,279,279,recorded_geometric_correspondence,current_network+geometry_correspondence
+Air Plane Idea A.step,280,280,recorded_geometric_correspondence,current_network+geometry_correspondence
+Air Plane Idea A.step,281,281,recorded_geometric_correspondence,current_network+geometry_correspondence
+Air Plane Idea A.step,282,282,recorded_geometric_correspondence,current_network+geometry_correspondence
+Air Plane Idea A.step,283,283,recorded_geometric_correspondence,current_network+geometry_correspondence
+Air Plane Idea A.step,284,284,recorded_geometric_correspondence,current_network+geometry_correspondence
+Air Plane Idea A.step,285,285,recorded_geometric_correspondence,current_network+geometry_correspondence
+Air Plane Idea A.step,286,286,recorded_geometric_correspondence,current_network+geometry_correspondence
+Air Plane Idea A.step,287,287,recorded_geometric_correspondence,current_network+geometry_correspondence
+Air Plane Idea A.step,288,288,recorded_geometric_correspondence,current_network+geometry_correspondence
+Air Plane Idea A.step,289,289,recorded_geometric_correspondence,current_network+geometry_correspondence
+Air Plane Idea A.step,290,290,recorded_geometric_correspondence,current_network+geometry_correspondence
+Air Plane Idea A.step,291,291,recorded_geometric_correspondence,current_network+geometry_correspondence
+Air Plane Idea A.step,292,292,recorded_geometric_correspondence,current_network+geometry_correspondence
+Air Plane Idea A.step,293,293,recorded_geometric_correspondence,current_network+geometry_correspondence
+Air Plane Idea A.step,294,294,recorded_geometric_correspondence,current_network+geometry_correspondence
+Air Plane Idea A.step,295,295,recorded_geometric_correspondence,current_network+geometry_correspondence
+Air Plane Idea A.step,296,296,recorded_geometric_correspondence,current_network+geometry_correspondence
+Air Plane Idea A.step,297,297,recorded_geometric_correspondence,current_network+geometry_correspondence
+Air Plane Idea A.step,298,298,recorded_geometric_correspondence,current_network+geometry_correspondence
+Air Plane Idea A.step,299,299,recorded_geometric_correspondence,current_network+geometry_correspondence
+Air Plane Idea A.step,300,300,recorded_geometric_correspondence,current_network+geometry_correspondence
+Air Plane Idea A.step,301,301,recorded_geometric_correspondence,current_network+geometry_correspondence
+Air Plane Idea A.step,302,302,recorded_geometric_correspondence,current_network+geometry_correspondence
+Air Plane Idea A.step,303,303,recorded_geometric_correspondence,current_network+geometry_correspondence
+Air Plane Idea A.step,304,304,recorded_geometric_correspondence,current_network+geometry_correspondence
+Air Plane Idea A.step,305,305,recorded_geometric_correspondence,current_network+geometry_correspondence
+Air Plane Idea A.step,306,306,recorded_geometric_correspondence,current_network+geometry_correspondence
+Air Plane Idea A.step,307,307,recorded_geometric_correspondence,current_network+geometry_correspondence
+Air Plane Idea A.step,308,308,recorded_geometric_correspondence,current_network+geometry_correspondence
+Air Plane Idea A.step,309,309,recorded_geometric_correspondence,current_network+geometry_correspondence
+Air Plane Idea A.step,310,310,recorded_geometric_correspondence,current_network+geometry_correspondence
+Air Plane Idea A.step,311,311,recorded_geometric_correspondence,current_network+geometry_correspondence
+Air Plane Idea A.step,312,312,recorded_geometric_correspondence,current_network+geometry_correspondence
+Air Plane Idea A.step,313,313,recorded_geometric_correspondence,current_network+geometry_correspondence
+Air Plane Idea A.step,314,314,recorded_geometric_correspondence,current_network+geometry_correspondence
+Air Plane Idea A.step,315,315,recorded_geometric_correspondence,current_network+geometry_correspondence
+Air Plane Idea A.step,316,316,recorded_geometric_correspondence,current_network+geometry_correspondence
+Air Plane Idea A.step,317,317,recorded_geometric_correspondence,current_network+geometry_correspondence
+Air Plane Idea A.step,318,318,recorded_geometric_correspondence,current_network+geometry_correspondence
+Air Plane Idea A.step,319,319,recorded_geometric_correspondence,current_network+geometry_correspondence
+Air Plane Idea A.step,320,320,recorded_geometric_correspondence,current_network+geometry_correspondence
+Air Plane Idea A.step,321,321,recorded_geometric_correspondence,current_network+geometry_correspondence
+Air Plane Idea A.step,322,322,recorded_geometric_correspondence,current_network+geometry_correspondence
+Air Plane Idea A.step,323,323,recorded_geometric_correspondence,current_network+geometry_correspondence
+Air Plane Idea A.step,13695,13695,recorded_geometric_correspondence,current_network+geometry_correspondence
+Air Plane Idea A.step,13984,13984,recorded_geometric_correspondence,current_network+geometry_correspondence
+Airbus_wing_rivets.step,409,390,recorded_geometric_correspondence,geometry_correspondence
+Airbus_wing_rivets.step,410,391,recorded_geometric_correspondence,geometry_correspondence
+Airbus_wing_rivets.step,411,392,recorded_geometric_correspondence,geometry_correspondence
+Airbus_wing_rivets.step,412,393,recorded_geometric_correspondence,geometry_correspondence
+Airbus_wing_rivets.step,413,394,recorded_geometric_correspondence,geometry_correspondence
+Airbus_wing_rivets.step,414,395,recorded_geometric_correspondence,current_network+geometry_correspondence
+Airbus_wing_rivets.step,415,396,recorded_geometric_correspondence,current_network+geometry_correspondence
+Airbus_wing_rivets.step,416,397,recorded_geometric_correspondence,current_network+geometry_correspondence
+Airbus_wing_rivets.step,417,398,recorded_geometric_correspondence,current_network+geometry_correspondence
+Airbus_wing_rivets.step,418,399,recorded_geometric_correspondence,current_network+geometry_correspondence
+Airbus_wing_rivets.step,419,400,recorded_geometric_correspondence,current_network+geometry_correspondence
+Airbus_wing_rivets.step,420,401,recorded_geometric_correspondence,current_network+geometry_correspondence
+Airbus_wing_rivets.step,421,402,recorded_geometric_correspondence,current_network+geometry_correspondence
+Airbus_wing_rivets.step,422,403,recorded_geometric_correspondence,current_network+geometry_correspondence
+Airbus_wing_rivets.step,423,404,recorded_geometric_correspondence,current_network+geometry_correspondence
+Airbus_wing_rivets.step,424,405,recorded_geometric_correspondence,current_network+geometry_correspondence
+Airbus_wing_rivets.step,425,406,recorded_geometric_correspondence,current_network+geometry_correspondence
+Airbus_wing_rivets.step,426,407,recorded_geometric_correspondence,current_network+geometry_correspondence
+Airbus_wing_rivets.step,427,408,recorded_geometric_correspondence,current_network+geometry_correspondence
+Airbus_wing_rivets.step,428,409,recorded_geometric_correspondence,current_network+geometry_correspondence
+Airbus_wing_rivets.step,429,410,recorded_geometric_correspondence,current_network+geometry_correspondence
+Airbus_wing_rivets.step,430,411,recorded_geometric_correspondence,current_network+geometry_correspondence
+Airbus_wing_rivets.step,431,412,recorded_geometric_correspondence,current_network+geometry_correspondence
+Airbus_wing_rivets.step,432,413,recorded_geometric_correspondence,current_network+geometry_correspondence
+Airbus_wing_rivets.step,442,423,recorded_geometric_correspondence,current_network+geometry_correspondence
+Airbus_wing_rivets.step,443,424,recorded_geometric_correspondence,current_network+geometry_correspondence
+Airbus_wing_rivets.step,444,425,recorded_geometric_correspondence,current_network+geometry_correspondence
+Airbus_wing_rivets.step,445,426,recorded_geometric_correspondence,geometry_correspondence
+Airbus_wing_rivets.step,446,427,recorded_geometric_correspondence,geometry_correspondence
+Airbus_wing_rivets.step,447,428,recorded_geometric_correspondence,current_network+geometry_correspondence
+Airbus_wing_rivets.step,448,429,recorded_geometric_correspondence,current_network+geometry_correspondence
+Airbus_wing_rivets.step,449,430,recorded_geometric_correspondence,current_network+geometry_correspondence
+Airbus_wing_rivets.step,450,431,recorded_geometric_correspondence,current_network+geometry_correspondence
+Airbus_wing_rivets.step,451,432,recorded_geometric_correspondence,current_network+geometry_correspondence
+Airbus_wing_rivets.step,452,433,recorded_geometric_correspondence,geometry_correspondence
+Airbus_wing_rivets.step,453,434,recorded_geometric_correspondence,geometry_correspondence
+Airbus_wing_rivets.step,454,435,recorded_geometric_correspondence,geometry_correspondence
+Airbus_wing_rivets.step,455,436,recorded_geometric_correspondence,current_network+geometry_correspondence
+Airbus_wing_rivets.step,456,437,recorded_geometric_correspondence,current_network+geometry_correspondence
+Airbus_wing_rivets.step,457,438,recorded_geometric_correspondence,current_network+geometry_correspondence
+Airbus_wing_rivets.step,466,447,recorded_geometric_correspondence,current_network+geometry_correspondence
+Airbus_wing_rivets.step,467,448,recorded_geometric_correspondence,current_network+geometry_correspondence
+Airbus_wing_rivets.step,468,449,recorded_geometric_correspondence,geometry_correspondence
+Airbus_wing_rivets.step,469,450,recorded_geometric_correspondence,geometry_correspondence
+Airbus_wing_rivets.step,470,451,recorded_geometric_correspondence,geometry_correspondence
+Airbus_wing_rivets.step,471,452,recorded_geometric_correspondence,geometry_correspondence
+Airbus_wing_rivets.step,472,453,recorded_geometric_correspondence,geometry_correspondence
+Airbus_wing_rivets.step,473,454,recorded_geometric_correspondence,current_network+geometry_correspondence
+Airbus_wing_rivets.step,474,455,recorded_geometric_correspondence,current_network+geometry_correspondence
+Airbus_wing_rivets.step,475,456,recorded_geometric_correspondence,current_network+geometry_correspondence
+Airbus_wing_rivets.step,476,457,recorded_geometric_correspondence,geometry_correspondence
+Airbus_wing_rivets.step,477,458,recorded_geometric_correspondence,geometry_correspondence
+Airbus_wing_rivets.step,478,459,recorded_geometric_correspondence,geometry_correspondence
+Airbus_wing_rivets.step,479,460,recorded_geometric_correspondence,geometry_correspondence
+Airbus_wing_rivets.step,480,461,recorded_geometric_correspondence,geometry_correspondence
+Airbus_wing_rivets.step,481,462,recorded_geometric_correspondence,current_network+geometry_correspondence
+Airbus_wing_rivets.step,1292,1266,recorded_geometric_correspondence,geometry_correspondence
+Airbus_wing_rivets.step,1296,1270,recorded_geometric_correspondence,geometry_correspondence
+Airbus_wing_rivets.step,1301,1275,recorded_geometric_correspondence,current_network+geometry_correspondence
+Airbus_wing_rivets.step,1302,1276,recorded_geometric_correspondence,current_network+geometry_correspondence
+Airbus_wing_rivets.step,1303,1277,recorded_geometric_correspondence,current_network+geometry_correspondence
+Airbus_wing_rivets.step,1304,1278,recorded_geometric_correspondence,current_network+geometry_correspondence
+Airbus_wing_rivets.step,1305,1279,recorded_geometric_correspondence,current_network+geometry_correspondence
+Airbus_wing_rivets.step,1306,1280,recorded_geometric_correspondence,current_network+geometry_correspondence
+Airbus_wing_rivets.step,1307,1281,recorded_geometric_correspondence,current_network+geometry_correspondence
+Airbus_wing_rivets.step,1308,1282,recorded_geometric_correspondence,current_network+geometry_correspondence
+Airbus_wing_rivets.step,1309,1283,recorded_geometric_correspondence,current_network+geometry_correspondence
+Airbus_wing_rivets.step,1310,1284,recorded_geometric_correspondence,current_network+geometry_correspondence
+Airbus_wing_rivets.step,1311,1285,recorded_geometric_correspondence,current_network+geometry_correspondence
+Airbus_wing_rivets.step,1312,1286,recorded_geometric_correspondence,current_network+geometry_correspondence
+Airbus_wing_rivets.step,1313,1287,recorded_geometric_correspondence,current_network+geometry_correspondence
+Airbus_wing_rivets.step,1314,1288,recorded_geometric_correspondence,current_network+geometry_correspondence
+Airbus_wing_rivets.step,1315,1289,recorded_geometric_correspondence,current_network+geometry_correspondence
+Airbus_wing_rivets.step,1316,1290,recorded_geometric_correspondence,current_network+geometry_correspondence
+Airbus_wing_rivets.step,1317,1291,recorded_geometric_correspondence,current_network+geometry_correspondence
+Airbus_wing_rivets.step,1318,1292,recorded_geometric_correspondence,current_network+geometry_correspondence
+Airbus_wing_rivets.step,1319,1293,recorded_geometric_correspondence,current_network+geometry_correspondence
+Airbus_wing_rivets.step,1320,1294,recorded_geometric_correspondence,current_network+geometry_correspondence
+Airbus_wing_rivets.step,1321,1295,recorded_geometric_correspondence,current_network+geometry_correspondence
+Airbus_wing_rivets.step,1322,1296,recorded_geometric_correspondence,current_network+geometry_correspondence
+Airbus_wing_rivets.step,1323,1297,recorded_geometric_correspondence,current_network+geometry_correspondence
+Airbus_wing_rivets.step,1324,1298,recorded_geometric_correspondence,current_network+geometry_correspondence
+Airbus_wing_rivets.step,1334,1308,recorded_geometric_correspondence,current_network+geometry_correspondence
+Airbus_wing_rivets.step,1335,1309,recorded_geometric_correspondence,current_network+geometry_correspondence
+Airbus_wing_rivets.step,1336,1310,recorded_geometric_correspondence,current_network+geometry_correspondence
+Airbus_wing_rivets.step,1337,1311,recorded_geometric_correspondence,current_network+geometry_correspondence
+Airbus_wing_rivets.step,1338,1312,recorded_geometric_correspondence,current_network+geometry_correspondence
+Airbus_wing_rivets.step,1339,1313,recorded_geometric_correspondence,current_network+geometry_correspondence
+Airbus_wing_rivets.step,1340,1314,recorded_geometric_correspondence,current_network+geometry_correspondence
+Airbus_wing_rivets.step,1341,1315,recorded_geometric_correspondence,current_network+geometry_correspondence
+Airbus_wing_rivets.step,1342,1316,recorded_geometric_correspondence,current_network+geometry_correspondence
+Airbus_wing_rivets.step,1343,1317,recorded_geometric_correspondence,current_network+geometry_correspondence
+Airbus_wing_rivets.step,1344,1318,recorded_geometric_correspondence,current_network+geometry_correspondence
+Airbus_wing_rivets.step,1345,1319,recorded_geometric_correspondence,current_network+geometry_correspondence
+Airbus_wing_rivets.step,1346,1320,recorded_geometric_correspondence,current_network+geometry_correspondence
+Airbus_wing_rivets.step,1347,1321,recorded_geometric_correspondence,current_network+geometry_correspondence
+Airbus_wing_rivets.step,1348,1322,recorded_geometric_correspondence,current_network+geometry_correspondence
+Airbus_wing_rivets.step,1349,1323,recorded_geometric_correspondence,current_network+geometry_correspondence
+Airbus_wing_rivets.step,1358,1332,recorded_geometric_correspondence,current_network+geometry_correspondence
+Airbus_wing_rivets.step,1359,1333,recorded_geometric_correspondence,current_network+geometry_correspondence
+Airbus_wing_rivets.step,1360,1334,recorded_geometric_correspondence,current_network+geometry_correspondence
+Airbus_wing_rivets.step,1361,1335,recorded_geometric_correspondence,current_network+geometry_correspondence
+Airbus_wing_rivets.step,1362,1336,recorded_geometric_correspondence,current_network+geometry_correspondence
+Airbus_wing_rivets.step,1363,1337,recorded_geometric_correspondence,current_network+geometry_correspondence
+Airbus_wing_rivets.step,1364,1338,recorded_geometric_correspondence,current_network+geometry_correspondence
+Airbus_wing_rivets.step,1365,1339,recorded_geometric_correspondence,current_network+geometry_correspondence
+Airbus_wing_rivets.step,1366,1340,recorded_geometric_correspondence,current_network+geometry_correspondence
+Airbus_wing_rivets.step,1367,1341,recorded_geometric_correspondence,current_network+geometry_correspondence
+Airbus_wing_rivets.step,1368,1342,recorded_geometric_correspondence,current_network+geometry_correspondence
+Airbus_wing_rivets.step,1369,1343,recorded_geometric_correspondence,current_network+geometry_correspondence
+Airbus_wing_rivets.step,1370,1344,recorded_geometric_correspondence,current_network+geometry_correspondence
+Airbus_wing_rivets.step,1371,1345,recorded_geometric_correspondence,current_network+geometry_correspondence
+Airbus_wing_rivets.step,1372,1346,recorded_geometric_correspondence,current_network+geometry_correspondence
+Airbus_wing_rivets.step,1373,1347,recorded_geometric_correspondence,current_network+geometry_correspondence
+Airbus_wing_rivets.step,1406,1380,recorded_geometric_correspondence,current_network+geometry_correspondence
+Airbus_wing_rivets.step,1407,1381,recorded_geometric_correspondence,current_network+geometry_correspondence
+Airbus_wing_rivets.step,1408,1382,recorded_geometric_correspondence,current_network+geometry_correspondence
+Airbus_wing_rivets.step,1409,1383,recorded_geometric_correspondence,current_network+geometry_correspondence
+Airbus_wing_rivets.step,1410,1384,recorded_geometric_correspondence,current_network+geometry_correspondence
+Airbus_wing_rivets.step,1411,1385,recorded_geometric_correspondence,current_network+geometry_correspondence
+Airbus_wing_rivets.step,1412,1386,recorded_geometric_correspondence,current_network+geometry_correspondence
+Airbus_wing_rivets.step,1413,1387,recorded_geometric_correspondence,current_network+geometry_correspondence
+Airbus_wing_rivets.step,1414,1388,recorded_geometric_correspondence,current_network+geometry_correspondence
+Airbus_wing_rivets.step,1415,1389,recorded_geometric_correspondence,current_network+geometry_correspondence
+Airbus_wing_rivets.step,1416,1390,recorded_geometric_correspondence,current_network+geometry_correspondence
+Airbus_wing_rivets.step,1417,1391,recorded_geometric_correspondence,current_network+geometry_correspondence
+Airbus_wing_rivets.step,1418,1392,recorded_geometric_correspondence,current_network+geometry_correspondence
+Airbus_wing_rivets.step,1419,1393,recorded_geometric_correspondence,current_network+geometry_correspondence
+Airbus_wing_rivets.step,1420,1394,recorded_geometric_correspondence,current_network+geometry_correspondence
+Airbus_wing_rivets.step,1421,1395,recorded_geometric_correspondence,current_network+geometry_correspondence
+Airbus_wing_rivets.step,1422,1396,recorded_geometric_correspondence,current_network+geometry_correspondence
+Airbus_wing_rivets.step,1423,1397,recorded_geometric_correspondence,current_network+geometry_correspondence
+Airbus_wing_rivets.step,1424,1398,recorded_geometric_correspondence,current_network+geometry_correspondence
+Airbus_wing_rivets.step,1425,1399,recorded_geometric_correspondence,current_network+geometry_correspondence
+Airbus_wing_rivets.step,1426,1400,recorded_geometric_correspondence,current_network+geometry_correspondence
+Airbus_wing_rivets.step,1427,1401,recorded_geometric_correspondence,current_network+geometry_correspondence
+Airbus_wing_rivets.step,1428,1402,recorded_geometric_correspondence,current_network+geometry_correspondence
+Airbus_wing_rivets.step,1429,1403,recorded_geometric_correspondence,current_network+geometry_correspondence
+Airbus_wing_rivets.step,1430,1404,recorded_geometric_correspondence,current_network+geometry_correspondence
+Airbus_wing_rivets.step,1431,1405,recorded_geometric_correspondence,current_network+geometry_correspondence
+Airbus_wing_rivets.step,1432,1406,recorded_geometric_correspondence,current_network+geometry_correspondence
+Airbus_wing_rivets.step,1433,1407,recorded_geometric_correspondence,current_network+geometry_correspondence
+Airbus_wing_rivets.step,1434,1408,recorded_geometric_correspondence,current_network+geometry_correspondence
+Airbus_wing_rivets.step,1435,1409,recorded_geometric_correspondence,current_network+geometry_correspondence
+Airbus_wing_rivets.step,1436,1410,recorded_geometric_correspondence,current_network+geometry_correspondence
+Airbus_wing_rivets.step,1437,1411,recorded_geometric_correspondence,current_network+geometry_correspondence
+Airbus_wing_rivets.step,1489,1445,recorded_geometric_correspondence,current_network+geometry_correspondence
+Airbus_wing_rivets.step,1490,1446,recorded_geometric_correspondence,current_network+geometry_correspondence
+Airbus_wing_rivets.step,1492,1448,recorded_geometric_correspondence,current_network+geometry_correspondence
+Airbus_wing_rivets.step,1493,1449,recorded_geometric_correspondence,geometry_correspondence
+Airbus_wing_rivets.step,1494,1450,recorded_geometric_correspondence,current_network+geometry_correspondence
+Airbus_wing_rivets.step,1496,1452,recorded_geometric_correspondence,current_network+geometry_correspondence
+Airbus_wing_rivets.step,1498,1454,recorded_geometric_correspondence,current_network+geometry_correspondence
+Airbus_wing_rivets.step,1499,1455,recorded_geometric_correspondence,current_network+geometry_correspondence
+Airbus_wing_rivets.step,1500,1456,recorded_geometric_correspondence,current_network+geometry_correspondence
+Airbus_wing_rivets.step,1501,1457,recorded_geometric_correspondence,current_network+geometry_correspondence
+Airbus_wing_rivets.step,1502,1458,recorded_geometric_correspondence,current_network+geometry_correspondence
+Airbus_wing_rivets.step,1503,1459,recorded_geometric_correspondence,current_network+geometry_correspondence
+Airbus_wing_rivets.step,1504,1460,recorded_geometric_correspondence,current_network+geometry_correspondence
+Airbus_wing_rivets.step,1505,1461,recorded_geometric_correspondence,current_network+geometry_correspondence
+Airbus_wing_rivets.step,1506,1462,recorded_geometric_correspondence,current_network+geometry_correspondence
+Airbus_wing_rivets.step,1507,1463,recorded_geometric_correspondence,current_network+geometry_correspondence
+Airbus_wing_rivets.step,1508,1464,recorded_geometric_correspondence,current_network+geometry_correspondence
+Airbus_wing_rivets.step,1509,1465,recorded_geometric_correspondence,current_network+geometry_correspondence
+Airbus_wing_rivets.step,1510,1466,recorded_geometric_correspondence,current_network+geometry_correspondence
+Airbus_wing_rivets.step,1511,1467,recorded_geometric_correspondence,current_network+geometry_correspondence
+Airbus_wing_rivets.step,1512,1468,recorded_geometric_correspondence,current_network+geometry_correspondence
+Airbus_wing_rivets.step,1513,1469,recorded_geometric_correspondence,current_network+geometry_correspondence
+Airbus_wing_rivets.step,1514,1470,recorded_geometric_correspondence,current_network+geometry_correspondence
+Airbus_wing_rivets.step,1515,1471,recorded_geometric_correspondence,current_network+geometry_correspondence
+Airbus_wing_rivets.step,1516,1472,recorded_geometric_correspondence,current_network+geometry_correspondence
+Airbus_wing_rivets.step,1517,1473,recorded_geometric_correspondence,current_network+geometry_correspondence
+Airbus_wing_rivets.step,1518,1474,recorded_geometric_correspondence,current_network+geometry_correspondence
+Airbus_wing_rivets.step,1519,1475,recorded_geometric_correspondence,current_network+geometry_correspondence
+Airbus_wing_rivets.step,1520,1476,recorded_geometric_correspondence,current_network+geometry_correspondence
+Airbus_wing_rivets.step,1521,1477,recorded_geometric_correspondence,current_network+geometry_correspondence
+Airbus_wing_rivets.step,1522,1478,recorded_geometric_correspondence,current_network+geometry_correspondence
+Airbus_wing_rivets.step,1523,1479,recorded_geometric_correspondence,current_network+geometry_correspondence
+Airbus_wing_rivets.step,1524,1480,recorded_geometric_correspondence,current_network+geometry_correspondence
+Airbus_wing_rivets.step,1525,1481,recorded_geometric_correspondence,current_network+geometry_correspondence
+Airbus_wing_rivets.step,1526,1482,recorded_geometric_correspondence,current_network+geometry_correspondence
+Airbus_wing_rivets.step,1527,1483,recorded_geometric_correspondence,current_network+geometry_correspondence
+Airbus_wing_rivets.step,1528,1484,recorded_geometric_correspondence,current_network+geometry_correspondence
+Airbus_wing_rivets.step,1529,1485,recorded_geometric_correspondence,current_network+geometry_correspondence
+Airbus_wing_rivets.step,1530,1486,recorded_geometric_correspondence,current_network+geometry_correspondence
+Airbus_wing_rivets.step,1531,1487,recorded_geometric_correspondence,current_network+geometry_correspondence
+Airbus_wing_rivets.step,1532,1488,recorded_geometric_correspondence,current_network+geometry_correspondence
+Airbus_wing_rivets.step,1533,1489,recorded_geometric_correspondence,current_network+geometry_correspondence
+Airbus_wing_rivets.step,1534,1490,recorded_geometric_correspondence,current_network+geometry_correspondence
+Airbus_wing_rivets.step,1535,1491,recorded_geometric_correspondence,current_network+geometry_correspondence
+Airbus_wing_rivets.step,1536,1492,recorded_geometric_correspondence,current_network+geometry_correspondence
+Airbus_wing_rivets.step,1537,1493,recorded_geometric_correspondence,current_network+geometry_correspondence
+Airbus_wing_rivets.step,1538,1494,recorded_geometric_correspondence,current_network+geometry_correspondence
+Airbus_wing_rivets.step,1539,1495,recorded_geometric_correspondence,current_network+geometry_correspondence
+Airbus_wing_rivets.step,1540,1496,recorded_geometric_correspondence,current_network+geometry_correspondence
+Airbus_wing_rivets.step,1541,1497,recorded_geometric_correspondence,current_network+geometry_correspondence
+Airbus_wing_rivets.step,1542,1498,recorded_geometric_correspondence,current_network+geometry_correspondence
+Airbus_wing_rivets.step,1543,1499,recorded_geometric_correspondence,current_network+geometry_correspondence
+Airbus_wing_rivets.step,1544,1500,recorded_geometric_correspondence,current_network+geometry_correspondence
+Airbus_wing_rivets.step,1545,1501,recorded_geometric_correspondence,current_network+geometry_correspondence
+Airbus_wing_rivets.step,1546,1502,recorded_geometric_correspondence,current_network+geometry_correspondence
+Airbus_wing_rivets.step,1547,1503,recorded_geometric_correspondence,current_network+geometry_correspondence
+Airbus_wing_rivets.step,1548,1504,recorded_geometric_correspondence,current_network+geometry_correspondence
+Airbus_wing_rivets.step,1549,1505,recorded_geometric_correspondence,current_network+geometry_correspondence
+Airbus_wing_rivets.step,1553,1509,recorded_geometric_correspondence,current_network+geometry_correspondence
+Airbus_wing_rivets.step,1556,1512,recorded_geometric_correspondence,current_network+geometry_correspondence
+Airbus_wing_rivets.step,1557,1513,recorded_geometric_correspondence,current_network+geometry_correspondence
+Airbus_wing_rivets.step,1558,1514,recorded_geometric_correspondence,current_network+geometry_correspondence
+Airbus_wing_rivets.step,1559,1515,recorded_geometric_correspondence,current_network+geometry_correspondence
+Airbus_wing_rivets.step,1560,1516,recorded_geometric_correspondence,current_network+geometry_correspondence
+Airbus_wing_rivets.step,1561,1517,recorded_geometric_correspondence,current_network+geometry_correspondence
+Airbus_wing_rivets.step,1563,1519,recorded_geometric_correspondence,current_network+geometry_correspondence
+Airbus_wing_rivets.step,1564,1520,recorded_geometric_correspondence,current_network+geometry_correspondence
+Airbus_wing_rivets.step,1565,1521,recorded_geometric_correspondence,current_network+geometry_correspondence
+Airbus_wing_rivets.step,1566,1522,recorded_geometric_correspondence,current_network+geometry_correspondence
+Airbus_wing_rivets.step,1567,1523,recorded_geometric_correspondence,current_network+geometry_correspondence
+Airbus_wing_rivets.step,1568,1524,recorded_geometric_correspondence,current_network+geometry_correspondence
+Airbus_wing_rivets.step,1569,1525,recorded_geometric_correspondence,current_network+geometry_correspondence
+Airbus_wing_rivets.step,1570,1526,recorded_geometric_correspondence,current_network+geometry_correspondence
+Airbus_wing_rivets.step,1571,1527,recorded_geometric_correspondence,current_network+geometry_correspondence
+Airbus_wing_rivets.step,1572,1528,recorded_geometric_correspondence,current_network+geometry_correspondence
+Airbus_wing_rivets.step,1573,1529,recorded_geometric_correspondence,current_network+geometry_correspondence
+Airbus_wing_rivets.step,1574,1530,recorded_geometric_correspondence,current_network+geometry_correspondence
+Airbus_wing_rivets.step,1575,1531,recorded_geometric_correspondence,current_network+geometry_correspondence
+Airbus_wing_rivets.step,1756,1704,recorded_geometric_correspondence,current_network+geometry_correspondence
+Airbus_wing_rivets.step,1758,1706,recorded_geometric_correspondence,current_network+geometry_correspondence
+Airbus_wing_rivets.step,1759,1707,recorded_geometric_correspondence,current_network+geometry_correspondence
+Airbus_wing_rivets.step,1760,1708,recorded_geometric_correspondence,current_network+geometry_correspondence
+Airbus_wing_rivets.step,1761,1709,recorded_geometric_correspondence,current_network+geometry_correspondence
+Airbus_wing_rivets.step,1762,1710,recorded_geometric_correspondence,current_network+geometry_correspondence
+Airbus_wing_rivets.step,1763,1711,recorded_geometric_correspondence,current_network+geometry_correspondence
+Airbus_wing_rivets.step,1764,1712,recorded_geometric_correspondence,current_network+geometry_correspondence
+Airbus_wing_rivets.step,1765,1713,recorded_geometric_correspondence,current_network+geometry_correspondence
+Airbus_wing_rivets.step,1767,1715,recorded_geometric_correspondence,current_network+geometry_correspondence
+Airbus_wing_rivets.step,1768,1716,recorded_geometric_correspondence,current_network+geometry_correspondence
+Airbus_wing_rivets.step,1769,1717,recorded_geometric_correspondence,current_network+geometry_correspondence
+Airbus_wing_rivets.step,1770,1718,recorded_geometric_correspondence,current_network+geometry_correspondence
+Airbus_wing_rivets.step,1771,1719,recorded_geometric_correspondence,current_network+geometry_correspondence
+Airbus_wing_rivets.step,1772,1720,recorded_geometric_correspondence,current_network+geometry_correspondence
+Airbus_wing_rivets.step,1773,1721,recorded_geometric_correspondence,current_network+geometry_correspondence
+Airbus_wing_rivets.step,1774,1722,recorded_geometric_correspondence,current_network+geometry_correspondence
+Airbus_wing_rivets.step,1775,1723,recorded_geometric_correspondence,current_network+geometry_correspondence
+Airplane body_wing_rivets.step,244,179,recorded_geometric_correspondence,geometry_correspondence
+Airplane body_wing_rivets.step,582,524,recorded_geometric_correspondence,current_network+geometry_correspondence
+Airplane body_wing_rivets.step,588,530,recorded_geometric_correspondence,current_network+geometry_correspondence
+Airplane body_wing_rivets.step,594,536,recorded_geometric_correspondence,current_network+geometry_correspondence
+Airplane body_wing_rivets.step,600,542,recorded_geometric_correspondence,current_network+geometry_correspondence
+Airplane body_wing_rivets.step,606,548,recorded_geometric_correspondence,current_network+geometry_correspondence
+Airplane body_wing_rivets.step,612,554,recorded_geometric_correspondence,current_network+geometry_correspondence
+Airplane body_wing_rivets.step,618,560,recorded_geometric_correspondence,current_network+geometry_correspondence
+Airplane body_wing_rivets.step,624,566,recorded_geometric_correspondence,current_network+geometry_correspondence
+Airplane body_wing_rivets.step,630,572,recorded_geometric_correspondence,current_network+geometry_correspondence
+Airplane body_wing_rivets.step,636,578,recorded_geometric_correspondence,current_network+geometry_correspondence
+Airplane body_wing_rivets.step,642,584,recorded_geometric_correspondence,current_network+geometry_correspondence
+Airplane body_wing_rivets.step,648,590,recorded_geometric_correspondence,current_network+geometry_correspondence
+Airplane body_wing_rivets.step,654,596,recorded_geometric_correspondence,current_network+geometry_correspondence
+Airplane body_wing_rivets.step,660,602,recorded_geometric_correspondence,current_network+geometry_correspondence
+Airplane body_wing_rivets.step,673,615,recorded_geometric_correspondence,geometry_correspondence
+Airplane body_wing_rivets.step,674,616,recorded_geometric_correspondence,geometry_correspondence
+Airplane body_wing_rivets.step,684,626,recorded_geometric_correspondence,current_network+geometry_correspondence
+Airplane body_wing_rivets.step,697,639,recorded_geometric_correspondence,current_network+geometry_correspondence
+Airplane body_wing_rivets.step,698,640,recorded_geometric_correspondence,geometry_correspondence
+Airplane body_wing_rivets.step,708,650,recorded_geometric_correspondence,current_network+geometry_correspondence
+AULIRA 2_wing_rivets.step,165,142,recorded_geometric_correspondence,current_network+geometry_correspondence
+AULIRA 2_wing_rivets.step,186,163,recorded_geometric_correspondence,current_network+geometry_correspondence
+AULIRA 2_wing_rivets.step,196,173,recorded_geometric_correspondence,current_network+geometry_correspondence
+AULIRA 2_wing_rivets.step,205,182,recorded_geometric_correspondence,current_network+geometry_correspondence
+AULIRA 2_wing_rivets.step,216,193,recorded_geometric_correspondence,current_network+geometry_correspondence
+AULIRA 2_wing_rivets.step,230,207,recorded_geometric_correspondence,current_network+geometry_correspondence
+AULIRA 2_wing_rivets.step,235,212,recorded_geometric_correspondence,current_network+geometry_correspondence
+AULIRA 2_wing_rivets.step,245,222,recorded_geometric_correspondence,current_network+geometry_correspondence
+AULIRA 2_wing_rivets.step,264,241,recorded_geometric_correspondence,current_network+geometry_correspondence
+AULIRA 2_wing_rivets.step,266,243,recorded_geometric_correspondence,current_network+geometry_correspondence
+Cessna Citation 2_wing_rivets.step,79,27,recorded_geometric_correspondence,current_network+geometry_correspondence
+Cessna Citation 2_wing_rivets.step,80,28,recorded_geometric_correspondence,current_network+geometry_correspondence
+Cessna Citation 2_wing_rivets.step,81,29,recorded_geometric_correspondence,current_network+geometry_correspondence
+Cessna Citation 2_wing_rivets.step,82,30,recorded_geometric_correspondence,current_network+geometry_correspondence
+Cessna Citation 2_wing_rivets.step,83,31,recorded_geometric_correspondence,current_network+geometry_correspondence
+Cessna Citation 2_wing_rivets.step,88,36,recorded_geometric_correspondence,current_network+geometry_correspondence
+Cessna Citation 2_wing_rivets.step,94,42,recorded_geometric_correspondence,geometry_correspondence
+Cessna Citation 2_wing_rivets.step,95,43,recorded_geometric_correspondence,geometry_correspondence
+Cessna Citation 2_wing_rivets.step,96,44,recorded_geometric_correspondence,geometry_correspondence
+Cessna Citation 2_wing_rivets.step,97,45,recorded_geometric_correspondence,geometry_correspondence
+Cessna Citation 2_wing_rivets.step,123,71,recorded_geometric_correspondence,current_network+geometry_correspondence
+Cessna Citation 2_wing_rivets.step,175,123,recorded_geometric_correspondence,current_network+geometry_correspondence
+Cessna Citation 2_wing_rivets.step,176,124,recorded_geometric_correspondence,current_network+geometry_correspondence
+Cessna Citation 2_wing_rivets.step,177,125,recorded_geometric_correspondence,current_network+geometry_correspondence
+Cessna Citation 2_wing_rivets.step,178,126,recorded_geometric_correspondence,current_network+geometry_correspondence
+Cessna Citation 2_wing_rivets.step,179,127,recorded_geometric_correspondence,current_network+geometry_correspondence
+Cessna Citation 2_wing_rivets.step,180,128,recorded_geometric_correspondence,current_network+geometry_correspondence
+Cessna Citation 2_wing_rivets.step,185,133,recorded_geometric_correspondence,geometry_correspondence
+Cessna Citation 2_wing_rivets.step,186,134,recorded_geometric_correspondence,geometry_correspondence
+Cessna Citation 2_wing_rivets.step,187,135,recorded_geometric_correspondence,geometry_correspondence
+Cessna Citation 2_wing_rivets.step,188,136,recorded_geometric_correspondence,geometry_correspondence
+Cessna Citation 2_wing_rivets.step,196,144,recorded_geometric_correspondence,current_network+geometry_correspondence
+Cessna Citation 2_wing_rivets.step,252,200,recorded_geometric_correspondence,current_network+geometry_correspondence
+Cessna Citation 2_wing_rivets.step,253,201,recorded_geometric_correspondence,current_network+geometry_correspondence
+Cessna Citation 2_wing_rivets.step,254,202,recorded_geometric_correspondence,current_network+geometry_correspondence
+Cessna Citation 2_wing_rivets.step,255,203,recorded_geometric_correspondence,current_network+geometry_correspondence
+Cessna Citation 2_wing_rivets.step,256,204,recorded_geometric_correspondence,geometry_correspondence
+Cessna Citation 2_wing_rivets.step,277,225,recorded_geometric_correspondence,geometry_correspondence
+Gulfstream G280 v17_wing_rivets.step,522,20,recorded_geometric_correspondence,geometry_correspondence
+Gulfstream G280 v17_wing_rivets.step,539,46,recorded_geometric_correspondence,geometry_correspondence
+Gulfstream G280 v17_wing_rivets.step,585,61,recorded_geometric_correspondence,geometry_correspondence
+Gulfstream G280 v17_wing_rivets.step,593,69,recorded_geometric_correspondence,geometry_correspondence
+Gulfstream G280 v17_wing_rivets.step,7,73,recorded_geometric_correspondence,geometry_correspondence
+Gulfstream G280 v17_wing_rivets.step,4,78,recorded_geometric_correspondence,geometry_correspondence
+Gulfstream G280 v17_wing_rivets.step,11,82,recorded_geometric_correspondence,geometry_correspondence
+Gulfstream G280 v17_wing_rivets.step,16,87,recorded_geometric_correspondence,geometry_correspondence
+Gulfstream G280 v17_wing_rivets.step,19,91,recorded_geometric_correspondence,geometry_correspondence
+Gulfstream G280 v17_wing_rivets.step,21,93,recorded_geometric_correspondence,geometry_correspondence
+Gulfstream G280 v17_wing_rivets.step,44,102,recorded_geometric_correspondence,current_network+geometry_correspondence
+Gulfstream G280 v17_wing_rivets.step,45,103,recorded_geometric_correspondence,current_network+geometry_correspondence
+Gulfstream G280 v17_wing_rivets.step,48,106,recorded_geometric_correspondence,current_network+geometry_correspondence
+Gulfstream G280 v17_wing_rivets.step,56,114,recorded_geometric_correspondence,current_network+geometry_correspondence
+Gulfstream G280 v17_wing_rivets.step,57,115,recorded_geometric_correspondence,current_network+geometry_correspondence
+Gulfstream G280 v17_wing_rivets.step,62,120,recorded_geometric_correspondence,current_network+geometry_correspondence
+Gulfstream G280 v17_wing_rivets.step,63,121,recorded_geometric_correspondence,current_network+geometry_correspondence
+Gulfstream G280 v17_wing_rivets.step,439,143,recorded_geometric_correspondence,geometry_correspondence
+Gulfstream G280 v17_wing_rivets.step,134,171,recorded_geometric_correspondence,geometry_correspondence
+Gulfstream G280 v17_wing_rivets.step,136,173,recorded_geometric_correspondence,geometry_correspondence
+Gulfstream G280 v17_wing_rivets.step,138,175,recorded_geometric_correspondence,geometry_correspondence
+Gulfstream G280 v17_wing_rivets.step,142,177,recorded_geometric_correspondence,geometry_correspondence
+Gulfstream G280 v17_wing_rivets.step,144,179,recorded_geometric_correspondence,geometry_correspondence
+Gulfstream G280 v17_wing_rivets.step,150,181,recorded_geometric_correspondence,geometry_correspondence
+Gulfstream G280 v17_wing_rivets.step,152,183,recorded_geometric_correspondence,geometry_correspondence
+Gulfstream G280 v17_wing_rivets.step,154,185,recorded_geometric_correspondence,geometry_correspondence
+Gulfstream G280 v17_wing_rivets.step,156,187,recorded_geometric_correspondence,geometry_correspondence
+Gulfstream G280 v17_wing_rivets.step,140,208,recorded_geometric_correspondence,current_network+geometry_correspondence
+Gulfstream G280 v17_wing_rivets.step,146,210,recorded_geometric_correspondence,current_network+geometry_correspondence
+Gulfstream G280 v17_wing_rivets.step,148,212,recorded_geometric_correspondence,current_network+geometry_correspondence
+Gulfstream G280 v17_wing_rivets.step,158,214,recorded_geometric_correspondence,current_network+geometry_correspondence
+Gulfstream G280 v17_wing_rivets.step,160,216,recorded_geometric_correspondence,current_network+geometry_correspondence
+Gulfstream G280 v17_wing_rivets.step,162,218,recorded_geometric_correspondence,current_network+geometry_correspondence
+Gulfstream G280 v17_wing_rivets.step,164,220,recorded_geometric_correspondence,current_network+geometry_correspondence
+Gulfstream G280 v17_wing_rivets.step,166,222,recorded_geometric_correspondence,current_network+geometry_correspondence
+Gulfstream G280 v17_wing_rivets.step,168,224,recorded_geometric_correspondence,geometry_correspondence
+Gulfstream G280 v17_wing_rivets.step,181,266,recorded_geometric_correspondence,current_network+geometry_correspondence
+Gulfstream G280 v17_wing_rivets.step,214,297,recorded_geometric_correspondence,current_network+geometry_correspondence
+Gulfstream G280 v17_wing_rivets.step,248,332,recorded_geometric_correspondence,current_network+geometry_correspondence
+Gulfstream G280 v17_wing_rivets.step,265,350,verified_surface_and_boundary_geometry,current_network
+Gulfstream G280 v17_wing_rivets.step,294,380,recorded_geometric_correspondence,current_network+geometry_correspondence
+Gulfstream G280 v17_wing_rivets.step,327,411,recorded_geometric_correspondence,current_network+geometry_correspondence
+Gulfstream G280 v17_wing_rivets.step,361,446,recorded_geometric_correspondence,current_network+geometry_correspondence
+Gulfstream G280 v17_wing_rivets.step,378,464,verified_surface_and_boundary_geometry,current_network
+Gulfstream G280 v17_wing_rivets.step,413,499,recorded_geometric_correspondence,geometry_correspondence
+Gulfstream G280 v17_wing_rivets.step,448,505,verified_surface_and_boundary_geometry,current_network
+Gulfstream G280 v17_wing_rivets.step,453,510,verified_surface_and_boundary_geometry,current_network
+Gulfstream G280 v17_wing_rivets.step,454,511,recorded_geometric_correspondence,current_network+geometry_correspondence
+Gulfstream G280 v17_wing_rivets.step,603,547,recorded_geometric_correspondence,current_network+geometry_correspondence
+Gulfstream G280 v17_wing_rivets.step,604,548,recorded_geometric_correspondence,current_network+geometry_correspondence
+Gulfstream G280 v17_wing_rivets.step,605,549,recorded_geometric_correspondence,geometry_correspondence
+Gulfstream G280 v17_wing_rivets.step,620,553,recorded_geometric_correspondence,geometry_correspondence
+Gulfstream G280 v17_wing_rivets.step,613,557,recorded_geometric_correspondence,geometry_correspondence
+Gulfstream G280 v17_wing_rivets.step,616,561,recorded_geometric_correspondence,geometry_correspondence
+Gulfstream G280 v17_wing_rivets.step,629,573,recorded_geometric_correspondence,current_network+geometry_correspondence
+Gulfstream G280 v17_wing_rivets.step,630,574,recorded_geometric_correspondence,current_network+geometry_correspondence
+Gulfstream G280 v17_wing_rivets.step,631,575,recorded_geometric_correspondence,current_network+geometry_correspondence
+Gulfstream G280 v17_wing_rivets.step,632,576,recorded_geometric_correspondence,current_network+geometry_correspondence
+Gulfstream G280 v17_wing_rivets.step,639,583,recorded_geometric_correspondence,current_network+geometry_correspondence
+Gulfstream G280 v17_wing_rivets.step,640,584,recorded_geometric_correspondence,current_network+geometry_correspondence
+Gulfstream G280 v17_wing_rivets.step,656,599,recorded_geometric_correspondence,geometry_correspondence

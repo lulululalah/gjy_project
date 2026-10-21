@@ -1,0 +1,92 @@
+{
+  "method": "Label-blind centre, perimeter, type and loop/edge topology; independently verify B-spline control net, knots, weights, vertices, and nine samples per edge",
+  "source_sha256": {
+    "model\\final_detection_model\\test_9_models_frozen_truth.csv": "39765eaa33f1c581b9c1779939f2a971c7db925c17e7c4233890fa0f3bc98948",
+    "data\\plane_model\\after_two\\Gulfstream G280 v17_wing_rivets.step": "6f22774ee215b073c3cf6ce137fc810e09701ccffca48b0349ae996d312d22bc",
+    "results\\current_three_class_complete_20261020\\cad\\Gulfstream_G280_v17\\Gulfstream_G280_v17_rivet_removed.step": "394fdc36574a6b93d0c43355e63bc3fff4a194f09cebab15e021826f38b83069",
+    "results\\current_three_class_complete_20261020\\cad\\Gulfstream_G280_v17\\intermediate_features.csv": "a52cc9eb7834caa5453c9f3ef1f7a3f2a0920a97ea8961b641b3194c2bea2be5",
+    "results\\current_three_class_complete_20261020\\cad\\Gulfstream_G280_v17\\surface_candidates.csv": "4c3a59315c72cddc7ad2cb21e1e15ca226f8f89cc980c93959f1972d5dc50ecc"
+  },
+  "mappings": [
+    {
+      "model_name": "Gulfstream G280 v17_wing_rivets.step",
+      "original_face_id": 265,
+      "current_face_id": 350,
+      "surface_structure": [
+        3,
+        3,
+        4,
+        4,
+        2,
+        2
+      ],
+      "surface_max_abs_delta": 0.0,
+      "vertex_max_abs_delta": 0.0,
+      "boundary_sample_max_abs_delta": 2.1316282072803006e-14,
+      "vertex_count": 28,
+      "unique_geometry_candidates": [
+        265
+      ]
+    },
+    {
+      "model_name": "Gulfstream G280 v17_wing_rivets.step",
+      "original_face_id": 378,
+      "current_face_id": 464,
+      "surface_structure": [
+        3,
+        3,
+        4,
+        4,
+        2,
+        2
+      ],
+      "surface_max_abs_delta": 0.0,
+      "vertex_max_abs_delta": 0.0,
+      "boundary_sample_max_abs_delta": 1.4210854715202004e-14,
+      "vertex_count": 28,
+      "unique_geometry_candidates": [
+        378
+      ]
+    },
+    {
+      "model_name": "Gulfstream G280 v17_wing_rivets.step",
+      "original_face_id": 448,
+      "current_face_id": 505,
+      "surface_structure": [
+        3,
+        3,
+        10,
+        19,
+        9,
+        17
+      ],
+      "surface_max_abs_delta": 0.0,
+      "vertex_max_abs_delta": 0.0,
+      "boundary_sample_max_abs_delta": 0.0,
+      "vertex_count": 6,
+      "unique_geometry_candidates": [
+        448
+      ]
+    },
+    {
+      "model_name": "Gulfstream G280 v17_wing_rivets.step",
+      "original_face_id": 453,
+      "current_face_id": 510,
+      "surface_structure": [
+        3,
+        3,
+        10,
+        19,
+        9,
+        17
+      ],
+      "surface_max_abs_delta": 0.0,
+      "vertex_max_abs_delta": 0.0,
+      "boundary_sample_max_abs_delta": 0.0,
+      "vertex_count": 6,
+      "unique_geometry_candidates": [
+        453
+      ]
+    }
+  ]
+}
