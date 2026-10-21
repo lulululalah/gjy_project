@@ -12,7 +12,7 @@
     "lifecycle_stage": "evidence_and_method_revision",
     "review_maturity": "full_manuscript_author_review",
     "target_venue": "Journal of Computational Design and Engineering (provisional)",
-    "active_release": "full-narrative-reconstruction-20261020",
+    "active_release": "figure5-half-page-layout-20261021",
     "style_reference": "TOG argument structure; existing manuscript format retained"
   },
   "artifacts": [
@@ -585,8 +585,8 @@
   ],
   "release": {
     "status": "FOR_AUTHOR_REVIEW",
-    "date": "2026-10-20",
-    "scope": "Full-paper reconstruction; numeric table bodies retained; Figure5 redrawn and Table6 completion-status column removed by explicit author request",
+    "date": "2026-10-21",
+    "scope": "Full-paper reconstruction; numeric table bodies retained; Figure5 redrawn and Table6 completion-status column removed by explicit author request; 2026-10-21 Figure5 compact flat-module layout, unchanged architecture and results",
     "clean_pdf": "main.pdf",
     "annotated_pdf": "main_annotated_three_class_20261019.pdf",
     "change_ledger": "../../work/tog_manuscript_reconstruction_20261020/revision_ledger.json",
@@ -607,22 +607,25 @@
       "Beautify Figure5 using its native scientific diagram source"
     ],
     "completed_checks": [
-      "Exact-source candidate audit and manual contextual dispositions",
-      "Full 24-page clean PDF visual inspection and annotated focal-page checks",
-      "Chinese annotation roundtrip and exact clean/annotated page-content and extracted-text parity",
-      "All8 numeric table bodies,20citation keys,unique labels and resolved references",
-      "177 protected files unchanged; sole authorised exception is Figure5 TikZ source"
+      "2026-10-20: Exact-source candidate audit and manual contextual dispositions",
+      "2026-10-20: Full 24-page clean PDF visual inspection and annotated focal-page checks",
+      "2026-10-20: Chinese annotation roundtrip and exact clean/annotated page-content and extracted-text parity",
+      "2026-10-20: All8 numeric table bodies,20citation keys,unique labels and resolved references",
+      "2026-10-20: 177 protected files unchanged; sole authorised exception is Figure5 TikZ source",
+      "2026-10-21: successful isolated latexmk build; no undefined references or overfull boxes",
+      "2026-10-21: Figure5 page8, adjacent pages7/9 and annotated page12 visually checked",
+      "2026-10-21: all8063 nonfigure tokens mapped; all33 existing Chinese notes retained; annotation streams match clean PDF"
     ],
     "source_inventory": "../../work/tog_manuscript_reconstruction_20261020/04_模型来源核查.md",
-    "change_entries": 51,
+    "change_entries": 52,
     "pages": 24,
     "figures": 11,
     "tables": 8,
     "verification": "../../work/tog_manuscript_reconstruction_20261020/source_verification.json",
     "annotation_manifest": "../../work/tog_manuscript_reconstruction_20261020/annotation_manifest.json",
     "source_sha256": "5e9eb76101b0ae9fa1cbc98631bb9ba085a55c867d9c62a38fb3ca3e9ca59e24",
-    "clean_sha256": "70406c88b30ee0a2e18d08369fcfede9393f021b2081060ecedf26573426babe",
-    "annotated_sha256": "5a210f811bd781a57b819e333299b077f581c0a53995eb20f852547f59acb826"
+    "clean_sha256": "3f635069b90a6dea82749dc2bdd6d2f1b555b32fd997c22541e13c735ab74ff9",
+    "annotated_sha256": "983449dca4b92e44f1d5258fbc188f80cd609600fc36c6d7b5af6d6204088986"
   },
   "decisions": [
     {
@@ -652,5 +655,18 @@
       "work/current_three_class_end_to_end_20261020/prepare_figures.py"
     ],
     "scientific_result_changes": false
+  },
+  "figure5_layout_revision_20261021": {
+    "authority": "Explicit author request for cleaner L1/L2 presentation and approximately half-page layout",
+    "entry": "R52",
+    "diagram_height_mm_before": 131,
+    "diagram_height_mm_after": 92,
+    "figure_with_caption_mm_approximately": 120,
+    "page": 8,
+    "source_sha256": "3ace09b4f61c11ccfab3c631f5116a89609f378b384d7e9ef07ae125c57298fb",
+    "report": "../../work/figure5_halfpage_20261021/修改记录.md",
+    "verification": "../../work/figure5_halfpage_20261021/annotation_verification.json",
+    "main_tex_and_caption_unchanged": true,
+    "model_and_experimental_results_unchanged": true
   }
 }
