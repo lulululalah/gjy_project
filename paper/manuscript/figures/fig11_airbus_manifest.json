@@ -75,11 +75,13 @@
         "mesh_decimated": false
       },
       "images": {
+        "cad_overview": "fig11_airbus_before_cad_cad_overview.png",
+        "cad_detail": "fig11_airbus_before_cad_cad_detail.png",
         "mesh_overview": "fig11_airbus_before_mesh_overview.png",
         "mesh_detail": "fig11_airbus_before_mesh_detail.png"
       },
       "cameras": {
-        "mesh_overview": {
+        "cad_overview": {
           "center": [
             35.481186394382576,
             7.738677002706936,
@@ -98,10 +100,48 @@
           "scale": 25.546454465042746,
           "aspect": 3.0
         },
-        "mesh_detail": {
+        "cad_detail": {
           "center": [
             23.866726681658506,
             2.3489380531961874,
+            3.7333601231189846
+          ],
+          "direction": [
+            -0.0,
+            -0.0,
+            -1.0
+          ],
+          "up": [
+            0.0,
+            1.0,
+            0.0
+          ],
+          "scale": 3.7846599207470732,
+          "aspect": 3.0
+        },
+        "mesh_overview": {
+          "center": [
+            35.481186394382604,
+            7.738677002706912,
+            1.0231815394945443e-12
+          ],
+          "direction": [
+            -0.0,
+            -0.0,
+            -1.0
+          ],
+          "up": [
+            0.0,
+            1.0,
+            0.0
+          ],
+          "scale": 25.546454465042746,
+          "aspect": 3.0
+        },
+        "mesh_detail": {
+          "center": [
+            23.866726681658506,
+            2.3489380531961883,
             3.7333601231189846
           ],
           "direction": [
@@ -160,7 +200,7 @@
         "mesh_detail": {
           "center": [
             23.866726681658506,
-            2.3489380531961883,
+            2.348938053196188,
             3.7333601231189846
           ],
           "direction": [
@@ -179,7 +219,7 @@
         "cad_overview": {
           "center": [
             35.481186394382604,
-            7.738677002706912,
+            7.738677002706911,
             1.0231815394945443e-12
           ],
           "direction": [
@@ -198,7 +238,7 @@
         "cad_detail": {
           "center": [
             23.866726681658506,
-            2.348938053196188,
+            2.3489380531961874,
             3.7333601231189846
           ],
           "direction": [

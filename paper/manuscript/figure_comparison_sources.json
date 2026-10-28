@@ -21,7 +21,7 @@
   {
     "key": "dc10",
     "name": "DC-10",
-    "scope": "Fresh current single-three-class checkpoint CAD run, 2026-10-20; input colours are original annotations, not predicted/processed truth.",
+    "scope": "Current CAD endpoints; input colours are original annotations except retained visible door regions displayed as background. Processed geometry has uniform shading.",
     "projection": [
       1,
       0,
@@ -36,7 +36,10 @@
       {
         "name": "before",
         "step": "data\\plane_model\\after_two\\27- DC-10 SolidWorks stp igs_DC 10_wing_rivets.step",
-        "labels": "data\\plane_model\\label\\27- DC-10 SolidWorks stp igs_DC 10_wing_rivets.labels.json"
+        "labels": "data\\plane_model\\label\\27- DC-10 SolidWorks stp igs_DC 10_wing_rivets.labels.json",
+        "display_background_face_ids": [75, 76, 86, 89, 96, 98, 115, 134, 135, 142, 144, 157, 190, 195, 221, 224],
+        "display_reason": "Retained door regions use the body colour, including host, pane and trim faces in the central, rear and wing-exit door regions and their corresponding opposite-side faces. Display override only.",
+        "prediction_source": "results/current_three_class_complete_20261020/cad/27-_DC-10_SolidWorks_stp_igs_DC_10/original.pred.csv"
       },
       {
         "name": "after",
@@ -49,7 +52,7 @@
   {
     "key": "cessna",
     "name": "Cessna Citation 2",
-    "scope": "Fresh current single-three-class checkpoint CAD run, 2026-10-20; input colours are original annotations, not predicted/processed truth.",
+    "scope": "Current CAD endpoints; input colours are original annotations except the door-window region displayed as background because its unselected inner pane remains. Processed geometry has uniform shading.",
     "projection": [
       0,
       1,
@@ -64,7 +67,10 @@
       {
         "name": "before",
         "step": "data\\plane_model\\after_two\\Cessna Citation 2_wing_rivets.step",
-        "labels": "data\\plane_model\\label\\Cessna Citation 2_wing_rivets.labels.json"
+        "labels": "data\\plane_model\\label\\Cessna Citation 2_wing_rivets.labels.json",
+        "display_background_face_ids": [88, 89],
+        "display_reason": "Door-window region unhighlighted: outer pane F88 was selected and removed; inner pane F89 was predicted as background and retained. Display override only.",
+        "prediction_source": "results/current_three_class_complete_20261020/cad/Cessna_Citation_2/original.pred.csv"
       },
       {
         "name": "after",

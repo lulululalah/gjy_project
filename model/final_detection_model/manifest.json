@@ -187,8 +187,7 @@
     "python/cad/pipeline.py": "b99a6a97a3fcc87df344d815b23913e5344a7a3fc04c0f0deebb91f9f86b064d",
     "python/cad/windows.py": "06432a077e442128600fea069e1f050987e3f5324bdf90f5c914306e66432bdc",
     "python/geometry/measure.py": "931f6923a776b7a0d872504cad23446c22e16e57354d17c516d10eb74bc057b7",
-    "python/geometry/qem.py": "d7869cdcf09799b622bc1f61466054638f3e57c61c1fb2e523d3008bd420ee9c",
-    "python/main.py": "1f148a5ceb7ac099e910a203442f668d7b0edc5fba0355d13a94c33c3bbe2b69",
+    "python/main.py": "21a0c29b4f5379d0812af94f6000d58c08cb62565a63da4eb323cdf4cfda2e4c",
     "python/recognition/graph.py": "749d299ce41ccee76cd53805d7ec4a52812565a3c23f31c0b11914692202ee8c",
     "python/recognition/model.py": "e1a8a1ef264b00c649bc9d3da3c4fc488c9aa3aea44731efccc44eedc0e1d0e3",
     "python/recognition/postprocess.py": "ba240ead9643df94fec7cb67362f12aad4aec656d3e2bad3fc8130249c78cf0e",
@@ -197,7 +196,7 @@
     "python/recognition/train.py": "f7584470544795a32b83c7bd1208c555c5900788c791406541e52688240d9dd2",
     "python/tools/faces.py": "c98c796278af8817055a648f1f92abf732955e92771738f258cf1c60bd3890ec",
     "python/tools/labels.py": "f8633b2cba8f29831395fefad145f512f17dd2c384ec163cedbe2608be5f3581",
-    "python/visualization/cad.py": "cbd22858ca88c55b967dd9d1cb48c413236f3de0e2c348e090c2f9a071ceb7e9",
+    "python/visualization/cad.py": "2078f4224be8602bce4eeac8f9251983c779b8aea72e247c1acfb8f6dc6d6f95",
     "python/visualization/predictions.py": "0408850d2978923fdb4f3e7b83bd8da836e09304b1a7b8b9a03e68559f98dd78"
   },
   "surface_recovery": {

@@ -23,6 +23,7 @@
     "key": "dc10",
     "name": "DC-10",
     "metric_prefix": "27-_DC-10_SolidWorks_stp_igs_DC_10",
+    "detail_face_id": 151,
     "labels": "data/plane_model/label/27- DC-10 SolidWorks stp igs_DC 10_wing_rivets.labels.json",
     "projection": [
       1,
@@ -35,7 +36,7 @@
       0
     ],
     "length_axis": 2,
-    "detail_fraction": 0.17,
+    "detail_fraction": 0.15,
     "detail_semantic": "window",
     "evidence_run": "current_three_class_complete_20261020"
   },

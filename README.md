@@ -43,7 +43,7 @@ D:\Anaconda\envs\cad_graph_env\python.exe python/main.py predict --verify-only
 D:\Anaconda\envs\cad_graph_env\python.exe python/main.py predict --output-dir work/recognition_replay
 ```
 
-输出目录必须不存在，避免混用已有结果。历史候选模型、旧消融实验、重复预测及专用实验脚本已按用户要求清理，只保留当前正式模型与完整训练、推理依赖。正式模型的原始训练记录位于 `model/final_detection_model/training_record/`，本轮删除与保留清单位于 `work/current_three_class_cleanup_20261019/`。`work/recognition_archive_20261019/` 仅保留原始标签审计和论文证据摘要，其旧移动清单不是现存备份。论文、CAD 端点和网格/QEM结果已统一为当前模型的 2026-10-20 重跑证据；论文交付位于 `paper/manuscript/`，重跑证据位于 `results/current_three_class_complete_20261020/`。
+输出目录必须不存在，避免混用已有结果。历史候选模型、旧消融实验、重复预测及专用实验脚本已按用户要求清理，只保留当前正式模型与完整训练、推理依赖。正式模型的原始训练记录位于 `model/final_detection_model/training_record/`，本轮删除与保留清单位于 `work/current_three_class_cleanup_20261019/`。`work/recognition_archive_20261019/` 仅保留原始标签审计和论文证据摘要，其旧移动清单不是现存备份。论文、CAD 端点和网格结果已统一为当前模型的 2026-10-20 重跑证据；论文交付位于 `paper/manuscript/`，重跑证据位于 `results/current_three_class_complete_20261020/`。
 
 飞机数据目录：
 
@@ -74,14 +74,13 @@ D:\Anaconda\envs\cad_graph_env\python.exe python/main.py predict --output-dir wo
 ```powershell
 D:\Anaconda\envs\cad_graph_env\python.exe python/main.py cad --stage cad
 D:\Anaconda\envs\cad_graph_env\python.exe python/main.py cad --stage mesh
-D:\Anaconda\envs\cad_graph_env\python.exe python/main.py qem
 ```
 
 本轮唯一几何/网格证据在 `results/current_three_class_complete_20261020/`。每架的 `cad/<模型标识>/record.json` 关联原模型预测、中间特征/预测、各阶段 STEP 哈希和操作返回值。最终 STEP 为该目录的 `final.step`。操作失败保留上一端点；零候选不执行饰面操作，不能据此声称完全删除。
 
-原模型的逐面真值不直接适用于改变拓扑的中间模型。DC-10 的原几何补全受文件哈希限制，不能按旧面编号套到中间模型。完整运行协议、计时范围和已知限制见 `doc/当前架构说明.md` 及本轮 CAD/网格/QEM 记录。
+原模型的逐面真值不直接适用于改变拓扑的中间模型。DC-10 的原几何补全受文件哈希限制，不能按旧面编号套到中间模型。完整运行协议、计时范围和已知限制见 `doc/当前架构说明.md` 及本轮 CAD/网格记录。
 
-论文干净版为 `paper/manuscript/main.pdf`，批注版为同目录的 `main_annotated_three_class_20261019.pdf`；正文源为 `paper/manuscript/main.tex`。本轮完整修改记录与审阅报告在 `work/tog_manuscript_reconstruction_20261020/`，旧稿与重复预览已清理。
+论文审稿版为 `paper/manuscript/main.pdf`，正文源为 `paper/manuscript/main.tex`。投稿材料位于 `paper/submission/`，打包文件为 `paper/JCDE_submission_draft.zip`；内部核对说明单独保存在 `paper/submission_notes/`。旧批注 PDF 和重复预览已清理，修改记录与审阅报告在 `work/tog_manuscript_reconstruction_20261020/`。
 
 ## 预测值与真值对比可视化
 
@@ -131,13 +130,13 @@ D:\Anaconda\envs\cad_graph_env\python.exe .\python\main.py view-edges `
 
 ## Python脚本入口与分组
 
-统一通过 `python/main.py <命令>` 使用当前流程；各功能选项用 `<命令> --help` 查看。源代码按 `recognition/`（模型、训练、预测和筛选）、`cad/`（几何处理和候选）、`geometry/`（几何/网格/QEM测量）、`tools/`（标注与选面）、`visualization/`（CAD与预测审查）分组。
+统一通过 `python/main.py <命令>` 使用当前流程；各功能选项用 `<命令> --help` 查看。源代码按 `recognition/`（模型、训练、预测和筛选）、`cad/`（几何处理和候选）、`geometry/`（几何/网格测量）、`tools/`（标注与选面）、`visualization/`（CAD与预测审查）分组。
 
 完整命令表见 [python/README.md](python/README.md)。2026-10-21整理记录及新旧输出对照见 `work/python_refactor_20261021/整理报告.md`。旧平铺入口已移除，不再维护两套脚本。
 
 ## Git 备份与恢复
 
-当前模型权重、归一化与训练资产、九份评估原始 STEP、CAD 中间及最终 STEP、QEM 网格缓存和两份论文 PDF 使用 Git LFS 保存。克隆后先安装 Git LFS，再在项目根目录执行：
+当前模型权重、归一化与训练资产、九份评估原始 STEP、CAD 中间及最终 STEP 和论文 PDF 使用 Git LFS 保存。克隆后先安装 Git LFS，再在项目根目录执行：
 
 ```powershell
 git lfs install --local

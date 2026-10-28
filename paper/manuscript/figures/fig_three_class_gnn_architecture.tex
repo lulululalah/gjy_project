@@ -1,114 +1,90 @@
 \begingroup
 \setstretch{1}
-\definecolor{archInk}{HTML}{374650}
-\definecolor{archLine}{HTML}{98A7B4}
-\definecolor{archBlue}{HTML}{83AEC8}
-\definecolor{archOrange}{HTML}{F0B27C}
-\definecolor{archRose}{HTML}{DB9D9D}
-\definecolor{archGold}{HTML}{EFD07C}
-\definecolor{archTeal}{HTML}{75B9A7}
-\definecolor{archViolet}{HTML}{A58CC3}
-\resizebox{.82\linewidth}{!}{%
+\definecolor{archInk}{HTML}{3E5263}
+\definecolor{archLine}{HTML}{B8C8D2}
+\definecolor{archBlue}{HTML}{67BCEB}
+\definecolor{archTeal}{HTML}{69D1AC}
+\definecolor{archViolet}{HTML}{B69AE3}
+\definecolor{archOrange}{HTML}{FAB875}
+\definecolor{archRose}{HTML}{F48798}
+\definecolor{archGold}{HTML}{F5D76E}
+\definecolor{archFaceK}{HTML}{EBAC75}
+\definecolor{archFaceI}{HTML}{86A8BB}
+\definecolor{archFaceL}{HTML}{E3A09C}
+\definecolor{archFaceJ}{HTML}{F1D48A}
+\resizebox{1.10\linewidth}{!}{%
 \begin{tikzpicture}[x=1mm,y=1mm,
-  font=\sffamily\fontsize{8.6}{9.5}\selectfont,text=archInk,
-  panel/.style={draw=archLine,line width=.55pt,rounded corners=1.5mm,fill=white},
-  card/.style={draw=archLine,line width=.5pt,rounded corners=.8mm,
-    fill=white,align=center,inner sep=.6mm},
-  flow/.style={-{Latex[length=1.25mm,width=.95mm]},draw=archInk!85,
-    line width=.6pt,rounded corners=.5mm},
-  stage/.style={anchor=west,font=\sffamily\fontsize{8.8}{10}\selectfont},
-  note/.style={font=\sffamily\fontsize{7.8}{8.8}\selectfont,align=center}]
-  \path[use as bounding box] (0,0) rectangle (160,-133);
+  font=\sffamily\fontsize{12}{13}\selectfont,text=archInk,
+  flow/.style={-{Latex[length=1.8mm,width=1.3mm]},draw=archInk!80,line width=.8pt},
+  note/.style={font=\sffamily\fontsize{11}{12.5}\selectfont,align=center},
+  heading/.style={align=center,font=\sffamily\bfseries\fontsize{13}{14.5}\selectfont},
+  state/.style={draw=none,rounded corners=1mm,text width=23mm,minimum height=12mm,align=center},
+  graphnode/.style={circle,draw=white,line width=.8pt,minimum size=6mm,
+    inner sep=0,font=\sffamily\fontsize{10}{11}\selectfont}]
+  \path[use as bounding box] (0,4) rectangle (238,-60);
+  \node[heading] at (30,-56) {(A) B-Rep graph};
+  \node[heading] at (116,-56) {(B) GNN and context};
+  \node[heading] at (201,-56) {(C) Face labels};
 
-  \draw[panel,fill=archViolet!3] (0,0) rectangle (160,-30);
-  \node[stage] at (5,-4.5) {(a) Build an attributed face graph};
-  \node[note] at (24,-10) {Original B-Rep faces};
-  \node[inner sep=0] at (24,-20)
-    {\includegraphics[width=28mm,height=15mm,keepaspectratio]{figures/fig5_bspline_curved_sheet.png}};
-  \draw[flow] (41,-19) -- (56,-19);
-
-  \draw[draw=archLine,line width=.65pt]
-    (62,-15) -- (74,-15) -- (74,-23) -- (62,-23) -- cycle;
-  \foreach \x/\y/\labeltext/\colour in {62/-15/k/archOrange,74/-15/i/archBlue,62/-23/l/archRose,74/-23/j/archGold} {
-    \node[circle,draw=archInk!55,fill=\colour!75,minimum size=3.8mm,
-      inner sep=0,font=\sffamily\fontsize{7.6}{8.5}\selectfont] at (\x,\y) {$v_{\labeltext}$};
+  \node[note] at (16,-9) {Original B-Rep faces};
+  \node[inner sep=0] at (16,-23)
+    {\includegraphics[width=32mm]{figures/fig5_bspline_curved_sheet.png}};
+  \draw[flow] (33,-23) -- (39,-23);
+  \node[note] at (50,-9) {Graph};
+  \draw[archLine,line width=1pt] (43,-17) -- (57,-17) -- (57,-29) -- (43,-29) -- cycle;
+  \foreach \x/\y/\name/\colour in {43/-17/k/archFaceK,57/-17/i/archFaceI,43/-29/l/archFaceL,57/-29/j/archFaceJ} {
+    \node[graphnode,fill=\colour] at (\x,\y) {$v_{\name}$};
   }
-  \node[note] at (68,-27.6) {One face $F_i$ $\leftrightarrow$ one node $v_i$};
-  \draw[flow] (80,-19) -- (94,-19);
+  \node[note] at (50,-42) {Node: 48D\\Edge: 6D};
+  \draw[flow] (62,-23) -- (72,-23);
 
-  \draw[panel] (96,-9) rectangle (155,-28);
-  \path[fill=archViolet!13,rounded corners=.6mm] (98,-10) rectangle (153,-14);
-  \node[note] at (125.5,-12) {Shared connectivity};
-  \node[card,draw=archBlue!75!black,fill=archBlue!12,text width=24mm,
-    minimum height=9mm,font=\sffamily\fontsize{7.6}{8.5}\selectfont] at (111.5,-21)
-    {Node attributes\\48D};
-  \node[card,draw=archTeal!75!black,fill=archTeal!12,text width=24mm,
-    minimum height=9mm,font=\sffamily\fontsize{7.6}{8.5}\selectfont] at (140,-21)
-    {Edge attributes\\6D};
-
-  \draw[flow] (125.5,-28) -- (125.5,-33) -- (80,-33) -- (80,-36);
-  \draw[panel,draw=archBlue!75,fill=archBlue!4] (0,-36) rectangle (160,-105);
-  \node[stage] at (5,-40.5) {(b) Learn face representations};
-  \node[note] at (126,-40.5) {Shared graph neural network};
-  \draw[draw=archBlue!35,line width=.45pt] (5,-44.5) -- (155,-44.5);
-  \node[card,draw=archBlue!80,text width=62mm,minimum height=8.4mm] (nodeenc) at (43,-51)
-    {Node encoder\\$48\to48$};
-  \node[card,draw=archTeal!85,text width=62mm,minimum height=8.4mm] (edgeenc) at (117,-51)
-    {Edge encoder\\$6\to6$};
-  \node[note] at (80,-58.5) {Linear $+$ LayerNorm $+$ ReLU};
-  \draw[flow] (nodeenc.south) -- (43,-62);
-  \draw[flow] (edgeenc.south) -- (117,-62);
-
-  \draw[card,dashed,draw=archBlue!85] (8,-62) rectangle (152,-78.3);
-  \node[note] at (80,-64.5) {Four NNConv layers; hidden width 64};
-  \foreach \x/\layer/\colour in {20/1/archBlue,55/2/archOrange,90/3/archTeal,125/4/archViolet} {
-    \begin{scope}[shift={(\x,-67)}]
-      \path[draw=\colour!75!black,fill=\colour!67,line width=.4pt]
-        (0,0) rectangle (16,-5.8);
-      \path[draw=\colour!75!black,fill=\colour!22,line width=.4pt]
-        (0,0) -- (1.1,.85) -- (17.1,.85) -- (16,0) -- cycle;
-      \path[draw=\colour!75!black,fill=\colour!90,line width=.4pt]
-        (16,0) -- (17.1,.85) -- (17.1,-4.95) -- (16,-5.8) -- cycle;
-      \node at (8,-2.9) {L\layer};
-    \end{scope}
+  \foreach \offset/\colour in {9/archViolet,6/archTeal,3/archOrange,0/archBlue} {
+    \path[fill=\colour!80,draw=\colour!70!black,line width=.5pt]
+      (75+\offset,-14+\offset*.5) rectangle (88+\offset,-32+\offset*.5);
   }
-  \foreach \x in {20,55,90} {\draw[flow] (\x+18,-69.9) -- (\x+33,-69.9);}
-  \node[note] at (80,-76) {LayerNorm $+$ ReLU $+$ dropout; residual: L2--L4};
+  \node[note] at (81.5,-23) {64D};
+  \node[note] at (85,-42) {NNConv $\times\,4$};
+  \draw[archInk!80,line width=.8pt] (99,-23) -- (103,-23);
+  \node[state,fill=archBlue!25] (local) at (120,-12) {Local\\64D};
+  \node[state,fill=archTeal!27] (global) at (120,-34) {Global\\128D};
+  \draw[flow] (103,-23) |- (local.west);
+  \draw[flow] (103,-23) |- (global.west);
+  \node[rounded corners=4mm,draw=none,fill=archViolet!35,minimum width=16mm,
+    minimum height=10mm,inner sep=.5mm,font=\sffamily\fontsize{10.5}{12}\selectfont]
+    (concat) at (149,-23) {Concat};
+  \draw[flow] (local.east) -| (concat.north);
+  \draw[flow] (global.east) -| (concat.south);
+  \node[note] at (120,-47) {Mean $+$ max};
+  \draw[flow] (concat.east) -- (165,-23);
 
-  \node[card,draw=archBlue!90,fill=archBlue!9,text width=62mm,minimum height=5.6mm] (local) at (43,-83)
-    {Local state 64D};
-  \node[card,draw=archTeal!90,fill=archTeal!9,text width=62mm,minimum height=5.6mm] (pool) at (117,-83)
-    {Mean $+$ max: global 128D};
-  \draw[flow] (43,-78.3) -- (local.north);
-  \draw[flow] (117,-78.3) -- (pool.north);
-  \node[card,draw=archViolet!90,fill=archViolet!9,text width=136mm,
-    minimum height=4.8mm,font=\sffamily\fontsize{7.8}{8.8}\selectfont] (concat) at (80,-90.5)
-    {Concatenate: $64\mathrm{D}+128\mathrm{D}=192\mathrm{D}$};
-  \draw[draw=archInk!85,line width=.6pt,rounded corners=.4mm]
-    (local.south) -- (43,-87) -- (117,-87) -- (pool.south);
-  \draw[flow,-{Latex[length=.7mm,width=.8mm]}] (80,-87) -- (concat.north);
-
-  \node[card,fill=archViolet!14,text width=30mm,minimum height=8.6mm] (mlp) at (24.5,-99)
-    {MLP\\$192\to192$};
-  \node[card,fill=archGold!13,text width=30mm,minimum height=8.6mm] (linear) at (61.5,-99)
-    {Linear\\$192\to3$};
-  \node[card,fill=archBlue!12,text width=30mm,minimum height=8.6mm] (softmax) at (98.5,-99)
-    {Softmax\\\fontsize{7.6}{8.5}\selectfont $p_b+p_r+p_s=1$};
-  \node[card,fill=archTeal!13,text width=30mm,minimum height=8.6mm] (argmax) at (135.5,-99)
-    {Argmax\\Face label};
-  \draw[flow,-{Latex[length=.8mm,width=.8mm]}]
-    (concat.south) -- (80,-93.8) -- (24.5,-93.8) -- (mlp.north);
-  \draw[flow] (mlp.east) -- (linear.west);
-  \draw[flow] (linear.east) -- (softmax.west);
-  \draw[flow] (softmax.east) -- (argmax.west);
-
-  \draw[flow] (argmax.south) -- (135.5,-108) -- (80,-108) -- (80,-111);
-  \draw[panel,fill=archLine!5] (0,-111) rectangle (160,-128);
-  \node[stage] at (5,-115) {(c) Assign a category to each face};
-  \node[card,fill=archLine!17,text width=43mm,minimum height=6.5mm] at (30,-122.8) {Background};
-  \node[card,draw=archBlue!90,fill=archBlue!16,text width=43mm,minimum height=6.5mm] at (80,-122.8) {Rivet};
-  \node[card,draw=archOrange!90,fill=archOrange!13,text width=43mm,minimum height=6.5mm] at (130,-122.8) {Cosmetic feature};
-  \node[note] at (80,-130.7) {Face identifiers and probabilities are retained for CAD processing};
+  \foreach \ya in {-15,-20,-31} {
+    \foreach \yb in {-15,-20,-31} {
+      \draw[archLine!85,line width=.5pt] (170,\ya) -- (179,\yb);
+    }
+  }
+  \foreach \ya in {-15,-20,-31} {
+    \foreach \yb in {-17,-23,-29} {
+      \draw[archLine!85,line width=.5pt] (179,\ya) -- (188,\yb);
+    }
+  }
+  \foreach \y in {-15,-20,-31} {
+    \node[circle,fill=archBlue,minimum size=3mm,inner sep=0] at (170,\y) {};
+    \node[circle,fill=archViolet,minimum size=3mm,inner sep=0] at (179,\y) {};
+  }
+  \foreach \x in {170,179} {
+    \node[fill=white,inner sep=.25mm,font=\fontsize{10}{11}\selectfont] at (\x,-25.5) {$\vdots$};
+    \node[note] at (\x,-42) {192};
+  }
+  \foreach \y in {-17,-23,-29} {
+    \node[circle,fill=archRose,minimum size=3mm,inner sep=0] at (188,\y) {};
+  }
+  \node[note] at (188,-42) {3};
+  \node[note] at (179,-9) {MLP $+$ Linear};
+  \draw[flow] (193,-23) -- (201,-23);
+  \foreach \y/\colour/\name in {-14/{archLine!40}/Background,-23/archBlue/Rivet,-32/archOrange/{Cosmetic feature}} {
+    \fill[\colour] (206,\y) circle (1.4mm);
+    \node[note,anchor=west] at (210,\y) {\name};
+  }
 \end{tikzpicture}%
 }
 \endgroup

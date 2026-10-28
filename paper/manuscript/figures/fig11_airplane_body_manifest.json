@@ -75,11 +75,13 @@
         "mesh_decimated": false
       },
       "images": {
+        "cad_overview": "fig11_airplane_body_before_cad_cad_overview.png",
+        "cad_detail": "fig11_airplane_body_before_cad_cad_detail.png",
         "mesh_overview": "fig11_airplane_body_before_mesh_overview.png",
         "mesh_detail": "fig11_airplane_body_before_mesh_detail.png"
       },
       "cameras": {
-        "mesh_overview": {
+        "cad_overview": {
           "center": [
             -9.094947017729282e-13,
             6395.953684907929,
@@ -98,7 +100,7 @@
           "scale": 7600.661053213626,
           "aspect": 3.0
         },
-        "mesh_detail": {
+        "cad_detail": {
           "center": [
             1326.1016486050503,
             3291.84,
@@ -116,28 +118,7 @@
           ],
           "scale": 1407.52982466919,
           "aspect": 3.0
-        }
-      }
-    },
-    {
-      "stage": "after",
-      "step": "D:\\projects\\gjy_byproject\\results\\current_three_class_complete_20261020\\cad\\Airplane_body\\final.step",
-      "step_sha256": "06c023dca246ed27503e49731f78e90dbcc528481af613745fac78b3e440330f",
-      "metric_source": "D:\\projects\\gjy_byproject\\results\\current_three_class_complete_20261020\\mesh\\Airplane_body_simplified.json",
-      "mesh": {
-        "faces": 450,
-        "nodes": 27114,
-        "triangles": 42401,
-        "linear_deflection": 14.475071264339038,
-        "mesh_decimated": false
-      },
-      "images": {
-        "mesh_overview": "fig11_airplane_body_after_mesh_overview.png",
-        "mesh_detail": "fig11_airplane_body_after_mesh_detail.png",
-        "cad_overview": "fig11_airplane_body_after_cad_overview.png",
-        "cad_detail": "fig11_airplane_body_after_cad_detail.png"
-      },
-      "cameras": {
+        },
         "mesh_overview": {
           "center": [
             -1.8189894035458565e-12,
@@ -175,8 +156,29 @@
           ],
           "scale": 1407.52982466919,
           "aspect": 3.0
-        },
-        "cad_overview": {
+        }
+      }
+    },
+    {
+      "stage": "after",
+      "step": "D:\\projects\\gjy_byproject\\results\\current_three_class_complete_20261020\\cad\\Airplane_body\\final.step",
+      "step_sha256": "06c023dca246ed27503e49731f78e90dbcc528481af613745fac78b3e440330f",
+      "metric_source": "D:\\projects\\gjy_byproject\\results\\current_three_class_complete_20261020\\mesh\\Airplane_body_simplified.json",
+      "mesh": {
+        "faces": 450,
+        "nodes": 27114,
+        "triangles": 42401,
+        "linear_deflection": 14.475071264339038,
+        "mesh_decimated": false
+      },
+      "images": {
+        "mesh_overview": "fig11_airplane_body_after_mesh_overview.png",
+        "mesh_detail": "fig11_airplane_body_after_mesh_detail.png",
+        "cad_overview": "fig11_airplane_body_after_cad_overview.png",
+        "cad_detail": "fig11_airplane_body_after_cad_detail.png"
+      },
+      "cameras": {
+        "mesh_overview": {
           "center": [
             -1.8189894035458565e-12,
             6395.953684907929,
@@ -186,6 +188,44 @@
             -1.0,
             0.0,
             0.0
+          ],
+          "up": [
+            0.0,
+            0.0,
+            1.0
+          ],
+          "scale": 7600.661053213626,
+          "aspect": 3.0
+        },
+        "mesh_detail": {
+          "center": [
+            1326.1016486050503,
+            3291.84,
+            192.0240134851017
+          ],
+          "direction": [
+            -1.0,
+            -0.0,
+            -0.0
+          ],
+          "up": [
+            0.0,
+            0.0,
+            1.0
+          ],
+          "scale": 1407.52982466919,
+          "aspect": 3.0
+        },
+        "cad_overview": {
+          "center": [
+            0.0,
+            6395.953684907929,
+            1381.5707178779735
+          ],
+          "direction": [
+            -1.0,
+            -0.0,
+            -0.0
           ],
           "up": [
             0.0,

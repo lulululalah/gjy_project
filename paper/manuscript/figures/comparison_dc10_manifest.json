@@ -1,6 +1,6 @@
 {
   "model": "DC-10",
-  "endpoint_scope": "Fresh current single-three-class checkpoint CAD run, 2026-10-20; input colours are original annotations, not predicted/processed truth.",
+  "endpoint_scope": "Current CAD endpoints; input colours are original annotations except retained visible door regions displayed as background. Processed geometry has uniform shading.",
   "projection": "orthographic",
   "size": [
     2400,
@@ -34,6 +34,29 @@
       "labels": "D:\\projects\\gjy_byproject\\data\\plane_model\\label\\27- DC-10 SolidWorks stp igs_DC 10_wing_rivets.labels.json",
       "step_sha256": "074d09a8d2ead427d0051020baf12a3150ab7db740cd618be4809b589ae11b23",
       "labels_sha256": "d4614cb1490608f27bef80e4c93c3f0f063f49c251a749ea6e3e9085e27250bc",
+      "display_override": {
+        "background_face_ids": [
+          75,
+          76,
+          86,
+          89,
+          96,
+          98,
+          115,
+          134,
+          135,
+          142,
+          144,
+          157,
+          190,
+          195,
+          221,
+          224
+        ],
+        "reason": "Retained door regions use the body colour, including host, pane and trim faces in the central, rear and wing-exit door regions and their corresponding opposite-side faces. Display override only.",
+        "prediction_source": "results/current_three_class_complete_20261020/cad/27-_DC-10_SolidWorks_stp_igs_DC_10/original.pred.csv",
+        "prediction_sha256": "d73e8b73d82b6b4ceadafc14ec351bb34b7ddfe5198ef297b77177bfb4b3d132"
+      },
       "cad_image": "cad_dc10_before.png",
       "cad_camera": {
         "center": [

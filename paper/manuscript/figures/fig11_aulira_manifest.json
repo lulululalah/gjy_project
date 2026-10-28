@@ -75,11 +75,13 @@
         "mesh_decimated": false
       },
       "images": {
+        "cad_overview": "fig11_aulira_before_cad_cad_overview.png",
+        "cad_detail": "fig11_aulira_before_cad_cad_detail.png",
         "mesh_overview": "fig11_aulira_before_mesh_overview.png",
         "mesh_detail": "fig11_aulira_before_mesh_detail.png"
       },
       "cameras": {
-        "mesh_overview": {
+        "cad_overview": {
           "center": [
             0.0,
             11.183185160999983,
@@ -98,7 +100,7 @@
           "scale": 131.40000007200004,
           "aspect": 3.0
         },
-        "mesh_detail": {
+        "cad_detail": {
           "center": [
             18.049200718369093,
             4.552931001499999,
@@ -107,6 +109,44 @@
           "direction": [
             -1.0,
             0.0,
+            0.0
+          ],
+          "up": [
+            0.0,
+            1.0,
+            0.0
+          ],
+          "scale": 26.766666681333337,
+          "aspect": 3.0
+        },
+        "mesh_overview": {
+          "center": [
+            0.0,
+            11.183185160999983,
+            -142.5
+          ],
+          "direction": [
+            -1.0,
+            -0.0,
+            0.0
+          ],
+          "up": [
+            0.0,
+            1.0,
+            0.0
+          ],
+          "scale": 131.40000007200004,
+          "aspect": 3.0
+        },
+        "mesh_detail": {
+          "center": [
+            18.049200718369093,
+            4.552931001499999,
+            -70.835625433
+          ],
+          "direction": [
+            -1.0,
+            -0.0,
             0.0
           ],
           "up": [
@@ -141,12 +181,12 @@
         "mesh_overview": {
           "center": [
             0.0,
-            11.183185160999983,
+            11.183185161000011,
             -142.5
           ],
           "direction": [
             -1.0,
-            -0.0,
+            0.0,
             0.0
           ],
           "up": [
@@ -184,7 +224,7 @@
           ],
           "direction": [
             -1.0,
-            0.0,
+            -0.0,
             0.0
           ],
           "up": [
@@ -198,7 +238,7 @@
         "cad_detail": {
           "center": [
             18.049200718369093,
-            4.552931001499999,
+            4.552931001499985,
             -70.835625433
           ],
           "direction": [

@@ -283,6 +283,11 @@ def export_figure6(output_dir, horizontal=False):
             for region in detail_regions:
                 set_size((900, 900))
                 apply_camera(display, "top", region["center"], region["scale"])
+                if horizontal:
+                    # A shallow oblique view exposes the low-profile rivet sidewall.
+                    display.View.SetProj(0.18, 0.80, 0.60)
+                    display.View.SetUp(0.0, 0.0, 1.0)
+                    display.Repaint()
                 number = region["number"]
                 image_path = output_dir / f"{prefix}_{stage}_detail_{number}_fixed.png"
                 dump_view(image_path, (900, 900))
@@ -574,6 +579,10 @@ def export_paper_comparisons(output_dir, model=None):
             labels = comparison_display_labels(faces, labels_path)
             if set(faces) != set(labels):
                 raise RuntimeError(f"Face mismatch in {case['key']} {stage['name']}")
+            for face_id in stage.get("display_background_face_ids", []):
+                if face_id not in labels:
+                    raise ValueError(f"Unknown display face {face_id} in {case['key']}")
+                labels[face_id] = "background"
             loaded.append((stage, path, labels_path, faces, labels))
         if "camera_manifest" in case:
             source = json.loads((ROOT / case["camera_manifest"]).read_text(encoding="utf-8"))
@@ -597,6 +606,14 @@ def export_paper_comparisons(output_dir, model=None):
                       "labels_sha256": hashlib.sha256(labels_path.read_bytes()).hexdigest() if labels_path else None}
             if labels_path is None:
                 record["label_scope"] = "Uniform background display only; no processed semantic ground truth."
+            if stage.get("display_background_face_ids"):
+                record["display_override"] = {
+                    "background_face_ids": stage["display_background_face_ids"],
+                    "reason": stage["display_reason"],
+                    "prediction_source": stage["prediction_source"],
+                    "prediction_sha256": hashlib.sha256(
+                        (ROOT / stage["prediction_source"]).read_bytes()).hexdigest(),
+                }
             if case["key"] != "airbus":
                 display.EraseAll()
                 show_faces(display, faces, labels)
@@ -637,7 +654,14 @@ def select_mesh_detail(faces, labels, bounds, case, size):
     halfway = (min(side_positions) + max(side_positions)) / 2
     visible_side = [item for item, position in zip(candidates, side_positions) if position >= halfway]
     visible_side.sort(key=lambda item: item[1][length_axis])
-    face_id, center = visible_side[len(visible_side) // 2]
+    requested_face_id = case.get("detail_face_id")
+    if requested_face_id is None:
+        face_id, center = visible_side[len(visible_side) // 2]
+    else:
+        selected = next((item for item in visible_side if item[0] == requested_face_id), None)
+        if selected is None:
+            raise ValueError(f"Detail face {requested_face_id} is not a visible {case['detail_semantic']} on {case['name']}")
+        face_id, center = selected
     horizontal_span = (bounds[length_axis + 3] - bounds[length_axis]) * case["detail_fraction"]
     return {"original_face_id": face_id, "semantic": case["detail_semantic"],
             "center": center, "projection": projection, "up": case["up"],
@@ -703,6 +727,17 @@ def export_figure11(output_dir, model=None):
     display.SetModeShaded()
     display.SetOrthographicProjection()
     display.set_bg_gradient_color([255, 255, 255], [255, 255, 255])
+    display.EraseAll()
+    show_faces(display, original_faces,
+               {face_id: "background" for face_id in original_faces},
+               style=FIGURE11_STYLE)
+    original_cad_images = {}
+    original_cad_cameras = {}
+    for view, settings in views:
+        key = f"cad_{view}"
+        image_path = output_dir / f"fig11_{case['key']}_before_cad_{key}.png"
+        original_cad_images[key] = image_path.name
+        original_cad_cameras[key] = export_fixed_view(display, image_path, size, settings)
     for index, step_path in enumerate(paths):
         stage = "before" if index == 0 else "after"
         print(f"Meshing {case['name']} {stage}", flush=True)
@@ -722,6 +757,9 @@ def export_figure11(output_dir, model=None):
                   "step_sha256": hashlib.sha256(step_path.read_bytes()).hexdigest(),
                   "metric_source": str(evidence_root / f"{case['metric_prefix']}_{('original', 'simplified')[index]}.json"),
                   "mesh": actual, "images": {}, "cameras": {}}
+        if stage == "before":
+            record["images"].update(original_cad_images)
+            record["cameras"].update(original_cad_cameras)
         if face_colors:
             record["colored_original_faces"] = {str(detail["original_face_id"]): detail["semantic"]}
         for view, settings in views:

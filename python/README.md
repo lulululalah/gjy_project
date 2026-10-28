@@ -24,7 +24,6 @@ D:\Anaconda\envs\cad_graph_env\python.exe python/main.py predict --verify-only
 | `cad/candidates.py` | 操作配置、几何对应和饰面候选 |
 | `cad/windows.py` | 有几何支持的窗片与接缝处理 |
 | `geometry/measure.py` | 共用 STEP 读取、几何差异和表面网格测量 |
-| `geometry/qem.py` | 当前端点的匹配三角数 QEM 测量 |
 | `tools/labels.py` | 标签初始化、人工确认的原生特征分组 |
 | `tools/faces.py` | 交互选面与布尔宿主面选择 |
 | `visualization/cad.py` | CAD/网格论文图及最终边界线框查看 |
@@ -46,7 +45,6 @@ python python/main.py train --output-dir work/new_training
 # 当前九机 CAD 处理及成对表面网格测量
 python python/main.py cad --stage cad
 python python/main.py cad --stage mesh
-python python/main.py qem
 
 # 论文图出图示例
 python python/main.py view-cad --export-figure11 paper/manuscript/figures
@@ -60,4 +58,4 @@ python python/main.py view-cad --export-figure11 paper/manuscript/figures
 
 当前唯一部署模型仍为 `model/final_detection_model/`。输入特征、网络维度、类别、损失、冻结训练流程和候选处理顺序沿用当前正式配置。旧双头网络、窗口采样训练、旧架构比较入口和未采用的便携恢复分类器已移除。
 
-新运行目录必须与既有证据分开；当前完整 CAD/网格/QEM 结果仍在 `results/current_three_class_complete_20261020/`。原始训练记录保持原貌，新模块路径及哈希见正式包的 `manifest.json`。本轮整理记录在 `work/python_refactor_20261021/整理报告.md`。
+新运行目录必须与既有证据分开；当前完整 CAD/网格结果仍在 `results/current_three_class_complete_20261020/`。原始训练记录保持原貌，新模块路径及哈希见正式包的 `manifest.json`。本轮整理记录在 `work/python_refactor_20261021/整理报告.md`。

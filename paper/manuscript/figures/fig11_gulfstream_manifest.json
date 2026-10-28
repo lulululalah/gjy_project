@@ -75,16 +75,76 @@
         "mesh_decimated": false
       },
       "images": {
+        "cad_overview": "fig11_gulfstream_before_cad_cad_overview.png",
+        "cad_detail": "fig11_gulfstream_before_cad_cad_detail.png",
+        "cad_tail_decal": "fig11_gulfstream_before_cad_cad_tail_decal.png",
         "mesh_overview": "fig11_gulfstream_before_mesh_overview.png",
         "mesh_detail": "fig11_gulfstream_before_mesh_detail.png",
         "mesh_tail_decal": "fig11_gulfstream_before_mesh_tail_decal.png"
       },
       "cameras": {
-        "mesh_overview": {
+        "cad_overview": {
           "center": [
             1.570460351435429,
             14.70805032840525,
             -1.1837765542479133
+          ],
+          "direction": [
+            -0.0,
+            -0.0,
+            -1.0
+          ],
+          "up": [
+            0.0,
+            1.0,
+            0.0
+          ],
+          "scale": 57.40960823600792,
+          "aspect": 3.0
+        },
+        "cad_detail": {
+          "center": [
+            -10.413767943411793,
+            7.459990025562975,
+            6.9261740336526145
+          ],
+          "direction": [
+            -0.0,
+            -0.0,
+            -1.0
+          ],
+          "up": [
+            0.0,
+            1.0,
+            0.0
+          ],
+          "scale": 10.63140893259406,
+          "aspect": 3.0
+        },
+        "cad_tail_decal": {
+          "center": [
+            55.41114993175908,
+            19.991664623977208,
+            -0.8924576675076423
+          ],
+          "direction": [
+            -0.0,
+            -0.0,
+            -1.0
+          ],
+          "up": [
+            0.0,
+            1.0,
+            0.0
+          ],
+          "scale": 10.496441811185877,
+          "aspect": 3.0
+        },
+        "mesh_overview": {
+          "center": [
+            1.570460351435436,
+            14.708050328405257,
+            -1.1837765542478564
           ],
           "direction": [
             -0.0,
@@ -257,13 +317,13 @@
         },
         "cad_tail_decal": {
           "center": [
-            55.41114993175908,
+            55.41114993175909,
             19.991664623977208,
             -0.8924576675076423
           ],
           "direction": [
-            -0.0,
-            -0.0,
+            0.0,
+            0.0,
             -1.0
           ],
           "up": [

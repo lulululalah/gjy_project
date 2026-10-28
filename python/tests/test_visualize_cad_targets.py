@@ -93,6 +93,30 @@ class ViewerInputTests(unittest.TestCase):
         self.assertEqual(region["center"], (1.5, 0.5, 4.5))
         self.assertAlmostEqual(region["scale"], 4 / 3)
 
+    def test_mesh_detail_explicit_face_preserves_camera_scale(self):
+        boxes = {1: (1, 0, 0, 2, 1, 1), 2: (1, 0, 4, 2, 1, 5)}
+        case = {"name": "fixture", "projection": (1, 0, 0), "up": (0, 1, 0),
+                "length_axis": 2, "detail_fraction": 0.2, "detail_semantic": "window",
+                "detail_face_id": 1}
+        with patch.object(viewer, "bounds_of_faces", side_effect=lambda faces: boxes[next(iter(faces))]):
+            region = viewer.select_mesh_detail({1: None, 2: None}, {1: "window", 2: "window"},
+                                               (-2, -1, -10, 2, 1, 10), case, (2400, 800))
+        self.assertEqual(region["original_face_id"], 1)
+        self.assertEqual(region["center"], (1.5, 0.5, 0.5))
+        self.assertAlmostEqual(region["scale"], 4 / 3)
+
+    def test_mesh_detail_explicit_face_rejects_hidden_or_unlabelled_face(self):
+        boxes = {1: (1, 0, 0, 2, 1, 1), 2: (-2, 0, 4, -1, 1, 5)}
+        for face_id in (2, 3):
+            case = {"name": "fixture", "projection": (1, 0, 0), "up": (0, 1, 0),
+                    "length_axis": 2, "detail_fraction": 0.2, "detail_semantic": "window",
+                    "detail_face_id": face_id}
+            with self.subTest(face_id=face_id), \
+                 patch.object(viewer, "bounds_of_faces", side_effect=lambda faces: boxes[next(iter(faces))]), \
+                 self.assertRaisesRegex(ValueError, "not a visible window"):
+                viewer.select_mesh_detail({1: None, 2: None}, {1: "window", 2: "window"},
+                                          (-2, -1, -10, 2, 1, 10), case, (2400, 800))
+
     def test_mesh_detail_without_requested_feature_is_rejected(self):
         with self.assertRaisesRegex(ValueError, "No window detail"):
             viewer.select_mesh_detail({1: None}, {1: "background"}, (0, 0, 0, 1, 1, 1),

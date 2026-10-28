@@ -1,6 +1,6 @@
 {
   "model": "Cessna Citation 2",
-  "endpoint_scope": "Fresh current single-three-class checkpoint CAD run, 2026-10-20; input colours are original annotations, not predicted/processed truth.",
+  "endpoint_scope": "Current CAD endpoints; input colours are original annotations except the door-window region displayed as background because its unselected inner pane remains. Processed geometry has uniform shading.",
   "projection": "orthographic",
   "size": [
     2400,
@@ -34,6 +34,15 @@
       "labels": "D:\\projects\\gjy_byproject\\data\\plane_model\\label\\Cessna Citation 2_wing_rivets.labels.json",
       "step_sha256": "4d879b94232623e614d51770d916c28debfcaa41a45ac52d4c10c09c58b56b86",
       "labels_sha256": "f2f57eafc95ca328fb4d885e1447b6d67567843502f3c0020cbd46826c840ce4",
+      "display_override": {
+        "background_face_ids": [
+          88,
+          89
+        ],
+        "reason": "Door-window region unhighlighted: outer pane F88 was selected and removed; inner pane F89 was predicted as background and retained. Display override only.",
+        "prediction_source": "results/current_three_class_complete_20261020/cad/Cessna_Citation_2/original.pred.csv",
+        "prediction_sha256": "46207024ff289b76b07b6c17b3d2b40fc79598161f71cfe0232cf175aba0ca24"
+      },
       "cad_image": "cad_cessna_before.png",
       "cad_camera": {
         "center": [

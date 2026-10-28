@@ -12,7 +12,7 @@
     "lifecycle_stage": "evidence_and_method_revision",
     "review_maturity": "full_manuscript_author_review",
     "target_venue": "Journal of Computational Design and Engineering (provisional)",
-    "active_release": "figure5-balance-20261021",
+    "active_release": "figure1-high-resolution-20261028",
     "style_reference": "TOG argument structure; existing manuscript format retained"
   },
   "artifacts": [
@@ -28,18 +28,68 @@
       "path": "main.pdf",
       "role": "manuscript_pdf",
       "status": "ACTIVE",
-      "required_for_release": true
+      "required_for_release": true,
+      "note": "Current review manuscript attributes the source aircraft CAD models used in this study to the GrabCAD Community Library, as instructed by the author. Existing confirmed author information, contributions, conflict-of-interest and funding declarations retained. Other submission items remain pending."
     },
     {
       "id": "annotated-pdf",
       "path": "main_annotated_three_class_20261019.pdf",
       "role": "annotated_manuscript_pdf",
-      "status": "ACTIVE",
-      "required_for_release": true,
-      "note": "Recreated against author-supplied main(11).pdf, including the latest numbered author comments; yellow highlights and Chinese popup notes."
+      "status": "HISTORICAL",
+      "required_for_release": false,
+      "note": "Recreated against author-supplied main(11).pdf, including numbered author comments, yellow highlights and Chinese popup notes. Historical annotated copy retained; the current deliverable is main.pdf."
     }
   ],
   "authority_sources": [
+    {
+      "id": "campus-address-confirmation-20261028",
+      "kind": "author_confirmation_and_verified_official_address",
+      "path_or_reference": "User confirmed Dalian University of Technology Development Zone Campus in this chat; https://en.dlut.edu.cn/Campus_Life/Maps___Transportation.htm; https://kfqxqzhb.dlut.edu.cn/",
+      "scope": [
+        "institutional campus",
+        "street address",
+        "postal code"
+      ],
+      "status": "VERIFIED",
+      "last_verified": "2026-10-28"
+    },
+    {
+      "id": "jcde-official-author-format-20261028",
+      "kind": "verified_official_template",
+      "path_or_reference": "https://academic.oup.com/jcde/pages/general-instructions; ../../work/jcde_official_author_format_20261028/official_main.tex",
+      "scope": [
+        "author-block typography and layout"
+      ],
+      "status": "VERIFIED",
+      "last_verified": "2026-10-28",
+      "note": "Official download bundle dated September 29, 2026; LaTeX source labelled V3.1 updated in March 2026"
+    },
+    {
+      "id": "li2026-publisher-page",
+      "kind": "verified_primary_evidence",
+      "path_or_reference": "https://academic.oup.com/jcde/article/13/1/239/8383411",
+      "scope": [
+        "Li et al. related-work description",
+        "bibliographic metadata for li2026robust_tessellation"
+      ],
+      "status": "VERIFIED",
+      "last_verified": "2026-10-28"
+    },
+    {
+      "id": "author-confirmation-20261028",
+      "kind": "author_supplied_metadata",
+      "path_or_reference": "Author information supplied directly by the user in this chat on 2026-10-28",
+      "scope": [
+        "author identity",
+        "author order",
+        "affiliation",
+        "email addresses",
+        "co-first authors",
+        "corresponding author"
+      ],
+      "status": "VERIFIED",
+      "last_verified": "2026-10-28"
+    },
     {
       "id": "current-code",
       "kind": "verified_primary_evidence",
@@ -545,8 +595,8 @@
       "severity": "S3",
       "status": "OPEN",
       "evidence_status": "CONFIRMED",
-      "description": "Author identity/affiliations/ORCIDs remain placeholders. Visible fictitious template contribution examples removed; actual contributions and declarations remain unconfirmed.",
-      "required_action": "Author-supplied metadata and declarations are required before submission; no identities or declarations invented during this model revision."
+      "description": "Author metadata, campus address, contribution assignments, absence of conflicts, and absence of funding or acknowledgments were confirmed by the user. Source CAD provider is stated as GrabCAD, while study-specific annotations, weights and result files are currently not shared. ORCID and other submission details remain pending.",
+      "required_action": "Provide ORCIDs and remaining submission form details; resolve reviewer-access requirements and source-version correspondence as applicable."
     },
     {
       "id": "I9",
@@ -869,7 +919,8 @@
     "entry": "R65",
     "status": "COMPLETED_FOR_AUTHOR_REVIEW",
     "active_comparison": "Original versus processed CAD endpoints only",
-    "historical_QEM_records": "Retained outside manuscript for provenance; no deletion of experiment files",
+    "historical_QEM_records": "QEM experiment outputs, runtime and local dependencies removed recoverably on 2026-10-28; editorial retirement records retained",
+    "artifact_cleanup_verification": "../../work/retire_qem_20261028/verification.json",
     "verification": "../../work/remove_qem_comparison_20261021/verification.json",
     "logical_notes": 43,
     "highlights": 45,
@@ -891,5 +942,409 @@
     "figure_sha256": "c8ca72094fd8c53b49de86a4b6d72d6704875529e047ac0c3abff2119aac1d76",
     "scientific_content_changed": false,
     "verification": "../../work/figure5_balance_20261021/verification.json"
+  },
+  "annotated_pdf_revision_20261027": {
+    "authority": "Author request to revise locations annotated in supplied main(12).pdf",
+    "status": "COMPLETED_FOR_AUTHOR_REVIEW",
+    "source_pdf": "D:/app/xwechat_files/wxid_2h960nxyi3z621_a2c6/temp/RWTemp/2026-10/2b4c8d27a70b0b7c652174dad0bf7201/main(12).pdf",
+    "scope": "Introduction wording, figures 2, 3, 5, 6, 7, 9, and 11, Table 1 entity grouping, automated CAD-check wording, retained recognized candidates, and nine-model mean mesh reductions",
+    "mean_relative_triangle_reduction_percent": 20.88,
+    "mean_relative_median_meshing_time_reduction_percent": 36.29,
+    "metric_source": "results/current_three_class_complete_20261020/mesh",
+    "verification": "../../work/paper_manuscript_history_20261028/pdf_annotation_revision/main_figure1_corrected.pdf",
+    "build_exit_code": 0,
+    "pages": 22,
+    "scientific_claim_scope": "No physics-equivalence or CAE-performance claim added; CAD candidates rejected by validity checks remain eligible for retention.",
+    "figure1_edge_correction": "The side-view PNG contains a black line at its extreme left edge. Cropped 1 mm from that edge in the figure include; rendered page 3 visually confirms the line is absent. The earlier review incorrectly inspected page 2.",
+    "figure1_corrected_review_pdf": "../../work/paper_manuscript_history_20261028/pdf_annotation_revision/main_figure1_corrected.pdf"
+  },
+  "figure5_bright_diagram_20261027": {
+    "authority": "Author requested bright colours matching the supplied reference, fewer words, graphical representations, and orderly connections",
+    "status": "COMPLETED_FOR_AUTHOR_REVIEW",
+    "source": "figures/fig_three_class_gnn_architecture.tex",
+    "change_type": "visual_format_only",
+    "layout": "Single left-to-right main flow with one local/global context branch; stage outlines removed",
+    "graphics": "B-Rep patches and corresponding input graph nodes, a four-layer NNConv stack, explicitly named local/global states and concatenation, an MLP icon, and the three class results with colour markers",
+    "preserved": "48D node and 6D edge inputs, four 64D NNConv layers, 64D local and 128D global states, 192D concatenation, 192-to-192-to-3 classifier, softmax and argmax, three class names",
+    "scientific_results_changed": false,
+    "main_text_changed": false,
+    "caption_changed": true,
+    "display_width_relative_to_text": 1.1,
+    "enlargement_vs_previous_percent": 12.24,
+    "brep_illustration": "figures/fig5_bspline_curved_sheet.png; original curved-sheet format restored at author request",
+    "input_node_colour_match": {
+      "source": "Representative interior colours sampled from fig5_bspline_curved_sheet.png",
+      "F_k_to_v_k": "EBAC75",
+      "F_i_to_v_i": "86A8BB",
+      "F_l_to_v_l": "E3A09C",
+      "F_j_to_v_j": "F1D48A"
+    },
+    "classifier_unit_display": "First two columns use visible unit samples and vertical ellipses for 192 units each. The final column shows exactly three output units. Count labels 192, 192, and 3 are centred under their corresponding columns.",
+    "concat_dimension_label_removed": true,
+    "output_node_graph_removed": true,
+    "displayed_class_results": [
+      "Background",
+      "Rivet",
+      "Cosmetic feature"
+    ],
+    "pages": 22,
+    "figure_page": 10,
+    "verification": "../../work/paper_manuscript_history_20261028/figure5_redesign_20261027/verification.json"
+  },
+  "automatic_geometric_screening_20261027": {
+    "authority": "Author request to describe automatic geometric screening of predicted target faces explicitly",
+    "status": "COMPLETED_FOR_AUTHOR_REVIEW",
+    "section": "5.1 Geometric checks for CAD editing",
+    "scope": "Clarify automatic screening before editing, the geometric and confidence criteria, transfer of accepted candidates to staged CAD operations, and retention after failed validity checks",
+    "candidate_sha256": "98866dde66cab7d10c1df991b3897a49701fbdbca0a5694d11d367d7ad409c82",
+    "method_parameters_and_results_changed": false,
+    "pages": 22,
+    "section_page": 12,
+    "verification": "../../work/paper_manuscript_history_20261028/geometric_screening_20261027/verification.json"
+  },
+  "cessna_door_display_20261027": {
+    "authority": "Author requested no colouring on the retained Cessna door-window region and no inner-pane explanation in the figure caption",
+    "status": "COMPLETED_FOR_AUTHOR_REVIEW",
+    "figure": 9,
+    "figure_page": 17,
+    "display_background_face_ids": [
+      88,
+      89
+    ],
+    "scope": "Display colours and a concise figure caption; source annotations, predictions, CAD endpoints and numerical results preserved",
+    "evidence_correction": "The visible door window consists of selected outer pane F88 and unselected retained inner pane F89. Previously listed background faces F124, F125, F197, and F198 belong to the cockpit area, not this door window.",
+    "caption_explains_inner_pane": false,
+    "geometry_modified": false,
+    "pages": 22,
+    "verification": "../../work/cessna_door_display_20261027/verification.json"
+  },
+  "jcde_declarations_20261028": {
+    "authority": "User confirmed no conflicts of interest, no funding or acknowledgments, GrabCAD source attribution and no current sharing of annotations, weights or results",
+    "status": "COMPLETED_FOR_AUTHOR_REVIEW",
+    "conflicts_of_interest": "None, author confirmed",
+    "funding": "None, author confirmed",
+    "acknowledgments": "None, author confirmed; optional section omitted",
+    "source_cad_provider": "GrabCAD Community Library, attributed on author confirmation",
+    "source_cad_url": "https://grabcad.com/library",
+    "study_specific_data_access": "Face annotations, trained weights and experimental result files are not publicly available at present",
+    "data_restriction_reason": "Not supplied; no reason or access promise invented",
+    "rivet_origin": "User states downloaded models contain rivets; current source and prepared files differ. No new claim about feature origin or identity of file versions was introduced into the manuscript",
+    "source_version_status": "Per-file version matching remains unresolved; use of generic GrabCAD attribution does not establish byte identity",
+    "published_pdf": "main.pdf",
+    "verification": "../../work/jcde_declarations_20261028/verification.json",
+    "submission_ready": false,
+    "pages": 22,
+    "superseded_data_availability_note": "Data availability wording superseded by data_availability_revision_20261028; earlier author choice not to share annotations, weights or experimental results remains a historical record, not the current statement text."
+  },
+  "author_address_confirmed_20261028": {
+    "authority": "User confirmed the current contribution assignments match actual work and supplied Development Zone Campus as the institutional campus",
+    "status": "COMPLETED_FOR_AUTHOR_REVIEW",
+    "address_source_id": "campus-address-confirmation-20261028",
+    "english_address": "School of Software, Dalian University of Technology, Development Zone Campus, No. 321 Tuqiang Street, Dalian, Liaoning 116620, China",
+    "author_contributions": "AUTHOR_CONFIRMED",
+    "scope": "Four individual affiliation blocks, official checklist, pending-information list and package metadata; scientific body and contribution statement text unchanged",
+    "published_pdf": "main_JCDE_author_address_20261028.pdf",
+    "pages": 21,
+    "verification": "../../work/author_address_confirmed_20261028/verification.json"
+  },
+  "jcde_format_fixes_20261028": {
+    "authority": "Author requested directly fixing format issues under official JCDE requirements and listing missing author information",
+    "status": "COMPLETED_FOR_AUTHOR_REVIEW",
+    "official_sources": [
+      "jcde-official-author-format-20261028",
+      "https://academic.oup.com/jcde/pages/instructions-to-authors"
+    ],
+    "scope": "Manuscript typesetting, mathematical numbering, figure labels/readability, and submission companion drafts; experimental values, geometry and predictions unchanged",
+    "changes": [
+      "Continuous line numbers",
+      "Sentence case Section 5 title",
+      "Numbered all 11 displayed equation groups and updated Equation references",
+      "Uppercase centred labels below Figure 5 panels",
+      "Enlarged Figure 11 text",
+      "Table 4 placed after its first detailed discussion",
+      "Expanded CAD at first use in abstract"
+    ],
+    "published_pdf": "main_JCDE_formatted_20261028.pdf",
+    "submission_directory": "../submission",
+    "companion_status": "Highlights and graphical abstract drafted from current manuscript; official checklist partially filled with verified information; source ZIP prepared",
+    "pending_author_inputs": [
+      "Corresponding author ORCID",
+      "Reviewer access arrangements if required for currently non-public study-specific data",
+      "Final-production resolution check for Figure 1(A); C and D re-rendered from CAD at over 1000 dpi",
+      "APC payer and billing details; special issue and preprint status"
+    ],
+    "missing_information": "../submission_notes/待补充信息.txt",
+    "verification": "../../work/jcde_format_fixes_20261028/verification.json",
+    "submission_ready": false
+  },
+  "author_contributions_20261028": {
+    "authority": "Author requested a reasonable contribution draft based on an example and confirmed the last two authors are teachers",
+    "status": "AUTHOR_CONFIRMED",
+    "role_standard": "https://credit.niso.org/contributor-roles-defined/",
+    "assignments": {
+      "Jiayi Geng": [
+        "Conceptualization",
+        "Methodology",
+        "Software",
+        "Investigation",
+        "Visualization",
+        "Writing - original draft"
+      ],
+      "Gangyi Li": [
+        "Conceptualization",
+        "Methodology",
+        "Software",
+        "Validation",
+        "Writing - original draft"
+      ],
+      "Zhongxuan Luo": [
+        "Supervision",
+        "Writing - review & editing"
+      ],
+      "Na Lei": [
+        "Conceptualization",
+        "Supervision",
+        "Writing - review & editing"
+      ]
+    },
+    "role_assignments_verified_as_actual_work": true,
+    "confirmation_status": "The user explicitly confirmed in this chat on 2026-10-28 that the author contributions match actual work",
+    "verification_basis": "Direct author confirmation; no independent contribution investigation claimed",
+    "scope": "Replaces the pending author-contributions placeholder; other manuscript text, author format, citations and figure assets preserved",
+    "published_pdf": "main_JCDE_author_address_20261028.pdf",
+    "verification": "../../work/author_contributions_20261028/verification.json"
+  },
+  "authors_jcde_official_20261028": {
+    "authority": "Author requested matching the official JCDE author format",
+    "status": "COMPLETED_FOR_AUTHOR_REVIEW",
+    "source_id": "jcde-official-author-format-20261028",
+    "format": "Centred individual author blocks: large names; small affiliations, emails and inline Corresponding Author label; 1.2em block spacing; no single-spacing override",
+    "author_metadata_and_co_first_markers_preserved": true,
+    "scientific_body_and_citation_source_unchanged": true,
+    "published_pdf": "main_authors_jcde_official_20261028.pdf",
+    "verification": "../../work/authors_jcde_official_20261028/verification.json",
+    "supersedes": "authors_li_paper_style_20261028"
+  },
+  "authors_li_paper_style_20261028": {
+    "authority": "Author requested the author format used by the cited Gangyi Li paper",
+    "status": "SUPERSEDED_BY_AUTHOR",
+    "reference_source_id": "li2026-publisher-page",
+    "reference_pdf": "https://watermark02.silverchair.com/qwaf134.pdf",
+    "reference_observation": "Publisher PDF indexed title page lists separate name, affiliation and email blocks, with Corresponding Author written beside Na Lei",
+    "format": "Four centred stacked blocks with a larger name, normal-size individual affiliation and email, and an inline Corresponding Author label beside Na Lei",
+    "author_order_emails_affiliation_and_markers_preserved": true,
+    "scientific_body_and_citation_source_unchanged": true,
+    "published_pdf": "main_authors_li_style_20261028.pdf",
+    "verification": "../../work/authors_li_paper_style_20261028/verification.json",
+    "supersedes": "author_individual_format_20261028"
+  },
+  "author_individual_format_20261028": {
+    "authority": "Author requested the original individual author format rather than a shared affiliation block",
+    "status": "SUPERSEDED_BY_AUTHOR",
+    "format": "Four vertically stacked blocks, each with name, its own School of Software/Dalian University of Technology/China affiliation line, and its own email",
+    "author_order_emails_and_markers_preserved": true,
+    "scientific_results_and_figure_assets_unchanged": true,
+    "pages": 21,
+    "published_pdf": "main_authors_individual_20261028.pdf",
+    "verification": "../../work/author_individual_format_20261028/verification.json"
+  },
+  "li2026_citation_restored_20261028": {
+    "authority": "Author explicitly requested restoring the previously cited Gangyi Li paper",
+    "status": "COMPLETED_FOR_AUTHOR_REVIEW",
+    "citation_key": "li2026robust_tessellation",
+    "title": "Robust Tessellation of CAD Models Without Self-Intersections",
+    "doi": "10.1093/jcde/qwaf134",
+    "source_id": "li2026-publisher-page",
+    "finding": "BibTeX entry was retained, but the Related Work rewrite removed the in-text citation",
+    "placement": "Section 2.3: Gap for small geometry in industrial simulation workflows",
+    "in_text_page": 5,
+    "reference_entry_page": 21,
+    "bibliography_source_unchanged": true,
+    "claim_scope": "Critical-region and constrained-Delaunay B-Rep tessellation for watertightness and intersection avoidance; no claim that it recognises or removes the current aircraft target faces",
+    "original_individual_author_format_preserved": true,
+    "verification": "../../work/author_individual_format_20261028/verification.json"
+  },
+  "author_metadata_20261028": {
+    "authority_source_id": "author-confirmation-20261028",
+    "status": "COMPLETED_FOR_AUTHOR_REVIEW",
+    "authors": [
+      {
+        "name": "Jiayi Geng",
+        "email": "gjyyy@mail.dlut.edu.cn",
+        "co_first_author": true,
+        "corresponding_author": false
+      },
+      {
+        "name": "Gangyi Li",
+        "email": "GregoryLi@mail.dlut.edu.cn",
+        "co_first_author": true,
+        "corresponding_author": false
+      },
+      {
+        "name": "Zhongxuan Luo",
+        "email": "zxluo@dlut.edu.cn",
+        "co_first_author": false,
+        "corresponding_author": false
+      },
+      {
+        "name": "Na Lei",
+        "email": "nalei@dlut.edu.cn",
+        "co_first_author": false,
+        "corresponding_author": true
+      }
+    ],
+    "shared_affiliation": "School of Software, Dalian University of Technology, Development Zone Campus, No. 321 Tuqiang Street, Dalian, Liaoning 116620, China",
+    "institutional_address_source_id": "campus-address-confirmation-20261028",
+    "co_first_marker": "~",
+    "corresponding_marker": "*",
+    "orcid_status": "Not supplied; fictitious template identifiers removed",
+    "contributions_status": "Current role assignments explicitly confirmed by the user as matching actual work on 2026-10-28",
+    "pdf_author_metadata_updated": true,
+    "layout_followup": "Place Table 4 before the full-page mesh-figure barrier to prevent a half-empty page after author-block reflow",
+    "pages": 21,
+    "figure7_page": 15,
+    "figure11_page": 18,
+    "published_pdf": "main_authors_20261028.pdf",
+    "verification": "../../work/author_metadata_20261028/verification.json"
+  },
+  "full_layout_review_20261028": {
+    "authority": "Author requested checking the whole manuscript layout and correcting other pages with large blank areas",
+    "status": "COMPLETED_FOR_AUTHOR_REVIEW",
+    "scope": "Typesetting of main.tex and main_layout_checked_20261028.pdf; manuscript text, captions, citations, numbers, bibliography source and all figure assets preserved",
+    "published_pdf": "main_layout_checked_20261028.pdf",
+    "publication_note": "Original main.pdf is memory-mapped by an open reader; replacement was refused, so the checked PDF was saved under a new name",
+    "pages_before": 22,
+    "pages_after": 21,
+    "original_blank_pages_addressed": [
+      2,
+      6,
+      18
+    ],
+    "changes": [
+      "Use local single spacing and smaller inter-author gaps in the title block so the abstract and keywords stay on page 1",
+      "Allow Figure 1 to float and remove the unnecessary barrier following Figure 2",
+      "Compact Table 4 caption and row spacing while retaining its font size and values",
+      "Flush the full-page Figure 11 before the complete element-quality paragraph to avoid interrupting it",
+      "Use local single spacing for references without changing entries or font size"
+    ],
+    "figure7_page": 16,
+    "figure11_page": 18,
+    "figure7_restored_images_and_dimensions_preserved": true,
+    "dc10_window_crop_preserved": true,
+    "visual_review": "All 21 rendered pages inspected; normal final-reference-page whitespace retained",
+    "verification": "../../work/full_layout_review_20261028/verification.json"
+  },
+  "figure7_cleanup_page16_20261028": {
+    "authority": "Author requested removing temporary hexagonal-rivet work, preserving the restored Figure 7 and filling the half-empty page 16",
+    "status": "COMPLETED_FOR_AUTHOR_REVIEW",
+    "figure": 7,
+    "figure_page": 16,
+    "images_and_original_dimensions_preserved": true,
+    "layout": "Use compact local caption spacing for Table 3 and Figure 7; place Figure 7 after the CAD-results introductory sentence and continue the unchanged explanation after it",
+    "recycled_directories": [
+      "work/figure7_hex_rivets_20261028",
+      "work/figure7_restore_20261028"
+    ],
+    "recycled_files": 106,
+    "pages": 22,
+    "verification": "../../work/figure7_cleanup_page16_20261028/verification.json"
+  },
+  "dc10_window_crop_20261028": {
+    "authority": "Author requested moving the DC-10 detail towards the nose to show successfully removed windows",
+    "status": "COMPLETED_FOR_AUTHOR_REVIEW",
+    "figure": 11,
+    "figure_page": 19,
+    "original_detail_face_id": 151,
+    "detail_fraction": 0.15,
+    "scope": "Paired original/processed CAD and mesh detail cameras; source geometry and mesh metrics unchanged",
+    "pages": 22,
+    "verification": "../../work/dc10_window_crop_20261028/verification.json"
+  },
+  "dc10_door_display_20261027": {
+    "authority": "Author requested no colouring on DC-10 door regions that remain after processing, followed by an updated PDF",
+    "status": "COMPLETED_FOR_AUTHOR_REVIEW",
+    "figure": 8,
+    "figure_page": 17,
+    "display_background_face_ids": [
+      75,
+      76,
+      86,
+      89,
+      96,
+      98,
+      115,
+      134,
+      135,
+      142,
+      144,
+      157,
+      190,
+      195,
+      221,
+      224
+    ],
+    "scope": "Display retained door, pane and trim faces in the body colour; retain a concise caption",
+    "source_geometry_annotations_and_predictions_changed": false,
+    "pages": 22,
+    "verification": "../../work/dc10_door_display_20261027/verification.json"
+  },
+  "data_availability_revision_20261028": {
+    "authority": "Latest direct author instruction to state that source CAD models came from GrabCAD and omit the proposed provider restriction wording",
+    "status": "COMPLETED_FOR_AUTHOR_REVIEW",
+    "statement_tex": "The source aircraft CAD models used in this study were obtained from the GrabCAD Community Library (\\url{https://grabcad.com/library}).",
+    "candidate_sha256": "6f9bec6b4d777cd9783de35a900b8ca2d9cef36fe47a525edbc0607e74647c5c",
+    "source_claim_authority": "Author attribution to GrabCAD; browser search established 23 filename or STEP-header page correspondences out of 26 local sources, not independent verification of all 26 source files",
+    "claim_boundary": "Author-selected provenance statement does not claim that all local versions were downloaded and byte-verified in this search",
+    "study_specific_data_statement": "Previous sentence about annotations, weights and result files removed as part of the explicitly requested complete paragraph replacement; no new sharing or access promise introduced",
+    "published_pdf": "main.pdf",
+    "verification": "../../work/data_availability_20261028/verification.json",
+    "scientific_content_changed": false,
+    "submission_ready": false
+  },
+  "paper_directory_cleanup_20261028": {
+    "canonical_pdf": "main.pdf",
+    "retired_duplicate_pdf": "main_JCDE_declarations_20261028.pdf",
+    "history_location": "../../work/paper_manuscript_history_20261028",
+    "history_files_preserved": 80,
+    "grabcad_link_list": "../GrabCAD模型来源链接_20261028.txt",
+    "removed_csv_export": "Structured source records retained in work/grabcad_sources_20261028/matched_sources.json",
+    "source_configurations_retained": "Three source JSON configurations are directly read by python/visualization/cad.py",
+    "verification": "../../work/paper_cleanup_visible_20261028/verification.json"
+  },
+  "figure1_high_resolution_20261028": {
+    "authority": "Author requested native CAD re-rendering of the Figure 1 letter and window insets",
+    "status": "COMPLETED_FOR_AUTHOR_REVIEW",
+    "figure": 1,
+    "page": 3,
+    "assets": [
+      "fig4_gulfstream_decal_inset.png",
+      "fig4_gulfstream_window_inset.png"
+    ],
+    "actual_pdf_dpi": [
+      {
+        "pixels": [
+          1410,
+          1140
+        ],
+        "dpi_x": 1197.6,
+        "dpi_y": 1189.7
+      },
+      {
+        "pixels": [
+          1520,
+          990
+        ],
+        "dpi_x": 1045.8,
+        "dpi_y": 1033.0
+      }
+    ],
+    "model_and_labels_unchanged": true,
+    "manuscript_text_and_layout_unchanged": true,
+    "render_manifest": "../../work/figure1_high_resolution_20261028/render_manifest.json",
+    "camera_note": "Original raster side direction and target regions retained; crop center and scale reconstructed because old camera metadata is unavailable",
+    "published_pdf": "main.pdf",
+    "verification": "../../work/figure1_high_resolution_20261028/verification.json",
+    "remaining_resolution_note": "Figure 1(A) overview retained at approximately 283 dpi; E is approximately 300 dpi. This update addresses C and D only.",
+    "submission_ready": false
   }
 }

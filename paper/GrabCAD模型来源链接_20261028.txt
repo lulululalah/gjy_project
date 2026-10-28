@@ -1,0 +1,188 @@
+﻿GrabCAD 飞机 CAD 模型来源链接清单
+核查日期：2026-10-28
+
+本地共 26 个源文件，本轮已定位 23 个文件名或 STEP 头部名称能对应的模型页面，另 3 个暂未定位。
+相比此前的 3 个，新增定位 20 个。主稿九个几何/网格实验模型均已找到对应文件名页面。
+对应依据为公开网页文件列表与本地文件名/STEP 头部。未下载网页文件作 SHA-256 或几何比对，因此不将名称对应写成完全相同版本的证明。
+上传日期指模型页面首次上传日期，个别 CAD 文件的更新日期可能更晚。未定位不表示该模型一定不在 GrabCAD 上。
+
+一、已定位的 23 个模型
+
+1. Standard E-1
+本地：109-ww1-standart-e-1-aircraft CATIA STP_standart-e1.stp
+网页文件：standart-e1.stp
+页面作者：M. Kemal Kılıç；页面上传日期：2012-07-18
+https://grabcad.com/library/ww1-standart-e-1-aircraft
+依据：网页文件列表显示同名 CAD 文件；本地名称包含该文件名。
+
+2. P-80A Shooting Star
+本地：144-P-80A Shooting Star STP STL_P-80A Shooting Star v1.step
+网页文件：P-80A Shooting Star v1.step
+页面作者：leo zeng；页面上传日期：2022-07-19
+https://grabcad.com/library/lockheed-f-80-shooting-star-1
+依据：网页文件列表显示同名 CAD 文件；本地名称包含该文件名。
+
+3. Cessna Grand Caravan
+本地：221-cessna-model-grand-caravan STP_cessn CARAVAN v13.step
+网页文件：cessn CARAVAN v13.step
+页面作者：Harsh Priyanshu；页面上传日期：2021-04-28
+https://grabcad.com/library/cessna-model-grand-caravan-1
+依据：网页文件列表显示同名 CAD 文件；本地名称包含该文件名。
+
+4. Antonov An-124
+本地：237-an-124 STP STL_Antonov An-124 Rusian v2.step
+网页文件：Antonov An-124 Rusian v2.step
+页面作者：leo zeng；页面上传日期：2021-12-29
+https://grabcad.com/library/antonov-an-124-ruslan-condor-1
+依据：网页文件列表显示同名 CAD 文件；本地名称包含该文件名。
+
+5. A-10 Thunderbolt II
+本地：245-A-10 fairchild republic stp igs_A-10.stp
+网页文件：A-10.stp
+页面作者：ritwik johnson；页面上传日期：2020-05-17
+https://grabcad.com/library/fairchild-republic-a-10-thunderbolt-ii-2
+依据：网页文件列表显示同名 CAD 文件；本地名称包含该文件名。
+
+6. DC-10
+本地：27- DC-10 SolidWorks stp igs_DC 10.STEP
+网页文件：DC 10.STEP
+页面作者：Kee Kwan Liu；页面上传日期：2021-08-21
+https://grabcad.com/library/dc-10-airplane-1
+依据：网页文件列表显示同名 CAD 文件；本地名称包含该文件名。
+
+7. Xi'an Y-20
+本地：4-20 xi-an y20 STP STL_Xian Y-20 v3.step
+网页文件：Xian Y-20 v3.step
+页面作者：leo zeng；页面上传日期：2021-12-24
+https://grabcad.com/library/xi-an-y-20-1
+依据：网页文件列表显示同名 CAD 文件；本地名称包含该文件名。
+
+8. Ilyushin Il-78
+本地：6--78 il-78 stp_IL-78 Fusion v19.step
+网页文件：IL-78 Fusion v19.step
+页面作者：Harsh Priyanshu；页面上传日期：2022-03-03
+https://grabcad.com/library/ilyushin-il-78-1
+依据：网页文件列表显示同名 CAD 文件；本地名称包含该文件名。
+
+9. Boeing KC-46
+本地：68- KC46 pegasus STP STL_Boeing KC-46 Peguses v4.step
+网页文件：Boeing KC-46 Peguses v4.step
+页面作者：leo zeng；页面上传日期：2022-05-25
+https://grabcad.com/library/boeing-kc-46-pegasus-1
+依据：网页文件列表显示同名 CAD 文件；本地名称包含该文件名。
+
+10. Boeing 777-300 ER
+本地：80- 777-300 SolidWorks stp igs_B777.STEP
+网页文件：B777.STEP
+页面作者：Fawaz Bukht Majmader；页面上传日期：2020-12-25
+https://grabcad.com/library/boeing-777-300-er-1
+依据：网页文件列表显示同名 CAD 文件；本地名称包含该文件名。
+
+11. Boeing 747-400
+本地：87- 747-400 stp_beoing 747-400 v6.step
+网页文件：beoing 747-400 v6.step
+页面作者：Harsh Priyanshu；页面上传日期：2021-04-25
+https://grabcad.com/library/boeing-747-400-4
+依据：网页文件列表显示同名 CAD 文件；本地名称包含该文件名。 已定位 v6，另一个 leo zeng 页面仅有 v3，未用其替代。
+
+12. Boeing 737-800（Creo 版本）
+本地：95- 737-800-4 CREO STP_boeing_737_cj.stp
+网页文件：boeing_737_cj.stp
+页面作者：Paulo Ricardo Franskowiak Junior；页面上传日期：2019-08-13
+https://grabcad.com/library/boeing-737-800-4
+依据：网页文件列表显示同名 CAD 文件；本地名称包含该文件名。
+
+13. Airbus A220
+本地：A220 v14.step
+网页文件：A220 v14.step
+页面作者：Harsh Priyanshu；页面上传日期：2021-06-01
+https://grabcad.com/library/airbus-a220-1
+依据：网页文件列表显示同名 CAD 文件；本地名称包含该文件名。
+
+14. Air Plane Idea A
+本地：Air Plane Idea A.STEP
+网页文件：Air Plane Idea A.STEP
+页面作者：Aaron Chow；页面上传日期：2023-07-19
+https://grabcad.com/library/air-plane-idea-landing-1
+依据：网页文件列表显示同名 CAD 文件；本地名称包含该文件名。
+
+15. Airbus
+本地：Airbus.stp
+网页文件：Airbus.stp
+页面作者：Görkem Gören；页面上传日期：2026-08-09
+https://grabcad.com/library/airbus-model-1
+依据：网页文件列表显示同名 CAD 文件；本地名称包含该文件名。
+
+16. Airplane body
+本地：Airplane body.step
+网页文件：Airplane body.step
+页面作者：Mikaia Val；页面上传日期：2024-05-22
+https://grabcad.com/library/airplane-body-1
+依据：网页文件列表显示同名 CAD 文件；本地名称包含该文件名。
+
+17. AULIRA 2
+本地：AULIRA 2.STP
+网页文件：AULIRA 2.STP
+页面作者：marco saturno；页面上传日期：2026-08-02
+https://grabcad.com/library/aulira-trilinea-1
+依据：网页文件列表显示同名 CAD 文件；本地名称包含该文件名。 新版 TriLinea 页面含 STP；2021 年旧页面只有 SLDPRT，未用旧页面替代。
+
+18. Airbus C-295
+本地：c295 1 v14q.step
+网页文件：c295 1 v14q.step
+页面作者：Harsh Priyanshu；页面上传日期：2021-10-22
+https://grabcad.com/library/airbus-defence-c-295-aircraft-1
+依据：网页文件列表显示同名 CAD 文件；本地名称包含该文件名。
+
+19. Cessna Citation 2
+本地：Cessna Citation 2.stp
+网页文件：Cessna Citation 2.stp
+页面作者：Marc；页面上传日期：2014-08-08
+https://grabcad.com/library/cessna-citation-2-1
+依据：网页文件列表显示同名 CAD 文件；本地名称包含该文件名。
+
+20. CRJ-900
+本地：CRJ-900.step
+网页文件：Bombardier CRJ-900 v1.step
+页面作者：leo zeng；页面上传日期：2022-03-01
+https://grabcad.com/library/mitsubishi-crj-900-1
+依据：本地文件已简化命名；STEP 头部内部原始文件名与网页文件列表对应。
+
+21. Gulfstream G280
+本地：Gulfstream G280 v17.step
+网页文件：Gulfstream G280 v17.step
+页面作者：leo zeng；页面上传日期：2025-07-12
+https://grabcad.com/library/gulfstream-g280-1
+依据：网页文件列表显示同名 CAD 文件；本地名称包含该文件名。
+
+22. MD-11F
+本地：MD-11F.step
+网页文件：McDonnell Douglas MD-11F v0.step
+页面作者：leo zeng；页面上传日期：2022-01-04
+https://grabcad.com/library/mcdonnell-douglas-md-11f-1
+依据：本地文件已简化命名；STEP 头部内部原始文件名与网页文件列表对应。
+
+23. Tu-134
+本地：Tu-134.step
+网页文件：Tu-134.step
+页面作者：Alexey4x；页面上传日期：2023-05-25
+https://grabcad.com/library/tu-134-1
+依据：网页文件列表显示同名 CAD 文件；本地名称包含该文件名。 本地 STEP 内部名称为 Tu-134 BLUE v25 v3.step，网页上传日期与本地导出日均为 2023-05-25；内部版本尚未作字节核对。
+
+二、本轮暂未定位的 3 个文件
+
+1. 1.STEP
+文件名和 STEP 产品名均为 1，无法据此唯一定位；航空分类下检索 1.STEP 仍未建立对应。
+
+2. 116-TBF stp_TBM-1 Avenger v1.step
+已检索 TBM-1、TBM、TBF、Avenger、Grumman、avanger、torpedo bomber 和 TBM-1 Avenger；并查看 Avenger 后续页，暂未建立文件对应。
+
+3. 91- 737-800 stp 3dm_737.stp
+查到多个 737-800 页面，但已打开的候选未显示对应的 737.stp；不能用已匹配的 Creo 版 boeing_737_cj.stp 替代。
+
+三、容易混淆的页面
+747：应采用 https://grabcad.com/library/boeing-747-400-4（有本地 v6 对应文件）；
+https://grabcad.com/library/boeing-747-400-5 目前显示的是 Boeing 747-400 v3.step。
+AULIRA：应采用 https://grabcad.com/library/aulira-trilinea-1（有 AULIRA 2.STP）；
+https://grabcad.com/library/aulira-1 目前仅显示 AULIRA 2.SLDPRT 和 AULIRA.SLDPRT。
+737：已定位的 Creo 版与尚未定位的 737.stp 是两个本地文件，未合并计算。

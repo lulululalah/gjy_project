@@ -10,7 +10,6 @@ COMMANDS = {
     'complete-windows': ('cad.windows', 'main', 'Complete supported cosmetic window patches'),
     'mesh': ('geometry.measure', 'mesh_main', 'Measure a STEP surface mesh'),
     'compare-geometry': ('geometry.measure', 'compare_main', 'Compare two STEP geometries'),
-    'qem': ('geometry.qem', 'main', 'Measure matched-target QEM components'),
     'labels-init': ('tools.labels', 'initialise_main', 'Initialise background labels for a STEP'),
     'labels-apply': ('tools.labels', 'annotate_main', 'Apply confirmed native window / decal labels'),
     'pick-face': ('tools.faces', 'pick_main', 'Click and inspect a CAD face identifier'),
