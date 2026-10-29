@@ -11,5 +11,14 @@ Figure 5 分图标记为下方居中 (A)(B)(C)；Figure 11 文字约 8 pt；Tabl
 依据：https://academic.oup.com/jcde/pages/instructions-to-authors
 官方模板与 Checklist：https://academic.oup.com/jcde/pages/general-instructions
 本包为作者核对稿，不表示所有投稿条件已经满足。
+2026-10-29：根据作者提供的信息，在通讯作者 Na Lei 的邮箱下添加 ORCID 0000-0003-3361-0756 及可点击链接，并同步主稿 PDF 与源码投稿包。
+2026-10-29：补入第二作者 Gangyi Li 的 ORCID 0009-0000-5193-811X；作者确认 Jiayi Geng、Zhongxuan Luo 暂无 ORCID。同步主稿 PDF、源码 ZIP 和总投稿包；检查表的通讯作者 ORCID 栏仍对应 Na Lei。
 
 Figure 1 高清更新：C 字母图 235×190 → 1410×1140；D 窗户图 152×99 → 1520×990。均由原生 G280 B-Rep 重新渲染，保留原长宽比、侧视方向和定位框；没有对旧图插值放大。几何、标签、正文与图注均未改变，版面仍为 22 页。
+
+2026-10-29：作者确认初次投稿、不投特刊、无预印本；检查表的特刊与预印本问题均勾选 No，付款及返修信息不列入当前待补充项。
+
+2026-10-29：作者确认论文原创、未一稿多投、全体作者同意投稿；新增单独英文投稿信 paper/Cover_letter.docx，以 Na Lei 为通讯作者落款。正文方法及数值与当前主稿一致，已核对一页排版，未新增数据访问承诺。
+2026-10-29：补入第一作者 Jiayi Geng 的 ORCID 0009-0005-3599-4169，更新此前暂无 ORCID 的记录；同步主稿 PDF、源码 ZIP 和总投稿包。
+
+2026-10-29：按作者最新要求，从论文首页删除 Jiayi Geng 和 Gangyi Li 的 ORCID，仅保留通讯作者 Na Lei 的 ORCID；同步主稿 PDF、源码 ZIP 和总投稿包。

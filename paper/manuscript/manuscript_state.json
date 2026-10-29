@@ -38,9 +38,62 @@
       "status": "HISTORICAL",
       "required_for_release": false,
       "note": "Recreated against author-supplied main(11).pdf, including numbered author comments, yellow highlights and Chinese popup notes. Historical annotated copy retained; the current deliverable is main.pdf."
+    },
+    {
+      "id": "cover-letter",
+      "path": "../Cover_letter.docx",
+      "role": "submission_cover_letter",
+      "status": "ACTIVE",
+      "required_for_release": true
     }
   ],
   "authority_sources": [
+    {
+      "id": "first-author-orcid-20261029",
+      "kind": "author_supplied_metadata",
+      "path_or_reference": "User supplied the first author ORCID in this chat on 2026-10-29: https://orcid.org/0009-0005-3599-4169",
+      "scope": [
+        "Jiayi Geng ORCID"
+      ],
+      "status": "VERIFIED",
+      "last_verified": "2026-10-29",
+      "note": "Supersedes earlier user statement that Jiayi Geng had no ORCID; identity recorded from user confirmation, not independently verified."
+    },
+    {
+      "id": "submission-declarations-confirmation-20261029",
+      "kind": "author_supplied_metadata",
+      "path_or_reference": "User confirmed originality, no simultaneous submission and approval by all authors in this chat on 2026-10-29",
+      "scope": [
+        "originality",
+        "exclusive submission",
+        "approval by all authors"
+      ],
+      "status": "VERIFIED",
+      "last_verified": "2026-10-29"
+    },
+    {
+      "id": "second-author-orcid-20261029",
+      "kind": "author_supplied_metadata",
+      "path_or_reference": "User supplied the second author ORCID and confirmed the remaining authors have no ORCID on 2026-10-29: https://orcid.org/0009-0000-5193-811X",
+      "scope": [
+        "Gangyi Li ORCID",
+        "Jiayi Geng and Zhongxuan Luo ORCID availability"
+      ],
+      "status": "VERIFIED",
+      "last_verified": "2026-10-29",
+      "note": "Recorded from user confirmation; public identity not independently verified."
+    },
+    {
+      "id": "corresponding-author-orcid-20261029",
+      "kind": "author_supplied_metadata",
+      "path_or_reference": "User supplied corresponding-author ORCID in this chat on 2026-10-29: https://orcid.org/0000-0003-3361-0756",
+      "scope": [
+        "corresponding author ORCID"
+      ],
+      "status": "VERIFIED",
+      "last_verified": "2026-10-29",
+      "note": "Author confirmation; public ORCID page requires JavaScript and was not used to independently verify identity."
+    },
     {
       "id": "campus-address-confirmation-20261028",
       "kind": "author_confirmation_and_verified_official_address",
@@ -595,8 +648,8 @@
       "severity": "S3",
       "status": "OPEN",
       "evidence_status": "CONFIRMED",
-      "description": "Author metadata, campus address, contribution assignments, absence of conflicts, and absence of funding or acknowledgments were confirmed by the user. Source CAD provider is stated as GrabCAD, while study-specific annotations, weights and result files are currently not shared. ORCID and other submission details remain pending.",
-      "required_action": "Provide ORCIDs and remaining submission form details; resolve reviewer-access requirements and source-version correspondence as applicable."
+      "description": "Author metadata and initial-submission declarations confirmed by the user, including available ORCIDs, no special issue, no preprint, originality, exclusive submission and approval by all authors. Reviewer-access arrangements for supporting research data and source-version correspondence remain unresolved.",
+      "required_action": "Resolve reviewer-access requirements for supporting research data and source-version correspondence as applicable."
     },
     {
       "id": "I9",
@@ -1068,10 +1121,8 @@
     "submission_directory": "../submission",
     "companion_status": "Highlights and graphical abstract drafted from current manuscript; official checklist partially filled with verified information; source ZIP prepared",
     "pending_author_inputs": [
-      "Corresponding author ORCID",
       "Reviewer access arrangements if required for currently non-public study-specific data",
-      "Final-production resolution check for Figure 1(A); C and D re-rendered from CAD at over 1000 dpi",
-      "APC payer and billing details; special issue and preprint status"
+      "Final-production resolution check for Figure 1(A); C and D re-rendered from CAD at over 1000 dpi"
     ],
     "missing_information": "../submission_notes/待补充信息.txt",
     "verification": "../../work/jcde_format_fixes_20261028/verification.json",
@@ -1172,32 +1223,42 @@
         "name": "Jiayi Geng",
         "email": "gjyyy@mail.dlut.edu.cn",
         "co_first_author": true,
-        "corresponding_author": false
+        "corresponding_author": false,
+        "orcid": "https://orcid.org/0009-0005-3599-4169",
+        "orcid_status": "Supplied by the user on 2026-10-29",
+        "display_orcid_in_manuscript": false
       },
       {
         "name": "Gangyi Li",
         "email": "GregoryLi@mail.dlut.edu.cn",
         "co_first_author": true,
-        "corresponding_author": false
+        "corresponding_author": false,
+        "orcid": "https://orcid.org/0009-0000-5193-811X",
+        "display_orcid_in_manuscript": false
       },
       {
         "name": "Zhongxuan Luo",
         "email": "zxluo@dlut.edu.cn",
         "co_first_author": false,
-        "corresponding_author": false
+        "corresponding_author": false,
+        "orcid": null,
+        "orcid_status": "Not available, confirmed by the user on 2026-10-29",
+        "display_orcid_in_manuscript": false
       },
       {
         "name": "Na Lei",
         "email": "nalei@dlut.edu.cn",
         "co_first_author": false,
-        "corresponding_author": true
+        "corresponding_author": true,
+        "orcid": "https://orcid.org/0000-0003-3361-0756",
+        "display_orcid_in_manuscript": true
       }
     ],
     "shared_affiliation": "School of Software, Dalian University of Technology, Development Zone Campus, No. 321 Tuqiang Street, Dalian, Liaoning 116620, China",
     "institutional_address_source_id": "campus-address-confirmation-20261028",
     "co_first_marker": "~",
     "corresponding_marker": "*",
-    "orcid_status": "Not supplied; fictitious template identifiers removed",
+    "orcid_status": "Jiayi Geng: 0009-0005-3599-4169; Gangyi Li: 0009-0000-5193-811X; Na Lei: 0000-0003-3361-0756; Zhongxuan Luo has no ORCID, as confirmed by the user on 2026-10-29",
     "contributions_status": "Current role assignments explicitly confirmed by the user as matching actual work on 2026-10-28",
     "pdf_author_metadata_updated": true,
     "layout_followup": "Place Table 4 before the full-page mesh-figure barrier to prevent a half-empty page after author-block reflow",
@@ -1205,7 +1266,8 @@
     "figure7_page": 15,
     "figure11_page": 18,
     "published_pdf": "main_authors_20261028.pdf",
-    "verification": "../../work/author_metadata_20261028/verification.json"
+    "verification": "../../work/author_metadata_20261028/verification.json",
+    "orcid_display_policy": "Show only corresponding author Na Lei ORCID in the manuscript, as requested by the user on 2026-10-29; supplied co-author identifiers remain internal metadata."
   },
   "full_layout_review_20261028": {
     "authority": "Author requested checking the whole manuscript layout and correcting other pages with large blank areas",
@@ -1345,6 +1407,72 @@
     "published_pdf": "main.pdf",
     "verification": "../../work/figure1_high_resolution_20261028/verification.json",
     "remaining_resolution_note": "Figure 1(A) overview retained at approximately 283 dpi; E is approximately 300 dpi. This update addresses C and D only.",
+    "submission_ready": false
+  },
+  "corresponding_author_orcid_20261029": {
+    "author": "Na Lei",
+    "orcid": "https://orcid.org/0000-0003-3361-0756",
+    "authority_source_id": "corresponding-author-orcid-20261029",
+    "scope": "Author metadata only; scientific text, figures and results unchanged",
+    "pages": 22,
+    "submission_ready": false,
+    "verification": "../../work/orcid_update_20261029/verification.json"
+  },
+  "initial_submission_confirmation_20261029": {
+    "authority": "User confirmed initial submission and stated payment information is outside the current stage on 2026-10-29",
+    "submission_stage": "INITIAL_SUBMISSION",
+    "apc_and_billing": "Outside current author-input scope",
+    "revision_id_and_reviewer_comments": "Not applicable to current initial submission",
+    "special_issue": false,
+    "preprint": false,
+    "status_authority": "User confirmed no special issue and no preprint on 2026-10-29",
+    "originality_confirmed": true,
+    "exclusive_submission_confirmed": true,
+    "all_authors_approve_submission": true,
+    "declarations_source_id": "submission-declarations-confirmation-20261029"
+  },
+  "second_author_orcid_20261029": {
+    "author": "Gangyi Li",
+    "orcid": "https://orcid.org/0009-0000-5193-811X",
+    "authority_source_id": "second-author-orcid-20261029",
+    "authors_without_orcid": [
+      "Zhongxuan Luo"
+    ],
+    "scope": "Author metadata only",
+    "verification": "../../work/orcid_update_20261029/second_author_verification.json",
+    "submission_ready": false,
+    "availability_followup": "Jiayi Geng ORCID subsequently supplied; see first_author_orcid_20261029",
+    "manuscript_display_status": "REMOVED_BY_AUTHOR_REQUEST; see orcid_display_corresponding_only_20261029"
+  },
+  "cover_letter_20261029": {
+    "document": "../Cover_letter.docx",
+    "status": "PREPARED_FOR_AUTHOR_REVIEW",
+    "authority_source_id": "submission-declarations-confirmation-20261029",
+    "pages": 1,
+    "candidate_sha256": "7c05e4c012a4eb9b9c12cb5b0e7dec1c8882f9795a502e55976be8b40b3867c2",
+    "document_sha256": "36a2a8866497fcf5a9195395ad335344a79fbad083dda3dc3486cf115434113b",
+    "verification": "../../work/cover_letter_20261029/verification.json",
+    "package_note": "Standalone cover-letter attachment beside the five-file initial-submission archive",
+    "submission_ready": false
+  },
+  "first_author_orcid_20261029": {
+    "author": "Jiayi Geng",
+    "orcid": "https://orcid.org/0009-0005-3599-4169",
+    "authority_source_id": "first-author-orcid-20261029",
+    "scope": "Author metadata only",
+    "verification": "../../work/orcid_update_20261029/first_author_verification.json",
+    "submission_ready": false,
+    "manuscript_display_status": "REMOVED_BY_AUTHOR_REQUEST; see orcid_display_corresponding_only_20261029"
+  },
+  "orcid_display_corresponding_only_20261029": {
+    "authority": "User requested deleting all non-corresponding-author ORCIDs from the manuscript on 2026-10-29",
+    "retained_author": "Na Lei",
+    "retained_orcid": "https://orcid.org/0000-0003-3361-0756",
+    "removed_from_manuscript": [
+      "Jiayi Geng",
+      "Gangyi Li"
+    ],
+    "verification": "../../work/orcid_update_20261029/corresponding_only_verification.json",
     "submission_ready": false
   }
 }
