@@ -12,19 +12,20 @@
 \definecolor{archFaceI}{HTML}{86A8BB}
 \definecolor{archFaceL}{HTML}{E3A09C}
 \definecolor{archFaceJ}{HTML}{F1D48A}
-\resizebox{1.10\linewidth}{!}{%
+\resizebox{\linewidth}{!}{%
 \begin{tikzpicture}[x=1mm,y=1mm,
   font=\sffamily\fontsize{12}{13}\selectfont,text=archInk,
   flow/.style={-{Latex[length=1.8mm,width=1.3mm]},draw=archInk!80,line width=.8pt},
   note/.style={font=\sffamily\fontsize{11}{12.5}\selectfont,align=center},
   heading/.style={align=center,font=\sffamily\bfseries\fontsize{13}{14.5}\selectfont},
-  state/.style={draw=none,rounded corners=1mm,text width=23mm,minimum height=12mm,align=center},
+  state/.style={line width=.65pt,rounded corners=1.8mm,text width=22mm,
+    minimum height=13mm,inner sep=1mm,align=center},
   graphnode/.style={circle,draw=white,line width=.8pt,minimum size=6mm,
     inner sep=0,font=\sffamily\fontsize{10}{11}\selectfont}]
-  \path[use as bounding box] (0,4) rectangle (238,-60);
+  \path (0,0) rectangle (168,-117);
   \node[heading] at (30,-56) {(A) B-Rep graph};
   \node[heading] at (116,-56) {(B) GNN and context};
-  \node[heading] at (201,-56) {(C) Face labels};
+  \node[heading] at (92,-113) {(C) Face labels};
 
   \node[note] at (16,-9) {Original B-Rep faces};
   \node[inner sep=0] at (16,-23)
@@ -39,24 +40,48 @@
   \draw[flow] (62,-23) -- (72,-23);
 
   \foreach \offset/\colour in {9/archViolet,6/archTeal,3/archOrange,0/archBlue} {
-    \path[fill=\colour!80,draw=\colour!70!black,line width=.5pt]
+    \path[fill=\colour!70,draw=\colour!60!black,
+      rounded corners=.8mm,line width=.6pt]
       (75+\offset,-14+\offset*.5) rectangle (88+\offset,-32+\offset*.5);
   }
   \node[note] at (81.5,-23) {64D};
   \node[note] at (85,-42) {NNConv $\times\,4$};
-  \draw[archInk!80,line width=.8pt] (99,-23) -- (103,-23);
-  \node[state,fill=archBlue!25] (local) at (120,-12) {Local\\64D};
-  \node[state,fill=archTeal!27] (global) at (120,-34) {Global\\128D};
-  \draw[flow] (103,-23) |- (local.west);
-  \draw[flow] (103,-23) |- (global.west);
-  \node[rounded corners=4mm,draw=none,fill=archViolet!35,minimum width=16mm,
-    minimum height=10mm,inner sep=.5mm,font=\sffamily\fontsize{10.5}{12}\selectfont]
+  \draw[archInk!70,line width=.8pt] (99,-23) -- (103,-23);
+  \fill[archInk!70] (103,-23) circle (.6mm);
+  \node[state,draw=archBlue!65!black,fill=archBlue!16]
+    (local) at (120,-12) {\textbf{Local}\\64D};
+  \node[state,draw=archTeal!65!black,fill=archTeal!16]
+    (global) at (120,-34) {\textbf{Global}\\128D};
+  \draw[flow,draw=archBlue!65!black,rounded corners=1.8mm] (103,-23) |- (local.west);
+  \draw[flow,draw=archTeal!65!black,rounded corners=1.8mm] (103,-23) |- (global.west);
+  \node[rounded corners=2.5mm,draw=archViolet!65!black,line width=.65pt,
+    fill=archViolet!18,minimum width=16mm,minimum height=11mm,
+    inner sep=.5mm,font=\sffamily\fontsize{10.5}{12}\selectfont]
     (concat) at (149,-23) {Concat};
-  \draw[flow] (local.east) -| (concat.north);
-  \draw[flow] (global.east) -| (concat.south);
+  \draw[flow,draw=archBlue!65!black,rounded corners=1.8mm] (local.east) -| (concat.north);
+  \draw[flow,draw=archTeal!65!black,rounded corners=1.8mm] (global.east) -| (concat.south);
   \node[note] at (120,-47) {Mean $+$ max};
   \draw[flow] (concat.east) -- (165,-23);
+  \foreach \featurex/\featurey in {167/-23,24/-83} {
+    \begin{scope}[shift={(\featurex,\featurey)}]
+      \begin{scope}
+        \clip[rounded corners=1.6mm] (0,-7) rectangle (26,7);
+        \fill[archBlue!18] (0,0) rectangle (26,7);
+        \fill[archTeal!18] (0,-7) rectangle (26,0);
+        \draw[white,line width=.7pt] (0,0) -- (26,0);
+      \end{scope}
+      \draw[draw=archLine!85!archInk,line width=.6pt,rounded corners=1.6mm]
+        (0,-7) rectangle (26,7);
+      \node[text=archBlue!65!black,font=\sffamily\fontsize{9.5}{11}\selectfont]
+        at (13,3.5) {\textbf{Local} 64D};
+      \node[text=archTeal!65!black,font=\sffamily\fontsize{9.5}{11}\selectfont]
+        at (13,-3.5) {\textbf{Global} 128D};
+      \node[note] at (13,-12.5) {192D feature};
+    \end{scope}
+  }
 
+  \begin{scope}[xshift=-100mm,yshift=-60mm]
+  \draw[flow] (155,-23) -- (165,-23);
   \foreach \ya in {-15,-20,-31} {
     \foreach \yb in {-15,-20,-31} {
       \draw[archLine!85,line width=.5pt] (170,\ya) -- (179,\yb);
@@ -85,6 +110,7 @@
     \fill[\colour] (206,\y) circle (1.4mm);
     \node[note,anchor=west] at (210,\y) {\name};
   }
+  \end{scope}
 \end{tikzpicture}%
 }
 \endgroup
